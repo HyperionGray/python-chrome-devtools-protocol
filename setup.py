@@ -1,0 +1,26 @@
+from pathlib import Path
+from setuptools import setup, find_packages
+
+here = Path(__file__).parent
+
+with (here / 'README.md').open(encoding='utf8') as f:
+    long_description = f.read()
+
+setup(
+    name='chrome-devtools-protocol',
+    version='0.1.0-dev',
+    description='Python type wrappers for Chrome DevTools Protocol (CDP)',
+    long_description=long_description,
+    url='https://github.com/HyperionGray/python-chrome-devtools-protocol',
+    author='Mark E. Haase <mehaase@gmail.com>, Brian Mackintosh <bcmackintosh@gmail.com>',
+    classifiers=[
+        'Development Status :: 3 - Alpha',
+        'Intended Audience :: Developers',
+        'Topic :: Software Development :: Libraries',
+        'License :: OSI Approved :: MIT License',
+        'Programming Language :: Python :: 3.7',
+    ],
+    python_requires='>=3.7',
+    keywords='chrome devtools protocol cdp',
+    packages=find_packages(exclude=['build', 'docs', 'tests']),
+)

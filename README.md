@@ -1,5 +1,8 @@
 # Chrome Devtools Protocol (CDP) for Python
 
+_Status: this library is very alpha. Do not use it! It is not on PyPI yet but
+when we get a little more stable it will be published there._
+
 ## Overview
 
 This repository contains Python type wrappers for the Chrome DevTools Protocol
@@ -227,14 +230,25 @@ def run_command(cmd):
     except StopIteration as exit:
         return exit.value
 
-target_info = run_command(Target.get_target_info(TargetId('my_target_id')))
+target_id = TargetID('F86FCB9B3890EB413FAC5DD9DD150E6F')
+target_info = run_command(Target.get_target_info(target_info))
 print(target_info)
 ```
 
+The script above prints something like this:
+
+```
+TargetInfo(target_id=TargetID('F86FCB9B3890EB413FAC5DD9DD150E6F'), type_='page', 
+title='New Tab', url='chrome://newtab/', attached=False, opener_id=TargetID('None'), 
+browser_context_id=BrowserContextID('B26C01EBDA29AC04BE3966B4E50F3F49'))
+```
 ## Build
 
 The protocol specifications and a build tool are stored in the `build`
-directory. To rebuild, run the generate script:
+directory. Before running the build tool, install the build requirements in
+requirements.txt.
+
+Run the build tool as follows:
 
 ```
 $ python build/generate.py
