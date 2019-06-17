@@ -301,6 +301,10 @@ def get_python_type(cdp_meta):
             py_type = 'typing.List'
             try:
                 cdp_nested_type = cdp_meta['items']['$ref']
+                if '.' in cdp_nested_type:
+                    domain, subtype = cdp_nested_type.split('.')
+                    cdp_nested_type = '{}.{}'.format(
+                        inflection.underscore(domain), subtype)
                 py_type += "['{}']".format(cdp_nested_type)
             except KeyError:
                 # No nested type: ignore.
