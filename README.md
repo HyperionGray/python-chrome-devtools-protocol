@@ -167,32 +167,28 @@ CDP command specification from the `Target` domain:
 This leads to the following generated Python code:
 
 ```python3
-class Target:
-    @staticmethod
-    def get_target_info(target_id: TargetID) -> typing.Generator[dict,dict,TargetInfo]:
-        '''
-        Returns information about a target.
+  def get_target_info(target_id: TargetID) -> typing.Generator[dict,dict,TargetInfo]:
+      '''
+      Returns information about a target.
 
-        :param target_id:
-        :returns:
-        '''
+      :param target_id:
+      :returns:
+      '''
 
-        cmd_dict = {
-            'method': 'Target.getTargetInfo',
-            'params': {
-                'targetId': target_id,
-            }
-        }
-        response = yield cmd_dict
-        return TargetInfo.from_response(response['targetInfo'])
-
-    ...
+      cmd_dict = {
+          'method': 'Target.getTargetInfo',
+          'params': {
+              'targetId': target_id,
+          }
+      }
+      response = yield cmd_dict
+      return TargetInfo.from_response(response['targetInfo'])
 ```
 
-First, notice that all commands in the `Target` domain are generated as static
-methods on a class called `Target`. Therefore, a fully-qualified CDP command
-command like `Target.getTargetInfo` translates to a Python method called
-`Target.get_target_info`.
+First, notice that all commands in the `Target` domain are generated as
+functions inside of the module `cdp.target.commands` on a class called `Target`.
+Therefore, a fully-qualified CDP command command like `Target.getTargetInfo`
+translates to a Python function called `cdp.target.commands.get_target_info`.
 
 Second, notice that the command has the proper type annotations and docstring
 derived from the CDP metadata. Depending on your IDE, this should help with
