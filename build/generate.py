@@ -568,24 +568,10 @@ def generate_init(init_path, modules):
     modules.sort()
     with init_path.open('w') as init_file:
         init_file.write(init_header)
-        for module, type_exports, _, _ in modules:
-            if type_exports:
-                init_file.write('from .{}.types import (\n'.format(module))
-                for export in type_exports:
-                    init_file.write('    {},\n'.format(export))
-                init_file.write(')\n')
-        for module, _, event_exports, _ in modules:
-            if event_exports:
-                init_file.write('from .{}.events import (\n'.format(module))
-                for export in event_exports:
-                    init_file.write('    {},\n'.format(export))
-                init_file.write(')\n')
         for module, _, _, command_exports in modules:
             if command_exports:
-                init_file.write('from .{}.commands import (\n'.format(module))
-                for export in command_exports:
-                    init_file.write('    {},\n'.format(export))
-                init_file.write(')\n')
+                init_file.write('from .{}.commands import {}\n'.format(module,
+                    ', '.join((command_exports))))
 
 def main():
     ''' Main entry point. '''
