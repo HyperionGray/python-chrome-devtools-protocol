@@ -29,19 +29,21 @@ such a wrapper library yourself.
 
 ## Basic Types
 
-CDP has several primitive types such as `string`, `integer`, and `object`. For 
+CDP has several primitive types such as `string`, `integer`, and `object`. For
 basic types like `string` and `integer`, this library generates a trivial
 wrapper around the type. For example, CDP has the following basic type:
 
-```json
-{"types": [
-    {
-        "id": "ScriptIdentifier",
-        "description": "Unique script identifier.",
-        "type": "string"
-    },
-    ...
-]}
+```
+{
+    "types": [
+        {
+            "id": "ScriptIdentifier",
+            "description": "Unique script identifier.",
+            "type": "string"
+        },
+        ...
+    ]
+}
 ```
 
 This CDP type corresponds to the following Python code:
@@ -67,34 +69,36 @@ the same interface for converting JSON into Python instances.
 
 TODO: explain enum
 
-CDP uses the `object` type to describe more commplicated data types. Here's an
+CDP uses the `object` type to describe more complicated data types. Here's an
 example:
 
-```json
-{"types": [
-    {
-        "id": "FrameTree",
-        "description": "Information about the Frame hierarchy.",
-        "type": "object",
-        "properties": [
-            {
-                "name": "frame",
-                "description": "Frame information for this tree item.",
-                "$ref": "Frame"
-            },
-            {
-                "name": "childFrames",
-                "description": "Child frames.",
-                "optional": true,
-                "type": "array",
-                "items": {
-                    "$ref": "FrameTree"
+```
+{
+    "types": [
+        {
+            "id": "FrameTree",
+            "description": "Information about the Frame hierarchy.",
+            "type": "object",
+            "properties": [
+                {
+                    "name": "frame",
+                    "description": "Frame information for this tree item.",
+                    "$ref": "Frame"
+                },
+                {
+                    "name": "childFrames",
+                    "description": "Child frames.",
+                    "optional": true,
+                    "type": "array",
+                    "items": {
+                        "$ref": "FrameTree"
+                    }
                 }
-            }
-        ]
-    },
-    ...
-]}
+            ]
+        },
+        ...
+    ]
+}
 ```
 
 This corresponds to the following Python code:
@@ -134,28 +138,30 @@ The CDP commands are the trickiest part of this library, because each "command"
 is really a remote procedure call over a network socket! Here's an example of a
 CDP command specification from the `Target` domain:
 
-```json
-{"commands": [
-    {
-        "name": "getTargetInfo",
-        "description": "Returns information about a target.",
-        "experimental": true,
-        "parameters": [
-            {
-                "name": "targetId",
-                "optional": true,
-                "$ref": "TargetID"
-            }
-        ],
-        "returns": [
-            {
-                "name": "targetInfo",
-                "$ref": "TargetInfo"
-            }
-        ]
-    },
-    ...
-]}
+```
+{
+    "commands": [
+        {
+            "name": "getTargetInfo",
+            "description": "Returns information about a target.",
+            "experimental": true,
+            "parameters": [
+                {
+                    "name": "targetId",
+                    "optional": true,
+                    "$ref": "TargetID"
+                }
+            ],
+            "returns": [
+                {
+                    "name": "targetInfo",
+                    "$ref": "TargetInfo"
+                }
+            ]
+        },
+        ...
+    ]
+}
 ```
 
 This leads to the following generated Python code:
@@ -163,12 +169,12 @@ This leads to the following generated Python code:
 ```python3
 class Target:
     @staticmethod
-    def get_target_info(target_id: TargetID) -> TargetInfo:
+    def get_target_info(target_id: TargetID) -> typing.Generator[dict,TargetInfo,None]:
         '''
         Returns information about a target.
-        
-        :param target_id: 
-        :returns: 
+
+        :param target_id:
+        :returns:
         '''
 
         cmd_dict = {
@@ -194,11 +200,11 @@ autocompletion.
 
 Third—and this is the tricky bit—we have a single function that can both
 generate a CDP JSON command and also parse the response without doing any actual
-I/O in between! In order to accomodate this goal, each command function is
-actually a _generator function_. To run a command, you should do the following:
+I/O in between! In order to accommodate this goal, each command is actually a
+_generator function_. To run a command, you should do the following:
 
 1. Invoke the function to obtain a generator `gen`.
-2. Get the request by calling `gen.send(None)`.
+2. Get the request by calling `request = gen.send(None)`.
 3. Send the request to Chrome using whatever I/O framework you want and wait for
    the response. (Notice that commands are multiplexed on a single WebSocket, so
    you will also need to do some bookkeeping to track which responses correspond
@@ -215,7 +221,7 @@ multiple commands concurrently.
 from cdp import Target, TargetID
 
 def run_command(cmd):
-    # Run the generator once t get 
+    # Run the generator once to get a request.
     request_dict = cmd.send(None)
     request_dict['id'] = 0
     request_str = json.dumps(request_dict)
@@ -225,10 +231,11 @@ def run_command(cmd):
     # ^^^ Use whatever I/O framework you want. ^^^
     response_dict = json.loads(response_str)
     try:
-        cmd.send(response)
+        cmd.send(response_dict)
         raise Exception('Should not reach this line!')
     except StopIteration as exit:
-        return exit.value
+        response = exit.value
+    return response
 
 target_id = TargetID('F86FCB9B3890EB413FAC5DD9DD150E6F')
 target_info = run_command(Target.get_target_info(target_info))
@@ -238,10 +245,11 @@ print(target_info)
 The script above prints something like this:
 
 ```
-TargetInfo(target_id=TargetID('F86FCB9B3890EB413FAC5DD9DD150E6F'), type_='page', 
-title='New Tab', url='chrome://newtab/', attached=False, opener_id=TargetID('None'), 
+TargetInfo(target_id=TargetID('F86FCB9B3890EB413FAC5DD9DD150E6F'), type_='page',
+title='New Tab', url='chrome://newtab/', attached=False, opener_id=TargetID('None'),
 browser_context_id=BrowserContextID('B26C01EBDA29AC04BE3966B4E50F3F49'))
 ```
+
 ## Build
 
 The protocol specifications and a build tool are stored in the `build`
