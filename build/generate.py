@@ -112,7 +112,9 @@ def generate_domain_module(domain, output_path):
     module_path = output_path / module_name
     module_path.mkdir(parents=True, exist_ok=True)
     init_path = module_path / '__init__.py'
-    init_path.touch()
+    with init_path.open('w'):
+        # Zero out this file
+        pass
 
     types_path = module_path / 'types.py'
     with types_path.open('w') as types_file:
@@ -478,12 +480,10 @@ def generate_commands(domain_name, commands):
     :returns: a tuple (list of exported types, code as string)
     '''
     code = '\n\n'
-    code += 'class {}:\n'.format(domain_name)
     for command in commands:
         command_name = command['name']
         method_name = inflection.underscore(command_name)
         description = command.get('description', '')
-        code += '    @staticmethod\n'
         arg_list = list()
         dict_items = list()
         params = command.get('parameters', list())
@@ -510,37 +510,37 @@ def generate_commands(domain_name, commands):
             for return_ in returns:
                 description += '\n    * {}: {}'.format(return_['name'],
                     return_.get('description', ''))
-        code += '    def {}({}) -> typing.Generator[dict,dict,{}]:\n'.format(method_name,
+        code += 'def {}({}) -> typing.Generator[dict,dict,{}]:\n'.format(method_name,
             ', '.join(arg_list), return_type)
-        code += docstring(description, indent=8)
+        code += docstring(description, indent=4)
         code += '\n'
-        code += '        cmd_dict = {\n'
-        code += "            'method': '{}.{}',\n".format(domain_name,
+        code += '    cmd_dict = {\n'
+        code += "        'method': '{}.{}',\n".format(domain_name,
             command_name)
         if dict_items:
-            code += "            'params': {\n"
+            code += "        'params': {\n"
             for snake_name, param_name in dict_items:
-                code += "                '{}': {},\n".format(param_name,
+                code += "            '{}': {},\n".format(param_name,
                     snake_name)
-            code += '            }\n'
-        code += '        }\n'
-        code += '        response = yield cmd_dict\n'
+            code += '        }\n'
+        code += '    }\n'
+        code += '    response = yield cmd_dict\n'
         if len(returns) == 1:
             return_ = returns[0]
             return_type = get_python_type(return_)
-            code += '        return {}\n'.format(make_return_code(return_))
+            code += '    return {}\n'.format(make_return_code(return_))
         elif len(returns) > 1:
             # we should be able to refactor the first part of this if block to have something
             # reusable, then we call that new thing inside of a loop in this elif block
             # the only difference here is printing key names and dict syntax
-            code += '        return {\n'
+            code += '    return {\n'
             for return_ in returns:
                 return_type = get_python_type(return_)
                 return_name = return_['name']
-                code += "                '{}': {},\n".format(return_name,
+                code += "        '{}': {},\n".format(return_name,
                     make_return_code(return_))
-            code += '            }\n'
-        code += '\n'
+            code += '    }\n'
+        code += '\n\n'
     return [domain_name], code
 
 
@@ -578,13 +578,15 @@ def generate_init(init_path, modules):
     :param list[tuple] modules: a list of modules each represented as tuples
         of (name, list_of_exported_symbols)
     '''
+    modules = [module[0] for module in modules]
     modules.sort()
     with init_path.open('w') as init_file:
         init_file.write(init_header)
-        for module, _, _, command_exports in modules:
-            if command_exports:
-                init_file.write('from .{}.commands import {}\n'.format(module,
-                    ', '.join((command_exports))))
+        for submodule in ('types', 'events', 'commands'):
+            for module in modules:
+                init_file.write('import cdp.{}.{}\n'.format(module, submodule))
+            init_file.write('\n')
+
 
 def main():
     ''' Main entry point. '''
@@ -602,7 +604,6 @@ def main():
         modules.extend(parse(json_path, output_path))
 
     generate_init(init_path, modules)
-
 
 if __name__ == '__main__':
     main()
