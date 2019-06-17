@@ -596,14 +596,18 @@ def main():
         here / 'js_protocol.json',
     ]
     output_path = here.parent / 'cdp'
-    init_path = output_path / '__init__.py'
 
     modules = list()
     for json_path in json_paths:
         logger.info('Parsing JSON file %s', json_path)
         modules.extend(parse(json_path, output_path))
 
+    init_path = output_path / '__init__.py'
     generate_init(init_path, modules)
+
+    py_typed_path = output_path / 'py.typed'
+    py_typed_path.touch()
+
 
 if __name__ == '__main__':
     main()
