@@ -555,14 +555,16 @@ def make_return_code(return_):
     return_type = get_python_type(return_)
     if 'typing.List' in return_type:
         subtype = get_python_type(return_['items'])
-        if 'type' in return_['items']:
-            code = "[{}(i) for i in response['{}']]".format(subtype, return_name)
-        elif is_builtin_type(subtype):
+        if subtype.startswith('typing.Any'):
+            code = "[i for i in response['{}']]".format(return_name)
+        elif 'type' in return_['items'] or is_builtin_type(subtype):
             code = "[{}(i) for i in response['{}']]".format(subtype, return_name)
         else:
             code = "[{}.from_response(i) for i in response['{}']]".format(subtype, return_name)
     elif is_builtin_type(return_type):
         code = "{}(response['{}'])".format(return_type, return_name)
+    elif return_type.startswith('typing.Any'):
+        code = "response['{}']".format(return_name)
     else:
         code = "{}.from_response(response['{}'])".format(return_type, return_name)
     return code
