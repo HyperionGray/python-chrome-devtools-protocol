@@ -331,6 +331,9 @@ def get_python_type(cdp_meta):
         cdp_meta))
 
 
+def is_builtin_type(python_type):
+    return python_type in ('bool', 'int', 'dict', 'float', 'str')
+
 
 def generate_class_type(type_):
     '''
@@ -550,8 +553,12 @@ def make_return_code(return_):
         subtype = get_python_type(return_['items'])
         if 'type' in return_['items']:
             code = "[{}(i) for i in response['{}']]".format(subtype, return_name)
+        elif is_builtin_type(subtype):
+            code = "[{}(i) for i in response['{}']]".format(subtype, return_name)
         else:
             code = "[{}.from_response(i) for i in response['{}']]".format(subtype, return_name)
+    elif is_builtin_type(return_type):
+        code = "{}(response['{}'])".format(return_type, return_name)
     else:
         code = "{}.from_response(response['{}'])".format(return_type, return_name)
     return code
