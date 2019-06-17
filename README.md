@@ -169,7 +169,7 @@ This leads to the following generated Python code:
 ```python3
 class Target:
     @staticmethod
-    def get_target_info(target_id: TargetID) -> typing.Generator[dict,TargetInfo,None]:
+    def get_target_info(target_id: TargetID) -> typing.Generator[dict,dict,TargetInfo]:
         '''
         Returns information about a target.
 

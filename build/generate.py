@@ -503,7 +503,7 @@ def generate_commands(domain_name, commands):
             for return_ in returns:
                 description += '\n    * {}: {}'.format(return_['name'],
                     return_.get('description', ''))
-        code += '    def {}({}) -> typing.Generator[dict,{},None]:\n'.format(method_name,
+        code += '    def {}({}) -> typing.Generator[dict,dict,{}]:\n'.format(method_name,
             ', '.join(arg_list), return_type)
         code += docstring(description, indent=8)
         code += '\n'
