@@ -17,530 +17,529 @@ from ..io import types as io
 
 
 
-class Network:
-    @staticmethod
-    def can_clear_browser_cache() -> bool:
-        '''
-        Tells whether clearing browser cache is supported.
-        :returns: True if browser cache can be cleared.
-        '''
+def can_clear_browser_cache() -> typing.Generator[dict,dict,bool]:
+    '''
+    Tells whether clearing browser cache is supported.
+    :returns: True if browser cache can be cleared.
+    '''
 
-        cmd_dict = {
-            'method': 'Network.canClearBrowserCache',
+    cmd_dict = {
+        'method': 'Network.canClearBrowserCache',
+    }
+    response = yield cmd_dict
+    return bool(response['result'])
+
+
+def can_clear_browser_cookies() -> typing.Generator[dict,dict,bool]:
+    '''
+    Tells whether clearing browser cookies is supported.
+    :returns: True if browser cookies can be cleared.
+    '''
+
+    cmd_dict = {
+        'method': 'Network.canClearBrowserCookies',
+    }
+    response = yield cmd_dict
+    return bool(response['result'])
+
+
+def can_emulate_network_conditions() -> typing.Generator[dict,dict,bool]:
+    '''
+    Tells whether emulation of network conditions is supported.
+    :returns: True if emulation of network conditions is supported.
+    '''
+
+    cmd_dict = {
+        'method': 'Network.canEmulateNetworkConditions',
+    }
+    response = yield cmd_dict
+    return bool(response['result'])
+
+
+def clear_browser_cache() -> typing.Generator[dict,dict,None]:
+    '''
+    Clears browser cache.
+    '''
+
+    cmd_dict = {
+        'method': 'Network.clearBrowserCache',
+    }
+    response = yield cmd_dict
+
+
+def clear_browser_cookies() -> typing.Generator[dict,dict,None]:
+    '''
+    Clears browser cookies.
+    '''
+
+    cmd_dict = {
+        'method': 'Network.clearBrowserCookies',
+    }
+    response = yield cmd_dict
+
+
+def continue_intercepted_request(interception_id: InterceptionId, error_reason: ErrorReason, raw_response: str, url: str, method: str, post_data: str, headers: Headers, auth_challenge_response: AuthChallengeResponse) -> typing.Generator[dict,dict,None]:
+    '''
+    Response to Network.requestIntercepted which either modifies the request to continue with any
+    modifications, or blocks it, or completes it with the provided response bytes. If a network
+    fetch occurs as a result which encounters a redirect an additional Network.requestIntercepted
+    event will be sent with the same InterceptionId.
+    
+    :param interception_id: 
+    :param error_reason: If set this causes the request to fail with the given reason. Passing `Aborted` for requests
+    marked with `isNavigationRequest` also cancels the navigation. Must not be set in response
+    to an authChallenge.
+    :param raw_response: If set the requests completes using with the provided base64 encoded raw response, including
+    HTTP status line and headers etc... Must not be set in response to an authChallenge.
+    :param url: If set the request url will be modified in a way that's not observable by page. Must not be
+    set in response to an authChallenge.
+    :param method: If set this allows the request method to be overridden. Must not be set in response to an
+    authChallenge.
+    :param post_data: If set this allows postData to be set. Must not be set in response to an authChallenge.
+    :param headers: If set this allows the request headers to be changed. Must not be set in response to an
+    authChallenge.
+    :param auth_challenge_response: Response to a requestIntercepted with an authChallenge. Must not be set otherwise.
+    '''
+
+    cmd_dict = {
+        'method': 'Network.continueInterceptedRequest',
+        'params': {
+            'interceptionId': interception_id,
+            'errorReason': error_reason,
+            'rawResponse': raw_response,
+            'url': url,
+            'method': method,
+            'postData': post_data,
+            'headers': headers,
+            'authChallengeResponse': auth_challenge_response,
         }
-        response = yield cmd_dict
-        return bool.from_response(response['result'])
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def can_clear_browser_cookies() -> bool:
-        '''
-        Tells whether clearing browser cookies is supported.
-        :returns: True if browser cookies can be cleared.
-        '''
 
-        cmd_dict = {
-            'method': 'Network.canClearBrowserCookies',
+def delete_cookies(name: str, url: str, domain: str, path: str) -> typing.Generator[dict,dict,None]:
+    '''
+    Deletes browser cookies with matching name and url or domain/path pair.
+    
+    :param name: Name of the cookies to remove.
+    :param url: If specified, deletes all the cookies with the given name where domain and path match
+    provided URL.
+    :param domain: If specified, deletes only cookies with the exact domain.
+    :param path: If specified, deletes only cookies with the exact path.
+    '''
+
+    cmd_dict = {
+        'method': 'Network.deleteCookies',
+        'params': {
+            'name': name,
+            'url': url,
+            'domain': domain,
+            'path': path,
         }
-        response = yield cmd_dict
-        return bool.from_response(response['result'])
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def can_emulate_network_conditions() -> bool:
-        '''
-        Tells whether emulation of network conditions is supported.
-        :returns: True if emulation of network conditions is supported.
-        '''
 
-        cmd_dict = {
-            'method': 'Network.canEmulateNetworkConditions',
+def disable() -> typing.Generator[dict,dict,None]:
+    '''
+    Disables network tracking, prevents network events from being sent to the client.
+    '''
+
+    cmd_dict = {
+        'method': 'Network.disable',
+    }
+    response = yield cmd_dict
+
+
+def emulate_network_conditions(offline: bool, latency: float, download_throughput: float, upload_throughput: float, connection_type: ConnectionType) -> typing.Generator[dict,dict,None]:
+    '''
+    Activates emulation of network conditions.
+    
+    :param offline: True to emulate internet disconnection.
+    :param latency: Minimum latency from request sent to response headers received (ms).
+    :param download_throughput: Maximal aggregated download throughput (bytes/sec). -1 disables download throttling.
+    :param upload_throughput: Maximal aggregated upload throughput (bytes/sec).  -1 disables upload throttling.
+    :param connection_type: Connection type if known.
+    '''
+
+    cmd_dict = {
+        'method': 'Network.emulateNetworkConditions',
+        'params': {
+            'offline': offline,
+            'latency': latency,
+            'downloadThroughput': download_throughput,
+            'uploadThroughput': upload_throughput,
+            'connectionType': connection_type,
         }
-        response = yield cmd_dict
-        return bool.from_response(response['result'])
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def clear_browser_cache() -> None:
-        '''
-        Clears browser cache.
-        '''
 
-        cmd_dict = {
-            'method': 'Network.clearBrowserCache',
+def enable(max_total_buffer_size: int, max_resource_buffer_size: int, max_post_data_size: int) -> typing.Generator[dict,dict,None]:
+    '''
+    Enables network tracking, network events will now be delivered to the client.
+    
+    :param max_total_buffer_size: Buffer size in bytes to use when preserving network payloads (XHRs, etc).
+    :param max_resource_buffer_size: Per-resource buffer size in bytes to use when preserving network payloads (XHRs, etc).
+    :param max_post_data_size: Longest post body size (in bytes) that would be included in requestWillBeSent notification
+    '''
+
+    cmd_dict = {
+        'method': 'Network.enable',
+        'params': {
+            'maxTotalBufferSize': max_total_buffer_size,
+            'maxResourceBufferSize': max_resource_buffer_size,
+            'maxPostDataSize': max_post_data_size,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def clear_browser_cookies() -> None:
-        '''
-        Clears browser cookies.
-        '''
 
-        cmd_dict = {
-            'method': 'Network.clearBrowserCookies',
+def get_all_cookies() -> typing.Generator[dict,dict,typing.List['Cookie']]:
+    '''
+    Returns all browser cookies. Depending on the backend support, will return detailed cookie
+    information in the `cookies` field.
+    :returns: Array of cookie objects.
+    '''
+
+    cmd_dict = {
+        'method': 'Network.getAllCookies',
+    }
+    response = yield cmd_dict
+    return [Cookie.from_response(i) for i in response['cookies']]
+
+
+def get_certificate(origin: str) -> typing.Generator[dict,dict,typing.List]:
+    '''
+    Returns the DER-encoded certificate.
+    
+    :param origin: Origin to get certificate for.
+    :returns: 
+    '''
+
+    cmd_dict = {
+        'method': 'Network.getCertificate',
+        'params': {
+            'origin': origin,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
+    return [str(i) for i in response['tableNames']]
 
-    @staticmethod
-    def continue_intercepted_request(interception_id: InterceptionId, error_reason: ErrorReason, raw_response: str, url: str, method: str, post_data: str, headers: Headers, auth_challenge_response: AuthChallengeResponse) -> None:
-        '''
-        Response to Network.requestIntercepted which either modifies the request to continue with any
-        modifications, or blocks it, or completes it with the provided response bytes. If a network
-        fetch occurs as a result which encounters a redirect an additional Network.requestIntercepted
-        event will be sent with the same InterceptionId.
-        
-        :param interception_id: 
-        :param error_reason: If set this causes the request to fail with the given reason. Passing `Aborted` for requests
-        marked with `isNavigationRequest` also cancels the navigation. Must not be set in response
-        to an authChallenge.
-        :param raw_response: If set the requests completes using with the provided base64 encoded raw response, including
-        HTTP status line and headers etc... Must not be set in response to an authChallenge.
-        :param url: If set the request url will be modified in a way that's not observable by page. Must not be
-        set in response to an authChallenge.
-        :param method: If set this allows the request method to be overridden. Must not be set in response to an
-        authChallenge.
-        :param post_data: If set this allows postData to be set. Must not be set in response to an authChallenge.
-        :param headers: If set this allows the request headers to be changed. Must not be set in response to an
-        authChallenge.
-        :param auth_challenge_response: Response to a requestIntercepted with an authChallenge. Must not be set otherwise.
-        '''
 
-        cmd_dict = {
-            'method': 'Network.continueInterceptedRequest',
-            'params': {
-                'interceptionId': interception_id,
-                'errorReason': error_reason,
-                'rawResponse': raw_response,
-                'url': url,
-                'method': method,
-                'postData': post_data,
-                'headers': headers,
-                'authChallengeResponse': auth_challenge_response,
-            }
+def get_cookies(urls: typing.List) -> typing.Generator[dict,dict,typing.List['Cookie']]:
+    '''
+    Returns all browser cookies for the current URL. Depending on the backend support, will return
+    detailed cookie information in the `cookies` field.
+    
+    :param urls: The list of URLs for which applicable cookies will be fetched
+    :returns: Array of cookie objects.
+    '''
+
+    cmd_dict = {
+        'method': 'Network.getCookies',
+        'params': {
+            'urls': urls,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
+    return [Cookie.from_response(i) for i in response['cookies']]
 
-    @staticmethod
-    def delete_cookies(name: str, url: str, domain: str, path: str) -> None:
-        '''
-        Deletes browser cookies with matching name and url or domain/path pair.
-        
-        :param name: Name of the cookies to remove.
-        :param url: If specified, deletes all the cookies with the given name where domain and path match
-        provided URL.
-        :param domain: If specified, deletes only cookies with the exact domain.
-        :param path: If specified, deletes only cookies with the exact path.
-        '''
 
-        cmd_dict = {
-            'method': 'Network.deleteCookies',
-            'params': {
-                'name': name,
-                'url': url,
-                'domain': domain,
-                'path': path,
-            }
+def get_response_body(request_id: RequestId) -> typing.Generator[dict,dict,dict]:
+    '''
+    Returns content served for the given request.
+    
+    :param request_id: Identifier of the network request to get content for.
+    :returns: a dict with the following keys:
+        * body: Response body.
+        * base64Encoded: True, if content was sent as base64.
+    '''
+
+    cmd_dict = {
+        'method': 'Network.getResponseBody',
+        'params': {
+            'requestId': request_id,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
+    return {
+        'body': str(response['body']),
+        'base64Encoded': bool(response['base64Encoded']),
+    }
 
-    @staticmethod
-    def disable() -> None:
-        '''
-        Disables network tracking, prevents network events from being sent to the client.
-        '''
 
-        cmd_dict = {
-            'method': 'Network.disable',
+def get_request_post_data(request_id: RequestId) -> typing.Generator[dict,dict,str]:
+    '''
+    Returns post data sent with the request. Returns an error when no data was sent with the request.
+    
+    :param request_id: Identifier of the network request to get content for.
+    :returns: Request body string, omitting files from multipart requests
+    '''
+
+    cmd_dict = {
+        'method': 'Network.getRequestPostData',
+        'params': {
+            'requestId': request_id,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
+    return str(response['postData'])
 
-    @staticmethod
-    def emulate_network_conditions(offline: bool, latency: float, download_throughput: float, upload_throughput: float, connection_type: ConnectionType) -> None:
-        '''
-        Activates emulation of network conditions.
-        
-        :param offline: True to emulate internet disconnection.
-        :param latency: Minimum latency from request sent to response headers received (ms).
-        :param download_throughput: Maximal aggregated download throughput (bytes/sec). -1 disables download throttling.
-        :param upload_throughput: Maximal aggregated upload throughput (bytes/sec).  -1 disables upload throttling.
-        :param connection_type: Connection type if known.
-        '''
 
-        cmd_dict = {
-            'method': 'Network.emulateNetworkConditions',
-            'params': {
-                'offline': offline,
-                'latency': latency,
-                'downloadThroughput': download_throughput,
-                'uploadThroughput': upload_throughput,
-                'connectionType': connection_type,
-            }
+def get_response_body_for_interception(interception_id: InterceptionId) -> typing.Generator[dict,dict,dict]:
+    '''
+    Returns content served for the given currently intercepted request.
+    
+    :param interception_id: Identifier for the intercepted request to get body for.
+    :returns: a dict with the following keys:
+        * body: Response body.
+        * base64Encoded: True, if content was sent as base64.
+    '''
+
+    cmd_dict = {
+        'method': 'Network.getResponseBodyForInterception',
+        'params': {
+            'interceptionId': interception_id,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
+    return {
+        'body': str(response['body']),
+        'base64Encoded': bool(response['base64Encoded']),
+    }
 
-    @staticmethod
-    def enable(max_total_buffer_size: int, max_resource_buffer_size: int, max_post_data_size: int) -> None:
-        '''
-        Enables network tracking, network events will now be delivered to the client.
-        
-        :param max_total_buffer_size: Buffer size in bytes to use when preserving network payloads (XHRs, etc).
-        :param max_resource_buffer_size: Per-resource buffer size in bytes to use when preserving network payloads (XHRs, etc).
-        :param max_post_data_size: Longest post body size (in bytes) that would be included in requestWillBeSent notification
-        '''
 
-        cmd_dict = {
-            'method': 'Network.enable',
-            'params': {
-                'maxTotalBufferSize': max_total_buffer_size,
-                'maxResourceBufferSize': max_resource_buffer_size,
-                'maxPostDataSize': max_post_data_size,
-            }
+def take_response_body_for_interception_as_stream(interception_id: InterceptionId) -> typing.Generator[dict,dict,io.StreamHandle]:
+    '''
+    Returns a handle to the stream representing the response body. Note that after this command,
+    the intercepted request can't be continued as is -- you either need to cancel it or to provide
+    the response body. The stream only supports sequential read, IO.read will fail if the position
+    is specified.
+    
+    :param interception_id: 
+    :returns: 
+    '''
+
+    cmd_dict = {
+        'method': 'Network.takeResponseBodyForInterceptionAsStream',
+        'params': {
+            'interceptionId': interception_id,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
+    return io.StreamHandle.from_response(response['stream'])
 
-    @staticmethod
-    def get_all_cookies() -> typing.List['Cookie']:
-        '''
-        Returns all browser cookies. Depending on the backend support, will return detailed cookie
-        information in the `cookies` field.
-        :returns: Array of cookie objects.
-        '''
 
-        cmd_dict = {
-            'method': 'Network.getAllCookies',
+def replay_xhr(request_id: RequestId) -> typing.Generator[dict,dict,None]:
+    '''
+    This method sends a new XMLHttpRequest which is identical to the original one. The following
+    parameters should be identical: method, url, async, request body, extra headers, withCredentials
+    attribute, user, password.
+    
+    :param request_id: Identifier of XHR to replay.
+    '''
+
+    cmd_dict = {
+        'method': 'Network.replayXHR',
+        'params': {
+            'requestId': request_id,
         }
-        response = yield cmd_dict
-        return [Cookie.from_response(i) for i in response['cookies']]
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def get_certificate(origin: str) -> typing.List:
-        '''
-        Returns the DER-encoded certificate.
-        
-        :param origin: Origin to get certificate for.
-        :returns: 
-        '''
 
-        cmd_dict = {
-            'method': 'Network.getCertificate',
-            'params': {
-                'origin': origin,
-            }
+def search_in_response_body(request_id: RequestId, query: str, case_sensitive: bool, is_regex: bool) -> typing.Generator[dict,dict,typing.List['debugger.SearchMatch']]:
+    '''
+    Searches for given string in response content.
+    
+    :param request_id: Identifier of the network response to search.
+    :param query: String to search for.
+    :param case_sensitive: If true, search is case sensitive.
+    :param is_regex: If true, treats string parameter as regex.
+    :returns: List of search matches.
+    '''
+
+    cmd_dict = {
+        'method': 'Network.searchInResponseBody',
+        'params': {
+            'requestId': request_id,
+            'query': query,
+            'caseSensitive': case_sensitive,
+            'isRegex': is_regex,
         }
-        response = yield cmd_dict
-        return [str(i) for i in response['tableNames']]
+    }
+    response = yield cmd_dict
+    return [debugger.SearchMatch.from_response(i) for i in response['result']]
 
-    @staticmethod
-    def get_cookies(urls: typing.List) -> typing.List['Cookie']:
-        '''
-        Returns all browser cookies for the current URL. Depending on the backend support, will return
-        detailed cookie information in the `cookies` field.
-        
-        :param urls: The list of URLs for which applicable cookies will be fetched
-        :returns: Array of cookie objects.
-        '''
 
-        cmd_dict = {
-            'method': 'Network.getCookies',
-            'params': {
-                'urls': urls,
-            }
+def set_blocked_ur_ls(urls: typing.List) -> typing.Generator[dict,dict,None]:
+    '''
+    Blocks URLs from loading.
+    
+    :param urls: URL patterns to block. Wildcards ('*') are allowed.
+    '''
+
+    cmd_dict = {
+        'method': 'Network.setBlockedURLs',
+        'params': {
+            'urls': urls,
         }
-        response = yield cmd_dict
-        return [Cookie.from_response(i) for i in response['cookies']]
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def get_response_body(request_id: RequestId) -> dict:
-        '''
-        Returns content served for the given request.
-        
-        :param request_id: Identifier of the network request to get content for.
-        :returns: a dict with the following keys:
-            * body: Response body.
-            * base64Encoded: True, if content was sent as base64.
-        '''
 
-        cmd_dict = {
-            'method': 'Network.getResponseBody',
-            'params': {
-                'requestId': request_id,
-            }
+def set_bypass_service_worker(bypass: bool) -> typing.Generator[dict,dict,None]:
+    '''
+    Toggles ignoring of service worker for each request.
+    
+    :param bypass: Bypass service worker and load from network.
+    '''
+
+    cmd_dict = {
+        'method': 'Network.setBypassServiceWorker',
+        'params': {
+            'bypass': bypass,
         }
-        response = yield cmd_dict
-        return {
-                'body': str.from_response(response['body']),
-                'base64Encoded': bool.from_response(response['base64Encoded']),
-            }
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def get_request_post_data(request_id: RequestId) -> str:
-        '''
-        Returns post data sent with the request. Returns an error when no data was sent with the request.
-        
-        :param request_id: Identifier of the network request to get content for.
-        :returns: Request body string, omitting files from multipart requests
-        '''
 
-        cmd_dict = {
-            'method': 'Network.getRequestPostData',
-            'params': {
-                'requestId': request_id,
-            }
+def set_cache_disabled(cache_disabled: bool) -> typing.Generator[dict,dict,None]:
+    '''
+    Toggles ignoring cache for each request. If `true`, cache will not be used.
+    
+    :param cache_disabled: Cache disabled state.
+    '''
+
+    cmd_dict = {
+        'method': 'Network.setCacheDisabled',
+        'params': {
+            'cacheDisabled': cache_disabled,
         }
-        response = yield cmd_dict
-        return str.from_response(response['postData'])
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def get_response_body_for_interception(interception_id: InterceptionId) -> dict:
-        '''
-        Returns content served for the given currently intercepted request.
-        
-        :param interception_id: Identifier for the intercepted request to get body for.
-        :returns: a dict with the following keys:
-            * body: Response body.
-            * base64Encoded: True, if content was sent as base64.
-        '''
 
-        cmd_dict = {
-            'method': 'Network.getResponseBodyForInterception',
-            'params': {
-                'interceptionId': interception_id,
-            }
+def set_cookie(name: str, value: str, url: str, domain: str, path: str, secure: bool, http_only: bool, same_site: CookieSameSite, expires: TimeSinceEpoch) -> typing.Generator[dict,dict,bool]:
+    '''
+    Sets a cookie with the given cookie data; may overwrite equivalent cookies if they exist.
+    
+    :param name: Cookie name.
+    :param value: Cookie value.
+    :param url: The request-URI to associate with the setting of the cookie. This value can affect the
+    default domain and path values of the created cookie.
+    :param domain: Cookie domain.
+    :param path: Cookie path.
+    :param secure: True if cookie is secure.
+    :param http_only: True if cookie is http-only.
+    :param same_site: Cookie SameSite type.
+    :param expires: Cookie expiration date, session cookie if not set
+    :returns: True if successfully set cookie.
+    '''
+
+    cmd_dict = {
+        'method': 'Network.setCookie',
+        'params': {
+            'name': name,
+            'value': value,
+            'url': url,
+            'domain': domain,
+            'path': path,
+            'secure': secure,
+            'httpOnly': http_only,
+            'sameSite': same_site,
+            'expires': expires,
         }
-        response = yield cmd_dict
-        return {
-                'body': str.from_response(response['body']),
-                'base64Encoded': bool.from_response(response['base64Encoded']),
-            }
+    }
+    response = yield cmd_dict
+    return bool(response['success'])
 
-    @staticmethod
-    def take_response_body_for_interception_as_stream(interception_id: InterceptionId) -> io.StreamHandle:
-        '''
-        Returns a handle to the stream representing the response body. Note that after this command,
-        the intercepted request can't be continued as is -- you either need to cancel it or to provide
-        the response body. The stream only supports sequential read, IO.read will fail if the position
-        is specified.
-        
-        :param interception_id: 
-        :returns: 
-        '''
 
-        cmd_dict = {
-            'method': 'Network.takeResponseBodyForInterceptionAsStream',
-            'params': {
-                'interceptionId': interception_id,
-            }
+def set_cookies(cookies: typing.List['CookieParam']) -> typing.Generator[dict,dict,None]:
+    '''
+    Sets given cookies.
+    
+    :param cookies: Cookies to be set.
+    '''
+
+    cmd_dict = {
+        'method': 'Network.setCookies',
+        'params': {
+            'cookies': cookies,
         }
-        response = yield cmd_dict
-        return io.StreamHandle.from_response(response['stream'])
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def replay_xhr(request_id: RequestId) -> None:
-        '''
-        This method sends a new XMLHttpRequest which is identical to the original one. The following
-        parameters should be identical: method, url, async, request body, extra headers, withCredentials
-        attribute, user, password.
-        
-        :param request_id: Identifier of XHR to replay.
-        '''
 
-        cmd_dict = {
-            'method': 'Network.replayXHR',
-            'params': {
-                'requestId': request_id,
-            }
+def set_data_size_limits_for_test(max_total_size: int, max_resource_size: int) -> typing.Generator[dict,dict,None]:
+    '''
+    For testing.
+    
+    :param max_total_size: Maximum total buffer size.
+    :param max_resource_size: Maximum per-resource size.
+    '''
+
+    cmd_dict = {
+        'method': 'Network.setDataSizeLimitsForTest',
+        'params': {
+            'maxTotalSize': max_total_size,
+            'maxResourceSize': max_resource_size,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def search_in_response_body(request_id: RequestId, query: str, case_sensitive: bool, is_regex: bool) -> typing.List['Debugger.SearchMatch']:
-        '''
-        Searches for given string in response content.
-        
-        :param request_id: Identifier of the network response to search.
-        :param query: String to search for.
-        :param case_sensitive: If true, search is case sensitive.
-        :param is_regex: If true, treats string parameter as regex.
-        :returns: List of search matches.
-        '''
 
-        cmd_dict = {
-            'method': 'Network.searchInResponseBody',
-            'params': {
-                'requestId': request_id,
-                'query': query,
-                'caseSensitive': case_sensitive,
-                'isRegex': is_regex,
-            }
+def set_extra_http_headers(headers: Headers) -> typing.Generator[dict,dict,None]:
+    '''
+    Specifies whether to always send extra HTTP headers with the requests from this page.
+    
+    :param headers: Map with extra HTTP headers.
+    '''
+
+    cmd_dict = {
+        'method': 'Network.setExtraHTTPHeaders',
+        'params': {
+            'headers': headers,
         }
-        response = yield cmd_dict
-        return [debugger.SearchMatch.from_response(i) for i in response['result']]
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def set_blocked_ur_ls(urls: typing.List) -> None:
-        '''
-        Blocks URLs from loading.
-        
-        :param urls: URL patterns to block. Wildcards ('*') are allowed.
-        '''
 
-        cmd_dict = {
-            'method': 'Network.setBlockedURLs',
-            'params': {
-                'urls': urls,
-            }
+def set_request_interception(patterns: typing.List['RequestPattern']) -> typing.Generator[dict,dict,None]:
+    '''
+    Sets the requests to intercept that match the provided patterns and optionally resource types.
+    
+    :param patterns: Requests matching any of these patterns will be forwarded and wait for the corresponding
+    continueInterceptedRequest call.
+    '''
+
+    cmd_dict = {
+        'method': 'Network.setRequestInterception',
+        'params': {
+            'patterns': patterns,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def set_bypass_service_worker(bypass: bool) -> None:
-        '''
-        Toggles ignoring of service worker for each request.
-        
-        :param bypass: Bypass service worker and load from network.
-        '''
 
-        cmd_dict = {
-            'method': 'Network.setBypassServiceWorker',
-            'params': {
-                'bypass': bypass,
-            }
+def set_user_agent_override(user_agent: str, accept_language: str, platform: str) -> typing.Generator[dict,dict,None]:
+    '''
+    Allows overriding user agent with the given string.
+    
+    :param user_agent: User agent to use.
+    :param accept_language: Browser langugage to emulate.
+    :param platform: The platform navigator.platform should return.
+    '''
+
+    cmd_dict = {
+        'method': 'Network.setUserAgentOverride',
+        'params': {
+            'userAgent': user_agent,
+            'acceptLanguage': accept_language,
+            'platform': platform,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def set_cache_disabled(cache_disabled: bool) -> None:
-        '''
-        Toggles ignoring cache for each request. If `true`, cache will not be used.
-        
-        :param cache_disabled: Cache disabled state.
-        '''
-
-        cmd_dict = {
-            'method': 'Network.setCacheDisabled',
-            'params': {
-                'cacheDisabled': cache_disabled,
-            }
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def set_cookie(name: str, value: str, url: str, domain: str, path: str, secure: bool, http_only: bool, same_site: CookieSameSite, expires: TimeSinceEpoch) -> bool:
-        '''
-        Sets a cookie with the given cookie data; may overwrite equivalent cookies if they exist.
-        
-        :param name: Cookie name.
-        :param value: Cookie value.
-        :param url: The request-URI to associate with the setting of the cookie. This value can affect the
-        default domain and path values of the created cookie.
-        :param domain: Cookie domain.
-        :param path: Cookie path.
-        :param secure: True if cookie is secure.
-        :param http_only: True if cookie is http-only.
-        :param same_site: Cookie SameSite type.
-        :param expires: Cookie expiration date, session cookie if not set
-        :returns: True if successfully set cookie.
-        '''
-
-        cmd_dict = {
-            'method': 'Network.setCookie',
-            'params': {
-                'name': name,
-                'value': value,
-                'url': url,
-                'domain': domain,
-                'path': path,
-                'secure': secure,
-                'httpOnly': http_only,
-                'sameSite': same_site,
-                'expires': expires,
-            }
-        }
-        response = yield cmd_dict
-        return bool.from_response(response['success'])
-
-    @staticmethod
-    def set_cookies(cookies: typing.List['CookieParam']) -> None:
-        '''
-        Sets given cookies.
-        
-        :param cookies: Cookies to be set.
-        '''
-
-        cmd_dict = {
-            'method': 'Network.setCookies',
-            'params': {
-                'cookies': cookies,
-            }
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def set_data_size_limits_for_test(max_total_size: int, max_resource_size: int) -> None:
-        '''
-        For testing.
-        
-        :param max_total_size: Maximum total buffer size.
-        :param max_resource_size: Maximum per-resource size.
-        '''
-
-        cmd_dict = {
-            'method': 'Network.setDataSizeLimitsForTest',
-            'params': {
-                'maxTotalSize': max_total_size,
-                'maxResourceSize': max_resource_size,
-            }
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def set_extra_http_headers(headers: Headers) -> None:
-        '''
-        Specifies whether to always send extra HTTP headers with the requests from this page.
-        
-        :param headers: Map with extra HTTP headers.
-        '''
-
-        cmd_dict = {
-            'method': 'Network.setExtraHTTPHeaders',
-            'params': {
-                'headers': headers,
-            }
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def set_request_interception(patterns: typing.List['RequestPattern']) -> None:
-        '''
-        Sets the requests to intercept that match the provided patterns and optionally resource types.
-        
-        :param patterns: Requests matching any of these patterns will be forwarded and wait for the corresponding
-        continueInterceptedRequest call.
-        '''
-
-        cmd_dict = {
-            'method': 'Network.setRequestInterception',
-            'params': {
-                'patterns': patterns,
-            }
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def set_user_agent_override(user_agent: str, accept_language: str, platform: str) -> None:
-        '''
-        Allows overriding user agent with the given string.
-        
-        :param user_agent: User agent to use.
-        :param accept_language: Browser langugage to emulate.
-        :param platform: The platform navigator.platform should return.
-        '''
-
-        cmd_dict = {
-            'method': 'Network.setUserAgentOverride',
-            'params': {
-                'userAgent': user_agent,
-                'acceptLanguage': accept_language,
-                'platform': platform,
-            }
-        }
-        response = yield cmd_dict
 

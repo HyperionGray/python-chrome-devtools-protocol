@@ -17,177 +17,176 @@ from ..network import types as network
 
 
 
-class Fetch:
-    @staticmethod
-    def disable() -> None:
-        '''
-        Disables the fetch domain.
-        '''
+def disable() -> typing.Generator[dict,dict,None]:
+    '''
+    Disables the fetch domain.
+    '''
 
-        cmd_dict = {
-            'method': 'Fetch.disable',
+    cmd_dict = {
+        'method': 'Fetch.disable',
+    }
+    response = yield cmd_dict
+
+
+def enable(patterns: typing.List['RequestPattern'], handle_auth_requests: bool) -> typing.Generator[dict,dict,None]:
+    '''
+    Enables issuing of requestPaused events. A request will be paused until client
+    calls one of failRequest, fulfillRequest or continueRequest/continueWithAuth.
+    
+    :param patterns: If specified, only requests matching any of these patterns will produce
+    fetchRequested event and will be paused until clients response. If not set,
+    all requests will be affected.
+    :param handle_auth_requests: If true, authRequired events will be issued and requests will be paused
+    expecting a call to continueWithAuth.
+    '''
+
+    cmd_dict = {
+        'method': 'Fetch.enable',
+        'params': {
+            'patterns': patterns,
+            'handleAuthRequests': handle_auth_requests,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def enable(patterns: typing.List['RequestPattern'], handle_auth_requests: bool) -> None:
-        '''
-        Enables issuing of requestPaused events. A request will be paused until client
-        calls one of failRequest, fulfillRequest or continueRequest/continueWithAuth.
-        
-        :param patterns: If specified, only requests matching any of these patterns will produce
-        fetchRequested event and will be paused until clients response. If not set,
-        all requests will be affected.
-        :param handle_auth_requests: If true, authRequired events will be issued and requests will be paused
-        expecting a call to continueWithAuth.
-        '''
 
-        cmd_dict = {
-            'method': 'Fetch.enable',
-            'params': {
-                'patterns': patterns,
-                'handleAuthRequests': handle_auth_requests,
-            }
+def fail_request(request_id: RequestId, error_reason: network.ErrorReason) -> typing.Generator[dict,dict,None]:
+    '''
+    Causes the request to fail with specified reason.
+    
+    :param request_id: An id the client received in requestPaused event.
+    :param error_reason: Causes the request to fail with the given reason.
+    '''
+
+    cmd_dict = {
+        'method': 'Fetch.failRequest',
+        'params': {
+            'requestId': request_id,
+            'errorReason': error_reason,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def fail_request(request_id: RequestId, error_reason: network.ErrorReason) -> None:
-        '''
-        Causes the request to fail with specified reason.
-        
-        :param request_id: An id the client received in requestPaused event.
-        :param error_reason: Causes the request to fail with the given reason.
-        '''
 
-        cmd_dict = {
-            'method': 'Fetch.failRequest',
-            'params': {
-                'requestId': request_id,
-                'errorReason': error_reason,
-            }
+def fulfill_request(request_id: RequestId, response_code: int, response_headers: typing.List['HeaderEntry'], body: str, response_phrase: str) -> typing.Generator[dict,dict,None]:
+    '''
+    Provides response to the request.
+    
+    :param request_id: An id the client received in requestPaused event.
+    :param response_code: An HTTP response code.
+    :param response_headers: Response headers.
+    :param body: A response body.
+    :param response_phrase: A textual representation of responseCode.
+    If absent, a standard phrase mathcing responseCode is used.
+    '''
+
+    cmd_dict = {
+        'method': 'Fetch.fulfillRequest',
+        'params': {
+            'requestId': request_id,
+            'responseCode': response_code,
+            'responseHeaders': response_headers,
+            'body': body,
+            'responsePhrase': response_phrase,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def fulfill_request(request_id: RequestId, response_code: int, response_headers: typing.List['HeaderEntry'], body: str, response_phrase: str) -> None:
-        '''
-        Provides response to the request.
-        
-        :param request_id: An id the client received in requestPaused event.
-        :param response_code: An HTTP response code.
-        :param response_headers: Response headers.
-        :param body: A response body.
-        :param response_phrase: A textual representation of responseCode.
-        If absent, a standard phrase mathcing responseCode is used.
-        '''
 
-        cmd_dict = {
-            'method': 'Fetch.fulfillRequest',
-            'params': {
-                'requestId': request_id,
-                'responseCode': response_code,
-                'responseHeaders': response_headers,
-                'body': body,
-                'responsePhrase': response_phrase,
-            }
+def continue_request(request_id: RequestId, url: str, method: str, post_data: str, headers: typing.List['HeaderEntry']) -> typing.Generator[dict,dict,None]:
+    '''
+    Continues the request, optionally modifying some of its parameters.
+    
+    :param request_id: An id the client received in requestPaused event.
+    :param url: If set, the request url will be modified in a way that's not observable by page.
+    :param method: If set, the request method is overridden.
+    :param post_data: If set, overrides the post data in the request.
+    :param headers: If set, overrides the request headrts.
+    '''
+
+    cmd_dict = {
+        'method': 'Fetch.continueRequest',
+        'params': {
+            'requestId': request_id,
+            'url': url,
+            'method': method,
+            'postData': post_data,
+            'headers': headers,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def continue_request(request_id: RequestId, url: str, method: str, post_data: str, headers: typing.List['HeaderEntry']) -> None:
-        '''
-        Continues the request, optionally modifying some of its parameters.
-        
-        :param request_id: An id the client received in requestPaused event.
-        :param url: If set, the request url will be modified in a way that's not observable by page.
-        :param method: If set, the request method is overridden.
-        :param post_data: If set, overrides the post data in the request.
-        :param headers: If set, overrides the request headrts.
-        '''
 
-        cmd_dict = {
-            'method': 'Fetch.continueRequest',
-            'params': {
-                'requestId': request_id,
-                'url': url,
-                'method': method,
-                'postData': post_data,
-                'headers': headers,
-            }
+def continue_with_auth(request_id: RequestId, auth_challenge_response: AuthChallengeResponse) -> typing.Generator[dict,dict,None]:
+    '''
+    Continues a request supplying authChallengeResponse following authRequired event.
+    
+    :param request_id: An id the client received in authRequired event.
+    :param auth_challenge_response: Response to  with an authChallenge.
+    '''
+
+    cmd_dict = {
+        'method': 'Fetch.continueWithAuth',
+        'params': {
+            'requestId': request_id,
+            'authChallengeResponse': auth_challenge_response,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def continue_with_auth(request_id: RequestId, auth_challenge_response: AuthChallengeResponse) -> None:
-        '''
-        Continues a request supplying authChallengeResponse following authRequired event.
-        
-        :param request_id: An id the client received in authRequired event.
-        :param auth_challenge_response: Response to  with an authChallenge.
-        '''
 
-        cmd_dict = {
-            'method': 'Fetch.continueWithAuth',
-            'params': {
-                'requestId': request_id,
-                'authChallengeResponse': auth_challenge_response,
-            }
+def get_response_body(request_id: RequestId) -> typing.Generator[dict,dict,dict]:
+    '''
+    Causes the body of the response to be received from the server and
+    returned as a single string. May only be issued for a request that
+    is paused in the Response stage and is mutually exclusive with
+    takeResponseBodyForInterceptionAsStream. Calling other methods that
+    affect the request or disabling fetch domain before body is received
+    results in an undefined behavior.
+    
+    :param request_id: Identifier for the intercepted request to get body for.
+    :returns: a dict with the following keys:
+        * body: Response body.
+        * base64Encoded: True, if content was sent as base64.
+    '''
+
+    cmd_dict = {
+        'method': 'Fetch.getResponseBody',
+        'params': {
+            'requestId': request_id,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
+    return {
+        'body': str(response['body']),
+        'base64Encoded': bool(response['base64Encoded']),
+    }
 
-    @staticmethod
-    def get_response_body(request_id: RequestId) -> dict:
-        '''
-        Causes the body of the response to be received from the server and
-        returned as a single string. May only be issued for a request that
-        is paused in the Response stage and is mutually exclusive with
-        takeResponseBodyForInterceptionAsStream. Calling other methods that
-        affect the request or disabling fetch domain before body is received
-        results in an undefined behavior.
-        
-        :param request_id: Identifier for the intercepted request to get body for.
-        :returns: a dict with the following keys:
-            * body: Response body.
-            * base64Encoded: True, if content was sent as base64.
-        '''
 
-        cmd_dict = {
-            'method': 'Fetch.getResponseBody',
-            'params': {
-                'requestId': request_id,
-            }
+def take_response_body_as_stream(request_id: RequestId) -> typing.Generator[dict,dict,io.StreamHandle]:
+    '''
+    Returns a handle to the stream representing the response body.
+    The request must be paused in the HeadersReceived stage.
+    Note that after this command the request can't be continued
+    as is -- client either needs to cancel it or to provide the
+    response body.
+    The stream only supports sequential read, IO.read will fail if the position
+    is specified.
+    This method is mutually exclusive with getResponseBody.
+    Calling other methods that affect the request or disabling fetch
+    domain before body is received results in an undefined behavior.
+    
+    :param request_id: 
+    :returns: 
+    '''
+
+    cmd_dict = {
+        'method': 'Fetch.takeResponseBodyAsStream',
+        'params': {
+            'requestId': request_id,
         }
-        response = yield cmd_dict
-        return {
-                'body': str.from_response(response['body']),
-                'base64Encoded': bool.from_response(response['base64Encoded']),
-            }
+    }
+    response = yield cmd_dict
+    return io.StreamHandle.from_response(response['stream'])
 
-    @staticmethod
-    def take_response_body_as_stream(request_id: RequestId) -> io.StreamHandle:
-        '''
-        Returns a handle to the stream representing the response body.
-        The request must be paused in the HeadersReceived stage.
-        Note that after this command the request can't be continued
-        as is -- client either needs to cancel it or to provide the
-        response body.
-        The stream only supports sequential read, IO.read will fail if the position
-        is specified.
-        This method is mutually exclusive with getResponseBody.
-        Calling other methods that affect the request or disabling fetch
-        domain before body is received results in an undefined behavior.
-        
-        :param request_id: 
-        :returns: 
-        '''
-
-        cmd_dict = {
-            'method': 'Fetch.takeResponseBodyAsStream',
-            'params': {
-                'requestId': request_id,
-            }
-        }
-        response = yield cmd_dict
-        return io.StreamHandle.from_response(response['stream'])
 

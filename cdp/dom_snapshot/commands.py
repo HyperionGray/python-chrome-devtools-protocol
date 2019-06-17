@@ -14,86 +14,85 @@ import typing
 from .types import *
 
 
-class DOMSnapshot:
-    @staticmethod
-    def disable() -> None:
-        '''
-        Disables DOM snapshot agent for the given page.
-        '''
+def disable() -> typing.Generator[dict,dict,None]:
+    '''
+    Disables DOM snapshot agent for the given page.
+    '''
 
-        cmd_dict = {
-            'method': 'DOMSnapshot.disable',
+    cmd_dict = {
+        'method': 'DOMSnapshot.disable',
+    }
+    response = yield cmd_dict
+
+
+def enable() -> typing.Generator[dict,dict,None]:
+    '''
+    Enables DOM snapshot agent for the given page.
+    '''
+
+    cmd_dict = {
+        'method': 'DOMSnapshot.enable',
+    }
+    response = yield cmd_dict
+
+
+def get_snapshot(computed_style_whitelist: typing.List, include_event_listeners: bool, include_paint_order: bool, include_user_agent_shadow_tree: bool) -> typing.Generator[dict,dict,dict]:
+    '''
+    Returns a document snapshot, including the full DOM tree of the root node (including iframes,
+    template contents, and imported documents) in a flattened array, as well as layout and
+    white-listed computed style information for the nodes. Shadow DOM in the returned DOM tree is
+    flattened.
+    
+    :param computed_style_whitelist: Whitelist of computed styles to return.
+    :param include_event_listeners: Whether or not to retrieve details of DOM listeners (default false).
+    :param include_paint_order: Whether to determine and include the paint order index of LayoutTreeNodes (default false).
+    :param include_user_agent_shadow_tree: Whether to include UA shadow tree in the snapshot (default false).
+    :returns: a dict with the following keys:
+        * domNodes: The nodes in the DOM tree. The DOMNode at index 0 corresponds to the root document.
+        * layoutTreeNodes: The nodes in the layout tree.
+        * computedStyles: Whitelisted ComputedStyle properties for each node in the layout tree.
+    '''
+
+    cmd_dict = {
+        'method': 'DOMSnapshot.getSnapshot',
+        'params': {
+            'computedStyleWhitelist': computed_style_whitelist,
+            'includeEventListeners': include_event_listeners,
+            'includePaintOrder': include_paint_order,
+            'includeUserAgentShadowTree': include_user_agent_shadow_tree,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
+    return {
+        'domNodes': [DOMNode.from_response(i) for i in response['domNodes']],
+        'layoutTreeNodes': [LayoutTreeNode.from_response(i) for i in response['layoutTreeNodes']],
+        'computedStyles': [ComputedStyle.from_response(i) for i in response['computedStyles']],
+    }
 
-    @staticmethod
-    def enable() -> None:
-        '''
-        Enables DOM snapshot agent for the given page.
-        '''
 
-        cmd_dict = {
-            'method': 'DOMSnapshot.enable',
+def capture_snapshot(computed_styles: typing.List) -> typing.Generator[dict,dict,dict]:
+    '''
+    Returns a document snapshot, including the full DOM tree of the root node (including iframes,
+    template contents, and imported documents) in a flattened array, as well as layout and
+    white-listed computed style information for the nodes. Shadow DOM in the returned DOM tree is
+    flattened.
+    
+    :param computed_styles: Whitelist of computed styles to return.
+    :returns: a dict with the following keys:
+        * documents: The nodes in the DOM tree. The DOMNode at index 0 corresponds to the root document.
+        * strings: Shared string table that all string properties refer to with indexes.
+    '''
+
+    cmd_dict = {
+        'method': 'DOMSnapshot.captureSnapshot',
+        'params': {
+            'computedStyles': computed_styles,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
+    return {
+        'documents': [DocumentSnapshot.from_response(i) for i in response['documents']],
+        'strings': [str(i) for i in response['strings']],
+    }
 
-    @staticmethod
-    def get_snapshot(computed_style_whitelist: typing.List, include_event_listeners: bool, include_paint_order: bool, include_user_agent_shadow_tree: bool) -> dict:
-        '''
-        Returns a document snapshot, including the full DOM tree of the root node (including iframes,
-        template contents, and imported documents) in a flattened array, as well as layout and
-        white-listed computed style information for the nodes. Shadow DOM in the returned DOM tree is
-        flattened.
-        
-        :param computed_style_whitelist: Whitelist of computed styles to return.
-        :param include_event_listeners: Whether or not to retrieve details of DOM listeners (default false).
-        :param include_paint_order: Whether to determine and include the paint order index of LayoutTreeNodes (default false).
-        :param include_user_agent_shadow_tree: Whether to include UA shadow tree in the snapshot (default false).
-        :returns: a dict with the following keys:
-            * domNodes: The nodes in the DOM tree. The DOMNode at index 0 corresponds to the root document.
-            * layoutTreeNodes: The nodes in the layout tree.
-            * computedStyles: Whitelisted ComputedStyle properties for each node in the layout tree.
-        '''
-
-        cmd_dict = {
-            'method': 'DOMSnapshot.getSnapshot',
-            'params': {
-                'computedStyleWhitelist': computed_style_whitelist,
-                'includeEventListeners': include_event_listeners,
-                'includePaintOrder': include_paint_order,
-                'includeUserAgentShadowTree': include_user_agent_shadow_tree,
-            }
-        }
-        response = yield cmd_dict
-        return {
-                'domNodes': [DOMNode.from_response(i) for i in response['domNodes']],
-                'layoutTreeNodes': [LayoutTreeNode.from_response(i) for i in response['layoutTreeNodes']],
-                'computedStyles': [ComputedStyle.from_response(i) for i in response['computedStyles']],
-            }
-
-    @staticmethod
-    def capture_snapshot(computed_styles: typing.List) -> dict:
-        '''
-        Returns a document snapshot, including the full DOM tree of the root node (including iframes,
-        template contents, and imported documents) in a flattened array, as well as layout and
-        white-listed computed style information for the nodes. Shadow DOM in the returned DOM tree is
-        flattened.
-        
-        :param computed_styles: Whitelist of computed styles to return.
-        :returns: a dict with the following keys:
-            * documents: The nodes in the DOM tree. The DOMNode at index 0 corresponds to the root document.
-            * strings: Shared string table that all string properties refer to with indexes.
-        '''
-
-        cmd_dict = {
-            'method': 'DOMSnapshot.captureSnapshot',
-            'params': {
-                'computedStyles': computed_styles,
-            }
-        }
-        response = yield cmd_dict
-        return {
-                'documents': [DocumentSnapshot.from_response(i) for i in response['documents']],
-                'strings': [str(i) for i in response['strings']],
-            }
 

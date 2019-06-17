@@ -14,182 +14,181 @@ import typing
 from .types import *
 
 
-class ServiceWorker:
-    @staticmethod
-    def deliver_push_message(origin: str, registration_id: RegistrationID, data: str) -> None:
-        '''
-        
-        
-        :param origin: 
-        :param registration_id: 
-        :param data: 
-        '''
+def deliver_push_message(origin: str, registration_id: RegistrationID, data: str) -> typing.Generator[dict,dict,None]:
+    '''
+    
+    
+    :param origin: 
+    :param registration_id: 
+    :param data: 
+    '''
 
-        cmd_dict = {
-            'method': 'ServiceWorker.deliverPushMessage',
-            'params': {
-                'origin': origin,
-                'registrationId': registration_id,
-                'data': data,
-            }
+    cmd_dict = {
+        'method': 'ServiceWorker.deliverPushMessage',
+        'params': {
+            'origin': origin,
+            'registrationId': registration_id,
+            'data': data,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def disable() -> None:
 
-        cmd_dict = {
-            'method': 'ServiceWorker.disable',
+def disable() -> typing.Generator[dict,dict,None]:
+
+    cmd_dict = {
+        'method': 'ServiceWorker.disable',
+    }
+    response = yield cmd_dict
+
+
+def dispatch_sync_event(origin: str, registration_id: RegistrationID, tag: str, last_chance: bool) -> typing.Generator[dict,dict,None]:
+    '''
+    
+    
+    :param origin: 
+    :param registration_id: 
+    :param tag: 
+    :param last_chance: 
+    '''
+
+    cmd_dict = {
+        'method': 'ServiceWorker.dispatchSyncEvent',
+        'params': {
+            'origin': origin,
+            'registrationId': registration_id,
+            'tag': tag,
+            'lastChance': last_chance,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def dispatch_sync_event(origin: str, registration_id: RegistrationID, tag: str, last_chance: bool) -> None:
-        '''
-        
-        
-        :param origin: 
-        :param registration_id: 
-        :param tag: 
-        :param last_chance: 
-        '''
 
-        cmd_dict = {
-            'method': 'ServiceWorker.dispatchSyncEvent',
-            'params': {
-                'origin': origin,
-                'registrationId': registration_id,
-                'tag': tag,
-                'lastChance': last_chance,
-            }
+def enable() -> typing.Generator[dict,dict,None]:
+
+    cmd_dict = {
+        'method': 'ServiceWorker.enable',
+    }
+    response = yield cmd_dict
+
+
+def inspect_worker(version_id: str) -> typing.Generator[dict,dict,None]:
+    '''
+    
+    
+    :param version_id: 
+    '''
+
+    cmd_dict = {
+        'method': 'ServiceWorker.inspectWorker',
+        'params': {
+            'versionId': version_id,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def enable() -> None:
 
-        cmd_dict = {
-            'method': 'ServiceWorker.enable',
+def set_force_update_on_page_load(force_update_on_page_load: bool) -> typing.Generator[dict,dict,None]:
+    '''
+    
+    
+    :param force_update_on_page_load: 
+    '''
+
+    cmd_dict = {
+        'method': 'ServiceWorker.setForceUpdateOnPageLoad',
+        'params': {
+            'forceUpdateOnPageLoad': force_update_on_page_load,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def inspect_worker(version_id: str) -> None:
-        '''
-        
-        
-        :param version_id: 
-        '''
 
-        cmd_dict = {
-            'method': 'ServiceWorker.inspectWorker',
-            'params': {
-                'versionId': version_id,
-            }
+def skip_waiting(scope_url: str) -> typing.Generator[dict,dict,None]:
+    '''
+    
+    
+    :param scope_url: 
+    '''
+
+    cmd_dict = {
+        'method': 'ServiceWorker.skipWaiting',
+        'params': {
+            'scopeURL': scope_url,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def set_force_update_on_page_load(force_update_on_page_load: bool) -> None:
-        '''
-        
-        
-        :param force_update_on_page_load: 
-        '''
 
-        cmd_dict = {
-            'method': 'ServiceWorker.setForceUpdateOnPageLoad',
-            'params': {
-                'forceUpdateOnPageLoad': force_update_on_page_load,
-            }
+def start_worker(scope_url: str) -> typing.Generator[dict,dict,None]:
+    '''
+    
+    
+    :param scope_url: 
+    '''
+
+    cmd_dict = {
+        'method': 'ServiceWorker.startWorker',
+        'params': {
+            'scopeURL': scope_url,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def skip_waiting(scope_url: str) -> None:
-        '''
-        
-        
-        :param scope_url: 
-        '''
 
-        cmd_dict = {
-            'method': 'ServiceWorker.skipWaiting',
-            'params': {
-                'scopeURL': scope_url,
-            }
+def stop_all_workers() -> typing.Generator[dict,dict,None]:
+
+    cmd_dict = {
+        'method': 'ServiceWorker.stopAllWorkers',
+    }
+    response = yield cmd_dict
+
+
+def stop_worker(version_id: str) -> typing.Generator[dict,dict,None]:
+    '''
+    
+    
+    :param version_id: 
+    '''
+
+    cmd_dict = {
+        'method': 'ServiceWorker.stopWorker',
+        'params': {
+            'versionId': version_id,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def start_worker(scope_url: str) -> None:
-        '''
-        
-        
-        :param scope_url: 
-        '''
 
-        cmd_dict = {
-            'method': 'ServiceWorker.startWorker',
-            'params': {
-                'scopeURL': scope_url,
-            }
+def unregister(scope_url: str) -> typing.Generator[dict,dict,None]:
+    '''
+    
+    
+    :param scope_url: 
+    '''
+
+    cmd_dict = {
+        'method': 'ServiceWorker.unregister',
+        'params': {
+            'scopeURL': scope_url,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def stop_all_workers() -> None:
 
-        cmd_dict = {
-            'method': 'ServiceWorker.stopAllWorkers',
+def update_registration(scope_url: str) -> typing.Generator[dict,dict,None]:
+    '''
+    
+    
+    :param scope_url: 
+    '''
+
+    cmd_dict = {
+        'method': 'ServiceWorker.updateRegistration',
+        'params': {
+            'scopeURL': scope_url,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def stop_worker(version_id: str) -> None:
-        '''
-        
-        
-        :param version_id: 
-        '''
-
-        cmd_dict = {
-            'method': 'ServiceWorker.stopWorker',
-            'params': {
-                'versionId': version_id,
-            }
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def unregister(scope_url: str) -> None:
-        '''
-        
-        
-        :param scope_url: 
-        '''
-
-        cmd_dict = {
-            'method': 'ServiceWorker.unregister',
-            'params': {
-                'scopeURL': scope_url,
-            }
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def update_registration(scope_url: str) -> None:
-        '''
-        
-        
-        :param scope_url: 
-        '''
-
-        cmd_dict = {
-            'method': 'ServiceWorker.updateRegistration',
-            'params': {
-                'scopeURL': scope_url,
-            }
-        }
-        response = yield cmd_dict
 

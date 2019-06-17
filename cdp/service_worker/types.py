@@ -82,7 +82,7 @@ class ServiceWorkerVersion:
     #: For cached script it is the last time the cache entry was validated.
     script_response_time: float
 
-    controlled_clients: typing.List['Target.TargetID']
+    controlled_clients: typing.List['target.TargetID']
 
     target_id: target.TargetID
 

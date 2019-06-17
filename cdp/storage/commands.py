@@ -14,111 +14,110 @@ import typing
 from .types import *
 
 
-class Storage:
-    @staticmethod
-    def clear_data_for_origin(origin: str, storage_types: str) -> None:
-        '''
-        Clears storage for origin.
-        
-        :param origin: Security origin.
-        :param storage_types: Comma separated list of StorageType to clear.
-        '''
+def clear_data_for_origin(origin: str, storage_types: str) -> typing.Generator[dict,dict,None]:
+    '''
+    Clears storage for origin.
+    
+    :param origin: Security origin.
+    :param storage_types: Comma separated list of StorageType to clear.
+    '''
 
-        cmd_dict = {
-            'method': 'Storage.clearDataForOrigin',
-            'params': {
-                'origin': origin,
-                'storageTypes': storage_types,
-            }
+    cmd_dict = {
+        'method': 'Storage.clearDataForOrigin',
+        'params': {
+            'origin': origin,
+            'storageTypes': storage_types,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def get_usage_and_quota(origin: str) -> dict:
-        '''
-        Returns usage and quota in bytes.
-        
-        :param origin: Security origin.
-        :returns: a dict with the following keys:
-            * usage: Storage usage (bytes).
-            * quota: Storage quota (bytes).
-            * usageBreakdown: Storage usage per type (bytes).
-        '''
 
-        cmd_dict = {
-            'method': 'Storage.getUsageAndQuota',
-            'params': {
-                'origin': origin,
-            }
+def get_usage_and_quota(origin: str) -> typing.Generator[dict,dict,dict]:
+    '''
+    Returns usage and quota in bytes.
+    
+    :param origin: Security origin.
+    :returns: a dict with the following keys:
+        * usage: Storage usage (bytes).
+        * quota: Storage quota (bytes).
+        * usageBreakdown: Storage usage per type (bytes).
+    '''
+
+    cmd_dict = {
+        'method': 'Storage.getUsageAndQuota',
+        'params': {
+            'origin': origin,
         }
-        response = yield cmd_dict
-        return {
-                'usage': float.from_response(response['usage']),
-                'quota': float.from_response(response['quota']),
-                'usageBreakdown': [UsageForType.from_response(i) for i in response['usageBreakdown']],
-            }
+    }
+    response = yield cmd_dict
+    return {
+        'usage': float(response['usage']),
+        'quota': float(response['quota']),
+        'usageBreakdown': [UsageForType.from_response(i) for i in response['usageBreakdown']],
+    }
 
-    @staticmethod
-    def track_cache_storage_for_origin(origin: str) -> None:
-        '''
-        Registers origin to be notified when an update occurs to its cache storage list.
-        
-        :param origin: Security origin.
-        '''
 
-        cmd_dict = {
-            'method': 'Storage.trackCacheStorageForOrigin',
-            'params': {
-                'origin': origin,
-            }
+def track_cache_storage_for_origin(origin: str) -> typing.Generator[dict,dict,None]:
+    '''
+    Registers origin to be notified when an update occurs to its cache storage list.
+    
+    :param origin: Security origin.
+    '''
+
+    cmd_dict = {
+        'method': 'Storage.trackCacheStorageForOrigin',
+        'params': {
+            'origin': origin,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def track_indexed_db_for_origin(origin: str) -> None:
-        '''
-        Registers origin to be notified when an update occurs to its IndexedDB.
-        
-        :param origin: Security origin.
-        '''
 
-        cmd_dict = {
-            'method': 'Storage.trackIndexedDBForOrigin',
-            'params': {
-                'origin': origin,
-            }
+def track_indexed_db_for_origin(origin: str) -> typing.Generator[dict,dict,None]:
+    '''
+    Registers origin to be notified when an update occurs to its IndexedDB.
+    
+    :param origin: Security origin.
+    '''
+
+    cmd_dict = {
+        'method': 'Storage.trackIndexedDBForOrigin',
+        'params': {
+            'origin': origin,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def untrack_cache_storage_for_origin(origin: str) -> None:
-        '''
-        Unregisters origin from receiving notifications for cache storage.
-        
-        :param origin: Security origin.
-        '''
 
-        cmd_dict = {
-            'method': 'Storage.untrackCacheStorageForOrigin',
-            'params': {
-                'origin': origin,
-            }
+def untrack_cache_storage_for_origin(origin: str) -> typing.Generator[dict,dict,None]:
+    '''
+    Unregisters origin from receiving notifications for cache storage.
+    
+    :param origin: Security origin.
+    '''
+
+    cmd_dict = {
+        'method': 'Storage.untrackCacheStorageForOrigin',
+        'params': {
+            'origin': origin,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def untrack_indexed_db_for_origin(origin: str) -> None:
-        '''
-        Unregisters origin from receiving notifications for IndexedDB.
-        
-        :param origin: Security origin.
-        '''
 
-        cmd_dict = {
-            'method': 'Storage.untrackIndexedDBForOrigin',
-            'params': {
-                'origin': origin,
-            }
+def untrack_indexed_db_for_origin(origin: str) -> typing.Generator[dict,dict,None]:
+    '''
+    Unregisters origin from receiving notifications for IndexedDB.
+    
+    :param origin: Security origin.
+    '''
+
+    cmd_dict = {
+        'method': 'Storage.untrackIndexedDBForOrigin',
+        'params': {
+            'origin': origin,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
+
 

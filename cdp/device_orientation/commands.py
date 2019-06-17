@@ -14,35 +14,34 @@ import typing
 from .types import *
 
 
-class DeviceOrientation:
-    @staticmethod
-    def clear_device_orientation_override() -> None:
-        '''
-        Clears the overridden Device Orientation.
-        '''
+def clear_device_orientation_override() -> typing.Generator[dict,dict,None]:
+    '''
+    Clears the overridden Device Orientation.
+    '''
 
-        cmd_dict = {
-            'method': 'DeviceOrientation.clearDeviceOrientationOverride',
+    cmd_dict = {
+        'method': 'DeviceOrientation.clearDeviceOrientationOverride',
+    }
+    response = yield cmd_dict
+
+
+def set_device_orientation_override(alpha: float, beta: float, gamma: float) -> typing.Generator[dict,dict,None]:
+    '''
+    Overrides the Device Orientation.
+    
+    :param alpha: Mock alpha
+    :param beta: Mock beta
+    :param gamma: Mock gamma
+    '''
+
+    cmd_dict = {
+        'method': 'DeviceOrientation.setDeviceOrientationOverride',
+        'params': {
+            'alpha': alpha,
+            'beta': beta,
+            'gamma': gamma,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def set_device_orientation_override(alpha: float, beta: float, gamma: float) -> None:
-        '''
-        Overrides the Device Orientation.
-        
-        :param alpha: Mock alpha
-        :param beta: Mock beta
-        :param gamma: Mock gamma
-        '''
-
-        cmd_dict = {
-            'method': 'DeviceOrientation.setDeviceOrientationOverride',
-            'params': {
-                'alpha': alpha,
-                'beta': beta,
-                'gamma': gamma,
-            }
-        }
-        response = yield cmd_dict
 

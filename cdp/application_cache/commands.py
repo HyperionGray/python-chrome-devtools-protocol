@@ -16,66 +16,65 @@ from ..page import types as page
 
 
 
-class ApplicationCache:
-    @staticmethod
-    def enable() -> None:
-        '''
-        Enables application cache domain notifications.
-        '''
+def enable() -> typing.Generator[dict,dict,None]:
+    '''
+    Enables application cache domain notifications.
+    '''
 
-        cmd_dict = {
-            'method': 'ApplicationCache.enable',
+    cmd_dict = {
+        'method': 'ApplicationCache.enable',
+    }
+    response = yield cmd_dict
+
+
+def get_application_cache_for_frame(frame_id: page.FrameId) -> typing.Generator[dict,dict,ApplicationCache]:
+    '''
+    Returns relevant application cache data for the document in given frame.
+    
+    :param frame_id: Identifier of the frame containing document whose application cache is retrieved.
+    :returns: Relevant application cache data for the document in given frame.
+    '''
+
+    cmd_dict = {
+        'method': 'ApplicationCache.getApplicationCacheForFrame',
+        'params': {
+            'frameId': frame_id,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
+    return ApplicationCache.from_response(response['applicationCache'])
 
-    @staticmethod
-    def get_application_cache_for_frame(frame_id: page.FrameId) -> ApplicationCache:
-        '''
-        Returns relevant application cache data for the document in given frame.
-        
-        :param frame_id: Identifier of the frame containing document whose application cache is retrieved.
-        :returns: Relevant application cache data for the document in given frame.
-        '''
 
-        cmd_dict = {
-            'method': 'ApplicationCache.getApplicationCacheForFrame',
-            'params': {
-                'frameId': frame_id,
-            }
+def get_frames_with_manifests() -> typing.Generator[dict,dict,typing.List['FrameWithManifest']]:
+    '''
+    Returns array of frame identifiers with manifest urls for each frame containing a document
+    associated with some application cache.
+    :returns: Array of frame identifiers with manifest urls for each frame containing a document
+    associated with some application cache.
+    '''
+
+    cmd_dict = {
+        'method': 'ApplicationCache.getFramesWithManifests',
+    }
+    response = yield cmd_dict
+    return [FrameWithManifest.from_response(i) for i in response['frameIds']]
+
+
+def get_manifest_for_frame(frame_id: page.FrameId) -> typing.Generator[dict,dict,str]:
+    '''
+    Returns manifest URL for document in the given frame.
+    
+    :param frame_id: Identifier of the frame containing document whose manifest is retrieved.
+    :returns: Manifest URL for document in the given frame.
+    '''
+
+    cmd_dict = {
+        'method': 'ApplicationCache.getManifestForFrame',
+        'params': {
+            'frameId': frame_id,
         }
-        response = yield cmd_dict
-        return ApplicationCache.from_response(response['applicationCache'])
+    }
+    response = yield cmd_dict
+    return str(response['manifestURL'])
 
-    @staticmethod
-    def get_frames_with_manifests() -> typing.List['FrameWithManifest']:
-        '''
-        Returns array of frame identifiers with manifest urls for each frame containing a document
-        associated with some application cache.
-        :returns: Array of frame identifiers with manifest urls for each frame containing a document
-        associated with some application cache.
-        '''
-
-        cmd_dict = {
-            'method': 'ApplicationCache.getFramesWithManifests',
-        }
-        response = yield cmd_dict
-        return [FrameWithManifest.from_response(i) for i in response['frameIds']]
-
-    @staticmethod
-    def get_manifest_for_frame(frame_id: page.FrameId) -> str:
-        '''
-        Returns manifest URL for document in the given frame.
-        
-        :param frame_id: Identifier of the frame containing document whose manifest is retrieved.
-        :returns: Manifest URL for document in the given frame.
-        '''
-
-        cmd_dict = {
-            'method': 'ApplicationCache.getManifestForFrame',
-            'params': {
-                'frameId': frame_id,
-            }
-        }
-        response = yield cmd_dict
-        return str.from_response(response['manifestURL'])
 

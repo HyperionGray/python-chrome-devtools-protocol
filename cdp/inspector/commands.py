@@ -14,26 +14,25 @@ import typing
 from .types import *
 
 
-class Inspector:
-    @staticmethod
-    def disable() -> None:
-        '''
-        Disables inspector domain notifications.
-        '''
+def disable() -> typing.Generator[dict,dict,None]:
+    '''
+    Disables inspector domain notifications.
+    '''
 
-        cmd_dict = {
-            'method': 'Inspector.disable',
-        }
-        response = yield cmd_dict
+    cmd_dict = {
+        'method': 'Inspector.disable',
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def enable() -> None:
-        '''
-        Enables inspector domain notifications.
-        '''
 
-        cmd_dict = {
-            'method': 'Inspector.enable',
-        }
-        response = yield cmd_dict
+def enable() -> typing.Generator[dict,dict,None]:
+    '''
+    Enables inspector domain notifications.
+    '''
+
+    cmd_dict = {
+        'method': 'Inspector.enable',
+    }
+    response = yield cmd_dict
+
 

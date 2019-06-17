@@ -14,93 +14,92 @@ import typing
 from .types import *
 
 
-class Tracing:
-    @staticmethod
-    def end() -> None:
-        '''
-        Stop trace events collection.
-        '''
+def end() -> typing.Generator[dict,dict,None]:
+    '''
+    Stop trace events collection.
+    '''
 
-        cmd_dict = {
-            'method': 'Tracing.end',
+    cmd_dict = {
+        'method': 'Tracing.end',
+    }
+    response = yield cmd_dict
+
+
+def get_categories() -> typing.Generator[dict,dict,typing.List]:
+    '''
+    Gets supported tracing categories.
+    :returns: A list of supported tracing categories.
+    '''
+
+    cmd_dict = {
+        'method': 'Tracing.getCategories',
+    }
+    response = yield cmd_dict
+    return [str(i) for i in response['categories']]
+
+
+def record_clock_sync_marker(sync_id: str) -> typing.Generator[dict,dict,None]:
+    '''
+    Record a clock sync marker in the trace.
+    
+    :param sync_id: The ID of this clock sync marker
+    '''
+
+    cmd_dict = {
+        'method': 'Tracing.recordClockSyncMarker',
+        'params': {
+            'syncId': sync_id,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def get_categories() -> typing.List:
-        '''
-        Gets supported tracing categories.
-        :returns: A list of supported tracing categories.
-        '''
 
-        cmd_dict = {
-            'method': 'Tracing.getCategories',
+def request_memory_dump() -> typing.Generator[dict,dict,dict]:
+    '''
+    Request a global memory dump.
+    :returns: a dict with the following keys:
+        * dumpGuid: GUID of the resulting global memory dump.
+        * success: True iff the global memory dump succeeded.
+    '''
+
+    cmd_dict = {
+        'method': 'Tracing.requestMemoryDump',
+    }
+    response = yield cmd_dict
+    return {
+        'dumpGuid': str(response['dumpGuid']),
+        'success': bool(response['success']),
+    }
+
+
+def start(categories: str, options: str, buffer_usage_reporting_interval: float, transfer_mode: str, stream_format: StreamFormat, stream_compression: StreamCompression, trace_config: TraceConfig) -> typing.Generator[dict,dict,None]:
+    '''
+    Start trace events collection.
+    
+    :param categories: Category/tag filter
+    :param options: Tracing options
+    :param buffer_usage_reporting_interval: If set, the agent will issue bufferUsage events at this interval, specified in milliseconds
+    :param transfer_mode: Whether to report trace events as series of dataCollected events or to save trace to a
+    stream (defaults to `ReportEvents`).
+    :param stream_format: Trace data format to use. This only applies when using `ReturnAsStream`
+    transfer mode (defaults to `json`).
+    :param stream_compression: Compression format to use. This only applies when using `ReturnAsStream`
+    transfer mode (defaults to `none`)
+    :param trace_config: 
+    '''
+
+    cmd_dict = {
+        'method': 'Tracing.start',
+        'params': {
+            'categories': categories,
+            'options': options,
+            'bufferUsageReportingInterval': buffer_usage_reporting_interval,
+            'transferMode': transfer_mode,
+            'streamFormat': stream_format,
+            'streamCompression': stream_compression,
+            'traceConfig': trace_config,
         }
-        response = yield cmd_dict
-        return [str(i) for i in response['categories']]
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def record_clock_sync_marker(sync_id: str) -> None:
-        '''
-        Record a clock sync marker in the trace.
-        
-        :param sync_id: The ID of this clock sync marker
-        '''
-
-        cmd_dict = {
-            'method': 'Tracing.recordClockSyncMarker',
-            'params': {
-                'syncId': sync_id,
-            }
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def request_memory_dump() -> dict:
-        '''
-        Request a global memory dump.
-        :returns: a dict with the following keys:
-            * dumpGuid: GUID of the resulting global memory dump.
-            * success: True iff the global memory dump succeeded.
-        '''
-
-        cmd_dict = {
-            'method': 'Tracing.requestMemoryDump',
-        }
-        response = yield cmd_dict
-        return {
-                'dumpGuid': str.from_response(response['dumpGuid']),
-                'success': bool.from_response(response['success']),
-            }
-
-    @staticmethod
-    def start(categories: str, options: str, buffer_usage_reporting_interval: float, transfer_mode: str, stream_format: StreamFormat, stream_compression: StreamCompression, trace_config: TraceConfig) -> None:
-        '''
-        Start trace events collection.
-        
-        :param categories: Category/tag filter
-        :param options: Tracing options
-        :param buffer_usage_reporting_interval: If set, the agent will issue bufferUsage events at this interval, specified in milliseconds
-        :param transfer_mode: Whether to report trace events as series of dataCollected events or to save trace to a
-        stream (defaults to `ReportEvents`).
-        :param stream_format: Trace data format to use. This only applies when using `ReturnAsStream`
-        transfer mode (defaults to `json`).
-        :param stream_compression: Compression format to use. This only applies when using `ReturnAsStream`
-        transfer mode (defaults to `none`)
-        :param trace_config: 
-        '''
-
-        cmd_dict = {
-            'method': 'Tracing.start',
-            'params': {
-                'categories': categories,
-                'options': options,
-                'bufferUsageReportingInterval': buffer_usage_reporting_interval,
-                'transferMode': transfer_mode,
-                'streamFormat': stream_format,
-                'streamCompression': stream_compression,
-                'traceConfig': trace_config,
-            }
-        }
-        response = yield cmd_dict
 

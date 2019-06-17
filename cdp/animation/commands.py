@@ -16,163 +16,162 @@ from ..runtime import types as runtime
 
 
 
-class Animation:
-    @staticmethod
-    def disable() -> None:
-        '''
-        Disables animation domain notifications.
-        '''
+def disable() -> typing.Generator[dict,dict,None]:
+    '''
+    Disables animation domain notifications.
+    '''
 
-        cmd_dict = {
-            'method': 'Animation.disable',
+    cmd_dict = {
+        'method': 'Animation.disable',
+    }
+    response = yield cmd_dict
+
+
+def enable() -> typing.Generator[dict,dict,None]:
+    '''
+    Enables animation domain notifications.
+    '''
+
+    cmd_dict = {
+        'method': 'Animation.enable',
+    }
+    response = yield cmd_dict
+
+
+def get_current_time(id: str) -> typing.Generator[dict,dict,float]:
+    '''
+    Returns the current time of the an animation.
+    
+    :param id: Id of animation.
+    :returns: Current time of the page.
+    '''
+
+    cmd_dict = {
+        'method': 'Animation.getCurrentTime',
+        'params': {
+            'id': id,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
+    return float(response['currentTime'])
 
-    @staticmethod
-    def enable() -> None:
-        '''
-        Enables animation domain notifications.
-        '''
 
-        cmd_dict = {
-            'method': 'Animation.enable',
+def get_playback_rate() -> typing.Generator[dict,dict,float]:
+    '''
+    Gets the playback rate of the document timeline.
+    :returns: Playback rate for animations on page.
+    '''
+
+    cmd_dict = {
+        'method': 'Animation.getPlaybackRate',
+    }
+    response = yield cmd_dict
+    return float(response['playbackRate'])
+
+
+def release_animations(animations: typing.List) -> typing.Generator[dict,dict,None]:
+    '''
+    Releases a set of animations to no longer be manipulated.
+    
+    :param animations: List of animation ids to seek.
+    '''
+
+    cmd_dict = {
+        'method': 'Animation.releaseAnimations',
+        'params': {
+            'animations': animations,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def get_current_time(id: str) -> float:
-        '''
-        Returns the current time of the an animation.
-        
-        :param id: Id of animation.
-        :returns: Current time of the page.
-        '''
 
-        cmd_dict = {
-            'method': 'Animation.getCurrentTime',
-            'params': {
-                'id': id,
-            }
+def resolve_animation(animation_id: str) -> typing.Generator[dict,dict,runtime.RemoteObject]:
+    '''
+    Gets the remote object of the Animation.
+    
+    :param animation_id: Animation id.
+    :returns: Corresponding remote object.
+    '''
+
+    cmd_dict = {
+        'method': 'Animation.resolveAnimation',
+        'params': {
+            'animationId': animation_id,
         }
-        response = yield cmd_dict
-        return float.from_response(response['currentTime'])
+    }
+    response = yield cmd_dict
+    return runtime.RemoteObject.from_response(response['remoteObject'])
 
-    @staticmethod
-    def get_playback_rate() -> float:
-        '''
-        Gets the playback rate of the document timeline.
-        :returns: Playback rate for animations on page.
-        '''
 
-        cmd_dict = {
-            'method': 'Animation.getPlaybackRate',
+def seek_animations(animations: typing.List, current_time: float) -> typing.Generator[dict,dict,None]:
+    '''
+    Seek a set of animations to a particular time within each animation.
+    
+    :param animations: List of animation ids to seek.
+    :param current_time: Set the current time of each animation.
+    '''
+
+    cmd_dict = {
+        'method': 'Animation.seekAnimations',
+        'params': {
+            'animations': animations,
+            'currentTime': current_time,
         }
-        response = yield cmd_dict
-        return float.from_response(response['playbackRate'])
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def release_animations(animations: typing.List) -> None:
-        '''
-        Releases a set of animations to no longer be manipulated.
-        
-        :param animations: List of animation ids to seek.
-        '''
 
-        cmd_dict = {
-            'method': 'Animation.releaseAnimations',
-            'params': {
-                'animations': animations,
-            }
+def set_paused(animations: typing.List, paused: bool) -> typing.Generator[dict,dict,None]:
+    '''
+    Sets the paused state of a set of animations.
+    
+    :param animations: Animations to set the pause state of.
+    :param paused: Paused state to set to.
+    '''
+
+    cmd_dict = {
+        'method': 'Animation.setPaused',
+        'params': {
+            'animations': animations,
+            'paused': paused,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def resolve_animation(animation_id: str) -> runtime.RemoteObject:
-        '''
-        Gets the remote object of the Animation.
-        
-        :param animation_id: Animation id.
-        :returns: Corresponding remote object.
-        '''
 
-        cmd_dict = {
-            'method': 'Animation.resolveAnimation',
-            'params': {
-                'animationId': animation_id,
-            }
+def set_playback_rate(playback_rate: float) -> typing.Generator[dict,dict,None]:
+    '''
+    Sets the playback rate of the document timeline.
+    
+    :param playback_rate: Playback rate for animations on page
+    '''
+
+    cmd_dict = {
+        'method': 'Animation.setPlaybackRate',
+        'params': {
+            'playbackRate': playback_rate,
         }
-        response = yield cmd_dict
-        return runtime.RemoteObject.from_response(response['remoteObject'])
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def seek_animations(animations: typing.List, current_time: float) -> None:
-        '''
-        Seek a set of animations to a particular time within each animation.
-        
-        :param animations: List of animation ids to seek.
-        :param current_time: Set the current time of each animation.
-        '''
 
-        cmd_dict = {
-            'method': 'Animation.seekAnimations',
-            'params': {
-                'animations': animations,
-                'currentTime': current_time,
-            }
+def set_timing(animation_id: str, duration: float, delay: float) -> typing.Generator[dict,dict,None]:
+    '''
+    Sets the timing of an animation node.
+    
+    :param animation_id: Animation id.
+    :param duration: Duration of the animation.
+    :param delay: Delay of the animation.
+    '''
+
+    cmd_dict = {
+        'method': 'Animation.setTiming',
+        'params': {
+            'animationId': animation_id,
+            'duration': duration,
+            'delay': delay,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def set_paused(animations: typing.List, paused: bool) -> None:
-        '''
-        Sets the paused state of a set of animations.
-        
-        :param animations: Animations to set the pause state of.
-        :param paused: Paused state to set to.
-        '''
-
-        cmd_dict = {
-            'method': 'Animation.setPaused',
-            'params': {
-                'animations': animations,
-                'paused': paused,
-            }
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def set_playback_rate(playback_rate: float) -> None:
-        '''
-        Sets the playback rate of the document timeline.
-        
-        :param playback_rate: Playback rate for animations on page
-        '''
-
-        cmd_dict = {
-            'method': 'Animation.setPlaybackRate',
-            'params': {
-                'playbackRate': playback_rate,
-            }
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def set_timing(animation_id: str, duration: float, delay: float) -> None:
-        '''
-        Sets the timing of an animation node.
-        
-        :param animation_id: Animation id.
-        :param duration: Duration of the animation.
-        :param delay: Delay of the animation.
-        '''
-
-        cmd_dict = {
-            'method': 'Animation.setTiming',
-            'params': {
-                'animationId': animation_id,
-                'duration': duration,
-                'delay': delay,
-            }
-        }
-        response = yield cmd_dict
 

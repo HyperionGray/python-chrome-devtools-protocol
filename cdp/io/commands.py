@@ -16,68 +16,67 @@ from ..runtime import types as runtime
 
 
 
-class IO:
-    @staticmethod
-    def close(handle: StreamHandle) -> None:
-        '''
-        Close the stream, discard any temporary backing storage.
-        
-        :param handle: Handle of the stream to close.
-        '''
+def close(handle: StreamHandle) -> typing.Generator[dict,dict,None]:
+    '''
+    Close the stream, discard any temporary backing storage.
+    
+    :param handle: Handle of the stream to close.
+    '''
 
-        cmd_dict = {
-            'method': 'IO.close',
-            'params': {
-                'handle': handle,
-            }
+    cmd_dict = {
+        'method': 'IO.close',
+        'params': {
+            'handle': handle,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def read(handle: StreamHandle, offset: int, size: int) -> dict:
-        '''
-        Read a chunk of the stream
-        
-        :param handle: Handle of the stream to read.
-        :param offset: Seek to the specified offset before reading (if not specificed, proceed with offset
-        following the last read). Some types of streams may only support sequential reads.
-        :param size: Maximum number of bytes to read (left upon the agent discretion if not specified).
-        :returns: a dict with the following keys:
-            * base64Encoded: Set if the data is base64-encoded
-            * data: Data that were read.
-            * eof: Set if the end-of-file condition occured while reading.
-        '''
 
-        cmd_dict = {
-            'method': 'IO.read',
-            'params': {
-                'handle': handle,
-                'offset': offset,
-                'size': size,
-            }
+def read(handle: StreamHandle, offset: int, size: int) -> typing.Generator[dict,dict,dict]:
+    '''
+    Read a chunk of the stream
+    
+    :param handle: Handle of the stream to read.
+    :param offset: Seek to the specified offset before reading (if not specificed, proceed with offset
+    following the last read). Some types of streams may only support sequential reads.
+    :param size: Maximum number of bytes to read (left upon the agent discretion if not specified).
+    :returns: a dict with the following keys:
+        * base64Encoded: Set if the data is base64-encoded
+        * data: Data that were read.
+        * eof: Set if the end-of-file condition occured while reading.
+    '''
+
+    cmd_dict = {
+        'method': 'IO.read',
+        'params': {
+            'handle': handle,
+            'offset': offset,
+            'size': size,
         }
-        response = yield cmd_dict
-        return {
-                'base64Encoded': bool.from_response(response['base64Encoded']),
-                'data': str.from_response(response['data']),
-                'eof': bool.from_response(response['eof']),
-            }
+    }
+    response = yield cmd_dict
+    return {
+        'base64Encoded': bool(response['base64Encoded']),
+        'data': str(response['data']),
+        'eof': bool(response['eof']),
+    }
 
-    @staticmethod
-    def resolve_blob(object_id: runtime.RemoteObjectId) -> str:
-        '''
-        Return UUID of Blob object specified by a remote object id.
-        
-        :param object_id: Object id of a Blob object wrapper.
-        :returns: UUID of the specified Blob.
-        '''
 
-        cmd_dict = {
-            'method': 'IO.resolveBlob',
-            'params': {
-                'objectId': object_id,
-            }
+def resolve_blob(object_id: runtime.RemoteObjectId) -> typing.Generator[dict,dict,str]:
+    '''
+    Return UUID of Blob object specified by a remote object id.
+    
+    :param object_id: Object id of a Blob object wrapper.
+    :returns: UUID of the specified Blob.
+    '''
+
+    cmd_dict = {
+        'method': 'IO.resolveBlob',
+        'params': {
+            'objectId': object_id,
         }
-        response = yield cmd_dict
-        return str.from_response(response['uuid'])
+    }
+    response = yield cmd_dict
+    return str(response['uuid'])
+
 

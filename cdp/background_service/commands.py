@@ -14,70 +14,69 @@ import typing
 from .types import *
 
 
-class BackgroundService:
-    @staticmethod
-    def start_observing(service: ServiceName) -> None:
-        '''
-        Enables event updates for the service.
-        
-        :param service: 
-        '''
+def start_observing(service: ServiceName) -> typing.Generator[dict,dict,None]:
+    '''
+    Enables event updates for the service.
+    
+    :param service: 
+    '''
 
-        cmd_dict = {
-            'method': 'BackgroundService.startObserving',
-            'params': {
-                'service': service,
-            }
+    cmd_dict = {
+        'method': 'BackgroundService.startObserving',
+        'params': {
+            'service': service,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def stop_observing(service: ServiceName) -> None:
-        '''
-        Disables event updates for the service.
-        
-        :param service: 
-        '''
 
-        cmd_dict = {
-            'method': 'BackgroundService.stopObserving',
-            'params': {
-                'service': service,
-            }
+def stop_observing(service: ServiceName) -> typing.Generator[dict,dict,None]:
+    '''
+    Disables event updates for the service.
+    
+    :param service: 
+    '''
+
+    cmd_dict = {
+        'method': 'BackgroundService.stopObserving',
+        'params': {
+            'service': service,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def set_recording(should_record: bool, service: ServiceName) -> None:
-        '''
-        Set the recording state for the service.
-        
-        :param should_record: 
-        :param service: 
-        '''
 
-        cmd_dict = {
-            'method': 'BackgroundService.setRecording',
-            'params': {
-                'shouldRecord': should_record,
-                'service': service,
-            }
+def set_recording(should_record: bool, service: ServiceName) -> typing.Generator[dict,dict,None]:
+    '''
+    Set the recording state for the service.
+    
+    :param should_record: 
+    :param service: 
+    '''
+
+    cmd_dict = {
+        'method': 'BackgroundService.setRecording',
+        'params': {
+            'shouldRecord': should_record,
+            'service': service,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def clear_events(service: ServiceName) -> None:
-        '''
-        Clears all stored data for the service.
-        
-        :param service: 
-        '''
 
-        cmd_dict = {
-            'method': 'BackgroundService.clearEvents',
-            'params': {
-                'service': service,
-            }
+def clear_events(service: ServiceName) -> typing.Generator[dict,dict,None]:
+    '''
+    Clears all stored data for the service.
+    
+    :param service: 
+    '''
+
+    cmd_dict = {
+        'method': 'BackgroundService.clearEvents',
+        'params': {
+            'service': service,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
+
 

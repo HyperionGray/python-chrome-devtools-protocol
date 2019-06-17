@@ -14,36 +14,35 @@ import typing
 from .types import *
 
 
-class Tethering:
-    @staticmethod
-    def bind(port: int) -> None:
-        '''
-        Request browser port binding.
-        
-        :param port: Port number to bind.
-        '''
+def bind(port: int) -> typing.Generator[dict,dict,None]:
+    '''
+    Request browser port binding.
+    
+    :param port: Port number to bind.
+    '''
 
-        cmd_dict = {
-            'method': 'Tethering.bind',
-            'params': {
-                'port': port,
-            }
+    cmd_dict = {
+        'method': 'Tethering.bind',
+        'params': {
+            'port': port,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def unbind(port: int) -> None:
-        '''
-        Request browser port unbinding.
-        
-        :param port: Port number to unbind.
-        '''
 
-        cmd_dict = {
-            'method': 'Tethering.unbind',
-            'params': {
-                'port': port,
-            }
+def unbind(port: int) -> typing.Generator[dict,dict,None]:
+    '''
+    Request browser port unbinding.
+    
+    :param port: Port number to unbind.
+    '''
+
+    cmd_dict = {
+        'method': 'Tethering.unbind',
+        'params': {
+            'port': port,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
+
 

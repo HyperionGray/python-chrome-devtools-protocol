@@ -14,77 +14,76 @@ import typing
 from .types import *
 
 
-class Security:
-    @staticmethod
-    def disable() -> None:
-        '''
-        Disables tracking security state changes.
-        '''
+def disable() -> typing.Generator[dict,dict,None]:
+    '''
+    Disables tracking security state changes.
+    '''
 
-        cmd_dict = {
-            'method': 'Security.disable',
+    cmd_dict = {
+        'method': 'Security.disable',
+    }
+    response = yield cmd_dict
+
+
+def enable() -> typing.Generator[dict,dict,None]:
+    '''
+    Enables tracking security state changes.
+    '''
+
+    cmd_dict = {
+        'method': 'Security.enable',
+    }
+    response = yield cmd_dict
+
+
+def set_ignore_certificate_errors(ignore: bool) -> typing.Generator[dict,dict,None]:
+    '''
+    Enable/disable whether all certificate errors should be ignored.
+    
+    :param ignore: If true, all certificate errors will be ignored.
+    '''
+
+    cmd_dict = {
+        'method': 'Security.setIgnoreCertificateErrors',
+        'params': {
+            'ignore': ignore,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def enable() -> None:
-        '''
-        Enables tracking security state changes.
-        '''
 
-        cmd_dict = {
-            'method': 'Security.enable',
+def handle_certificate_error(event_id: int, action: CertificateErrorAction) -> typing.Generator[dict,dict,None]:
+    '''
+    Handles a certificate error that fired a certificateError event.
+    
+    :param event_id: The ID of the event.
+    :param action: The action to take on the certificate error.
+    '''
+
+    cmd_dict = {
+        'method': 'Security.handleCertificateError',
+        'params': {
+            'eventId': event_id,
+            'action': action,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def set_ignore_certificate_errors(ignore: bool) -> None:
-        '''
-        Enable/disable whether all certificate errors should be ignored.
-        
-        :param ignore: If true, all certificate errors will be ignored.
-        '''
 
-        cmd_dict = {
-            'method': 'Security.setIgnoreCertificateErrors',
-            'params': {
-                'ignore': ignore,
-            }
+def set_override_certificate_errors(override: bool) -> typing.Generator[dict,dict,None]:
+    '''
+    Enable/disable overriding certificate errors. If enabled, all certificate error events need to
+    be handled by the DevTools client and should be answered with `handleCertificateError` commands.
+    
+    :param override: If true, certificate errors will be overridden.
+    '''
+
+    cmd_dict = {
+        'method': 'Security.setOverrideCertificateErrors',
+        'params': {
+            'override': override,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def handle_certificate_error(event_id: int, action: CertificateErrorAction) -> None:
-        '''
-        Handles a certificate error that fired a certificateError event.
-        
-        :param event_id: The ID of the event.
-        :param action: The action to take on the certificate error.
-        '''
-
-        cmd_dict = {
-            'method': 'Security.handleCertificateError',
-            'params': {
-                'eventId': event_id,
-                'action': action,
-            }
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def set_override_certificate_errors(override: bool) -> None:
-        '''
-        Enable/disable overriding certificate errors. If enabled, all certificate error events need to
-        be handled by the DevTools client and should be answered with `handleCertificateError` commands.
-        
-        :param override: If true, certificate errors will be overridden.
-        '''
-
-        cmd_dict = {
-            'method': 'Security.setOverrideCertificateErrors',
-            'params': {
-                'override': override,
-            }
-        }
-        response = yield cmd_dict
 

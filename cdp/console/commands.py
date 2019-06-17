@@ -14,38 +14,37 @@ import typing
 from .types import *
 
 
-class Console:
-    @staticmethod
-    def clear_messages() -> None:
-        '''
-        Does nothing.
-        '''
+def clear_messages() -> typing.Generator[dict,dict,None]:
+    '''
+    Does nothing.
+    '''
 
-        cmd_dict = {
-            'method': 'Console.clearMessages',
-        }
-        response = yield cmd_dict
+    cmd_dict = {
+        'method': 'Console.clearMessages',
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def disable() -> None:
-        '''
-        Disables console domain, prevents further console messages from being reported to the client.
-        '''
 
-        cmd_dict = {
-            'method': 'Console.disable',
-        }
-        response = yield cmd_dict
+def disable() -> typing.Generator[dict,dict,None]:
+    '''
+    Disables console domain, prevents further console messages from being reported to the client.
+    '''
 
-    @staticmethod
-    def enable() -> None:
-        '''
-        Enables console domain, sends the messages collected so far to the client by means of the
-        `messageAdded` notification.
-        '''
+    cmd_dict = {
+        'method': 'Console.disable',
+    }
+    response = yield cmd_dict
 
-        cmd_dict = {
-            'method': 'Console.enable',
-        }
-        response = yield cmd_dict
+
+def enable() -> typing.Generator[dict,dict,None]:
+    '''
+    Enables console domain, sends the messages collected so far to the client by means of the
+    `messageAdded` notification.
+    '''
+
+    cmd_dict = {
+        'method': 'Console.enable',
+    }
+    response = yield cmd_dict
+
 

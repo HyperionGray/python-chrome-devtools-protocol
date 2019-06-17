@@ -14,146 +14,145 @@ import typing
 from .types import *
 
 
-class Memory:
-    @staticmethod
-    def get_dom_counters() -> dict:
-        '''
-        
-        :returns: a dict with the following keys:
-            * documents: 
-            * nodes: 
-            * jsEventListeners: 
-        '''
+def get_dom_counters() -> typing.Generator[dict,dict,dict]:
+    '''
+    
+    :returns: a dict with the following keys:
+        * documents: 
+        * nodes: 
+        * jsEventListeners: 
+    '''
 
-        cmd_dict = {
-            'method': 'Memory.getDOMCounters',
+    cmd_dict = {
+        'method': 'Memory.getDOMCounters',
+    }
+    response = yield cmd_dict
+    return {
+        'documents': int(response['documents']),
+        'nodes': int(response['nodes']),
+        'jsEventListeners': int(response['jsEventListeners']),
+    }
+
+
+def prepare_for_leak_detection() -> typing.Generator[dict,dict,None]:
+
+    cmd_dict = {
+        'method': 'Memory.prepareForLeakDetection',
+    }
+    response = yield cmd_dict
+
+
+def forcibly_purge_java_script_memory() -> typing.Generator[dict,dict,None]:
+    '''
+    Simulate OomIntervention by purging V8 memory.
+    '''
+
+    cmd_dict = {
+        'method': 'Memory.forciblyPurgeJavaScriptMemory',
+    }
+    response = yield cmd_dict
+
+
+def set_pressure_notifications_suppressed(suppressed: bool) -> typing.Generator[dict,dict,None]:
+    '''
+    Enable/disable suppressing memory pressure notifications in all processes.
+    
+    :param suppressed: If true, memory pressure notifications will be suppressed.
+    '''
+
+    cmd_dict = {
+        'method': 'Memory.setPressureNotificationsSuppressed',
+        'params': {
+            'suppressed': suppressed,
         }
-        response = yield cmd_dict
-        return {
-                'documents': int.from_response(response['documents']),
-                'nodes': int.from_response(response['nodes']),
-                'jsEventListeners': int.from_response(response['jsEventListeners']),
-            }
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def prepare_for_leak_detection() -> None:
 
-        cmd_dict = {
-            'method': 'Memory.prepareForLeakDetection',
+def simulate_pressure_notification(level: PressureLevel) -> typing.Generator[dict,dict,None]:
+    '''
+    Simulate a memory pressure notification in all processes.
+    
+    :param level: Memory pressure level of the notification.
+    '''
+
+    cmd_dict = {
+        'method': 'Memory.simulatePressureNotification',
+        'params': {
+            'level': level,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def forcibly_purge_java_script_memory() -> None:
-        '''
-        Simulate OomIntervention by purging V8 memory.
-        '''
 
-        cmd_dict = {
-            'method': 'Memory.forciblyPurgeJavaScriptMemory',
+def start_sampling(sampling_interval: int, suppress_randomness: bool) -> typing.Generator[dict,dict,None]:
+    '''
+    Start collecting native memory profile.
+    
+    :param sampling_interval: Average number of bytes between samples.
+    :param suppress_randomness: Do not randomize intervals between samples.
+    '''
+
+    cmd_dict = {
+        'method': 'Memory.startSampling',
+        'params': {
+            'samplingInterval': sampling_interval,
+            'suppressRandomness': suppress_randomness,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def set_pressure_notifications_suppressed(suppressed: bool) -> None:
-        '''
-        Enable/disable suppressing memory pressure notifications in all processes.
-        
-        :param suppressed: If true, memory pressure notifications will be suppressed.
-        '''
 
-        cmd_dict = {
-            'method': 'Memory.setPressureNotificationsSuppressed',
-            'params': {
-                'suppressed': suppressed,
-            }
-        }
-        response = yield cmd_dict
+def stop_sampling() -> typing.Generator[dict,dict,None]:
+    '''
+    Stop collecting native memory profile.
+    '''
 
-    @staticmethod
-    def simulate_pressure_notification(level: PressureLevel) -> None:
-        '''
-        Simulate a memory pressure notification in all processes.
-        
-        :param level: Memory pressure level of the notification.
-        '''
+    cmd_dict = {
+        'method': 'Memory.stopSampling',
+    }
+    response = yield cmd_dict
 
-        cmd_dict = {
-            'method': 'Memory.simulatePressureNotification',
-            'params': {
-                'level': level,
-            }
-        }
-        response = yield cmd_dict
 
-    @staticmethod
-    def start_sampling(sampling_interval: int, suppress_randomness: bool) -> None:
-        '''
-        Start collecting native memory profile.
-        
-        :param sampling_interval: Average number of bytes between samples.
-        :param suppress_randomness: Do not randomize intervals between samples.
-        '''
+def get_all_time_sampling_profile() -> typing.Generator[dict,dict,SamplingProfile]:
+    '''
+    Retrieve native memory allocations profile
+    collected since renderer process startup.
+    :returns: 
+    '''
 
-        cmd_dict = {
-            'method': 'Memory.startSampling',
-            'params': {
-                'samplingInterval': sampling_interval,
-                'suppressRandomness': suppress_randomness,
-            }
-        }
-        response = yield cmd_dict
+    cmd_dict = {
+        'method': 'Memory.getAllTimeSamplingProfile',
+    }
+    response = yield cmd_dict
+    return SamplingProfile.from_response(response['profile'])
 
-    @staticmethod
-    def stop_sampling() -> None:
-        '''
-        Stop collecting native memory profile.
-        '''
 
-        cmd_dict = {
-            'method': 'Memory.stopSampling',
-        }
-        response = yield cmd_dict
+def get_browser_sampling_profile() -> typing.Generator[dict,dict,SamplingProfile]:
+    '''
+    Retrieve native memory allocations profile
+    collected since browser process startup.
+    :returns: 
+    '''
 
-    @staticmethod
-    def get_all_time_sampling_profile() -> SamplingProfile:
-        '''
-        Retrieve native memory allocations profile
-        collected since renderer process startup.
-        :returns: 
-        '''
+    cmd_dict = {
+        'method': 'Memory.getBrowserSamplingProfile',
+    }
+    response = yield cmd_dict
+    return SamplingProfile.from_response(response['profile'])
 
-        cmd_dict = {
-            'method': 'Memory.getAllTimeSamplingProfile',
-        }
-        response = yield cmd_dict
-        return SamplingProfile.from_response(response['profile'])
 
-    @staticmethod
-    def get_browser_sampling_profile() -> SamplingProfile:
-        '''
-        Retrieve native memory allocations profile
-        collected since browser process startup.
-        :returns: 
-        '''
+def get_sampling_profile() -> typing.Generator[dict,dict,SamplingProfile]:
+    '''
+    Retrieve native memory allocations profile collected since last
+    `startSampling` call.
+    :returns: 
+    '''
 
-        cmd_dict = {
-            'method': 'Memory.getBrowserSamplingProfile',
-        }
-        response = yield cmd_dict
-        return SamplingProfile.from_response(response['profile'])
+    cmd_dict = {
+        'method': 'Memory.getSamplingProfile',
+    }
+    response = yield cmd_dict
+    return SamplingProfile.from_response(response['profile'])
 
-    @staticmethod
-    def get_sampling_profile() -> SamplingProfile:
-        '''
-        Retrieve native memory allocations profile collected since last
-        `startSampling` call.
-        :returns: 
-        '''
-
-        cmd_dict = {
-            'method': 'Memory.getSamplingProfile',
-        }
-        response = yield cmd_dict
-        return SamplingProfile.from_response(response['profile'])
 

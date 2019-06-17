@@ -14,42 +14,41 @@ import typing
 from .types import *
 
 
-class SystemInfo:
-    @staticmethod
-    def get_info() -> dict:
-        '''
-        Returns information about the system.
-        :returns: a dict with the following keys:
-            * gpu: Information about the GPUs on the system.
-            * modelName: A platform-dependent description of the model of the machine. On Mac OS, this is, for
-        example, 'MacBookPro'. Will be the empty string if not supported.
-            * modelVersion: A platform-dependent description of the version of the machine. On Mac OS, this is, for
-        example, '10.1'. Will be the empty string if not supported.
-            * commandLine: The command line string used to launch the browser. Will be the empty string if not
-        supported.
-        '''
+def get_info() -> typing.Generator[dict,dict,dict]:
+    '''
+    Returns information about the system.
+    :returns: a dict with the following keys:
+        * gpu: Information about the GPUs on the system.
+        * modelName: A platform-dependent description of the model of the machine. On Mac OS, this is, for
+    example, 'MacBookPro'. Will be the empty string if not supported.
+        * modelVersion: A platform-dependent description of the version of the machine. On Mac OS, this is, for
+    example, '10.1'. Will be the empty string if not supported.
+        * commandLine: The command line string used to launch the browser. Will be the empty string if not
+    supported.
+    '''
 
-        cmd_dict = {
-            'method': 'SystemInfo.getInfo',
-        }
-        response = yield cmd_dict
-        return {
-                'gpu': GPUInfo.from_response(response['gpu']),
-                'modelName': str.from_response(response['modelName']),
-                'modelVersion': str.from_response(response['modelVersion']),
-                'commandLine': str.from_response(response['commandLine']),
-            }
+    cmd_dict = {
+        'method': 'SystemInfo.getInfo',
+    }
+    response = yield cmd_dict
+    return {
+        'gpu': GPUInfo.from_response(response['gpu']),
+        'modelName': str(response['modelName']),
+        'modelVersion': str(response['modelVersion']),
+        'commandLine': str(response['commandLine']),
+    }
 
-    @staticmethod
-    def get_process_info() -> typing.List['ProcessInfo']:
-        '''
-        Returns information about all running processes.
-        :returns: An array of process info blocks.
-        '''
 
-        cmd_dict = {
-            'method': 'SystemInfo.getProcessInfo',
-        }
-        response = yield cmd_dict
-        return [ProcessInfo.from_response(i) for i in response['processInfo']]
+def get_process_info() -> typing.Generator[dict,dict,typing.List['ProcessInfo']]:
+    '''
+    Returns information about all running processes.
+    :returns: An array of process info blocks.
+    '''
+
+    cmd_dict = {
+        'method': 'SystemInfo.getProcessInfo',
+    }
+    response = yield cmd_dict
+    return [ProcessInfo.from_response(i) for i in response['processInfo']]
+
 

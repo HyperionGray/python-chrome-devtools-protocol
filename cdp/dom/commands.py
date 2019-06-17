@@ -18,805 +18,804 @@ from ..runtime import types as runtime
 
 
 
-class DOM:
-    @staticmethod
-    def collect_class_names_from_subtree(node_id: NodeId) -> typing.List:
-        '''
-        Collects class names for the node with given id and all of it's child nodes.
-        
-        :param node_id: Id of the node to collect class names.
-        :returns: Class name list.
-        '''
+def collect_class_names_from_subtree(node_id: NodeId) -> typing.Generator[dict,dict,typing.List]:
+    '''
+    Collects class names for the node with given id and all of it's child nodes.
+    
+    :param node_id: Id of the node to collect class names.
+    :returns: Class name list.
+    '''
 
-        cmd_dict = {
-            'method': 'DOM.collectClassNamesFromSubtree',
-            'params': {
-                'nodeId': node_id,
-            }
+    cmd_dict = {
+        'method': 'DOM.collectClassNamesFromSubtree',
+        'params': {
+            'nodeId': node_id,
         }
-        response = yield cmd_dict
-        return [str(i) for i in response['classNames']]
+    }
+    response = yield cmd_dict
+    return [str(i) for i in response['classNames']]
 
-    @staticmethod
-    def copy_to(node_id: NodeId, target_node_id: NodeId, insert_before_node_id: NodeId) -> NodeId:
-        '''
-        Creates a deep copy of the specified node and places it into the target container before the
-        given anchor.
-        
-        :param node_id: Id of the node to copy.
-        :param target_node_id: Id of the element to drop the copy into.
-        :param insert_before_node_id: Drop the copy before this node (if absent, the copy becomes the last child of
-        `targetNodeId`).
-        :returns: Id of the node clone.
-        '''
 
-        cmd_dict = {
-            'method': 'DOM.copyTo',
-            'params': {
-                'nodeId': node_id,
-                'targetNodeId': target_node_id,
-                'insertBeforeNodeId': insert_before_node_id,
-            }
+def copy_to(node_id: NodeId, target_node_id: NodeId, insert_before_node_id: NodeId) -> typing.Generator[dict,dict,NodeId]:
+    '''
+    Creates a deep copy of the specified node and places it into the target container before the
+    given anchor.
+    
+    :param node_id: Id of the node to copy.
+    :param target_node_id: Id of the element to drop the copy into.
+    :param insert_before_node_id: Drop the copy before this node (if absent, the copy becomes the last child of
+    `targetNodeId`).
+    :returns: Id of the node clone.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.copyTo',
+        'params': {
+            'nodeId': node_id,
+            'targetNodeId': target_node_id,
+            'insertBeforeNodeId': insert_before_node_id,
         }
-        response = yield cmd_dict
-        return NodeId.from_response(response['nodeId'])
+    }
+    response = yield cmd_dict
+    return NodeId.from_response(response['nodeId'])
 
-    @staticmethod
-    def describe_node(node_id: NodeId, backend_node_id: BackendNodeId, object_id: runtime.RemoteObjectId, depth: int, pierce: bool) -> Node:
-        '''
-        Describes node given its id, does not require domain to be enabled. Does not start tracking any
-        objects, can be used for automation.
-        
-        :param node_id: Identifier of the node.
-        :param backend_node_id: Identifier of the backend node.
-        :param object_id: JavaScript object id of the node wrapper.
-        :param depth: The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the
-        entire subtree or provide an integer larger than 0.
-        :param pierce: Whether or not iframes and shadow roots should be traversed when returning the subtree
-        (default is false).
-        :returns: Node description.
-        '''
 
-        cmd_dict = {
-            'method': 'DOM.describeNode',
-            'params': {
-                'nodeId': node_id,
-                'backendNodeId': backend_node_id,
-                'objectId': object_id,
-                'depth': depth,
-                'pierce': pierce,
-            }
+def describe_node(node_id: NodeId, backend_node_id: BackendNodeId, object_id: runtime.RemoteObjectId, depth: int, pierce: bool) -> typing.Generator[dict,dict,Node]:
+    '''
+    Describes node given its id, does not require domain to be enabled. Does not start tracking any
+    objects, can be used for automation.
+    
+    :param node_id: Identifier of the node.
+    :param backend_node_id: Identifier of the backend node.
+    :param object_id: JavaScript object id of the node wrapper.
+    :param depth: The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the
+    entire subtree or provide an integer larger than 0.
+    :param pierce: Whether or not iframes and shadow roots should be traversed when returning the subtree
+    (default is false).
+    :returns: Node description.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.describeNode',
+        'params': {
+            'nodeId': node_id,
+            'backendNodeId': backend_node_id,
+            'objectId': object_id,
+            'depth': depth,
+            'pierce': pierce,
         }
-        response = yield cmd_dict
-        return Node.from_response(response['node'])
+    }
+    response = yield cmd_dict
+    return Node.from_response(response['node'])
 
-    @staticmethod
-    def disable() -> None:
-        '''
-        Disables DOM agent for the given page.
-        '''
 
-        cmd_dict = {
-            'method': 'DOM.disable',
+def disable() -> typing.Generator[dict,dict,None]:
+    '''
+    Disables DOM agent for the given page.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.disable',
+    }
+    response = yield cmd_dict
+
+
+def discard_search_results(search_id: str) -> typing.Generator[dict,dict,None]:
+    '''
+    Discards search results from the session with the given id. `getSearchResults` should no longer
+    be called for that search.
+    
+    :param search_id: Unique search session identifier.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.discardSearchResults',
+        'params': {
+            'searchId': search_id,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def discard_search_results(search_id: str) -> None:
-        '''
-        Discards search results from the session with the given id. `getSearchResults` should no longer
-        be called for that search.
-        
-        :param search_id: Unique search session identifier.
-        '''
 
-        cmd_dict = {
-            'method': 'DOM.discardSearchResults',
-            'params': {
-                'searchId': search_id,
-            }
+def enable() -> typing.Generator[dict,dict,None]:
+    '''
+    Enables DOM agent for the given page.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.enable',
+    }
+    response = yield cmd_dict
+
+
+def focus(node_id: NodeId, backend_node_id: BackendNodeId, object_id: runtime.RemoteObjectId) -> typing.Generator[dict,dict,None]:
+    '''
+    Focuses the given element.
+    
+    :param node_id: Identifier of the node.
+    :param backend_node_id: Identifier of the backend node.
+    :param object_id: JavaScript object id of the node wrapper.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.focus',
+        'params': {
+            'nodeId': node_id,
+            'backendNodeId': backend_node_id,
+            'objectId': object_id,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def enable() -> None:
-        '''
-        Enables DOM agent for the given page.
-        '''
 
-        cmd_dict = {
-            'method': 'DOM.enable',
+def get_attributes(node_id: NodeId) -> typing.Generator[dict,dict,typing.List]:
+    '''
+    Returns attributes for the specified node.
+    
+    :param node_id: Id of the node to retrieve attibutes for.
+    :returns: An interleaved array of node attribute names and values.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.getAttributes',
+        'params': {
+            'nodeId': node_id,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
+    return [str(i) for i in response['attributes']]
 
-    @staticmethod
-    def focus(node_id: NodeId, backend_node_id: BackendNodeId, object_id: runtime.RemoteObjectId) -> None:
-        '''
-        Focuses the given element.
-        
-        :param node_id: Identifier of the node.
-        :param backend_node_id: Identifier of the backend node.
-        :param object_id: JavaScript object id of the node wrapper.
-        '''
 
-        cmd_dict = {
-            'method': 'DOM.focus',
-            'params': {
-                'nodeId': node_id,
-                'backendNodeId': backend_node_id,
-                'objectId': object_id,
-            }
+def get_box_model(node_id: NodeId, backend_node_id: BackendNodeId, object_id: runtime.RemoteObjectId) -> typing.Generator[dict,dict,BoxModel]:
+    '''
+    Returns boxes for the given node.
+    
+    :param node_id: Identifier of the node.
+    :param backend_node_id: Identifier of the backend node.
+    :param object_id: JavaScript object id of the node wrapper.
+    :returns: Box model for the node.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.getBoxModel',
+        'params': {
+            'nodeId': node_id,
+            'backendNodeId': backend_node_id,
+            'objectId': object_id,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
+    return BoxModel.from_response(response['model'])
 
-    @staticmethod
-    def get_attributes(node_id: NodeId) -> typing.List:
-        '''
-        Returns attributes for the specified node.
-        
-        :param node_id: Id of the node to retrieve attibutes for.
-        :returns: An interleaved array of node attribute names and values.
-        '''
 
-        cmd_dict = {
-            'method': 'DOM.getAttributes',
-            'params': {
-                'nodeId': node_id,
-            }
+def get_content_quads(node_id: NodeId, backend_node_id: BackendNodeId, object_id: runtime.RemoteObjectId) -> typing.Generator[dict,dict,typing.List['Quad']]:
+    '''
+    Returns quads that describe node position on the page. This method
+    might return multiple quads for inline nodes.
+    
+    :param node_id: Identifier of the node.
+    :param backend_node_id: Identifier of the backend node.
+    :param object_id: JavaScript object id of the node wrapper.
+    :returns: Quads that describe node layout relative to viewport.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.getContentQuads',
+        'params': {
+            'nodeId': node_id,
+            'backendNodeId': backend_node_id,
+            'objectId': object_id,
         }
-        response = yield cmd_dict
-        return [str(i) for i in response['attributes']]
+    }
+    response = yield cmd_dict
+    return [Quad.from_response(i) for i in response['quads']]
 
-    @staticmethod
-    def get_box_model(node_id: NodeId, backend_node_id: BackendNodeId, object_id: runtime.RemoteObjectId) -> BoxModel:
-        '''
-        Returns boxes for the given node.
-        
-        :param node_id: Identifier of the node.
-        :param backend_node_id: Identifier of the backend node.
-        :param object_id: JavaScript object id of the node wrapper.
-        :returns: Box model for the node.
-        '''
 
-        cmd_dict = {
-            'method': 'DOM.getBoxModel',
-            'params': {
-                'nodeId': node_id,
-                'backendNodeId': backend_node_id,
-                'objectId': object_id,
-            }
+def get_document(depth: int, pierce: bool) -> typing.Generator[dict,dict,Node]:
+    '''
+    Returns the root DOM node (and optionally the subtree) to the caller.
+    
+    :param depth: The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the
+    entire subtree or provide an integer larger than 0.
+    :param pierce: Whether or not iframes and shadow roots should be traversed when returning the subtree
+    (default is false).
+    :returns: Resulting node.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.getDocument',
+        'params': {
+            'depth': depth,
+            'pierce': pierce,
         }
-        response = yield cmd_dict
-        return BoxModel.from_response(response['model'])
+    }
+    response = yield cmd_dict
+    return Node.from_response(response['root'])
 
-    @staticmethod
-    def get_content_quads(node_id: NodeId, backend_node_id: BackendNodeId, object_id: runtime.RemoteObjectId) -> typing.List['Quad']:
-        '''
-        Returns quads that describe node position on the page. This method
-        might return multiple quads for inline nodes.
-        
-        :param node_id: Identifier of the node.
-        :param backend_node_id: Identifier of the backend node.
-        :param object_id: JavaScript object id of the node wrapper.
-        :returns: Quads that describe node layout relative to viewport.
-        '''
 
-        cmd_dict = {
-            'method': 'DOM.getContentQuads',
-            'params': {
-                'nodeId': node_id,
-                'backendNodeId': backend_node_id,
-                'objectId': object_id,
-            }
+def get_flattened_document(depth: int, pierce: bool) -> typing.Generator[dict,dict,typing.List['Node']]:
+    '''
+    Returns the root DOM node (and optionally the subtree) to the caller.
+    
+    :param depth: The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the
+    entire subtree or provide an integer larger than 0.
+    :param pierce: Whether or not iframes and shadow roots should be traversed when returning the subtree
+    (default is false).
+    :returns: Resulting node.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.getFlattenedDocument',
+        'params': {
+            'depth': depth,
+            'pierce': pierce,
         }
-        response = yield cmd_dict
-        return [Quad.from_response(i) for i in response['quads']]
+    }
+    response = yield cmd_dict
+    return [Node.from_response(i) for i in response['nodes']]
 
-    @staticmethod
-    def get_document(depth: int, pierce: bool) -> Node:
-        '''
-        Returns the root DOM node (and optionally the subtree) to the caller.
-        
-        :param depth: The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the
-        entire subtree or provide an integer larger than 0.
-        :param pierce: Whether or not iframes and shadow roots should be traversed when returning the subtree
-        (default is false).
-        :returns: Resulting node.
-        '''
 
-        cmd_dict = {
-            'method': 'DOM.getDocument',
-            'params': {
-                'depth': depth,
-                'pierce': pierce,
-            }
+def get_node_for_location(x: int, y: int, include_user_agent_shadow_dom: bool) -> typing.Generator[dict,dict,dict]:
+    '''
+    Returns node id at given location. Depending on whether DOM domain is enabled, nodeId is
+    either returned or not.
+    
+    :param x: X coordinate.
+    :param y: Y coordinate.
+    :param include_user_agent_shadow_dom: False to skip to the nearest non-UA shadow root ancestor (default: false).
+    :returns: a dict with the following keys:
+        * backendNodeId: Resulting node.
+        * nodeId: Id of the node at given coordinates, only when enabled and requested document.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.getNodeForLocation',
+        'params': {
+            'x': x,
+            'y': y,
+            'includeUserAgentShadowDOM': include_user_agent_shadow_dom,
         }
-        response = yield cmd_dict
-        return Node.from_response(response['root'])
+    }
+    response = yield cmd_dict
+    return {
+        'backendNodeId': BackendNodeId.from_response(response['backendNodeId']),
+        'nodeId': NodeId.from_response(response['nodeId']),
+    }
 
-    @staticmethod
-    def get_flattened_document(depth: int, pierce: bool) -> typing.List['Node']:
-        '''
-        Returns the root DOM node (and optionally the subtree) to the caller.
-        
-        :param depth: The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the
-        entire subtree or provide an integer larger than 0.
-        :param pierce: Whether or not iframes and shadow roots should be traversed when returning the subtree
-        (default is false).
-        :returns: Resulting node.
-        '''
 
-        cmd_dict = {
-            'method': 'DOM.getFlattenedDocument',
-            'params': {
-                'depth': depth,
-                'pierce': pierce,
-            }
+def get_outer_html(node_id: NodeId, backend_node_id: BackendNodeId, object_id: runtime.RemoteObjectId) -> typing.Generator[dict,dict,str]:
+    '''
+    Returns node's HTML markup.
+    
+    :param node_id: Identifier of the node.
+    :param backend_node_id: Identifier of the backend node.
+    :param object_id: JavaScript object id of the node wrapper.
+    :returns: Outer HTML markup.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.getOuterHTML',
+        'params': {
+            'nodeId': node_id,
+            'backendNodeId': backend_node_id,
+            'objectId': object_id,
         }
-        response = yield cmd_dict
-        return [Node.from_response(i) for i in response['nodes']]
+    }
+    response = yield cmd_dict
+    return str(response['outerHTML'])
 
-    @staticmethod
-    def get_node_for_location(x: int, y: int, include_user_agent_shadow_dom: bool) -> dict:
-        '''
-        Returns node id at given location. Depending on whether DOM domain is enabled, nodeId is
-        either returned or not.
-        
-        :param x: X coordinate.
-        :param y: Y coordinate.
-        :param include_user_agent_shadow_dom: False to skip to the nearest non-UA shadow root ancestor (default: false).
-        :returns: a dict with the following keys:
-            * backendNodeId: Resulting node.
-            * nodeId: Id of the node at given coordinates, only when enabled and requested document.
-        '''
 
-        cmd_dict = {
-            'method': 'DOM.getNodeForLocation',
-            'params': {
-                'x': x,
-                'y': y,
-                'includeUserAgentShadowDOM': include_user_agent_shadow_dom,
-            }
+def get_relayout_boundary(node_id: NodeId) -> typing.Generator[dict,dict,NodeId]:
+    '''
+    Returns the id of the nearest ancestor that is a relayout boundary.
+    
+    :param node_id: Id of the node.
+    :returns: Relayout boundary node id for the given node.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.getRelayoutBoundary',
+        'params': {
+            'nodeId': node_id,
         }
-        response = yield cmd_dict
-        return {
-                'backendNodeId': BackendNodeId.from_response(response['backendNodeId']),
-                'nodeId': NodeId.from_response(response['nodeId']),
-            }
+    }
+    response = yield cmd_dict
+    return NodeId.from_response(response['nodeId'])
 
-    @staticmethod
-    def get_outer_html(node_id: NodeId, backend_node_id: BackendNodeId, object_id: runtime.RemoteObjectId) -> str:
-        '''
-        Returns node's HTML markup.
-        
-        :param node_id: Identifier of the node.
-        :param backend_node_id: Identifier of the backend node.
-        :param object_id: JavaScript object id of the node wrapper.
-        :returns: Outer HTML markup.
-        '''
 
-        cmd_dict = {
-            'method': 'DOM.getOuterHTML',
-            'params': {
-                'nodeId': node_id,
-                'backendNodeId': backend_node_id,
-                'objectId': object_id,
-            }
+def get_search_results(search_id: str, from_index: int, to_index: int) -> typing.Generator[dict,dict,typing.List['NodeId']]:
+    '''
+    Returns search results from given `fromIndex` to given `toIndex` from the search with the given
+    identifier.
+    
+    :param search_id: Unique search session identifier.
+    :param from_index: Start index of the search result to be returned.
+    :param to_index: End index of the search result to be returned.
+    :returns: Ids of the search result nodes.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.getSearchResults',
+        'params': {
+            'searchId': search_id,
+            'fromIndex': from_index,
+            'toIndex': to_index,
         }
-        response = yield cmd_dict
-        return str.from_response(response['outerHTML'])
+    }
+    response = yield cmd_dict
+    return [NodeId.from_response(i) for i in response['nodeIds']]
 
-    @staticmethod
-    def get_relayout_boundary(node_id: NodeId) -> NodeId:
-        '''
-        Returns the id of the nearest ancestor that is a relayout boundary.
-        
-        :param node_id: Id of the node.
-        :returns: Relayout boundary node id for the given node.
-        '''
 
-        cmd_dict = {
-            'method': 'DOM.getRelayoutBoundary',
-            'params': {
-                'nodeId': node_id,
-            }
+def hide_highlight() -> typing.Generator[dict,dict,None]:
+    '''
+    Hides any highlight.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.hideHighlight',
+    }
+    response = yield cmd_dict
+
+
+def highlight_node() -> typing.Generator[dict,dict,None]:
+    '''
+    Highlights DOM node.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.highlightNode',
+    }
+    response = yield cmd_dict
+
+
+def highlight_rect() -> typing.Generator[dict,dict,None]:
+    '''
+    Highlights given rectangle.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.highlightRect',
+    }
+    response = yield cmd_dict
+
+
+def mark_undoable_state() -> typing.Generator[dict,dict,None]:
+    '''
+    Marks last undoable state.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.markUndoableState',
+    }
+    response = yield cmd_dict
+
+
+def move_to(node_id: NodeId, target_node_id: NodeId, insert_before_node_id: NodeId) -> typing.Generator[dict,dict,NodeId]:
+    '''
+    Moves node into the new container, places it before the given anchor.
+    
+    :param node_id: Id of the node to move.
+    :param target_node_id: Id of the element to drop the moved node into.
+    :param insert_before_node_id: Drop node before this one (if absent, the moved node becomes the last child of
+    `targetNodeId`).
+    :returns: New id of the moved node.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.moveTo',
+        'params': {
+            'nodeId': node_id,
+            'targetNodeId': target_node_id,
+            'insertBeforeNodeId': insert_before_node_id,
         }
-        response = yield cmd_dict
-        return NodeId.from_response(response['nodeId'])
+    }
+    response = yield cmd_dict
+    return NodeId.from_response(response['nodeId'])
 
-    @staticmethod
-    def get_search_results(search_id: str, from_index: int, to_index: int) -> typing.List['NodeId']:
-        '''
-        Returns search results from given `fromIndex` to given `toIndex` from the search with the given
-        identifier.
-        
-        :param search_id: Unique search session identifier.
-        :param from_index: Start index of the search result to be returned.
-        :param to_index: End index of the search result to be returned.
-        :returns: Ids of the search result nodes.
-        '''
 
-        cmd_dict = {
-            'method': 'DOM.getSearchResults',
-            'params': {
-                'searchId': search_id,
-                'fromIndex': from_index,
-                'toIndex': to_index,
-            }
+def perform_search(query: str, include_user_agent_shadow_dom: bool) -> typing.Generator[dict,dict,dict]:
+    '''
+    Searches for a given string in the DOM tree. Use `getSearchResults` to access search results or
+    `cancelSearch` to end this search session.
+    
+    :param query: Plain text or query selector or XPath search query.
+    :param include_user_agent_shadow_dom: True to search in user agent shadow DOM.
+    :returns: a dict with the following keys:
+        * searchId: Unique search session identifier.
+        * resultCount: Number of search results.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.performSearch',
+        'params': {
+            'query': query,
+            'includeUserAgentShadowDOM': include_user_agent_shadow_dom,
         }
-        response = yield cmd_dict
-        return [NodeId.from_response(i) for i in response['nodeIds']]
+    }
+    response = yield cmd_dict
+    return {
+        'searchId': str(response['searchId']),
+        'resultCount': int(response['resultCount']),
+    }
 
-    @staticmethod
-    def hide_highlight() -> None:
-        '''
-        Hides any highlight.
-        '''
 
-        cmd_dict = {
-            'method': 'DOM.hideHighlight',
+def push_node_by_path_to_frontend(path: str) -> typing.Generator[dict,dict,NodeId]:
+    '''
+    Requests that the node is sent to the caller given its path. // FIXME, use XPath
+    
+    :param path: Path to node in the proprietary format.
+    :returns: Id of the node for given path.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.pushNodeByPathToFrontend',
+        'params': {
+            'path': path,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
+    return NodeId.from_response(response['nodeId'])
 
-    @staticmethod
-    def highlight_node() -> None:
-        '''
-        Highlights DOM node.
-        '''
 
-        cmd_dict = {
-            'method': 'DOM.highlightNode',
+def push_nodes_by_backend_ids_to_frontend(backend_node_ids: typing.List['BackendNodeId']) -> typing.Generator[dict,dict,typing.List['NodeId']]:
+    '''
+    Requests that a batch of nodes is sent to the caller given their backend node ids.
+    
+    :param backend_node_ids: The array of backend node ids.
+    :returns: The array of ids of pushed nodes that correspond to the backend ids specified in
+    backendNodeIds.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.pushNodesByBackendIdsToFrontend',
+        'params': {
+            'backendNodeIds': backend_node_ids,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
+    return [NodeId.from_response(i) for i in response['nodeIds']]
 
-    @staticmethod
-    def highlight_rect() -> None:
-        '''
-        Highlights given rectangle.
-        '''
 
-        cmd_dict = {
-            'method': 'DOM.highlightRect',
+def query_selector(node_id: NodeId, selector: str) -> typing.Generator[dict,dict,NodeId]:
+    '''
+    Executes `querySelector` on a given node.
+    
+    :param node_id: Id of the node to query upon.
+    :param selector: Selector string.
+    :returns: Query selector result.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.querySelector',
+        'params': {
+            'nodeId': node_id,
+            'selector': selector,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
+    return NodeId.from_response(response['nodeId'])
 
-    @staticmethod
-    def mark_undoable_state() -> None:
-        '''
-        Marks last undoable state.
-        '''
 
-        cmd_dict = {
-            'method': 'DOM.markUndoableState',
+def query_selector_all(node_id: NodeId, selector: str) -> typing.Generator[dict,dict,typing.List['NodeId']]:
+    '''
+    Executes `querySelectorAll` on a given node.
+    
+    :param node_id: Id of the node to query upon.
+    :param selector: Selector string.
+    :returns: Query selector result.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.querySelectorAll',
+        'params': {
+            'nodeId': node_id,
+            'selector': selector,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
+    return [NodeId.from_response(i) for i in response['nodeIds']]
 
-    @staticmethod
-    def move_to(node_id: NodeId, target_node_id: NodeId, insert_before_node_id: NodeId) -> NodeId:
-        '''
-        Moves node into the new container, places it before the given anchor.
-        
-        :param node_id: Id of the node to move.
-        :param target_node_id: Id of the element to drop the moved node into.
-        :param insert_before_node_id: Drop node before this one (if absent, the moved node becomes the last child of
-        `targetNodeId`).
-        :returns: New id of the moved node.
-        '''
 
-        cmd_dict = {
-            'method': 'DOM.moveTo',
-            'params': {
-                'nodeId': node_id,
-                'targetNodeId': target_node_id,
-                'insertBeforeNodeId': insert_before_node_id,
-            }
+def redo() -> typing.Generator[dict,dict,None]:
+    '''
+    Re-does the last undone action.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.redo',
+    }
+    response = yield cmd_dict
+
+
+def remove_attribute(node_id: NodeId, name: str) -> typing.Generator[dict,dict,None]:
+    '''
+    Removes attribute with given name from an element with given id.
+    
+    :param node_id: Id of the element to remove attribute from.
+    :param name: Name of the attribute to remove.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.removeAttribute',
+        'params': {
+            'nodeId': node_id,
+            'name': name,
         }
-        response = yield cmd_dict
-        return NodeId.from_response(response['nodeId'])
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def perform_search(query: str, include_user_agent_shadow_dom: bool) -> dict:
-        '''
-        Searches for a given string in the DOM tree. Use `getSearchResults` to access search results or
-        `cancelSearch` to end this search session.
-        
-        :param query: Plain text or query selector or XPath search query.
-        :param include_user_agent_shadow_dom: True to search in user agent shadow DOM.
-        :returns: a dict with the following keys:
-            * searchId: Unique search session identifier.
-            * resultCount: Number of search results.
-        '''
 
-        cmd_dict = {
-            'method': 'DOM.performSearch',
-            'params': {
-                'query': query,
-                'includeUserAgentShadowDOM': include_user_agent_shadow_dom,
-            }
+def remove_node(node_id: NodeId) -> typing.Generator[dict,dict,None]:
+    '''
+    Removes node with given id.
+    
+    :param node_id: Id of the node to remove.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.removeNode',
+        'params': {
+            'nodeId': node_id,
         }
-        response = yield cmd_dict
-        return {
-                'searchId': str.from_response(response['searchId']),
-                'resultCount': int.from_response(response['resultCount']),
-            }
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def push_node_by_path_to_frontend(path: str) -> NodeId:
-        '''
-        Requests that the node is sent to the caller given its path. // FIXME, use XPath
-        
-        :param path: Path to node in the proprietary format.
-        :returns: Id of the node for given path.
-        '''
 
-        cmd_dict = {
-            'method': 'DOM.pushNodeByPathToFrontend',
-            'params': {
-                'path': path,
-            }
+def request_child_nodes(node_id: NodeId, depth: int, pierce: bool) -> typing.Generator[dict,dict,None]:
+    '''
+    Requests that children of the node with given id are returned to the caller in form of
+    `setChildNodes` events where not only immediate children are retrieved, but all children down to
+    the specified depth.
+    
+    :param node_id: Id of the node to get children for.
+    :param depth: The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the
+    entire subtree or provide an integer larger than 0.
+    :param pierce: Whether or not iframes and shadow roots should be traversed when returning the sub-tree
+    (default is false).
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.requestChildNodes',
+        'params': {
+            'nodeId': node_id,
+            'depth': depth,
+            'pierce': pierce,
         }
-        response = yield cmd_dict
-        return NodeId.from_response(response['nodeId'])
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def push_nodes_by_backend_ids_to_frontend(backend_node_ids: typing.List['BackendNodeId']) -> typing.List['NodeId']:
-        '''
-        Requests that a batch of nodes is sent to the caller given their backend node ids.
-        
-        :param backend_node_ids: The array of backend node ids.
-        :returns: The array of ids of pushed nodes that correspond to the backend ids specified in
-        backendNodeIds.
-        '''
 
-        cmd_dict = {
-            'method': 'DOM.pushNodesByBackendIdsToFrontend',
-            'params': {
-                'backendNodeIds': backend_node_ids,
-            }
+def request_node(object_id: runtime.RemoteObjectId) -> typing.Generator[dict,dict,NodeId]:
+    '''
+    Requests that the node is sent to the caller given the JavaScript node object reference. All
+    nodes that form the path from the node to the root are also sent to the client as a series of
+    `setChildNodes` notifications.
+    
+    :param object_id: JavaScript object id to convert into node.
+    :returns: Node id for given object.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.requestNode',
+        'params': {
+            'objectId': object_id,
         }
-        response = yield cmd_dict
-        return [NodeId.from_response(i) for i in response['nodeIds']]
+    }
+    response = yield cmd_dict
+    return NodeId.from_response(response['nodeId'])
 
-    @staticmethod
-    def query_selector(node_id: NodeId, selector: str) -> NodeId:
-        '''
-        Executes `querySelector` on a given node.
-        
-        :param node_id: Id of the node to query upon.
-        :param selector: Selector string.
-        :returns: Query selector result.
-        '''
 
-        cmd_dict = {
-            'method': 'DOM.querySelector',
-            'params': {
-                'nodeId': node_id,
-                'selector': selector,
-            }
+def resolve_node(node_id: NodeId, backend_node_id: dom.BackendNodeId, object_group: str, execution_context_id: runtime.ExecutionContextId) -> typing.Generator[dict,dict,runtime.RemoteObject]:
+    '''
+    Resolves the JavaScript node object for a given NodeId or BackendNodeId.
+    
+    :param node_id: Id of the node to resolve.
+    :param backend_node_id: Backend identifier of the node to resolve.
+    :param object_group: Symbolic group name that can be used to release multiple objects.
+    :param execution_context_id: Execution context in which to resolve the node.
+    :returns: JavaScript object wrapper for given node.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.resolveNode',
+        'params': {
+            'nodeId': node_id,
+            'backendNodeId': backend_node_id,
+            'objectGroup': object_group,
+            'executionContextId': execution_context_id,
         }
-        response = yield cmd_dict
-        return NodeId.from_response(response['nodeId'])
+    }
+    response = yield cmd_dict
+    return runtime.RemoteObject.from_response(response['object'])
 
-    @staticmethod
-    def query_selector_all(node_id: NodeId, selector: str) -> typing.List['NodeId']:
-        '''
-        Executes `querySelectorAll` on a given node.
-        
-        :param node_id: Id of the node to query upon.
-        :param selector: Selector string.
-        :returns: Query selector result.
-        '''
 
-        cmd_dict = {
-            'method': 'DOM.querySelectorAll',
-            'params': {
-                'nodeId': node_id,
-                'selector': selector,
-            }
+def set_attribute_value(node_id: NodeId, name: str, value: str) -> typing.Generator[dict,dict,None]:
+    '''
+    Sets attribute for an element with given id.
+    
+    :param node_id: Id of the element to set attribute for.
+    :param name: Attribute name.
+    :param value: Attribute value.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.setAttributeValue',
+        'params': {
+            'nodeId': node_id,
+            'name': name,
+            'value': value,
         }
-        response = yield cmd_dict
-        return [NodeId.from_response(i) for i in response['nodeIds']]
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def redo() -> None:
-        '''
-        Re-does the last undone action.
-        '''
 
-        cmd_dict = {
-            'method': 'DOM.redo',
+def set_attributes_as_text(node_id: NodeId, text: str, name: str) -> typing.Generator[dict,dict,None]:
+    '''
+    Sets attributes on element with given id. This method is useful when user edits some existing
+    attribute value and types in several attribute name/value pairs.
+    
+    :param node_id: Id of the element to set attributes for.
+    :param text: Text with a number of attributes. Will parse this text using HTML parser.
+    :param name: Attribute name to replace with new attributes derived from text in case text parsed
+    successfully.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.setAttributesAsText',
+        'params': {
+            'nodeId': node_id,
+            'text': text,
+            'name': name,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def remove_attribute(node_id: NodeId, name: str) -> None:
-        '''
-        Removes attribute with given name from an element with given id.
-        
-        :param node_id: Id of the element to remove attribute from.
-        :param name: Name of the attribute to remove.
-        '''
 
-        cmd_dict = {
-            'method': 'DOM.removeAttribute',
-            'params': {
-                'nodeId': node_id,
-                'name': name,
-            }
+def set_file_input_files(files: typing.List, node_id: NodeId, backend_node_id: BackendNodeId, object_id: runtime.RemoteObjectId) -> typing.Generator[dict,dict,None]:
+    '''
+    Sets files for the given file input element.
+    
+    :param files: Array of file paths to set.
+    :param node_id: Identifier of the node.
+    :param backend_node_id: Identifier of the backend node.
+    :param object_id: JavaScript object id of the node wrapper.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.setFileInputFiles',
+        'params': {
+            'files': files,
+            'nodeId': node_id,
+            'backendNodeId': backend_node_id,
+            'objectId': object_id,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def remove_node(node_id: NodeId) -> None:
-        '''
-        Removes node with given id.
-        
-        :param node_id: Id of the node to remove.
-        '''
 
-        cmd_dict = {
-            'method': 'DOM.removeNode',
-            'params': {
-                'nodeId': node_id,
-            }
+def get_file_info(object_id: runtime.RemoteObjectId) -> typing.Generator[dict,dict,str]:
+    '''
+    Returns file information for the given
+    File wrapper.
+    
+    :param object_id: JavaScript object id of the node wrapper.
+    :returns: 
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.getFileInfo',
+        'params': {
+            'objectId': object_id,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
+    return str(response['path'])
 
-    @staticmethod
-    def request_child_nodes(node_id: NodeId, depth: int, pierce: bool) -> None:
-        '''
-        Requests that children of the node with given id are returned to the caller in form of
-        `setChildNodes` events where not only immediate children are retrieved, but all children down to
-        the specified depth.
-        
-        :param node_id: Id of the node to get children for.
-        :param depth: The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the
-        entire subtree or provide an integer larger than 0.
-        :param pierce: Whether or not iframes and shadow roots should be traversed when returning the sub-tree
-        (default is false).
-        '''
 
-        cmd_dict = {
-            'method': 'DOM.requestChildNodes',
-            'params': {
-                'nodeId': node_id,
-                'depth': depth,
-                'pierce': pierce,
-            }
+def set_inspected_node(node_id: NodeId) -> typing.Generator[dict,dict,None]:
+    '''
+    Enables console to refer to the node with given id via $x (see Command Line API for more details
+    $x functions).
+    
+    :param node_id: DOM node id to be accessible by means of $x command line API.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.setInspectedNode',
+        'params': {
+            'nodeId': node_id,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def request_node(object_id: runtime.RemoteObjectId) -> NodeId:
-        '''
-        Requests that the node is sent to the caller given the JavaScript node object reference. All
-        nodes that form the path from the node to the root are also sent to the client as a series of
-        `setChildNodes` notifications.
-        
-        :param object_id: JavaScript object id to convert into node.
-        :returns: Node id for given object.
-        '''
 
-        cmd_dict = {
-            'method': 'DOM.requestNode',
-            'params': {
-                'objectId': object_id,
-            }
+def set_node_name(node_id: NodeId, name: str) -> typing.Generator[dict,dict,NodeId]:
+    '''
+    Sets node name for a node with given id.
+    
+    :param node_id: Id of the node to set name for.
+    :param name: New node's name.
+    :returns: New node's id.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.setNodeName',
+        'params': {
+            'nodeId': node_id,
+            'name': name,
         }
-        response = yield cmd_dict
-        return NodeId.from_response(response['nodeId'])
+    }
+    response = yield cmd_dict
+    return NodeId.from_response(response['nodeId'])
 
-    @staticmethod
-    def resolve_node(node_id: NodeId, backend_node_id: dom.BackendNodeId, object_group: str, execution_context_id: runtime.ExecutionContextId) -> runtime.RemoteObject:
-        '''
-        Resolves the JavaScript node object for a given NodeId or BackendNodeId.
-        
-        :param node_id: Id of the node to resolve.
-        :param backend_node_id: Backend identifier of the node to resolve.
-        :param object_group: Symbolic group name that can be used to release multiple objects.
-        :param execution_context_id: Execution context in which to resolve the node.
-        :returns: JavaScript object wrapper for given node.
-        '''
 
-        cmd_dict = {
-            'method': 'DOM.resolveNode',
-            'params': {
-                'nodeId': node_id,
-                'backendNodeId': backend_node_id,
-                'objectGroup': object_group,
-                'executionContextId': execution_context_id,
-            }
+def set_node_value(node_id: NodeId, value: str) -> typing.Generator[dict,dict,None]:
+    '''
+    Sets node value for a node with given id.
+    
+    :param node_id: Id of the node to set value for.
+    :param value: New node's value.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.setNodeValue',
+        'params': {
+            'nodeId': node_id,
+            'value': value,
         }
-        response = yield cmd_dict
-        return runtime.RemoteObject.from_response(response['object'])
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def set_attribute_value(node_id: NodeId, name: str, value: str) -> None:
-        '''
-        Sets attribute for an element with given id.
-        
-        :param node_id: Id of the element to set attribute for.
-        :param name: Attribute name.
-        :param value: Attribute value.
-        '''
 
-        cmd_dict = {
-            'method': 'DOM.setAttributeValue',
-            'params': {
-                'nodeId': node_id,
-                'name': name,
-                'value': value,
-            }
+def set_outer_html(node_id: NodeId, outer_html: str) -> typing.Generator[dict,dict,None]:
+    '''
+    Sets node HTML markup, returns new node id.
+    
+    :param node_id: Id of the node to set markup for.
+    :param outer_html: Outer HTML markup to set.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.setOuterHTML',
+        'params': {
+            'nodeId': node_id,
+            'outerHTML': outer_html,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def set_attributes_as_text(node_id: NodeId, text: str, name: str) -> None:
-        '''
-        Sets attributes on element with given id. This method is useful when user edits some existing
-        attribute value and types in several attribute name/value pairs.
-        
-        :param node_id: Id of the element to set attributes for.
-        :param text: Text with a number of attributes. Will parse this text using HTML parser.
-        :param name: Attribute name to replace with new attributes derived from text in case text parsed
-        successfully.
-        '''
 
-        cmd_dict = {
-            'method': 'DOM.setAttributesAsText',
-            'params': {
-                'nodeId': node_id,
-                'text': text,
-                'name': name,
-            }
+def undo() -> typing.Generator[dict,dict,None]:
+    '''
+    Undoes the last performed action.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.undo',
+    }
+    response = yield cmd_dict
+
+
+def get_frame_owner(frame_id: page.FrameId) -> typing.Generator[dict,dict,dict]:
+    '''
+    Returns iframe node that owns iframe with the given domain.
+    
+    :param frame_id: 
+    :returns: a dict with the following keys:
+        * backendNodeId: Resulting node.
+        * nodeId: Id of the node at given coordinates, only when enabled and requested document.
+    '''
+
+    cmd_dict = {
+        'method': 'DOM.getFrameOwner',
+        'params': {
+            'frameId': frame_id,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
+    return {
+        'backendNodeId': BackendNodeId.from_response(response['backendNodeId']),
+        'nodeId': NodeId.from_response(response['nodeId']),
+    }
 
-    @staticmethod
-    def set_file_input_files(files: typing.List, node_id: NodeId, backend_node_id: BackendNodeId, object_id: runtime.RemoteObjectId) -> None:
-        '''
-        Sets files for the given file input element.
-        
-        :param files: Array of file paths to set.
-        :param node_id: Identifier of the node.
-        :param backend_node_id: Identifier of the backend node.
-        :param object_id: JavaScript object id of the node wrapper.
-        '''
-
-        cmd_dict = {
-            'method': 'DOM.setFileInputFiles',
-            'params': {
-                'files': files,
-                'nodeId': node_id,
-                'backendNodeId': backend_node_id,
-                'objectId': object_id,
-            }
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def get_file_info(object_id: runtime.RemoteObjectId) -> str:
-        '''
-        Returns file information for the given
-        File wrapper.
-        
-        :param object_id: JavaScript object id of the node wrapper.
-        :returns: 
-        '''
-
-        cmd_dict = {
-            'method': 'DOM.getFileInfo',
-            'params': {
-                'objectId': object_id,
-            }
-        }
-        response = yield cmd_dict
-        return str.from_response(response['path'])
-
-    @staticmethod
-    def set_inspected_node(node_id: NodeId) -> None:
-        '''
-        Enables console to refer to the node with given id via $x (see Command Line API for more details
-        $x functions).
-        
-        :param node_id: DOM node id to be accessible by means of $x command line API.
-        '''
-
-        cmd_dict = {
-            'method': 'DOM.setInspectedNode',
-            'params': {
-                'nodeId': node_id,
-            }
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def set_node_name(node_id: NodeId, name: str) -> NodeId:
-        '''
-        Sets node name for a node with given id.
-        
-        :param node_id: Id of the node to set name for.
-        :param name: New node's name.
-        :returns: New node's id.
-        '''
-
-        cmd_dict = {
-            'method': 'DOM.setNodeName',
-            'params': {
-                'nodeId': node_id,
-                'name': name,
-            }
-        }
-        response = yield cmd_dict
-        return NodeId.from_response(response['nodeId'])
-
-    @staticmethod
-    def set_node_value(node_id: NodeId, value: str) -> None:
-        '''
-        Sets node value for a node with given id.
-        
-        :param node_id: Id of the node to set value for.
-        :param value: New node's value.
-        '''
-
-        cmd_dict = {
-            'method': 'DOM.setNodeValue',
-            'params': {
-                'nodeId': node_id,
-                'value': value,
-            }
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def set_outer_html(node_id: NodeId, outer_html: str) -> None:
-        '''
-        Sets node HTML markup, returns new node id.
-        
-        :param node_id: Id of the node to set markup for.
-        :param outer_html: Outer HTML markup to set.
-        '''
-
-        cmd_dict = {
-            'method': 'DOM.setOuterHTML',
-            'params': {
-                'nodeId': node_id,
-                'outerHTML': outer_html,
-            }
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def undo() -> None:
-        '''
-        Undoes the last performed action.
-        '''
-
-        cmd_dict = {
-            'method': 'DOM.undo',
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def get_frame_owner(frame_id: page.FrameId) -> dict:
-        '''
-        Returns iframe node that owns iframe with the given domain.
-        
-        :param frame_id: 
-        :returns: a dict with the following keys:
-            * backendNodeId: Resulting node.
-            * nodeId: Id of the node at given coordinates, only when enabled and requested document.
-        '''
-
-        cmd_dict = {
-            'method': 'DOM.getFrameOwner',
-            'params': {
-                'frameId': frame_id,
-            }
-        }
-        response = yield cmd_dict
-        return {
-                'backendNodeId': BackendNodeId.from_response(response['backendNodeId']),
-                'nodeId': NodeId.from_response(response['nodeId']),
-            }
 

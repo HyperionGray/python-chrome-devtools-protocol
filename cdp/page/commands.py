@@ -20,935 +20,934 @@ from ..runtime import types as runtime
 
 
 
-class Page:
-    @staticmethod
-    def add_script_to_evaluate_on_load(script_source: str) -> ScriptIdentifier:
-        '''
-        Deprecated, please use addScriptToEvaluateOnNewDocument instead.
-        
-        :param script_source: 
-        :returns: Identifier of the added script.
-        '''
+def add_script_to_evaluate_on_load(script_source: str) -> typing.Generator[dict,dict,ScriptIdentifier]:
+    '''
+    Deprecated, please use addScriptToEvaluateOnNewDocument instead.
+    
+    :param script_source: 
+    :returns: Identifier of the added script.
+    '''
 
-        cmd_dict = {
-            'method': 'Page.addScriptToEvaluateOnLoad',
-            'params': {
-                'scriptSource': script_source,
-            }
+    cmd_dict = {
+        'method': 'Page.addScriptToEvaluateOnLoad',
+        'params': {
+            'scriptSource': script_source,
         }
-        response = yield cmd_dict
-        return ScriptIdentifier.from_response(response['identifier'])
+    }
+    response = yield cmd_dict
+    return ScriptIdentifier.from_response(response['identifier'])
 
-    @staticmethod
-    def add_script_to_evaluate_on_new_document(source: str, world_name: str) -> ScriptIdentifier:
-        '''
-        Evaluates given script in every frame upon creation (before loading frame's scripts).
-        
-        :param source: 
-        :param world_name: If specified, creates an isolated world with the given name and evaluates given script in it.
-        This world name will be used as the ExecutionContextDescription::name when the corresponding
-        event is emitted.
-        :returns: Identifier of the added script.
-        '''
 
-        cmd_dict = {
-            'method': 'Page.addScriptToEvaluateOnNewDocument',
-            'params': {
-                'source': source,
-                'worldName': world_name,
-            }
+def add_script_to_evaluate_on_new_document(source: str, world_name: str) -> typing.Generator[dict,dict,ScriptIdentifier]:
+    '''
+    Evaluates given script in every frame upon creation (before loading frame's scripts).
+    
+    :param source: 
+    :param world_name: If specified, creates an isolated world with the given name and evaluates given script in it.
+    This world name will be used as the ExecutionContextDescription::name when the corresponding
+    event is emitted.
+    :returns: Identifier of the added script.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.addScriptToEvaluateOnNewDocument',
+        'params': {
+            'source': source,
+            'worldName': world_name,
         }
-        response = yield cmd_dict
-        return ScriptIdentifier.from_response(response['identifier'])
+    }
+    response = yield cmd_dict
+    return ScriptIdentifier.from_response(response['identifier'])
 
-    @staticmethod
-    def bring_to_front() -> None:
-        '''
-        Brings page to front (activates tab).
-        '''
 
-        cmd_dict = {
-            'method': 'Page.bringToFront',
+def bring_to_front() -> typing.Generator[dict,dict,None]:
+    '''
+    Brings page to front (activates tab).
+    '''
+
+    cmd_dict = {
+        'method': 'Page.bringToFront',
+    }
+    response = yield cmd_dict
+
+
+def capture_screenshot(format: str, quality: int, clip: Viewport, from_surface: bool) -> typing.Generator[dict,dict,str]:
+    '''
+    Capture page screenshot.
+    
+    :param format: Image compression format (defaults to png).
+    :param quality: Compression quality from range [0..100] (jpeg only).
+    :param clip: Capture the screenshot of a given region only.
+    :param from_surface: Capture the screenshot from the surface, rather than the view. Defaults to true.
+    :returns: Base64-encoded image data.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.captureScreenshot',
+        'params': {
+            'format': format,
+            'quality': quality,
+            'clip': clip,
+            'fromSurface': from_surface,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
+    return str(response['data'])
 
-    @staticmethod
-    def capture_screenshot(format: str, quality: int, clip: Viewport, from_surface: bool) -> str:
-        '''
-        Capture page screenshot.
-        
-        :param format: Image compression format (defaults to png).
-        :param quality: Compression quality from range [0..100] (jpeg only).
-        :param clip: Capture the screenshot of a given region only.
-        :param from_surface: Capture the screenshot from the surface, rather than the view. Defaults to true.
-        :returns: Base64-encoded image data.
-        '''
 
-        cmd_dict = {
-            'method': 'Page.captureScreenshot',
-            'params': {
-                'format': format,
-                'quality': quality,
-                'clip': clip,
-                'fromSurface': from_surface,
-            }
+def capture_snapshot(format: str) -> typing.Generator[dict,dict,str]:
+    '''
+    Returns a snapshot of the page as a string. For MHTML format, the serialization includes
+    iframes, shadow DOM, external resources, and element-inline styles.
+    
+    :param format: Format (defaults to mhtml).
+    :returns: Serialized page data.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.captureSnapshot',
+        'params': {
+            'format': format,
         }
-        response = yield cmd_dict
-        return str.from_response(response['data'])
+    }
+    response = yield cmd_dict
+    return str(response['data'])
 
-    @staticmethod
-    def capture_snapshot(format: str) -> str:
-        '''
-        Returns a snapshot of the page as a string. For MHTML format, the serialization includes
-        iframes, shadow DOM, external resources, and element-inline styles.
-        
-        :param format: Format (defaults to mhtml).
-        :returns: Serialized page data.
-        '''
 
-        cmd_dict = {
-            'method': 'Page.captureSnapshot',
-            'params': {
-                'format': format,
-            }
+def clear_device_metrics_override() -> typing.Generator[dict,dict,None]:
+    '''
+    Clears the overriden device metrics.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.clearDeviceMetricsOverride',
+    }
+    response = yield cmd_dict
+
+
+def clear_device_orientation_override() -> typing.Generator[dict,dict,None]:
+    '''
+    Clears the overridden Device Orientation.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.clearDeviceOrientationOverride',
+    }
+    response = yield cmd_dict
+
+
+def clear_geolocation_override() -> typing.Generator[dict,dict,None]:
+    '''
+    Clears the overriden Geolocation Position and Error.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.clearGeolocationOverride',
+    }
+    response = yield cmd_dict
+
+
+def create_isolated_world(frame_id: FrameId, world_name: str, grant_univeral_access: bool) -> typing.Generator[dict,dict,runtime.ExecutionContextId]:
+    '''
+    Creates an isolated world for the given frame.
+    
+    :param frame_id: Id of the frame in which the isolated world should be created.
+    :param world_name: An optional name which is reported in the Execution Context.
+    :param grant_univeral_access: Whether or not universal access should be granted to the isolated world. This is a powerful
+    option, use with caution.
+    :returns: Execution context of the isolated world.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.createIsolatedWorld',
+        'params': {
+            'frameId': frame_id,
+            'worldName': world_name,
+            'grantUniveralAccess': grant_univeral_access,
         }
-        response = yield cmd_dict
-        return str.from_response(response['data'])
+    }
+    response = yield cmd_dict
+    return runtime.ExecutionContextId.from_response(response['executionContextId'])
 
-    @staticmethod
-    def clear_device_metrics_override() -> None:
-        '''
-        Clears the overriden device metrics.
-        '''
 
-        cmd_dict = {
-            'method': 'Page.clearDeviceMetricsOverride',
+def delete_cookie(cookie_name: str, url: str) -> typing.Generator[dict,dict,None]:
+    '''
+    Deletes browser cookie with given name, domain and path.
+    
+    :param cookie_name: Name of the cookie to remove.
+    :param url: URL to match cooke domain and path.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.deleteCookie',
+        'params': {
+            'cookieName': cookie_name,
+            'url': url,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def clear_device_orientation_override() -> None:
-        '''
-        Clears the overridden Device Orientation.
-        '''
 
-        cmd_dict = {
-            'method': 'Page.clearDeviceOrientationOverride',
+def disable() -> typing.Generator[dict,dict,None]:
+    '''
+    Disables page domain notifications.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.disable',
+    }
+    response = yield cmd_dict
+
+
+def enable() -> typing.Generator[dict,dict,None]:
+    '''
+    Enables page domain notifications.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.enable',
+    }
+    response = yield cmd_dict
+
+
+def get_app_manifest() -> typing.Generator[dict,dict,dict]:
+    '''
+    
+    :returns: a dict with the following keys:
+        * url: Manifest location.
+        * errors: 
+        * data: Manifest content.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.getAppManifest',
+    }
+    response = yield cmd_dict
+    return {
+        'url': str(response['url']),
+        'errors': [AppManifestError.from_response(i) for i in response['errors']],
+        'data': str(response['data']),
+    }
+
+
+def get_installability_errors() -> typing.Generator[dict,dict,typing.List]:
+    '''
+    
+    :returns: 
+    '''
+
+    cmd_dict = {
+        'method': 'Page.getInstallabilityErrors',
+    }
+    response = yield cmd_dict
+    return [str(i) for i in response['errors']]
+
+
+def get_cookies() -> typing.Generator[dict,dict,typing.List['network.Cookie']]:
+    '''
+    Returns all browser cookies. Depending on the backend support, will return detailed cookie
+    information in the `cookies` field.
+    :returns: Array of cookie objects.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.getCookies',
+    }
+    response = yield cmd_dict
+    return [network.Cookie.from_response(i) for i in response['cookies']]
+
+
+def get_frame_tree() -> typing.Generator[dict,dict,FrameTree]:
+    '''
+    Returns present frame tree structure.
+    :returns: Present frame tree structure.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.getFrameTree',
+    }
+    response = yield cmd_dict
+    return FrameTree.from_response(response['frameTree'])
+
+
+def get_layout_metrics() -> typing.Generator[dict,dict,dict]:
+    '''
+    Returns metrics relating to the layouting of the page, such as viewport bounds/scale.
+    :returns: a dict with the following keys:
+        * layoutViewport: Metrics relating to the layout viewport.
+        * visualViewport: Metrics relating to the visual viewport.
+        * contentSize: Size of scrollable area.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.getLayoutMetrics',
+    }
+    response = yield cmd_dict
+    return {
+        'layoutViewport': LayoutViewport.from_response(response['layoutViewport']),
+        'visualViewport': VisualViewport.from_response(response['visualViewport']),
+        'contentSize': dom.Rect.from_response(response['contentSize']),
+    }
+
+
+def get_navigation_history() -> typing.Generator[dict,dict,dict]:
+    '''
+    Returns navigation history for the current page.
+    :returns: a dict with the following keys:
+        * currentIndex: Index of the current navigation history entry.
+        * entries: Array of navigation history entries.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.getNavigationHistory',
+    }
+    response = yield cmd_dict
+    return {
+        'currentIndex': int(response['currentIndex']),
+        'entries': [NavigationEntry.from_response(i) for i in response['entries']],
+    }
+
+
+def reset_navigation_history() -> typing.Generator[dict,dict,None]:
+    '''
+    Resets navigation history for the current page.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.resetNavigationHistory',
+    }
+    response = yield cmd_dict
+
+
+def get_resource_content(frame_id: FrameId, url: str) -> typing.Generator[dict,dict,dict]:
+    '''
+    Returns content of the given resource.
+    
+    :param frame_id: Frame id to get resource for.
+    :param url: URL of the resource to get content for.
+    :returns: a dict with the following keys:
+        * content: Resource content.
+        * base64Encoded: True, if content was served as base64.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.getResourceContent',
+        'params': {
+            'frameId': frame_id,
+            'url': url,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
+    return {
+        'content': str(response['content']),
+        'base64Encoded': bool(response['base64Encoded']),
+    }
 
-    @staticmethod
-    def clear_geolocation_override() -> None:
-        '''
-        Clears the overriden Geolocation Position and Error.
-        '''
 
-        cmd_dict = {
-            'method': 'Page.clearGeolocationOverride',
+def get_resource_tree() -> typing.Generator[dict,dict,FrameResourceTree]:
+    '''
+    Returns present frame / resource tree structure.
+    :returns: Present frame / resource tree structure.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.getResourceTree',
+    }
+    response = yield cmd_dict
+    return FrameResourceTree.from_response(response['frameTree'])
+
+
+def handle_java_script_dialog(accept: bool, prompt_text: str) -> typing.Generator[dict,dict,None]:
+    '''
+    Accepts or dismisses a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload).
+    
+    :param accept: Whether to accept or dismiss the dialog.
+    :param prompt_text: The text to enter into the dialog prompt before accepting. Used only if this is a prompt
+    dialog.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.handleJavaScriptDialog',
+        'params': {
+            'accept': accept,
+            'promptText': prompt_text,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def create_isolated_world(frame_id: FrameId, world_name: str, grant_univeral_access: bool) -> runtime.ExecutionContextId:
-        '''
-        Creates an isolated world for the given frame.
-        
-        :param frame_id: Id of the frame in which the isolated world should be created.
-        :param world_name: An optional name which is reported in the Execution Context.
-        :param grant_univeral_access: Whether or not universal access should be granted to the isolated world. This is a powerful
-        option, use with caution.
-        :returns: Execution context of the isolated world.
-        '''
 
-        cmd_dict = {
-            'method': 'Page.createIsolatedWorld',
-            'params': {
-                'frameId': frame_id,
-                'worldName': world_name,
-                'grantUniveralAccess': grant_univeral_access,
-            }
+def navigate(url: str, referrer: str, transition_type: TransitionType, frame_id: FrameId) -> typing.Generator[dict,dict,dict]:
+    '''
+    Navigates current page to the given URL.
+    
+    :param url: URL to navigate the page to.
+    :param referrer: Referrer URL.
+    :param transition_type: Intended transition type.
+    :param frame_id: Frame id to navigate, if not specified navigates the top frame.
+    :returns: a dict with the following keys:
+        * frameId: Frame id that has navigated (or failed to navigate)
+        * loaderId: Loader identifier.
+        * errorText: User friendly error message, present if and only if navigation has failed.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.navigate',
+        'params': {
+            'url': url,
+            'referrer': referrer,
+            'transitionType': transition_type,
+            'frameId': frame_id,
         }
-        response = yield cmd_dict
-        return runtime.ExecutionContextId.from_response(response['executionContextId'])
+    }
+    response = yield cmd_dict
+    return {
+        'frameId': FrameId.from_response(response['frameId']),
+        'loaderId': network.LoaderId.from_response(response['loaderId']),
+        'errorText': str(response['errorText']),
+    }
 
-    @staticmethod
-    def delete_cookie(cookie_name: str, url: str) -> None:
-        '''
-        Deletes browser cookie with given name, domain and path.
-        
-        :param cookie_name: Name of the cookie to remove.
-        :param url: URL to match cooke domain and path.
-        '''
 
-        cmd_dict = {
-            'method': 'Page.deleteCookie',
-            'params': {
-                'cookieName': cookie_name,
-                'url': url,
-            }
+def navigate_to_history_entry(entry_id: int) -> typing.Generator[dict,dict,None]:
+    '''
+    Navigates current page to the given history entry.
+    
+    :param entry_id: Unique id of the entry to navigate to.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.navigateToHistoryEntry',
+        'params': {
+            'entryId': entry_id,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def disable() -> None:
-        '''
-        Disables page domain notifications.
-        '''
 
-        cmd_dict = {
-            'method': 'Page.disable',
+def print_to_pdf(landscape: bool, display_header_footer: bool, print_background: bool, scale: float, paper_width: float, paper_height: float, margin_top: float, margin_bottom: float, margin_left: float, margin_right: float, page_ranges: str, ignore_invalid_page_ranges: bool, header_template: str, footer_template: str, prefer_css_page_size: bool) -> typing.Generator[dict,dict,str]:
+    '''
+    Print page as PDF.
+    
+    :param landscape: Paper orientation. Defaults to false.
+    :param display_header_footer: Display header and footer. Defaults to false.
+    :param print_background: Print background graphics. Defaults to false.
+    :param scale: Scale of the webpage rendering. Defaults to 1.
+    :param paper_width: Paper width in inches. Defaults to 8.5 inches.
+    :param paper_height: Paper height in inches. Defaults to 11 inches.
+    :param margin_top: Top margin in inches. Defaults to 1cm (~0.4 inches).
+    :param margin_bottom: Bottom margin in inches. Defaults to 1cm (~0.4 inches).
+    :param margin_left: Left margin in inches. Defaults to 1cm (~0.4 inches).
+    :param margin_right: Right margin in inches. Defaults to 1cm (~0.4 inches).
+    :param page_ranges: Paper ranges to print, e.g., '1-5, 8, 11-13'. Defaults to the empty string, which means
+    print all pages.
+    :param ignore_invalid_page_ranges: Whether to silently ignore invalid but successfully parsed page ranges, such as '3-2'.
+    Defaults to false.
+    :param header_template: HTML template for the print header. Should be valid HTML markup with following
+    classes used to inject printing values into them:
+    - `date`: formatted print date
+    - `title`: document title
+    - `url`: document location
+    - `pageNumber`: current page number
+    - `totalPages`: total pages in the document
+    
+    For example, `<span class=title></span>` would generate span containing the title.
+    :param footer_template: HTML template for the print footer. Should use the same format as the `headerTemplate`.
+    :param prefer_css_page_size: Whether or not to prefer page size as defined by css. Defaults to false,
+    in which case the content will be scaled to fit the paper size.
+    :returns: Base64-encoded pdf data.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.printToPDF',
+        'params': {
+            'landscape': landscape,
+            'displayHeaderFooter': display_header_footer,
+            'printBackground': print_background,
+            'scale': scale,
+            'paperWidth': paper_width,
+            'paperHeight': paper_height,
+            'marginTop': margin_top,
+            'marginBottom': margin_bottom,
+            'marginLeft': margin_left,
+            'marginRight': margin_right,
+            'pageRanges': page_ranges,
+            'ignoreInvalidPageRanges': ignore_invalid_page_ranges,
+            'headerTemplate': header_template,
+            'footerTemplate': footer_template,
+            'preferCSSPageSize': prefer_css_page_size,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
+    return str(response['data'])
 
-    @staticmethod
-    def enable() -> None:
-        '''
-        Enables page domain notifications.
-        '''
 
-        cmd_dict = {
-            'method': 'Page.enable',
+def reload(ignore_cache: bool, script_to_evaluate_on_load: str) -> typing.Generator[dict,dict,None]:
+    '''
+    Reloads given page optionally ignoring the cache.
+    
+    :param ignore_cache: If true, browser cache is ignored (as if the user pressed Shift+refresh).
+    :param script_to_evaluate_on_load: If set, the script will be injected into all frames of the inspected page after reload.
+    Argument will be ignored if reloading dataURL origin.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.reload',
+        'params': {
+            'ignoreCache': ignore_cache,
+            'scriptToEvaluateOnLoad': script_to_evaluate_on_load,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def get_app_manifest() -> dict:
-        '''
-        
-        :returns: a dict with the following keys:
-            * url: Manifest location.
-            * errors: 
-            * data: Manifest content.
-        '''
 
-        cmd_dict = {
-            'method': 'Page.getAppManifest',
+def remove_script_to_evaluate_on_load(identifier: ScriptIdentifier) -> typing.Generator[dict,dict,None]:
+    '''
+    Deprecated, please use removeScriptToEvaluateOnNewDocument instead.
+    
+    :param identifier: 
+    '''
+
+    cmd_dict = {
+        'method': 'Page.removeScriptToEvaluateOnLoad',
+        'params': {
+            'identifier': identifier,
         }
-        response = yield cmd_dict
-        return {
-                'url': str.from_response(response['url']),
-                'errors': [AppManifestError.from_response(i) for i in response['errors']],
-                'data': str.from_response(response['data']),
-            }
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def get_installability_errors() -> typing.List:
-        '''
-        
-        :returns: 
-        '''
 
-        cmd_dict = {
-            'method': 'Page.getInstallabilityErrors',
+def remove_script_to_evaluate_on_new_document(identifier: ScriptIdentifier) -> typing.Generator[dict,dict,None]:
+    '''
+    Removes given script from the list.
+    
+    :param identifier: 
+    '''
+
+    cmd_dict = {
+        'method': 'Page.removeScriptToEvaluateOnNewDocument',
+        'params': {
+            'identifier': identifier,
         }
-        response = yield cmd_dict
-        return [str(i) for i in response['errors']]
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def get_cookies() -> typing.List['Network.Cookie']:
-        '''
-        Returns all browser cookies. Depending on the backend support, will return detailed cookie
-        information in the `cookies` field.
-        :returns: Array of cookie objects.
-        '''
 
-        cmd_dict = {
-            'method': 'Page.getCookies',
+def screencast_frame_ack(session_id: int) -> typing.Generator[dict,dict,None]:
+    '''
+    Acknowledges that a screencast frame has been received by the frontend.
+    
+    :param session_id: Frame number.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.screencastFrameAck',
+        'params': {
+            'sessionId': session_id,
         }
-        response = yield cmd_dict
-        return [network.Cookie.from_response(i) for i in response['cookies']]
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def get_frame_tree() -> FrameTree:
-        '''
-        Returns present frame tree structure.
-        :returns: Present frame tree structure.
-        '''
 
-        cmd_dict = {
-            'method': 'Page.getFrameTree',
+def search_in_resource(frame_id: FrameId, url: str, query: str, case_sensitive: bool, is_regex: bool) -> typing.Generator[dict,dict,typing.List['debugger.SearchMatch']]:
+    '''
+    Searches for given string in resource content.
+    
+    :param frame_id: Frame id for resource to search in.
+    :param url: URL of the resource to search in.
+    :param query: String to search for.
+    :param case_sensitive: If true, search is case sensitive.
+    :param is_regex: If true, treats string parameter as regex.
+    :returns: List of search matches.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.searchInResource',
+        'params': {
+            'frameId': frame_id,
+            'url': url,
+            'query': query,
+            'caseSensitive': case_sensitive,
+            'isRegex': is_regex,
         }
-        response = yield cmd_dict
-        return FrameTree.from_response(response['frameTree'])
+    }
+    response = yield cmd_dict
+    return [debugger.SearchMatch.from_response(i) for i in response['result']]
 
-    @staticmethod
-    def get_layout_metrics() -> dict:
-        '''
-        Returns metrics relating to the layouting of the page, such as viewport bounds/scale.
-        :returns: a dict with the following keys:
-            * layoutViewport: Metrics relating to the layout viewport.
-            * visualViewport: Metrics relating to the visual viewport.
-            * contentSize: Size of scrollable area.
-        '''
 
-        cmd_dict = {
-            'method': 'Page.getLayoutMetrics',
+def set_ad_blocking_enabled(enabled: bool) -> typing.Generator[dict,dict,None]:
+    '''
+    Enable Chrome's experimental ad filter on all sites.
+    
+    :param enabled: Whether to block ads.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.setAdBlockingEnabled',
+        'params': {
+            'enabled': enabled,
         }
-        response = yield cmd_dict
-        return {
-                'layoutViewport': LayoutViewport.from_response(response['layoutViewport']),
-                'visualViewport': VisualViewport.from_response(response['visualViewport']),
-                'contentSize': dom.Rect.from_response(response['contentSize']),
-            }
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def get_navigation_history() -> dict:
-        '''
-        Returns navigation history for the current page.
-        :returns: a dict with the following keys:
-            * currentIndex: Index of the current navigation history entry.
-            * entries: Array of navigation history entries.
-        '''
 
-        cmd_dict = {
-            'method': 'Page.getNavigationHistory',
+def set_bypass_csp(enabled: bool) -> typing.Generator[dict,dict,None]:
+    '''
+    Enable page Content Security Policy by-passing.
+    
+    :param enabled: Whether to bypass page CSP.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.setBypassCSP',
+        'params': {
+            'enabled': enabled,
         }
-        response = yield cmd_dict
-        return {
-                'currentIndex': int.from_response(response['currentIndex']),
-                'entries': [NavigationEntry.from_response(i) for i in response['entries']],
-            }
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def reset_navigation_history() -> None:
-        '''
-        Resets navigation history for the current page.
-        '''
 
-        cmd_dict = {
-            'method': 'Page.resetNavigationHistory',
+def set_device_metrics_override(width: int, height: int, device_scale_factor: float, mobile: bool, scale: float, screen_width: int, screen_height: int, position_x: int, position_y: int, dont_set_visible_size: bool, screen_orientation: emulation.ScreenOrientation, viewport: Viewport) -> typing.Generator[dict,dict,None]:
+    '''
+    Overrides the values of device screen dimensions (window.screen.width, window.screen.height,
+    window.innerWidth, window.innerHeight, and "device-width"/"device-height"-related CSS media
+    query results).
+    
+    :param width: Overriding width value in pixels (minimum 0, maximum 10000000). 0 disables the override.
+    :param height: Overriding height value in pixels (minimum 0, maximum 10000000). 0 disables the override.
+    :param device_scale_factor: Overriding device scale factor value. 0 disables the override.
+    :param mobile: Whether to emulate mobile device. This includes viewport meta tag, overlay scrollbars, text
+    autosizing and more.
+    :param scale: Scale to apply to resulting view image.
+    :param screen_width: Overriding screen width value in pixels (minimum 0, maximum 10000000).
+    :param screen_height: Overriding screen height value in pixels (minimum 0, maximum 10000000).
+    :param position_x: Overriding view X position on screen in pixels (minimum 0, maximum 10000000).
+    :param position_y: Overriding view Y position on screen in pixels (minimum 0, maximum 10000000).
+    :param dont_set_visible_size: Do not set visible view size, rely upon explicit setVisibleSize call.
+    :param screen_orientation: Screen orientation override.
+    :param viewport: The viewport dimensions and scale. If not set, the override is cleared.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.setDeviceMetricsOverride',
+        'params': {
+            'width': width,
+            'height': height,
+            'deviceScaleFactor': device_scale_factor,
+            'mobile': mobile,
+            'scale': scale,
+            'screenWidth': screen_width,
+            'screenHeight': screen_height,
+            'positionX': position_x,
+            'positionY': position_y,
+            'dontSetVisibleSize': dont_set_visible_size,
+            'screenOrientation': screen_orientation,
+            'viewport': viewport,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def get_resource_content(frame_id: FrameId, url: str) -> dict:
-        '''
-        Returns content of the given resource.
-        
-        :param frame_id: Frame id to get resource for.
-        :param url: URL of the resource to get content for.
-        :returns: a dict with the following keys:
-            * content: Resource content.
-            * base64Encoded: True, if content was served as base64.
-        '''
 
-        cmd_dict = {
-            'method': 'Page.getResourceContent',
-            'params': {
-                'frameId': frame_id,
-                'url': url,
-            }
+def set_device_orientation_override(alpha: float, beta: float, gamma: float) -> typing.Generator[dict,dict,None]:
+    '''
+    Overrides the Device Orientation.
+    
+    :param alpha: Mock alpha
+    :param beta: Mock beta
+    :param gamma: Mock gamma
+    '''
+
+    cmd_dict = {
+        'method': 'Page.setDeviceOrientationOverride',
+        'params': {
+            'alpha': alpha,
+            'beta': beta,
+            'gamma': gamma,
         }
-        response = yield cmd_dict
-        return {
-                'content': str.from_response(response['content']),
-                'base64Encoded': bool.from_response(response['base64Encoded']),
-            }
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def get_resource_tree() -> FrameResourceTree:
-        '''
-        Returns present frame / resource tree structure.
-        :returns: Present frame / resource tree structure.
-        '''
 
-        cmd_dict = {
-            'method': 'Page.getResourceTree',
+def set_font_families(font_families: FontFamilies) -> typing.Generator[dict,dict,None]:
+    '''
+    Set generic font families.
+    
+    :param font_families: Specifies font families to set. If a font family is not specified, it won't be changed.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.setFontFamilies',
+        'params': {
+            'fontFamilies': font_families,
         }
-        response = yield cmd_dict
-        return FrameResourceTree.from_response(response['frameTree'])
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def handle_java_script_dialog(accept: bool, prompt_text: str) -> None:
-        '''
-        Accepts or dismisses a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload).
-        
-        :param accept: Whether to accept or dismiss the dialog.
-        :param prompt_text: The text to enter into the dialog prompt before accepting. Used only if this is a prompt
-        dialog.
-        '''
 
-        cmd_dict = {
-            'method': 'Page.handleJavaScriptDialog',
-            'params': {
-                'accept': accept,
-                'promptText': prompt_text,
-            }
+def set_font_sizes(font_sizes: FontSizes) -> typing.Generator[dict,dict,None]:
+    '''
+    Set default font sizes.
+    
+    :param font_sizes: Specifies font sizes to set. If a font size is not specified, it won't be changed.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.setFontSizes',
+        'params': {
+            'fontSizes': font_sizes,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def navigate(url: str, referrer: str, transition_type: TransitionType, frame_id: FrameId) -> dict:
-        '''
-        Navigates current page to the given URL.
-        
-        :param url: URL to navigate the page to.
-        :param referrer: Referrer URL.
-        :param transition_type: Intended transition type.
-        :param frame_id: Frame id to navigate, if not specified navigates the top frame.
-        :returns: a dict with the following keys:
-            * frameId: Frame id that has navigated (or failed to navigate)
-            * loaderId: Loader identifier.
-            * errorText: User friendly error message, present if and only if navigation has failed.
-        '''
 
-        cmd_dict = {
-            'method': 'Page.navigate',
-            'params': {
-                'url': url,
-                'referrer': referrer,
-                'transitionType': transition_type,
-                'frameId': frame_id,
-            }
+def set_document_content(frame_id: FrameId, html: str) -> typing.Generator[dict,dict,None]:
+    '''
+    Sets given markup as the document's HTML.
+    
+    :param frame_id: Frame id to set HTML for.
+    :param html: HTML content to set.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.setDocumentContent',
+        'params': {
+            'frameId': frame_id,
+            'html': html,
         }
-        response = yield cmd_dict
-        return {
-                'frameId': FrameId.from_response(response['frameId']),
-                'loaderId': network.LoaderId.from_response(response['loaderId']),
-                'errorText': str.from_response(response['errorText']),
-            }
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def navigate_to_history_entry(entry_id: int) -> None:
-        '''
-        Navigates current page to the given history entry.
-        
-        :param entry_id: Unique id of the entry to navigate to.
-        '''
 
-        cmd_dict = {
-            'method': 'Page.navigateToHistoryEntry',
-            'params': {
-                'entryId': entry_id,
-            }
+def set_download_behavior(behavior: str, download_path: str) -> typing.Generator[dict,dict,None]:
+    '''
+    Set the behavior when downloading a file.
+    
+    :param behavior: Whether to allow all or deny all download requests, or use default Chrome behavior if
+    available (otherwise deny).
+    :param download_path: The default path to save downloaded files to. This is requred if behavior is set to 'allow'
+    '''
+
+    cmd_dict = {
+        'method': 'Page.setDownloadBehavior',
+        'params': {
+            'behavior': behavior,
+            'downloadPath': download_path,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def print_to_pdf(landscape: bool, display_header_footer: bool, print_background: bool, scale: float, paper_width: float, paper_height: float, margin_top: float, margin_bottom: float, margin_left: float, margin_right: float, page_ranges: str, ignore_invalid_page_ranges: bool, header_template: str, footer_template: str, prefer_css_page_size: bool) -> str:
-        '''
-        Print page as PDF.
-        
-        :param landscape: Paper orientation. Defaults to false.
-        :param display_header_footer: Display header and footer. Defaults to false.
-        :param print_background: Print background graphics. Defaults to false.
-        :param scale: Scale of the webpage rendering. Defaults to 1.
-        :param paper_width: Paper width in inches. Defaults to 8.5 inches.
-        :param paper_height: Paper height in inches. Defaults to 11 inches.
-        :param margin_top: Top margin in inches. Defaults to 1cm (~0.4 inches).
-        :param margin_bottom: Bottom margin in inches. Defaults to 1cm (~0.4 inches).
-        :param margin_left: Left margin in inches. Defaults to 1cm (~0.4 inches).
-        :param margin_right: Right margin in inches. Defaults to 1cm (~0.4 inches).
-        :param page_ranges: Paper ranges to print, e.g., '1-5, 8, 11-13'. Defaults to the empty string, which means
-        print all pages.
-        :param ignore_invalid_page_ranges: Whether to silently ignore invalid but successfully parsed page ranges, such as '3-2'.
-        Defaults to false.
-        :param header_template: HTML template for the print header. Should be valid HTML markup with following
-        classes used to inject printing values into them:
-        - `date`: formatted print date
-        - `title`: document title
-        - `url`: document location
-        - `pageNumber`: current page number
-        - `totalPages`: total pages in the document
-        
-        For example, `<span class=title></span>` would generate span containing the title.
-        :param footer_template: HTML template for the print footer. Should use the same format as the `headerTemplate`.
-        :param prefer_css_page_size: Whether or not to prefer page size as defined by css. Defaults to false,
-        in which case the content will be scaled to fit the paper size.
-        :returns: Base64-encoded pdf data.
-        '''
 
-        cmd_dict = {
-            'method': 'Page.printToPDF',
-            'params': {
-                'landscape': landscape,
-                'displayHeaderFooter': display_header_footer,
-                'printBackground': print_background,
-                'scale': scale,
-                'paperWidth': paper_width,
-                'paperHeight': paper_height,
-                'marginTop': margin_top,
-                'marginBottom': margin_bottom,
-                'marginLeft': margin_left,
-                'marginRight': margin_right,
-                'pageRanges': page_ranges,
-                'ignoreInvalidPageRanges': ignore_invalid_page_ranges,
-                'headerTemplate': header_template,
-                'footerTemplate': footer_template,
-                'preferCSSPageSize': prefer_css_page_size,
-            }
+def set_geolocation_override(latitude: float, longitude: float, accuracy: float) -> typing.Generator[dict,dict,None]:
+    '''
+    Overrides the Geolocation Position or Error. Omitting any of the parameters emulates position
+    unavailable.
+    
+    :param latitude: Mock latitude
+    :param longitude: Mock longitude
+    :param accuracy: Mock accuracy
+    '''
+
+    cmd_dict = {
+        'method': 'Page.setGeolocationOverride',
+        'params': {
+            'latitude': latitude,
+            'longitude': longitude,
+            'accuracy': accuracy,
         }
-        response = yield cmd_dict
-        return str.from_response(response['data'])
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def reload(ignore_cache: bool, script_to_evaluate_on_load: str) -> None:
-        '''
-        Reloads given page optionally ignoring the cache.
-        
-        :param ignore_cache: If true, browser cache is ignored (as if the user pressed Shift+refresh).
-        :param script_to_evaluate_on_load: If set, the script will be injected into all frames of the inspected page after reload.
-        Argument will be ignored if reloading dataURL origin.
-        '''
 
-        cmd_dict = {
-            'method': 'Page.reload',
-            'params': {
-                'ignoreCache': ignore_cache,
-                'scriptToEvaluateOnLoad': script_to_evaluate_on_load,
-            }
+def set_lifecycle_events_enabled(enabled: bool) -> typing.Generator[dict,dict,None]:
+    '''
+    Controls whether page will emit lifecycle events.
+    
+    :param enabled: If true, starts emitting lifecycle events.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.setLifecycleEventsEnabled',
+        'params': {
+            'enabled': enabled,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def remove_script_to_evaluate_on_load(identifier: ScriptIdentifier) -> None:
-        '''
-        Deprecated, please use removeScriptToEvaluateOnNewDocument instead.
-        
-        :param identifier: 
-        '''
 
-        cmd_dict = {
-            'method': 'Page.removeScriptToEvaluateOnLoad',
-            'params': {
-                'identifier': identifier,
-            }
+def set_touch_emulation_enabled(enabled: bool, configuration: str) -> typing.Generator[dict,dict,None]:
+    '''
+    Toggles mouse event-based touch event emulation.
+    
+    :param enabled: Whether the touch event emulation should be enabled.
+    :param configuration: Touch/gesture events configuration. Default: current platform.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.setTouchEmulationEnabled',
+        'params': {
+            'enabled': enabled,
+            'configuration': configuration,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def remove_script_to_evaluate_on_new_document(identifier: ScriptIdentifier) -> None:
-        '''
-        Removes given script from the list.
-        
-        :param identifier: 
-        '''
 
-        cmd_dict = {
-            'method': 'Page.removeScriptToEvaluateOnNewDocument',
-            'params': {
-                'identifier': identifier,
-            }
+def start_screencast(format: str, quality: int, max_width: int, max_height: int, every_nth_frame: int) -> typing.Generator[dict,dict,None]:
+    '''
+    Starts sending each frame using the `screencastFrame` event.
+    
+    :param format: Image compression format.
+    :param quality: Compression quality from range [0..100].
+    :param max_width: Maximum screenshot width.
+    :param max_height: Maximum screenshot height.
+    :param every_nth_frame: Send every n-th frame.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.startScreencast',
+        'params': {
+            'format': format,
+            'quality': quality,
+            'maxWidth': max_width,
+            'maxHeight': max_height,
+            'everyNthFrame': every_nth_frame,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def screencast_frame_ack(session_id: int) -> None:
-        '''
-        Acknowledges that a screencast frame has been received by the frontend.
-        
-        :param session_id: Frame number.
-        '''
 
-        cmd_dict = {
-            'method': 'Page.screencastFrameAck',
-            'params': {
-                'sessionId': session_id,
-            }
+def stop_loading() -> typing.Generator[dict,dict,None]:
+    '''
+    Force the page stop all navigations and pending resource fetches.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.stopLoading',
+    }
+    response = yield cmd_dict
+
+
+def crash() -> typing.Generator[dict,dict,None]:
+    '''
+    Crashes renderer on the IO thread, generates minidumps.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.crash',
+    }
+    response = yield cmd_dict
+
+
+def close() -> typing.Generator[dict,dict,None]:
+    '''
+    Tries to close page, running its beforeunload hooks, if any.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.close',
+    }
+    response = yield cmd_dict
+
+
+def set_web_lifecycle_state(state: str) -> typing.Generator[dict,dict,None]:
+    '''
+    Tries to update the web lifecycle state of the page.
+    It will transition the page to the given state according to:
+    https://github.com/WICG/web-lifecycle/
+    
+    :param state: Target lifecycle state
+    '''
+
+    cmd_dict = {
+        'method': 'Page.setWebLifecycleState',
+        'params': {
+            'state': state,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def search_in_resource(frame_id: FrameId, url: str, query: str, case_sensitive: bool, is_regex: bool) -> typing.List['Debugger.SearchMatch']:
-        '''
-        Searches for given string in resource content.
-        
-        :param frame_id: Frame id for resource to search in.
-        :param url: URL of the resource to search in.
-        :param query: String to search for.
-        :param case_sensitive: If true, search is case sensitive.
-        :param is_regex: If true, treats string parameter as regex.
-        :returns: List of search matches.
-        '''
 
-        cmd_dict = {
-            'method': 'Page.searchInResource',
-            'params': {
-                'frameId': frame_id,
-                'url': url,
-                'query': query,
-                'caseSensitive': case_sensitive,
-                'isRegex': is_regex,
-            }
+def stop_screencast() -> typing.Generator[dict,dict,None]:
+    '''
+    Stops sending each frame in the `screencastFrame`.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.stopScreencast',
+    }
+    response = yield cmd_dict
+
+
+def set_produce_compilation_cache(enabled: bool) -> typing.Generator[dict,dict,None]:
+    '''
+    Forces compilation cache to be generated for every subresource script.
+    
+    :param enabled: 
+    '''
+
+    cmd_dict = {
+        'method': 'Page.setProduceCompilationCache',
+        'params': {
+            'enabled': enabled,
         }
-        response = yield cmd_dict
-        return [debugger.SearchMatch.from_response(i) for i in response['result']]
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def set_ad_blocking_enabled(enabled: bool) -> None:
-        '''
-        Enable Chrome's experimental ad filter on all sites.
-        
-        :param enabled: Whether to block ads.
-        '''
 
-        cmd_dict = {
-            'method': 'Page.setAdBlockingEnabled',
-            'params': {
-                'enabled': enabled,
-            }
+def add_compilation_cache(url: str, data: str) -> typing.Generator[dict,dict,None]:
+    '''
+    Seeds compilation cache for given url. Compilation cache does not survive
+    cross-process navigation.
+    
+    :param url: 
+    :param data: Base64-encoded data
+    '''
+
+    cmd_dict = {
+        'method': 'Page.addCompilationCache',
+        'params': {
+            'url': url,
+            'data': data,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def set_bypass_csp(enabled: bool) -> None:
-        '''
-        Enable page Content Security Policy by-passing.
-        
-        :param enabled: Whether to bypass page CSP.
-        '''
 
-        cmd_dict = {
-            'method': 'Page.setBypassCSP',
-            'params': {
-                'enabled': enabled,
-            }
+def clear_compilation_cache() -> typing.Generator[dict,dict,None]:
+    '''
+    Clears seeded compilation cache.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.clearCompilationCache',
+    }
+    response = yield cmd_dict
+
+
+def generate_test_report(message: str, group: str) -> typing.Generator[dict,dict,None]:
+    '''
+    Generates a report for testing.
+    
+    :param message: Message to be displayed in the report.
+    :param group: Specifies the endpoint group to deliver the report to.
+    '''
+
+    cmd_dict = {
+        'method': 'Page.generateTestReport',
+        'params': {
+            'message': message,
+            'group': group,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def set_device_metrics_override(width: int, height: int, device_scale_factor: float, mobile: bool, scale: float, screen_width: int, screen_height: int, position_x: int, position_y: int, dont_set_visible_size: bool, screen_orientation: emulation.ScreenOrientation, viewport: Viewport) -> None:
-        '''
-        Overrides the values of device screen dimensions (window.screen.width, window.screen.height,
-        window.innerWidth, window.innerHeight, and "device-width"/"device-height"-related CSS media
-        query results).
-        
-        :param width: Overriding width value in pixels (minimum 0, maximum 10000000). 0 disables the override.
-        :param height: Overriding height value in pixels (minimum 0, maximum 10000000). 0 disables the override.
-        :param device_scale_factor: Overriding device scale factor value. 0 disables the override.
-        :param mobile: Whether to emulate mobile device. This includes viewport meta tag, overlay scrollbars, text
-        autosizing and more.
-        :param scale: Scale to apply to resulting view image.
-        :param screen_width: Overriding screen width value in pixels (minimum 0, maximum 10000000).
-        :param screen_height: Overriding screen height value in pixels (minimum 0, maximum 10000000).
-        :param position_x: Overriding view X position on screen in pixels (minimum 0, maximum 10000000).
-        :param position_y: Overriding view Y position on screen in pixels (minimum 0, maximum 10000000).
-        :param dont_set_visible_size: Do not set visible view size, rely upon explicit setVisibleSize call.
-        :param screen_orientation: Screen orientation override.
-        :param viewport: The viewport dimensions and scale. If not set, the override is cleared.
-        '''
 
-        cmd_dict = {
-            'method': 'Page.setDeviceMetricsOverride',
-            'params': {
-                'width': width,
-                'height': height,
-                'deviceScaleFactor': device_scale_factor,
-                'mobile': mobile,
-                'scale': scale,
-                'screenWidth': screen_width,
-                'screenHeight': screen_height,
-                'positionX': position_x,
-                'positionY': position_y,
-                'dontSetVisibleSize': dont_set_visible_size,
-                'screenOrientation': screen_orientation,
-                'viewport': viewport,
-            }
-        }
-        response = yield cmd_dict
+def wait_for_debugger() -> typing.Generator[dict,dict,None]:
+    '''
+    Pauses page execution. Can be resumed using generic Runtime.runIfWaitingForDebugger.
+    '''
 
-    @staticmethod
-    def set_device_orientation_override(alpha: float, beta: float, gamma: float) -> None:
-        '''
-        Overrides the Device Orientation.
-        
-        :param alpha: Mock alpha
-        :param beta: Mock beta
-        :param gamma: Mock gamma
-        '''
+    cmd_dict = {
+        'method': 'Page.waitForDebugger',
+    }
+    response = yield cmd_dict
 
-        cmd_dict = {
-            'method': 'Page.setDeviceOrientationOverride',
-            'params': {
-                'alpha': alpha,
-                'beta': beta,
-                'gamma': gamma,
-            }
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def set_font_families(font_families: FontFamilies) -> None:
-        '''
-        Set generic font families.
-        
-        :param font_families: Specifies font families to set. If a font family is not specified, it won't be changed.
-        '''
-
-        cmd_dict = {
-            'method': 'Page.setFontFamilies',
-            'params': {
-                'fontFamilies': font_families,
-            }
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def set_font_sizes(font_sizes: FontSizes) -> None:
-        '''
-        Set default font sizes.
-        
-        :param font_sizes: Specifies font sizes to set. If a font size is not specified, it won't be changed.
-        '''
-
-        cmd_dict = {
-            'method': 'Page.setFontSizes',
-            'params': {
-                'fontSizes': font_sizes,
-            }
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def set_document_content(frame_id: FrameId, html: str) -> None:
-        '''
-        Sets given markup as the document's HTML.
-        
-        :param frame_id: Frame id to set HTML for.
-        :param html: HTML content to set.
-        '''
-
-        cmd_dict = {
-            'method': 'Page.setDocumentContent',
-            'params': {
-                'frameId': frame_id,
-                'html': html,
-            }
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def set_download_behavior(behavior: str, download_path: str) -> None:
-        '''
-        Set the behavior when downloading a file.
-        
-        :param behavior: Whether to allow all or deny all download requests, or use default Chrome behavior if
-        available (otherwise deny).
-        :param download_path: The default path to save downloaded files to. This is requred if behavior is set to 'allow'
-        '''
-
-        cmd_dict = {
-            'method': 'Page.setDownloadBehavior',
-            'params': {
-                'behavior': behavior,
-                'downloadPath': download_path,
-            }
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def set_geolocation_override(latitude: float, longitude: float, accuracy: float) -> None:
-        '''
-        Overrides the Geolocation Position or Error. Omitting any of the parameters emulates position
-        unavailable.
-        
-        :param latitude: Mock latitude
-        :param longitude: Mock longitude
-        :param accuracy: Mock accuracy
-        '''
-
-        cmd_dict = {
-            'method': 'Page.setGeolocationOverride',
-            'params': {
-                'latitude': latitude,
-                'longitude': longitude,
-                'accuracy': accuracy,
-            }
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def set_lifecycle_events_enabled(enabled: bool) -> None:
-        '''
-        Controls whether page will emit lifecycle events.
-        
-        :param enabled: If true, starts emitting lifecycle events.
-        '''
-
-        cmd_dict = {
-            'method': 'Page.setLifecycleEventsEnabled',
-            'params': {
-                'enabled': enabled,
-            }
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def set_touch_emulation_enabled(enabled: bool, configuration: str) -> None:
-        '''
-        Toggles mouse event-based touch event emulation.
-        
-        :param enabled: Whether the touch event emulation should be enabled.
-        :param configuration: Touch/gesture events configuration. Default: current platform.
-        '''
-
-        cmd_dict = {
-            'method': 'Page.setTouchEmulationEnabled',
-            'params': {
-                'enabled': enabled,
-                'configuration': configuration,
-            }
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def start_screencast(format: str, quality: int, max_width: int, max_height: int, every_nth_frame: int) -> None:
-        '''
-        Starts sending each frame using the `screencastFrame` event.
-        
-        :param format: Image compression format.
-        :param quality: Compression quality from range [0..100].
-        :param max_width: Maximum screenshot width.
-        :param max_height: Maximum screenshot height.
-        :param every_nth_frame: Send every n-th frame.
-        '''
-
-        cmd_dict = {
-            'method': 'Page.startScreencast',
-            'params': {
-                'format': format,
-                'quality': quality,
-                'maxWidth': max_width,
-                'maxHeight': max_height,
-                'everyNthFrame': every_nth_frame,
-            }
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def stop_loading() -> None:
-        '''
-        Force the page stop all navigations and pending resource fetches.
-        '''
-
-        cmd_dict = {
-            'method': 'Page.stopLoading',
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def crash() -> None:
-        '''
-        Crashes renderer on the IO thread, generates minidumps.
-        '''
-
-        cmd_dict = {
-            'method': 'Page.crash',
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def close() -> None:
-        '''
-        Tries to close page, running its beforeunload hooks, if any.
-        '''
-
-        cmd_dict = {
-            'method': 'Page.close',
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def set_web_lifecycle_state(state: str) -> None:
-        '''
-        Tries to update the web lifecycle state of the page.
-        It will transition the page to the given state according to:
-        https://github.com/WICG/web-lifecycle/
-        
-        :param state: Target lifecycle state
-        '''
-
-        cmd_dict = {
-            'method': 'Page.setWebLifecycleState',
-            'params': {
-                'state': state,
-            }
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def stop_screencast() -> None:
-        '''
-        Stops sending each frame in the `screencastFrame`.
-        '''
-
-        cmd_dict = {
-            'method': 'Page.stopScreencast',
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def set_produce_compilation_cache(enabled: bool) -> None:
-        '''
-        Forces compilation cache to be generated for every subresource script.
-        
-        :param enabled: 
-        '''
-
-        cmd_dict = {
-            'method': 'Page.setProduceCompilationCache',
-            'params': {
-                'enabled': enabled,
-            }
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def add_compilation_cache(url: str, data: str) -> None:
-        '''
-        Seeds compilation cache for given url. Compilation cache does not survive
-        cross-process navigation.
-        
-        :param url: 
-        :param data: Base64-encoded data
-        '''
-
-        cmd_dict = {
-            'method': 'Page.addCompilationCache',
-            'params': {
-                'url': url,
-                'data': data,
-            }
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def clear_compilation_cache() -> None:
-        '''
-        Clears seeded compilation cache.
-        '''
-
-        cmd_dict = {
-            'method': 'Page.clearCompilationCache',
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def generate_test_report(message: str, group: str) -> None:
-        '''
-        Generates a report for testing.
-        
-        :param message: Message to be displayed in the report.
-        :param group: Specifies the endpoint group to deliver the report to.
-        '''
-
-        cmd_dict = {
-            'method': 'Page.generateTestReport',
-            'params': {
-                'message': message,
-                'group': group,
-            }
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def wait_for_debugger() -> None:
-        '''
-        Pauses page execution. Can be resumed using generic Runtime.runIfWaitingForDebugger.
-        '''
-
-        cmd_dict = {
-            'method': 'Page.waitForDebugger',
-        }
-        response = yield cmd_dict
 

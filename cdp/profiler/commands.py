@@ -14,152 +14,151 @@ import typing
 from .types import *
 
 
-class Profiler:
-    @staticmethod
-    def disable() -> None:
+def disable() -> typing.Generator[dict,dict,None]:
 
-        cmd_dict = {
-            'method': 'Profiler.disable',
+    cmd_dict = {
+        'method': 'Profiler.disable',
+    }
+    response = yield cmd_dict
+
+
+def enable() -> typing.Generator[dict,dict,None]:
+
+    cmd_dict = {
+        'method': 'Profiler.enable',
+    }
+    response = yield cmd_dict
+
+
+def get_best_effort_coverage() -> typing.Generator[dict,dict,typing.List['ScriptCoverage']]:
+    '''
+    Collect coverage data for the current isolate. The coverage data may be incomplete due to
+    garbage collection.
+    :returns: Coverage data for the current isolate.
+    '''
+
+    cmd_dict = {
+        'method': 'Profiler.getBestEffortCoverage',
+    }
+    response = yield cmd_dict
+    return [ScriptCoverage.from_response(i) for i in response['result']]
+
+
+def set_sampling_interval(interval: int) -> typing.Generator[dict,dict,None]:
+    '''
+    Changes CPU profiler sampling interval. Must be called before CPU profiles recording started.
+    
+    :param interval: New sampling interval in microseconds.
+    '''
+
+    cmd_dict = {
+        'method': 'Profiler.setSamplingInterval',
+        'params': {
+            'interval': interval,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def enable() -> None:
 
-        cmd_dict = {
-            'method': 'Profiler.enable',
+def start() -> typing.Generator[dict,dict,None]:
+
+    cmd_dict = {
+        'method': 'Profiler.start',
+    }
+    response = yield cmd_dict
+
+
+def start_precise_coverage(call_count: bool, detailed: bool) -> typing.Generator[dict,dict,None]:
+    '''
+    Enable precise code coverage. Coverage data for JavaScript executed before enabling precise code
+    coverage may be incomplete. Enabling prevents running optimized code and resets execution
+    counters.
+    
+    :param call_count: Collect accurate call counts beyond simple 'covered' or 'not covered'.
+    :param detailed: Collect block-based coverage.
+    '''
+
+    cmd_dict = {
+        'method': 'Profiler.startPreciseCoverage',
+        'params': {
+            'callCount': call_count,
+            'detailed': detailed,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def get_best_effort_coverage() -> typing.List['ScriptCoverage']:
-        '''
-        Collect coverage data for the current isolate. The coverage data may be incomplete due to
-        garbage collection.
-        :returns: Coverage data for the current isolate.
-        '''
 
-        cmd_dict = {
-            'method': 'Profiler.getBestEffortCoverage',
-        }
-        response = yield cmd_dict
-        return [ScriptCoverage.from_response(i) for i in response['result']]
+def start_type_profile() -> typing.Generator[dict,dict,None]:
+    '''
+    Enable type profile.
+    '''
 
-    @staticmethod
-    def set_sampling_interval(interval: int) -> None:
-        '''
-        Changes CPU profiler sampling interval. Must be called before CPU profiles recording started.
-        
-        :param interval: New sampling interval in microseconds.
-        '''
+    cmd_dict = {
+        'method': 'Profiler.startTypeProfile',
+    }
+    response = yield cmd_dict
 
-        cmd_dict = {
-            'method': 'Profiler.setSamplingInterval',
-            'params': {
-                'interval': interval,
-            }
-        }
-        response = yield cmd_dict
 
-    @staticmethod
-    def start() -> None:
+def stop() -> typing.Generator[dict,dict,Profile]:
+    '''
+    
+    :returns: Recorded profile.
+    '''
 
-        cmd_dict = {
-            'method': 'Profiler.start',
-        }
-        response = yield cmd_dict
+    cmd_dict = {
+        'method': 'Profiler.stop',
+    }
+    response = yield cmd_dict
+    return Profile.from_response(response['profile'])
 
-    @staticmethod
-    def start_precise_coverage(call_count: bool, detailed: bool) -> None:
-        '''
-        Enable precise code coverage. Coverage data for JavaScript executed before enabling precise code
-        coverage may be incomplete. Enabling prevents running optimized code and resets execution
-        counters.
-        
-        :param call_count: Collect accurate call counts beyond simple 'covered' or 'not covered'.
-        :param detailed: Collect block-based coverage.
-        '''
 
-        cmd_dict = {
-            'method': 'Profiler.startPreciseCoverage',
-            'params': {
-                'callCount': call_count,
-                'detailed': detailed,
-            }
-        }
-        response = yield cmd_dict
+def stop_precise_coverage() -> typing.Generator[dict,dict,None]:
+    '''
+    Disable precise code coverage. Disabling releases unnecessary execution count records and allows
+    executing optimized code.
+    '''
 
-    @staticmethod
-    def start_type_profile() -> None:
-        '''
-        Enable type profile.
-        '''
+    cmd_dict = {
+        'method': 'Profiler.stopPreciseCoverage',
+    }
+    response = yield cmd_dict
 
-        cmd_dict = {
-            'method': 'Profiler.startTypeProfile',
-        }
-        response = yield cmd_dict
 
-    @staticmethod
-    def stop() -> Profile:
-        '''
-        
-        :returns: Recorded profile.
-        '''
+def stop_type_profile() -> typing.Generator[dict,dict,None]:
+    '''
+    Disable type profile. Disabling releases type profile data collected so far.
+    '''
 
-        cmd_dict = {
-            'method': 'Profiler.stop',
-        }
-        response = yield cmd_dict
-        return Profile.from_response(response['profile'])
+    cmd_dict = {
+        'method': 'Profiler.stopTypeProfile',
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def stop_precise_coverage() -> None:
-        '''
-        Disable precise code coverage. Disabling releases unnecessary execution count records and allows
-        executing optimized code.
-        '''
 
-        cmd_dict = {
-            'method': 'Profiler.stopPreciseCoverage',
-        }
-        response = yield cmd_dict
+def take_precise_coverage() -> typing.Generator[dict,dict,typing.List['ScriptCoverage']]:
+    '''
+    Collect coverage data for the current isolate, and resets execution counters. Precise code
+    coverage needs to have started.
+    :returns: Coverage data for the current isolate.
+    '''
 
-    @staticmethod
-    def stop_type_profile() -> None:
-        '''
-        Disable type profile. Disabling releases type profile data collected so far.
-        '''
+    cmd_dict = {
+        'method': 'Profiler.takePreciseCoverage',
+    }
+    response = yield cmd_dict
+    return [ScriptCoverage.from_response(i) for i in response['result']]
 
-        cmd_dict = {
-            'method': 'Profiler.stopTypeProfile',
-        }
-        response = yield cmd_dict
 
-    @staticmethod
-    def take_precise_coverage() -> typing.List['ScriptCoverage']:
-        '''
-        Collect coverage data for the current isolate, and resets execution counters. Precise code
-        coverage needs to have started.
-        :returns: Coverage data for the current isolate.
-        '''
+def take_type_profile() -> typing.Generator[dict,dict,typing.List['ScriptTypeProfile']]:
+    '''
+    Collect type profile.
+    :returns: Type profile for all scripts since startTypeProfile() was turned on.
+    '''
 
-        cmd_dict = {
-            'method': 'Profiler.takePreciseCoverage',
-        }
-        response = yield cmd_dict
-        return [ScriptCoverage.from_response(i) for i in response['result']]
+    cmd_dict = {
+        'method': 'Profiler.takeTypeProfile',
+    }
+    response = yield cmd_dict
+    return [ScriptTypeProfile.from_response(i) for i in response['result']]
 
-    @staticmethod
-    def take_type_profile() -> typing.List['ScriptTypeProfile']:
-        '''
-        Collect type profile.
-        :returns: Type profile for all scripts since startTypeProfile() was turned on.
-        '''
-
-        cmd_dict = {
-            'method': 'Profiler.takeTypeProfile',
-        }
-        response = yield cmd_dict
-        return [ScriptTypeProfile.from_response(i) for i in response['result']]
 

@@ -14,298 +14,297 @@ import typing
 from .types import *
 
 
-class Target:
-    @staticmethod
-    def activate_target(target_id: TargetID) -> None:
-        '''
-        Activates (focuses) the target.
-        
-        :param target_id: 
-        '''
+def activate_target(target_id: TargetID) -> typing.Generator[dict,dict,None]:
+    '''
+    Activates (focuses) the target.
+    
+    :param target_id: 
+    '''
 
-        cmd_dict = {
-            'method': 'Target.activateTarget',
-            'params': {
-                'targetId': target_id,
-            }
+    cmd_dict = {
+        'method': 'Target.activateTarget',
+        'params': {
+            'targetId': target_id,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def attach_to_target(target_id: TargetID, flatten: bool) -> SessionID:
-        '''
-        Attaches to the target with given id.
-        
-        :param target_id: 
-        :param flatten: Enables "flat" access to the session via specifying sessionId attribute in the commands.
-        :returns: Id assigned to the session.
-        '''
 
-        cmd_dict = {
-            'method': 'Target.attachToTarget',
-            'params': {
-                'targetId': target_id,
-                'flatten': flatten,
-            }
+def attach_to_target(target_id: TargetID, flatten: bool) -> typing.Generator[dict,dict,SessionID]:
+    '''
+    Attaches to the target with given id.
+    
+    :param target_id: 
+    :param flatten: Enables "flat" access to the session via specifying sessionId attribute in the commands.
+    :returns: Id assigned to the session.
+    '''
+
+    cmd_dict = {
+        'method': 'Target.attachToTarget',
+        'params': {
+            'targetId': target_id,
+            'flatten': flatten,
         }
-        response = yield cmd_dict
-        return SessionID.from_response(response['sessionId'])
+    }
+    response = yield cmd_dict
+    return SessionID.from_response(response['sessionId'])
 
-    @staticmethod
-    def attach_to_browser_target() -> SessionID:
-        '''
-        Attaches to the browser target, only uses flat sessionId mode.
-        :returns: Id assigned to the session.
-        '''
 
-        cmd_dict = {
-            'method': 'Target.attachToBrowserTarget',
+def attach_to_browser_target() -> typing.Generator[dict,dict,SessionID]:
+    '''
+    Attaches to the browser target, only uses flat sessionId mode.
+    :returns: Id assigned to the session.
+    '''
+
+    cmd_dict = {
+        'method': 'Target.attachToBrowserTarget',
+    }
+    response = yield cmd_dict
+    return SessionID.from_response(response['sessionId'])
+
+
+def close_target(target_id: TargetID) -> typing.Generator[dict,dict,bool]:
+    '''
+    Closes the target. If the target is a page that gets closed too.
+    
+    :param target_id: 
+    :returns: 
+    '''
+
+    cmd_dict = {
+        'method': 'Target.closeTarget',
+        'params': {
+            'targetId': target_id,
         }
-        response = yield cmd_dict
-        return SessionID.from_response(response['sessionId'])
+    }
+    response = yield cmd_dict
+    return bool(response['success'])
 
-    @staticmethod
-    def close_target(target_id: TargetID) -> bool:
-        '''
-        Closes the target. If the target is a page that gets closed too.
-        
-        :param target_id: 
-        :returns: 
-        '''
 
-        cmd_dict = {
-            'method': 'Target.closeTarget',
-            'params': {
-                'targetId': target_id,
-            }
+def expose_dev_tools_protocol(target_id: TargetID, binding_name: str) -> typing.Generator[dict,dict,None]:
+    '''
+    Inject object to the target's main frame that provides a communication
+    channel with browser target.
+    
+    Injected object will be available as `window[bindingName]`.
+    
+    The object has the follwing API:
+    - `binding.send(json)` - a method to send messages over the remote debugging protocol
+    - `binding.onmessage = json => handleMessage(json)` - a callback that will be called for the protocol notifications and command responses.
+    
+    :param target_id: 
+    :param binding_name: Binding name, 'cdp' if not specified.
+    '''
+
+    cmd_dict = {
+        'method': 'Target.exposeDevToolsProtocol',
+        'params': {
+            'targetId': target_id,
+            'bindingName': binding_name,
         }
-        response = yield cmd_dict
-        return bool.from_response(response['success'])
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def expose_dev_tools_protocol(target_id: TargetID, binding_name: str) -> None:
-        '''
-        Inject object to the target's main frame that provides a communication
-        channel with browser target.
-        
-        Injected object will be available as `window[bindingName]`.
-        
-        The object has the follwing API:
-        - `binding.send(json)` - a method to send messages over the remote debugging protocol
-        - `binding.onmessage = json => handleMessage(json)` - a callback that will be called for the protocol notifications and command responses.
-        
-        :param target_id: 
-        :param binding_name: Binding name, 'cdp' if not specified.
-        '''
 
-        cmd_dict = {
-            'method': 'Target.exposeDevToolsProtocol',
-            'params': {
-                'targetId': target_id,
-                'bindingName': binding_name,
-            }
+def create_browser_context() -> typing.Generator[dict,dict,BrowserContextID]:
+    '''
+    Creates a new empty BrowserContext. Similar to an incognito profile but you can have more than
+    one.
+    :returns: The id of the context created.
+    '''
+
+    cmd_dict = {
+        'method': 'Target.createBrowserContext',
+    }
+    response = yield cmd_dict
+    return BrowserContextID.from_response(response['browserContextId'])
+
+
+def get_browser_contexts() -> typing.Generator[dict,dict,typing.List['BrowserContextID']]:
+    '''
+    Returns all browser contexts created with `Target.createBrowserContext` method.
+    :returns: An array of browser context ids.
+    '''
+
+    cmd_dict = {
+        'method': 'Target.getBrowserContexts',
+    }
+    response = yield cmd_dict
+    return [BrowserContextID.from_response(i) for i in response['browserContextIds']]
+
+
+def create_target(url: str, width: int, height: int, browser_context_id: BrowserContextID, enable_begin_frame_control: bool, new_window: bool, background: bool) -> typing.Generator[dict,dict,TargetID]:
+    '''
+    Creates a new page.
+    
+    :param url: The initial URL the page will be navigated to.
+    :param width: Frame width in DIP (headless chrome only).
+    :param height: Frame height in DIP (headless chrome only).
+    :param browser_context_id: The browser context to create the page in.
+    :param enable_begin_frame_control: Whether BeginFrames for this target will be controlled via DevTools (headless chrome only,
+    not supported on MacOS yet, false by default).
+    :param new_window: Whether to create a new Window or Tab (chrome-only, false by default).
+    :param background: Whether to create the target in background or foreground (chrome-only,
+    false by default).
+    :returns: The id of the page opened.
+    '''
+
+    cmd_dict = {
+        'method': 'Target.createTarget',
+        'params': {
+            'url': url,
+            'width': width,
+            'height': height,
+            'browserContextId': browser_context_id,
+            'enableBeginFrameControl': enable_begin_frame_control,
+            'newWindow': new_window,
+            'background': background,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
+    return TargetID.from_response(response['targetId'])
 
-    @staticmethod
-    def create_browser_context() -> BrowserContextID:
-        '''
-        Creates a new empty BrowserContext. Similar to an incognito profile but you can have more than
-        one.
-        :returns: The id of the context created.
-        '''
 
-        cmd_dict = {
-            'method': 'Target.createBrowserContext',
+def detach_from_target(session_id: SessionID, target_id: TargetID) -> typing.Generator[dict,dict,None]:
+    '''
+    Detaches session with given id.
+    
+    :param session_id: Session to detach.
+    :param target_id: Deprecated.
+    '''
+
+    cmd_dict = {
+        'method': 'Target.detachFromTarget',
+        'params': {
+            'sessionId': session_id,
+            'targetId': target_id,
         }
-        response = yield cmd_dict
-        return BrowserContextID.from_response(response['browserContextId'])
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def get_browser_contexts() -> typing.List['BrowserContextID']:
-        '''
-        Returns all browser contexts created with `Target.createBrowserContext` method.
-        :returns: An array of browser context ids.
-        '''
 
-        cmd_dict = {
-            'method': 'Target.getBrowserContexts',
+def dispose_browser_context(browser_context_id: BrowserContextID) -> typing.Generator[dict,dict,None]:
+    '''
+    Deletes a BrowserContext. All the belonging pages will be closed without calling their
+    beforeunload hooks.
+    
+    :param browser_context_id: 
+    '''
+
+    cmd_dict = {
+        'method': 'Target.disposeBrowserContext',
+        'params': {
+            'browserContextId': browser_context_id,
         }
-        response = yield cmd_dict
-        return [BrowserContextID.from_response(i) for i in response['browserContextIds']]
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def create_target(url: str, width: int, height: int, browser_context_id: BrowserContextID, enable_begin_frame_control: bool, new_window: bool, background: bool) -> TargetID:
-        '''
-        Creates a new page.
-        
-        :param url: The initial URL the page will be navigated to.
-        :param width: Frame width in DIP (headless chrome only).
-        :param height: Frame height in DIP (headless chrome only).
-        :param browser_context_id: The browser context to create the page in.
-        :param enable_begin_frame_control: Whether BeginFrames for this target will be controlled via DevTools (headless chrome only,
-        not supported on MacOS yet, false by default).
-        :param new_window: Whether to create a new Window or Tab (chrome-only, false by default).
-        :param background: Whether to create the target in background or foreground (chrome-only,
-        false by default).
-        :returns: The id of the page opened.
-        '''
 
-        cmd_dict = {
-            'method': 'Target.createTarget',
-            'params': {
-                'url': url,
-                'width': width,
-                'height': height,
-                'browserContextId': browser_context_id,
-                'enableBeginFrameControl': enable_begin_frame_control,
-                'newWindow': new_window,
-                'background': background,
-            }
+def get_target_info(target_id: TargetID) -> typing.Generator[dict,dict,TargetInfo]:
+    '''
+    Returns information about a target.
+    
+    :param target_id: 
+    :returns: 
+    '''
+
+    cmd_dict = {
+        'method': 'Target.getTargetInfo',
+        'params': {
+            'targetId': target_id,
         }
-        response = yield cmd_dict
-        return TargetID.from_response(response['targetId'])
+    }
+    response = yield cmd_dict
+    return TargetInfo.from_response(response['targetInfo'])
 
-    @staticmethod
-    def detach_from_target(session_id: SessionID, target_id: TargetID) -> None:
-        '''
-        Detaches session with given id.
-        
-        :param session_id: Session to detach.
-        :param target_id: Deprecated.
-        '''
 
-        cmd_dict = {
-            'method': 'Target.detachFromTarget',
-            'params': {
-                'sessionId': session_id,
-                'targetId': target_id,
-            }
+def get_targets() -> typing.Generator[dict,dict,typing.List['TargetInfo']]:
+    '''
+    Retrieves a list of available targets.
+    :returns: The list of targets.
+    '''
+
+    cmd_dict = {
+        'method': 'Target.getTargets',
+    }
+    response = yield cmd_dict
+    return [TargetInfo.from_response(i) for i in response['targetInfos']]
+
+
+def send_message_to_target(message: str, session_id: SessionID, target_id: TargetID) -> typing.Generator[dict,dict,None]:
+    '''
+    Sends protocol message over session with given id.
+    
+    :param message: 
+    :param session_id: Identifier of the session.
+    :param target_id: Deprecated.
+    '''
+
+    cmd_dict = {
+        'method': 'Target.sendMessageToTarget',
+        'params': {
+            'message': message,
+            'sessionId': session_id,
+            'targetId': target_id,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def dispose_browser_context(browser_context_id: BrowserContextID) -> None:
-        '''
-        Deletes a BrowserContext. All the belonging pages will be closed without calling their
-        beforeunload hooks.
-        
-        :param browser_context_id: 
-        '''
 
-        cmd_dict = {
-            'method': 'Target.disposeBrowserContext',
-            'params': {
-                'browserContextId': browser_context_id,
-            }
+def set_auto_attach(auto_attach: bool, wait_for_debugger_on_start: bool, flatten: bool) -> typing.Generator[dict,dict,None]:
+    '''
+    Controls whether to automatically attach to new targets which are considered to be related to
+    this one. When turned on, attaches to all existing related targets as well. When turned off,
+    automatically detaches from all currently attached targets.
+    
+    :param auto_attach: Whether to auto-attach to related targets.
+    :param wait_for_debugger_on_start: Whether to pause new targets when attaching to them. Use `Runtime.runIfWaitingForDebugger`
+    to run paused targets.
+    :param flatten: Enables "flat" access to the session via specifying sessionId attribute in the commands.
+    '''
+
+    cmd_dict = {
+        'method': 'Target.setAutoAttach',
+        'params': {
+            'autoAttach': auto_attach,
+            'waitForDebuggerOnStart': wait_for_debugger_on_start,
+            'flatten': flatten,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def get_target_info(target_id: TargetID) -> TargetInfo:
-        '''
-        Returns information about a target.
-        
-        :param target_id: 
-        :returns: 
-        '''
 
-        cmd_dict = {
-            'method': 'Target.getTargetInfo',
-            'params': {
-                'targetId': target_id,
-            }
+def set_discover_targets(discover: bool) -> typing.Generator[dict,dict,None]:
+    '''
+    Controls whether to discover available targets and notify via
+    `targetCreated/targetInfoChanged/targetDestroyed` events.
+    
+    :param discover: Whether to discover available targets.
+    '''
+
+    cmd_dict = {
+        'method': 'Target.setDiscoverTargets',
+        'params': {
+            'discover': discover,
         }
-        response = yield cmd_dict
-        return TargetInfo.from_response(response['targetInfo'])
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def get_targets() -> typing.List['TargetInfo']:
-        '''
-        Retrieves a list of available targets.
-        :returns: The list of targets.
-        '''
 
-        cmd_dict = {
-            'method': 'Target.getTargets',
+def set_remote_locations(locations: typing.List['RemoteLocation']) -> typing.Generator[dict,dict,None]:
+    '''
+    Enables target discovery for the specified locations, when `setDiscoverTargets` was set to
+    `true`.
+    
+    :param locations: List of remote locations.
+    '''
+
+    cmd_dict = {
+        'method': 'Target.setRemoteLocations',
+        'params': {
+            'locations': locations,
         }
-        response = yield cmd_dict
-        return [TargetInfo.from_response(i) for i in response['targetInfos']]
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def send_message_to_target(message: str, session_id: SessionID, target_id: TargetID) -> None:
-        '''
-        Sends protocol message over session with given id.
-        
-        :param message: 
-        :param session_id: Identifier of the session.
-        :param target_id: Deprecated.
-        '''
-
-        cmd_dict = {
-            'method': 'Target.sendMessageToTarget',
-            'params': {
-                'message': message,
-                'sessionId': session_id,
-                'targetId': target_id,
-            }
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def set_auto_attach(auto_attach: bool, wait_for_debugger_on_start: bool, flatten: bool) -> None:
-        '''
-        Controls whether to automatically attach to new targets which are considered to be related to
-        this one. When turned on, attaches to all existing related targets as well. When turned off,
-        automatically detaches from all currently attached targets.
-        
-        :param auto_attach: Whether to auto-attach to related targets.
-        :param wait_for_debugger_on_start: Whether to pause new targets when attaching to them. Use `Runtime.runIfWaitingForDebugger`
-        to run paused targets.
-        :param flatten: Enables "flat" access to the session via specifying sessionId attribute in the commands.
-        '''
-
-        cmd_dict = {
-            'method': 'Target.setAutoAttach',
-            'params': {
-                'autoAttach': auto_attach,
-                'waitForDebuggerOnStart': wait_for_debugger_on_start,
-                'flatten': flatten,
-            }
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def set_discover_targets(discover: bool) -> None:
-        '''
-        Controls whether to discover available targets and notify via
-        `targetCreated/targetInfoChanged/targetDestroyed` events.
-        
-        :param discover: Whether to discover available targets.
-        '''
-
-        cmd_dict = {
-            'method': 'Target.setDiscoverTargets',
-            'params': {
-                'discover': discover,
-            }
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def set_remote_locations(locations: typing.List['RemoteLocation']) -> None:
-        '''
-        Enables target discovery for the specified locations, when `setDiscoverTargets` was set to
-        `true`.
-        
-        :param locations: List of remote locations.
-        '''
-
-        cmd_dict = {
-            'method': 'Target.setRemoteLocations',
-            'params': {
-                'locations': locations,
-            }
-        }
-        response = yield cmd_dict
 

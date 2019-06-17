@@ -16,175 +16,174 @@ from ..runtime import types as runtime
 
 
 
-class HeapProfiler:
-    @staticmethod
-    def add_inspected_heap_object(heap_object_id: HeapSnapshotObjectId) -> None:
-        '''
-        Enables console to refer to the node with given id via $x (see Command Line API for more details
-        $x functions).
-        
-        :param heap_object_id: Heap snapshot object id to be accessible by means of $x command line API.
-        '''
+def add_inspected_heap_object(heap_object_id: HeapSnapshotObjectId) -> typing.Generator[dict,dict,None]:
+    '''
+    Enables console to refer to the node with given id via $x (see Command Line API for more details
+    $x functions).
+    
+    :param heap_object_id: Heap snapshot object id to be accessible by means of $x command line API.
+    '''
 
-        cmd_dict = {
-            'method': 'HeapProfiler.addInspectedHeapObject',
-            'params': {
-                'heapObjectId': heap_object_id,
-            }
+    cmd_dict = {
+        'method': 'HeapProfiler.addInspectedHeapObject',
+        'params': {
+            'heapObjectId': heap_object_id,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def collect_garbage() -> None:
 
-        cmd_dict = {
-            'method': 'HeapProfiler.collectGarbage',
+def collect_garbage() -> typing.Generator[dict,dict,None]:
+
+    cmd_dict = {
+        'method': 'HeapProfiler.collectGarbage',
+    }
+    response = yield cmd_dict
+
+
+def disable() -> typing.Generator[dict,dict,None]:
+
+    cmd_dict = {
+        'method': 'HeapProfiler.disable',
+    }
+    response = yield cmd_dict
+
+
+def enable() -> typing.Generator[dict,dict,None]:
+
+    cmd_dict = {
+        'method': 'HeapProfiler.enable',
+    }
+    response = yield cmd_dict
+
+
+def get_heap_object_id(object_id: runtime.RemoteObjectId) -> typing.Generator[dict,dict,HeapSnapshotObjectId]:
+    '''
+    
+    
+    :param object_id: Identifier of the object to get heap object id for.
+    :returns: Id of the heap snapshot object corresponding to the passed remote object id.
+    '''
+
+    cmd_dict = {
+        'method': 'HeapProfiler.getHeapObjectId',
+        'params': {
+            'objectId': object_id,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
+    return HeapSnapshotObjectId.from_response(response['heapSnapshotObjectId'])
 
-    @staticmethod
-    def disable() -> None:
 
-        cmd_dict = {
-            'method': 'HeapProfiler.disable',
+def get_object_by_heap_object_id(object_id: HeapSnapshotObjectId, object_group: str) -> typing.Generator[dict,dict,runtime.RemoteObject]:
+    '''
+    
+    
+    :param object_id: 
+    :param object_group: Symbolic group name that can be used to release multiple objects.
+    :returns: Evaluation result.
+    '''
+
+    cmd_dict = {
+        'method': 'HeapProfiler.getObjectByHeapObjectId',
+        'params': {
+            'objectId': object_id,
+            'objectGroup': object_group,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
+    return runtime.RemoteObject.from_response(response['result'])
 
-    @staticmethod
-    def enable() -> None:
 
-        cmd_dict = {
-            'method': 'HeapProfiler.enable',
+def get_sampling_profile() -> typing.Generator[dict,dict,SamplingHeapProfile]:
+    '''
+    
+    :returns: Return the sampling profile being collected.
+    '''
+
+    cmd_dict = {
+        'method': 'HeapProfiler.getSamplingProfile',
+    }
+    response = yield cmd_dict
+    return SamplingHeapProfile.from_response(response['profile'])
+
+
+def start_sampling(sampling_interval: float) -> typing.Generator[dict,dict,None]:
+    '''
+    
+    
+    :param sampling_interval: Average sample interval in bytes. Poisson distribution is used for the intervals. The
+    default value is 32768 bytes.
+    '''
+
+    cmd_dict = {
+        'method': 'HeapProfiler.startSampling',
+        'params': {
+            'samplingInterval': sampling_interval,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def get_heap_object_id(object_id: runtime.RemoteObjectId) -> HeapSnapshotObjectId:
-        '''
-        
-        
-        :param object_id: Identifier of the object to get heap object id for.
-        :returns: Id of the heap snapshot object corresponding to the passed remote object id.
-        '''
 
-        cmd_dict = {
-            'method': 'HeapProfiler.getHeapObjectId',
-            'params': {
-                'objectId': object_id,
-            }
+def start_tracking_heap_objects(track_allocations: bool) -> typing.Generator[dict,dict,None]:
+    '''
+    
+    
+    :param track_allocations: 
+    '''
+
+    cmd_dict = {
+        'method': 'HeapProfiler.startTrackingHeapObjects',
+        'params': {
+            'trackAllocations': track_allocations,
         }
-        response = yield cmd_dict
-        return HeapSnapshotObjectId.from_response(response['heapSnapshotObjectId'])
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def get_object_by_heap_object_id(object_id: HeapSnapshotObjectId, object_group: str) -> runtime.RemoteObject:
-        '''
-        
-        
-        :param object_id: 
-        :param object_group: Symbolic group name that can be used to release multiple objects.
-        :returns: Evaluation result.
-        '''
 
-        cmd_dict = {
-            'method': 'HeapProfiler.getObjectByHeapObjectId',
-            'params': {
-                'objectId': object_id,
-                'objectGroup': object_group,
-            }
+def stop_sampling() -> typing.Generator[dict,dict,SamplingHeapProfile]:
+    '''
+    
+    :returns: Recorded sampling heap profile.
+    '''
+
+    cmd_dict = {
+        'method': 'HeapProfiler.stopSampling',
+    }
+    response = yield cmd_dict
+    return SamplingHeapProfile.from_response(response['profile'])
+
+
+def stop_tracking_heap_objects(report_progress: bool) -> typing.Generator[dict,dict,None]:
+    '''
+    
+    
+    :param report_progress: If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken
+    when the tracking is stopped.
+    '''
+
+    cmd_dict = {
+        'method': 'HeapProfiler.stopTrackingHeapObjects',
+        'params': {
+            'reportProgress': report_progress,
         }
-        response = yield cmd_dict
-        return runtime.RemoteObject.from_response(response['result'])
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def get_sampling_profile() -> SamplingHeapProfile:
-        '''
-        
-        :returns: Return the sampling profile being collected.
-        '''
 
-        cmd_dict = {
-            'method': 'HeapProfiler.getSamplingProfile',
+def take_heap_snapshot(report_progress: bool) -> typing.Generator[dict,dict,None]:
+    '''
+    
+    
+    :param report_progress: If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken.
+    '''
+
+    cmd_dict = {
+        'method': 'HeapProfiler.takeHeapSnapshot',
+        'params': {
+            'reportProgress': report_progress,
         }
-        response = yield cmd_dict
-        return SamplingHeapProfile.from_response(response['profile'])
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def start_sampling(sampling_interval: float) -> None:
-        '''
-        
-        
-        :param sampling_interval: Average sample interval in bytes. Poisson distribution is used for the intervals. The
-        default value is 32768 bytes.
-        '''
-
-        cmd_dict = {
-            'method': 'HeapProfiler.startSampling',
-            'params': {
-                'samplingInterval': sampling_interval,
-            }
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def start_tracking_heap_objects(track_allocations: bool) -> None:
-        '''
-        
-        
-        :param track_allocations: 
-        '''
-
-        cmd_dict = {
-            'method': 'HeapProfiler.startTrackingHeapObjects',
-            'params': {
-                'trackAllocations': track_allocations,
-            }
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def stop_sampling() -> SamplingHeapProfile:
-        '''
-        
-        :returns: Recorded sampling heap profile.
-        '''
-
-        cmd_dict = {
-            'method': 'HeapProfiler.stopSampling',
-        }
-        response = yield cmd_dict
-        return SamplingHeapProfile.from_response(response['profile'])
-
-    @staticmethod
-    def stop_tracking_heap_objects(report_progress: bool) -> None:
-        '''
-        
-        
-        :param report_progress: If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken
-        when the tracking is stopped.
-        '''
-
-        cmd_dict = {
-            'method': 'HeapProfiler.stopTrackingHeapObjects',
-            'params': {
-                'reportProgress': report_progress,
-            }
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def take_heap_snapshot(report_progress: bool) -> None:
-        '''
-        
-        
-        :param report_progress: If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken.
-        '''
-
-        cmd_dict = {
-            'method': 'HeapProfiler.takeHeapSnapshot',
-            'params': {
-                'reportProgress': report_progress,
-            }
-        }
-        response = yield cmd_dict
 

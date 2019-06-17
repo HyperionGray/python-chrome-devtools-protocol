@@ -14,65 +14,64 @@ import typing
 from .types import *
 
 
-class Log:
-    @staticmethod
-    def clear() -> None:
-        '''
-        Clears the log.
-        '''
+def clear() -> typing.Generator[dict,dict,None]:
+    '''
+    Clears the log.
+    '''
 
-        cmd_dict = {
-            'method': 'Log.clear',
+    cmd_dict = {
+        'method': 'Log.clear',
+    }
+    response = yield cmd_dict
+
+
+def disable() -> typing.Generator[dict,dict,None]:
+    '''
+    Disables log domain, prevents further log entries from being reported to the client.
+    '''
+
+    cmd_dict = {
+        'method': 'Log.disable',
+    }
+    response = yield cmd_dict
+
+
+def enable() -> typing.Generator[dict,dict,None]:
+    '''
+    Enables log domain, sends the entries collected so far to the client by means of the
+    `entryAdded` notification.
+    '''
+
+    cmd_dict = {
+        'method': 'Log.enable',
+    }
+    response = yield cmd_dict
+
+
+def start_violations_report(config: typing.List['ViolationSetting']) -> typing.Generator[dict,dict,None]:
+    '''
+    start violation reporting.
+    
+    :param config: Configuration for violations.
+    '''
+
+    cmd_dict = {
+        'method': 'Log.startViolationsReport',
+        'params': {
+            'config': config,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def disable() -> None:
-        '''
-        Disables log domain, prevents further log entries from being reported to the client.
-        '''
 
-        cmd_dict = {
-            'method': 'Log.disable',
-        }
-        response = yield cmd_dict
+def stop_violations_report() -> typing.Generator[dict,dict,None]:
+    '''
+    Stop violation reporting.
+    '''
 
-    @staticmethod
-    def enable() -> None:
-        '''
-        Enables log domain, sends the entries collected so far to the client by means of the
-        `entryAdded` notification.
-        '''
+    cmd_dict = {
+        'method': 'Log.stopViolationsReport',
+    }
+    response = yield cmd_dict
 
-        cmd_dict = {
-            'method': 'Log.enable',
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def start_violations_report(config: typing.List['ViolationSetting']) -> None:
-        '''
-        start violation reporting.
-        
-        :param config: Configuration for violations.
-        '''
-
-        cmd_dict = {
-            'method': 'Log.startViolationsReport',
-            'params': {
-                'config': config,
-            }
-        }
-        response = yield cmd_dict
-
-    @staticmethod
-    def stop_violations_report() -> None:
-        '''
-        Stop violation reporting.
-        '''
-
-        cmd_dict = {
-            'method': 'Log.stopViolationsReport',
-        }
-        response = yield cmd_dict
 

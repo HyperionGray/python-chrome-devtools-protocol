@@ -131,7 +131,7 @@ class DOMNode:
     is_clickable: bool
 
     #: Details of the node's event listeners, if any.
-    event_listeners: typing.List['DOMDebugger.EventListener']
+    event_listeners: typing.List['dom_debugger.EventListener']
 
     #: The selected url for nodes with a srcset attribute.
     current_source_url: str
@@ -339,7 +339,7 @@ class NodeTreeSnapshot:
     node_value: typing.List['StringIndex']
 
     #: `Node`'s id, corresponds to DOM.Node.backendNodeId.
-    backend_node_id: typing.List['DOM.BackendNodeId']
+    backend_node_id: typing.List['dom.BackendNodeId']
 
     #: Attributes of an `Element` node. Flatten name, value pairs.
     attributes: typing.List['ArrayOfStrings']

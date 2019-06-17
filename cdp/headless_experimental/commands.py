@@ -14,65 +14,64 @@ import typing
 from .types import *
 
 
-class HeadlessExperimental:
-    @staticmethod
-    def begin_frame(frame_time_ticks: float, interval: float, no_display_updates: bool, screenshot: ScreenshotParams) -> dict:
-        '''
-        Sends a BeginFrame to the target and returns when the frame was completed. Optionally captures a
-        screenshot from the resulting frame. Requires that the target was created with enabled
-        BeginFrameControl. Designed for use with --run-all-compositor-stages-before-draw, see also
-        https://goo.gl/3zHXhB for more background.
-        
-        :param frame_time_ticks: Timestamp of this BeginFrame in Renderer TimeTicks (milliseconds of uptime). If not set,
-        the current time will be used.
-        :param interval: The interval between BeginFrames that is reported to the compositor, in milliseconds.
-        Defaults to a 60 frames/second interval, i.e. about 16.666 milliseconds.
-        :param no_display_updates: Whether updates should not be committed and drawn onto the display. False by default. If
-        true, only side effects of the BeginFrame will be run, such as layout and animations, but
-        any visual updates may not be visible on the display or in screenshots.
-        :param screenshot: If set, a screenshot of the frame will be captured and returned in the response. Otherwise,
-        no screenshot will be captured. Note that capturing a screenshot can fail, for example,
-        during renderer initialization. In such a case, no screenshot data will be returned.
-        :returns: a dict with the following keys:
-            * hasDamage: Whether the BeginFrame resulted in damage and, thus, a new frame was committed to the
-        display. Reported for diagnostic uses, may be removed in the future.
-            * screenshotData: Base64-encoded image data of the screenshot, if one was requested and successfully taken.
-        '''
+def begin_frame(frame_time_ticks: float, interval: float, no_display_updates: bool, screenshot: ScreenshotParams) -> typing.Generator[dict,dict,dict]:
+    '''
+    Sends a BeginFrame to the target and returns when the frame was completed. Optionally captures a
+    screenshot from the resulting frame. Requires that the target was created with enabled
+    BeginFrameControl. Designed for use with --run-all-compositor-stages-before-draw, see also
+    https://goo.gl/3zHXhB for more background.
+    
+    :param frame_time_ticks: Timestamp of this BeginFrame in Renderer TimeTicks (milliseconds of uptime). If not set,
+    the current time will be used.
+    :param interval: The interval between BeginFrames that is reported to the compositor, in milliseconds.
+    Defaults to a 60 frames/second interval, i.e. about 16.666 milliseconds.
+    :param no_display_updates: Whether updates should not be committed and drawn onto the display. False by default. If
+    true, only side effects of the BeginFrame will be run, such as layout and animations, but
+    any visual updates may not be visible on the display or in screenshots.
+    :param screenshot: If set, a screenshot of the frame will be captured and returned in the response. Otherwise,
+    no screenshot will be captured. Note that capturing a screenshot can fail, for example,
+    during renderer initialization. In such a case, no screenshot data will be returned.
+    :returns: a dict with the following keys:
+        * hasDamage: Whether the BeginFrame resulted in damage and, thus, a new frame was committed to the
+    display. Reported for diagnostic uses, may be removed in the future.
+        * screenshotData: Base64-encoded image data of the screenshot, if one was requested and successfully taken.
+    '''
 
-        cmd_dict = {
-            'method': 'HeadlessExperimental.beginFrame',
-            'params': {
-                'frameTimeTicks': frame_time_ticks,
-                'interval': interval,
-                'noDisplayUpdates': no_display_updates,
-                'screenshot': screenshot,
-            }
+    cmd_dict = {
+        'method': 'HeadlessExperimental.beginFrame',
+        'params': {
+            'frameTimeTicks': frame_time_ticks,
+            'interval': interval,
+            'noDisplayUpdates': no_display_updates,
+            'screenshot': screenshot,
         }
-        response = yield cmd_dict
-        return {
-                'hasDamage': bool.from_response(response['hasDamage']),
-                'screenshotData': str.from_response(response['screenshotData']),
-            }
+    }
+    response = yield cmd_dict
+    return {
+        'hasDamage': bool(response['hasDamage']),
+        'screenshotData': str(response['screenshotData']),
+    }
 
-    @staticmethod
-    def disable() -> None:
-        '''
-        Disables headless events for the target.
-        '''
 
-        cmd_dict = {
-            'method': 'HeadlessExperimental.disable',
-        }
-        response = yield cmd_dict
+def disable() -> typing.Generator[dict,dict,None]:
+    '''
+    Disables headless events for the target.
+    '''
 
-    @staticmethod
-    def enable() -> None:
-        '''
-        Enables headless events for the target.
-        '''
+    cmd_dict = {
+        'method': 'HeadlessExperimental.disable',
+    }
+    response = yield cmd_dict
 
-        cmd_dict = {
-            'method': 'HeadlessExperimental.enable',
-        }
-        response = yield cmd_dict
+
+def enable() -> typing.Generator[dict,dict,None]:
+    '''
+    Enables headless events for the target.
+    '''
+
+    cmd_dict = {
+        'method': 'HeadlessExperimental.enable',
+    }
+    response = yield cmd_dict
+
 

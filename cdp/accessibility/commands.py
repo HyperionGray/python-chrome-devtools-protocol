@@ -17,65 +17,64 @@ from ..runtime import types as runtime
 
 
 
-class Accessibility:
-    @staticmethod
-    def disable() -> None:
-        '''
-        Disables the accessibility domain.
-        '''
+def disable() -> typing.Generator[dict,dict,None]:
+    '''
+    Disables the accessibility domain.
+    '''
 
-        cmd_dict = {
-            'method': 'Accessibility.disable',
+    cmd_dict = {
+        'method': 'Accessibility.disable',
+    }
+    response = yield cmd_dict
+
+
+def enable() -> typing.Generator[dict,dict,None]:
+    '''
+    Enables the accessibility domain which causes `AXNodeId`s to remain consistent between method calls.
+    This turns on accessibility for the page, which can impact performance until accessibility is disabled.
+    '''
+
+    cmd_dict = {
+        'method': 'Accessibility.enable',
+    }
+    response = yield cmd_dict
+
+
+def get_partial_ax_tree(node_id: dom.NodeId, backend_node_id: dom.BackendNodeId, object_id: runtime.RemoteObjectId, fetch_relatives: bool) -> typing.Generator[dict,dict,typing.List['AXNode']]:
+    '''
+    Fetches the accessibility node and partial accessibility tree for this DOM node, if it exists.
+    
+    :param node_id: Identifier of the node to get the partial accessibility tree for.
+    :param backend_node_id: Identifier of the backend node to get the partial accessibility tree for.
+    :param object_id: JavaScript object id of the node wrapper to get the partial accessibility tree for.
+    :param fetch_relatives: Whether to fetch this nodes ancestors, siblings and children. Defaults to true.
+    :returns: The `Accessibility.AXNode` for this DOM node, if it exists, plus its ancestors, siblings and
+    children, if requested.
+    '''
+
+    cmd_dict = {
+        'method': 'Accessibility.getPartialAXTree',
+        'params': {
+            'nodeId': node_id,
+            'backendNodeId': backend_node_id,
+            'objectId': object_id,
+            'fetchRelatives': fetch_relatives,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
+    return [AXNode.from_response(i) for i in response['nodes']]
 
-    @staticmethod
-    def enable() -> None:
-        '''
-        Enables the accessibility domain which causes `AXNodeId`s to remain consistent between method calls.
-        This turns on accessibility for the page, which can impact performance until accessibility is disabled.
-        '''
 
-        cmd_dict = {
-            'method': 'Accessibility.enable',
-        }
-        response = yield cmd_dict
+def get_full_ax_tree() -> typing.Generator[dict,dict,typing.List['AXNode']]:
+    '''
+    Fetches the entire accessibility tree
+    :returns: 
+    '''
 
-    @staticmethod
-    def get_partial_ax_tree(node_id: dom.NodeId, backend_node_id: dom.BackendNodeId, object_id: runtime.RemoteObjectId, fetch_relatives: bool) -> typing.List['AXNode']:
-        '''
-        Fetches the accessibility node and partial accessibility tree for this DOM node, if it exists.
-        
-        :param node_id: Identifier of the node to get the partial accessibility tree for.
-        :param backend_node_id: Identifier of the backend node to get the partial accessibility tree for.
-        :param object_id: JavaScript object id of the node wrapper to get the partial accessibility tree for.
-        :param fetch_relatives: Whether to fetch this nodes ancestors, siblings and children. Defaults to true.
-        :returns: The `Accessibility.AXNode` for this DOM node, if it exists, plus its ancestors, siblings and
-        children, if requested.
-        '''
+    cmd_dict = {
+        'method': 'Accessibility.getFullAXTree',
+    }
+    response = yield cmd_dict
+    return [AXNode.from_response(i) for i in response['nodes']]
 
-        cmd_dict = {
-            'method': 'Accessibility.getPartialAXTree',
-            'params': {
-                'nodeId': node_id,
-                'backendNodeId': backend_node_id,
-                'objectId': object_id,
-                'fetchRelatives': fetch_relatives,
-            }
-        }
-        response = yield cmd_dict
-        return [AXNode.from_response(i) for i in response['nodes']]
-
-    @staticmethod
-    def get_full_ax_tree() -> typing.List['AXNode']:
-        '''
-        Fetches the entire accessibility tree
-        :returns: 
-        '''
-
-        cmd_dict = {
-            'method': 'Accessibility.getFullAXTree',
-        }
-        response = yield cmd_dict
-        return [AXNode.from_response(i) for i in response['nodes']]
 

@@ -49,7 +49,7 @@ class LogEntry:
     worker_id: str
 
     #: Call arguments.
-    args: typing.List['Runtime.RemoteObject']
+    args: typing.List['runtime.RemoteObject']
 
     @classmethod
     def from_response(cls, response):

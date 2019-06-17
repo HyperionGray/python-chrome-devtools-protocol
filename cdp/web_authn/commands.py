@@ -14,27 +14,26 @@ import typing
 from .types import *
 
 
-class WebAuthn:
-    @staticmethod
-    def enable() -> None:
-        '''
-        Enable the WebAuthn domain and start intercepting credential storage and
-        retrieval with a virtual authenticator.
-        '''
+def enable() -> typing.Generator[dict,dict,None]:
+    '''
+    Enable the WebAuthn domain and start intercepting credential storage and
+    retrieval with a virtual authenticator.
+    '''
 
-        cmd_dict = {
-            'method': 'WebAuthn.enable',
-        }
-        response = yield cmd_dict
+    cmd_dict = {
+        'method': 'WebAuthn.enable',
+    }
+    response = yield cmd_dict
 
-    @staticmethod
-    def disable() -> None:
-        '''
-        Disable the WebAuthn domain.
-        '''
 
-        cmd_dict = {
-            'method': 'WebAuthn.disable',
-        }
-        response = yield cmd_dict
+def disable() -> typing.Generator[dict,dict,None]:
+    '''
+    Disable the WebAuthn domain.
+    '''
+
+    cmd_dict = {
+        'method': 'WebAuthn.disable',
+    }
+    response = yield cmd_dict
+
 

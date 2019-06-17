@@ -14,71 +14,70 @@ import typing
 from .types import *
 
 
-class Database:
-    @staticmethod
-    def disable() -> None:
-        '''
-        Disables database tracking, prevents database events from being sent to the client.
-        '''
+def disable() -> typing.Generator[dict,dict,None]:
+    '''
+    Disables database tracking, prevents database events from being sent to the client.
+    '''
 
-        cmd_dict = {
-            'method': 'Database.disable',
+    cmd_dict = {
+        'method': 'Database.disable',
+    }
+    response = yield cmd_dict
+
+
+def enable() -> typing.Generator[dict,dict,None]:
+    '''
+    Enables database tracking, database events will now be delivered to the client.
+    '''
+
+    cmd_dict = {
+        'method': 'Database.enable',
+    }
+    response = yield cmd_dict
+
+
+def execute_sql(database_id: DatabaseId, query: str) -> typing.Generator[dict,dict,dict]:
+    '''
+    
+    
+    :param database_id: 
+    :param query: 
+    :returns: a dict with the following keys:
+        * columnNames: 
+        * values: 
+        * sqlError: 
+    '''
+
+    cmd_dict = {
+        'method': 'Database.executeSQL',
+        'params': {
+            'databaseId': database_id,
+            'query': query,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
+    return {
+        'columnNames': [str(i) for i in response['columnNames']],
+        'values': [i for i in response['values']],
+        'sqlError': Error.from_response(response['sqlError']),
+    }
 
-    @staticmethod
-    def enable() -> None:
-        '''
-        Enables database tracking, database events will now be delivered to the client.
-        '''
 
-        cmd_dict = {
-            'method': 'Database.enable',
+def get_database_table_names(database_id: DatabaseId) -> typing.Generator[dict,dict,typing.List]:
+    '''
+    
+    
+    :param database_id: 
+    :returns: 
+    '''
+
+    cmd_dict = {
+        'method': 'Database.getDatabaseTableNames',
+        'params': {
+            'databaseId': database_id,
         }
-        response = yield cmd_dict
+    }
+    response = yield cmd_dict
+    return [str(i) for i in response['tableNames']]
 
-    @staticmethod
-    def execute_sql(database_id: DatabaseId, query: str) -> dict:
-        '''
-        
-        
-        :param database_id: 
-        :param query: 
-        :returns: a dict with the following keys:
-            * columnNames: 
-            * values: 
-            * sqlError: 
-        '''
-
-        cmd_dict = {
-            'method': 'Database.executeSQL',
-            'params': {
-                'databaseId': database_id,
-                'query': query,
-            }
-        }
-        response = yield cmd_dict
-        return {
-                'columnNames': [str(i) for i in response['columnNames']],
-                'values': [typing.Any(i) for i in response['values']],
-                'sqlError': Error.from_response(response['sqlError']),
-            }
-
-    @staticmethod
-    def get_database_table_names(database_id: DatabaseId) -> typing.List:
-        '''
-        
-        
-        :param database_id: 
-        :returns: 
-        '''
-
-        cmd_dict = {
-            'method': 'Database.getDatabaseTableNames',
-            'params': {
-                'databaseId': database_id,
-            }
-        }
-        response = yield cmd_dict
-        return [str(i) for i in response['tableNames']]
 
