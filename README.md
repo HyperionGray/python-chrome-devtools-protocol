@@ -67,42 +67,45 @@ used for generating instances of the type from JSON representations. Although
 this method is trivial for these basic types, more complex types also implement
 the same interface for converting JSON into Python instances.
 
-CDP uses the `enum` type to describe collections of related string constants. Here
-is an example of a CDP enum:
+CDP uses the `enum` type to describe collections of related string constants.
+Here is an example of a CDP enum:
 
 ```json
 {
-    "id": "DialogType",
-    "description": "Javascript dialog type.",
+    "id": "ClientNavigationReason",
+    "experimental": true,
     "type": "string",
     "enum": [
-        "alert",
-        "confirm",
-        "prompt",
-        "beforeunload"
+        "formSubmissionGet",
+        "formSubmissionPost",
+        "httpHeaderRefresh",
+        "scriptInitiated",
+        "metaTagRefresh",
+        "pageBlockInterstitial",
+        "reload"
     ]
-},
+}
 ```
 
 This gets converted into a Python enumeration:
 
 ```python
-class DialogType(enum.Enum):
-    '''
-    Javascript dialog type.
-    '''
-    ALERT = "alert"
-    CONFIRM = "confirm"
-    PROMPT = "prompt"
-    BEFOREUNLOAD = "beforeunload"
+class ClientNavigationReason(enum.Enum):
+    FORM_SUBMISSION_GET = "formSubmissionGet"
+    FORM_SUBMISSION_POST = "formSubmissionPost"
+    HTTP_HEADER_REFRESH = "httpHeaderRefresh"
+    SCRIPT_INITIATED = "scriptInitiated"
+    META_TAG_REFRESH = "metaTagRefresh"
+    PAGE_BLOCK_INTERSTITIAL = "pageBlockInterstitial"
+    RELOAD = "reload"
 
     def to_json(self) -> str:
         return self.value
 ```
 
 The generated class inherits from `Enum` so that its members have the expected
-type, e.g. `DialogType` instead of `str`. The class implements the same
-`to_json()` interface as the other types.
+type, e.g. `ClientNavigationReason` instead of `str`. Each member is upper snake
+case. The class implements the same `to_json()` interface as the other types.
 
 CDP uses the `object` type to describe more complicated data types. Here's an
 example:
