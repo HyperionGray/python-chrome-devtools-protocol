@@ -29,7 +29,7 @@ Domain: {}
 Experimental: {}
 \'\'\'
 
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field, is_dataclass
 import typing
 
 '''
@@ -526,8 +526,8 @@ def generate_commands(domain_name, commands):
         if dict_items:
             code += "        'params': {\n"
             for snake_name, param_name in dict_items:
-                code += "            '{}': {},\n".format(param_name,
-                    snake_name)
+                code += "            '{}': asdict({}) if is_dataclass({}) else {},\n".format(
+                    param_name, snake_name, snake_name, snake_name)
             code += '        }\n'
         code += '    }\n'
         code += '    json = yield cmd_dict\n'
