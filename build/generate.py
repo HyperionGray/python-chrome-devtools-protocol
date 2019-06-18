@@ -134,7 +134,7 @@ def generate_domain_module(domain, output_path):
             events_file.write(import_dependency(dependency))
         if event_dependencies:
             events_file.write('\n')
-        event_exports, event_code = generate_events(domain_events)
+        event_exports, event_code = generate_events(name, domain_events)
         events_file.write(event_code)
 
     commands_path = module_path / 'commands.py'
@@ -380,22 +380,22 @@ def generate_class_type(type_):
         class_code += '    {}: {}\n\n'.format(snake_name, prop_type)
         if 'type' in prop:
             if prop['type'] != 'array':
-                constructor.append("{}={}(response.get('{}'))".format(snake_name,
+                constructor.append("{}={}(json.get('{}'))".format(snake_name,
                     prop_type, prop_name))
             elif '$ref' in prop['items']:
                 subtype = get_python_type(prop['items'])
-                constructor.append("{}=[{}.from_response(i) for i in response.get('{}')]".format(
+                constructor.append("{}=[{}.from_json(i) for i in json.get('{}')]".format(
                     snake_name, subtype, prop_name))
             elif 'type' in prop['items']:
                 subtype = get_python_type(prop['items'])
-                constructor.append("{}=[{}(i) for i in response.get('{}')]".format(
+                constructor.append("{}=[{}(i) for i in json.get('{}')]".format(
                     snake_name, subtype, prop_name))
         else:
-            constructor.append("{}={}.from_response(response.get('{}'))".format(
+            constructor.append("{}={}.from_json(json.get('{}'))".format(
                 snake_name, prop_type, prop_name))
 
     class_code += '    @classmethod\n'
-    class_code += '    def from_response(cls, response):\n'
+    class_code += "    def from_json(cls, json: dict) -> '{}':\n".format(type_name)
     class_code += '        return cls(\n'
     class_code += ''.join('            {},\n'.format(l) for l in constructor)
     class_code += '        )\n'
@@ -423,8 +423,8 @@ def generate_basic_type(type_):
     code += 'class {}({}):\n'.format(cdp_type, py_type)
     code += docstring(description)
     code += '    @classmethod\n'
-    code += '    def from_response(cls, response):\n'
-    code += '        return cls(response)\n'
+    code += "    def from_json(cls, json: dict) -> '{}':\n".format(cdp_type)
+    code += '        return cls(json)\n'
     code += '\n'
     code += '    def __repr__(self):\n'
     code += "        return '{}({{}})'.format({}.__repr__(self))\n".format(
@@ -433,7 +433,7 @@ def generate_basic_type(type_):
     return code
 
 
-def generate_events(events):
+def generate_events(domain, events):
     exports = list()
     code = '\n'
     for event in events:
@@ -444,29 +444,37 @@ def generate_events(events):
         code += 'class {}:\n'.format(event_name)
         description = event.get('description')
         code += docstring(description)
-        if parameters:
-            for parameter in parameters:
-                param_name = inflection.underscore(parameter['name'])
-                param_description = parameter.get('description')
-                code += inline_doc(description, indent=4)
-                if 'type' in parameter:
-                    param_type = get_python_type(parameter)
-                elif '$ref' in parameter:
-                    param_type = parameter['$ref']
-                    if '.' in param_type:
-                        # If the type lives in another module, then we need to
-                        # snake_case the module name and it should *not* be
-                        # added to the list of child classes that is used for
-                        # dependency resolution.
-                        other_module, other_type = param_type.split('.')
-                        param_type = '{}.{}'.format(
-                            inflection.underscore(other_module), other_type)
-                else:
-                    raise Exception('Cannot determing event parameter type:'
-                        ' {!r}'.format(parameter))
-                code += '    {}: {}\n\n'.format(param_name, param_type)
-        else:
-            code += '    pass\n\n'
+        from_json = list()
+        for parameter in parameters:
+            param_name = inflection.underscore(parameter['name'])
+            param_description = parameter.get('description')
+            code += inline_doc(description, indent=4)
+            if 'type' in parameter:
+                param_type = get_python_type(parameter)
+            elif '$ref' in parameter:
+                param_type = parameter['$ref']
+                if '.' in param_type:
+                    # If the type lives in another module, then we need to
+                    # snake_case the module name and it should *not* be
+                    # added to the list of child classes that is used for
+                    # dependency resolution.
+                    other_module, other_type = param_type.split('.')
+                    param_type = '{}.{}'.format(
+                        inflection.underscore(other_module), other_type)
+            else:
+                raise Exception('Cannot determing event parameter type:'
+                    ' {!r}'.format(parameter))
+            code += '    {}: {}\n\n'.format(param_name, param_type)
+            from_json.append('{}={}'.format(param_name, make_return_code(parameter)))
+        code += '    # These fields are used for internal purposes and are not part of CDP\n'
+        code += "    _domain = '{}'\n".format(domain)
+        code += "    _method = '{}'\n".format(event['name'])
+        code += '\n'
+        code += '    @classmethod\n'
+        code += "    def from_json(cls, json: dict) -> '{}':\n".format(event_name)
+        code += '        return cls(\n'
+        code += ''.join('            {},\n'.format(j) for j in from_json)
+        code += '        )\n\n'
         exports.append(event_name)
     return exports, code
 
@@ -524,7 +532,7 @@ def generate_commands(domain_name, commands):
                     snake_name)
             code += '        }\n'
         code += '    }\n'
-        code += '    response = yield cmd_dict\n'
+        code += '    json = yield cmd_dict\n'
         if len(returns) == 1:
             return_ = returns[0]
             return_type = get_python_type(return_)
@@ -546,7 +554,8 @@ def generate_commands(domain_name, commands):
 
 def make_return_code(return_):
     '''
-    Make a snippet of code that retuns a value inside of a ``def parse_response()``.
+    Make a snippet of code that retuns a value inside of a ``from_json()``
+    method.
 
     :param dict return_: the CDP metadata for the item to return
     :returns: a string
@@ -556,28 +565,30 @@ def make_return_code(return_):
     if 'typing.List' in return_type:
         subtype = get_python_type(return_['items'])
         if subtype.startswith('typing.Any'):
-            code = "[i for i in response['{}']]".format(return_name)
+            code = "[i for i in json['{}']]".format(return_name)
         elif 'type' in return_['items'] or is_builtin_type(subtype):
-            code = "[{}(i) for i in response['{}']]".format(subtype, return_name)
+            code = "[{}(i) for i in json['{}']]".format(subtype, return_name)
         else:
-            code = "[{}.from_response(i) for i in response['{}']]".format(subtype, return_name)
+            code = "[{}.from_json(i) for i in json['{}']]".format(subtype, return_name)
     elif is_builtin_type(return_type):
-        code = "{}(response['{}'])".format(return_type, return_name)
+        code = "{}(json['{}'])".format(return_type, return_name)
     elif return_type.startswith('typing.Any'):
-        code = "response['{}']".format(return_name)
+        code = "json['{}']".format(return_name)
     else:
-        code = "{}.from_response(response['{}'])".format(return_type, return_name)
+        code = "{}.from_json(json['{}'])".format(return_type, return_name)
     return code
 
 
-def generate_init(init_path, modules):
+def generate_init(here, init_path, modules):
     '''
     Generate an ``__init__.py`` that exports the specified modules.
 
+    :param Path here: a directory path to the build directory
     :param Path init_path: a file path to create the init file in
     :param list[tuple] modules: a list of modules each represented as tuples
         of (name, list_of_exported_symbols)
     '''
+    init_extra_path = here / 'init_extra.py'
     modules = [module[0] for module in modules]
     modules.sort()
     with init_path.open('w') as init_file:
@@ -586,6 +597,10 @@ def generate_init(init_path, modules):
             for module in modules:
                 init_file.write('import cdp.{}.{}\n'.format(module, submodule))
             init_file.write('\n')
+        init_file.write('\n')
+        with init_extra_path.open() as init_extra_file:
+            init_extra = init_extra_file.read()
+        init_file.write(init_extra)
 
 
 def main():
@@ -603,7 +618,7 @@ def main():
         modules.extend(parse(json_path, output_path))
 
     init_path = output_path / '__init__.py'
-    generate_init(init_path, modules)
+    generate_init(here, init_path, modules)
 
     py_typed_path = output_path / 'py.typed'
     py_typed_path.touch()

@@ -54,15 +54,15 @@ class ScriptIdentifier(str):
     Unique script identifier.
     '''
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json):
+        return cls(json)
 
     def __repr__(self):
         return 'ScriptIdentifier({})'.format(str.__repr__(self))
 ```
 
 The type extends a built-in type (`str`) and adds a `repr()` that is helpful
-when debugging or logging. It also creates a `from_response()` method that is
+when debugging or logging. It also creates a `from_json()` method that is
 used for generating instances of the type from JSON representations. Although
 this method is trivial for these basic types, more complex types also implement
 the same interface for converting JSON into Python instances.
@@ -116,21 +116,17 @@ class FrameTree:
     child_frames: typing.List['FrameTree']
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json):
         return cls(
-            frame=Frame.from_response(response.get('frame')),
-            child_frames=[FrameTree.from_response(i) for i in response.get('childFrames')],
+            frame=Frame.from_json(json.get('frame')),
+            child_frames=[FrameTree.from_json(i) for i in json.get('childFrames')],
         )
 ```
 
 The generated Python code is a dataclass, complete with docstring, type
-annotations, and a non-trivial `from_response()` method. Notice that protocol
+annotations, and a non-trivial `from_json()` method. Notice that protocol
 fields like `child_frames` are snake-cased: it is automatically converted to
 camel-case when generating JSON and vice-versa.
-
-## Events
-
-TODO: explain events
 
 ## Commands
 
@@ -182,7 +178,7 @@ This leads to the following generated Python code:
           }
       }
       response = yield cmd_dict
-      return TargetInfo.from_response(response['targetInfo'])
+      return TargetInfo.from_json(response['targetInfo'])
 ```
 
 First, notice that all commands in the `Target` domain are generated as
@@ -245,6 +241,70 @@ TargetInfo(target_id=TargetID('F86FCB9B3890EB413FAC5DD9DD150E6F'), type_='page',
 title='New Tab', url='chrome://newtab/', attached=False, opener_id=TargetID('None'),
 browser_context_id=BrowserContextID('B26C01EBDA29AC04BE3966B4E50F3F49'))
 ```
+
+## Events
+
+While each command elicits a single response, the CDP protocol provides _events_
+as a mechanism for the browser to send information to the client that is not
+necessarily tied to a single command/response pair. Here's an example of a CDP
+event definition:
+
+```json
+{
+    "name": "attachedToTarget",
+    "description": "Issued when attached to target because of auto-attach or `attachToTarget` command.",
+    "experimental": true,
+    "parameters": [
+        {
+            "name": "sessionId",
+            "description": "Identifier assigned to the session used to send/receive messages.",
+            "$ref": "SessionID"
+        },
+        {
+            "name": "targetInfo",
+            "$ref": "TargetInfo"
+        },
+        {
+            "name": "waitingForDebugger",
+            "type": "boolean"
+        }
+    ]
+}
+```
+
+This gets translated into the following Python code:
+
+```python
+@dataclass
+class AttachedToTarget:
+    '''
+    Issued when attached to target because of auto-attach or `attachToTarget` command.
+    '''
+    #: Issued when attached to target because of auto-attach or `attachToTarget` command.
+    session_id: SessionID
+
+    #: Issued when attached to target because of auto-attach or `attachToTarget` command.
+    target_info: TargetInfo
+
+    #: Issued when attached to target because of auto-attach or `attachToTarget` command.
+    waiting_for_debugger: bool
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'AttachedToTarget':
+        return cls(
+            session_id=SessionID.from_json(response['sessionId']),
+            target_info=TargetInfo.from_json(response['targetInfo']),
+            waiting_for_debugger=bool(response['waitingForDebugger']),
+        )
+```
+
+The generated code consists of a dataclass the contains the event's attributes.
+The dataclass also contains a `from_json()` class method (similar to the
+`from_json()` class method that each type has) to construct an instance of the
+object from a JSON dictionary. The library also has a convenience function
+`cdp.parse_json_event(json: dict)` that will take a JSON dictionary, look up the
+corresponding event class, instantiate it with the parameters contained in
+the JSON dictionary, and return the instance.
 
 ## Build
 
