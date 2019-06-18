@@ -30,6 +30,7 @@ Experimental: {}
 \'\'\'
 
 from dataclasses import asdict, dataclass, field, is_dataclass
+import enum
 import typing
 
 '''
@@ -279,12 +280,15 @@ def generate_enum_type(type_):
     code = ''
     if type_['type'] != 'string':
         raise Exception('Unexpected enum type: {!r}'.format(type_))
-    code += '\nclass {}:\n'.format(type_['id'])
+    code += '\nclass {}(enum.Enum):\n'.format(type_['id'])
     description = type_.get('description')
     code += docstring(description)
     for enum_member in type_['enum']:
         snake_case = inflection.underscore(enum_member).upper()
         code += '    {} = "{}"\n'.format(snake_case, enum_member)
+    code += '\n'
+    code += '    def to_json(self) -> str:\n'
+    code += '        return self.value\n'
     code += '\n'
     return code
 

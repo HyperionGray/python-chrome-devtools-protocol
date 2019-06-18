@@ -67,7 +67,42 @@ used for generating instances of the type from JSON representations. Although
 this method is trivial for these basic types, more complex types also implement
 the same interface for converting JSON into Python instances.
 
-TODO: explain enum
+CDP uses the `enum` type to describe collections of related string constants. Here
+is an example of a CDP enum:
+
+```json
+{
+    "id": "DialogType",
+    "description": "Javascript dialog type.",
+    "type": "string",
+    "enum": [
+        "alert",
+        "confirm",
+        "prompt",
+        "beforeunload"
+    ]
+},
+```
+
+This gets converted into a Python enumeration:
+
+```python
+class DialogType(enum.Enum):
+    '''
+    Javascript dialog type.
+    '''
+    ALERT = "alert"
+    CONFIRM = "confirm"
+    PROMPT = "prompt"
+    BEFOREUNLOAD = "beforeunload"
+
+    def to_json(self) -> str:
+        return self.value
+```
+
+The generated class inherits from `Enum` so that its members have the expected
+type, e.g. `DialogType` instead of `str`. The class implements the same
+`to_json()` interface as the other types.
 
 CDP uses the `object` type to describe more complicated data types. Here's an
 example:
