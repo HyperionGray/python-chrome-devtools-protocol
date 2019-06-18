@@ -360,8 +360,6 @@ def generate_class_type(type_):
     for prop in type_.get('properties', []):
         prop_name = prop['name']
         snake_name = inflection.underscore(prop_name)
-        if snake_name == 'type':
-            snake_name = 'type_'
         prop_description = prop.get('description')
         if prop_description:
             class_code += inline_doc(prop_description, indent=4)
