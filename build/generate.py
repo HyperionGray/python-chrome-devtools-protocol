@@ -563,17 +563,17 @@ def make_return_code(return_):
     if 'typing.List' in return_type:
         subtype = get_python_type(return_['items'])
         if subtype.startswith('typing.Any'):
-            code = "[i for i in json['{}']]".format(return_name)
+            code = "[i for i in json.get('{}')]".format(return_name)
         elif 'type' in return_['items'] or is_builtin_type(subtype):
-            code = "[{}(i) for i in json['{}']]".format(subtype, return_name)
+            code = "[{}(i) for i in json.get('{}')]".format(subtype, return_name)
         else:
-            code = "[{}.from_json(i) for i in json['{}']]".format(subtype, return_name)
+            code = "[{}.from_json(i) for i in json.get('{}')]".format(subtype, return_name)
     elif is_builtin_type(return_type):
-        code = "{}(json['{}'])".format(return_type, return_name)
+        code = "{}(json.get('{}'))".format(return_type, return_name)
     elif return_type.startswith('typing.Any'):
-        code = "json['{}']".format(return_name)
+        code = "json.get('{}')".format(return_name)
     else:
-        code = "{}.from_json(json['{}'])".format(return_type, return_name)
+        code = "{}.from_json(json.get('{}'))".format(return_type, return_name)
     return code
 
 
