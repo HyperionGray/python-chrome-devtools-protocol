@@ -8,49 +8,51 @@ Domain: web_audio
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
 
 
-def enable() -> typing.Generator[dict,dict,None]:
+def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enables the WebAudio domain and starts sending context lifetime events.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'WebAudio.enable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def disable() -> typing.Generator[dict,dict,None]:
+def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Disables the WebAudio domain.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'WebAudio.disable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def get_realtime_data(context_id: ContextId) -> typing.Generator[dict,dict,ContextRealtimeData]:
+def get_realtime_data(
+        context_id: ContextId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,ContextRealtimeData]:
     '''
     Fetch the realtime data from the registered contexts.
     
     :param context_id: 
     :returns: 
     '''
-
-    cmd_dict = {
-        'method': 'WebAudio.getRealtimeData',
-        'params': {
-            'contextId': context_id,
-        }
+    params: T_JSON_DICT = {
+        'contextId': context_id.to_json(),
     }
-    response = yield cmd_dict
-    return ContextRealtimeData.from_response(response['realtimeData'])
+    cmd_dict: T_JSON_DICT = {
+        'method': 'WebAudio.getRealtimeData',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return ContextRealtimeData.from_json(json['realtimeData'])
 
 

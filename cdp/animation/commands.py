@@ -8,7 +8,9 @@ Domain: animation
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -16,146 +18,161 @@ from ..runtime import types as runtime
 
 
 
-def disable() -> typing.Generator[dict,dict,None]:
+def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Disables animation domain notifications.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Animation.disable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def enable() -> typing.Generator[dict,dict,None]:
+def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enables animation domain notifications.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Animation.enable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def get_current_time(id: str) -> typing.Generator[dict,dict,float]:
+def get_current_time(
+        id: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,float]:
     '''
     Returns the current time of the an animation.
     
     :param id: Id of animation.
     :returns: Current time of the page.
     '''
-
-    cmd_dict = {
-        'method': 'Animation.getCurrentTime',
-        'params': {
-            'id': id,
-        }
+    params: T_JSON_DICT = {
+        'id': id,
     }
-    response = yield cmd_dict
-    return float(response['currentTime'])
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Animation.getCurrentTime',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return float(json['currentTime'])
 
 
-def get_playback_rate() -> typing.Generator[dict,dict,float]:
+def get_playback_rate() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,float]:
     '''
     Gets the playback rate of the document timeline.
     :returns: Playback rate for animations on page.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Animation.getPlaybackRate',
     }
-    response = yield cmd_dict
-    return float(response['playbackRate'])
+    json = yield cmd_dict
+    return float(json['playbackRate'])
 
 
-def release_animations(animations: typing.List) -> typing.Generator[dict,dict,None]:
+def release_animations(
+        animations: typing.List['str'],
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Releases a set of animations to no longer be manipulated.
     
     :param animations: List of animation ids to seek.
     '''
-
-    cmd_dict = {
-        'method': 'Animation.releaseAnimations',
-        'params': {
-            'animations': animations,
-        }
+    params: T_JSON_DICT = {
+        'animations': [i for i in animations],
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Animation.releaseAnimations',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def resolve_animation(animation_id: str) -> typing.Generator[dict,dict,runtime.RemoteObject]:
+def resolve_animation(
+        animation_id: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,runtime.RemoteObject]:
     '''
     Gets the remote object of the Animation.
     
     :param animation_id: Animation id.
     :returns: Corresponding remote object.
     '''
-
-    cmd_dict = {
-        'method': 'Animation.resolveAnimation',
-        'params': {
-            'animationId': animation_id,
-        }
+    params: T_JSON_DICT = {
+        'animationId': animation_id,
     }
-    response = yield cmd_dict
-    return runtime.RemoteObject.from_response(response['remoteObject'])
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Animation.resolveAnimation',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return runtime.RemoteObject.from_json(json['remoteObject'])
 
 
-def seek_animations(animations: typing.List, current_time: float) -> typing.Generator[dict,dict,None]:
+def seek_animations(
+        animations: typing.List['str'],
+        current_time: float,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Seek a set of animations to a particular time within each animation.
     
     :param animations: List of animation ids to seek.
     :param current_time: Set the current time of each animation.
     '''
-
-    cmd_dict = {
-        'method': 'Animation.seekAnimations',
-        'params': {
-            'animations': animations,
-            'currentTime': current_time,
-        }
+    params: T_JSON_DICT = {
+        'animations': [i for i in animations],
+        'currentTime': current_time,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Animation.seekAnimations',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_paused(animations: typing.List, paused: bool) -> typing.Generator[dict,dict,None]:
+def set_paused(
+        animations: typing.List['str'],
+        paused: bool,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Sets the paused state of a set of animations.
     
     :param animations: Animations to set the pause state of.
     :param paused: Paused state to set to.
     '''
-
-    cmd_dict = {
-        'method': 'Animation.setPaused',
-        'params': {
-            'animations': animations,
-            'paused': paused,
-        }
+    params: T_JSON_DICT = {
+        'animations': [i for i in animations],
+        'paused': paused,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Animation.setPaused',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_playback_rate(playback_rate: float) -> typing.Generator[dict,dict,None]:
+def set_playback_rate(
+        playback_rate: float,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Sets the playback rate of the document timeline.
     
     :param playback_rate: Playback rate for animations on page
     '''
-
-    cmd_dict = {
-        'method': 'Animation.setPlaybackRate',
-        'params': {
-            'playbackRate': playback_rate,
-        }
+    params: T_JSON_DICT = {
+        'playbackRate': playback_rate,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Animation.setPlaybackRate',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_timing(animation_id: str, duration: float, delay: float) -> typing.Generator[dict,dict,None]:
+def set_timing(
+        animation_id: str,
+        duration: float,
+        delay: float,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Sets the timing of an animation node.
     
@@ -163,15 +180,15 @@ def set_timing(animation_id: str, duration: float, delay: float) -> typing.Gener
     :param duration: Duration of the animation.
     :param delay: Delay of the animation.
     '''
-
-    cmd_dict = {
-        'method': 'Animation.setTiming',
-        'params': {
-            'animationId': animation_id,
-            'duration': duration,
-            'delay': delay,
-        }
+    params: T_JSON_DICT = {
+        'animationId': animation_id,
+        'duration': duration,
+        'delay': delay,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Animation.setTiming',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 

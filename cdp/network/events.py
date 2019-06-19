@@ -8,7 +8,9 @@ Domain: network
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -33,6 +35,19 @@ class DataReceived:
     #: Fired when data chunk was received over the network.
     encoded_data_length: int
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Network'
+    _method = 'dataReceived'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'DataReceived':
+        return cls(
+            request_id=RequestId.from_json(json['requestId']),
+            timestamp=MonotonicTime.from_json(json['timestamp']),
+            data_length=int(json['dataLength']),
+            encoded_data_length=int(json['encodedDataLength']),
+        )
+
 
 @dataclass
 class EventSourceMessageReceived:
@@ -53,6 +68,20 @@ class EventSourceMessageReceived:
 
     #: Fired when EventSource message is received.
     data: str
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Network'
+    _method = 'eventSourceMessageReceived'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'EventSourceMessageReceived':
+        return cls(
+            request_id=RequestId.from_json(json['requestId']),
+            timestamp=MonotonicTime.from_json(json['timestamp']),
+            event_name=str(json['eventName']),
+            event_id=str(json['eventId']),
+            data=str(json['data']),
+        )
 
 
 @dataclass
@@ -78,6 +107,21 @@ class LoadingFailed:
     #: Fired when HTTP request has failed to load.
     blocked_reason: BlockedReason
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Network'
+    _method = 'loadingFailed'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'LoadingFailed':
+        return cls(
+            request_id=RequestId.from_json(json['requestId']),
+            timestamp=MonotonicTime.from_json(json['timestamp']),
+            type=ResourceType.from_json(json['type']),
+            error_text=str(json['errorText']),
+            canceled=bool(json['canceled']),
+            blocked_reason=BlockedReason.from_json(json['blockedReason']),
+        )
+
 
 @dataclass
 class LoadingFinished:
@@ -95,6 +139,19 @@ class LoadingFinished:
 
     #: Fired when HTTP request has finished loading.
     should_report_corb_blocking: bool
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Network'
+    _method = 'loadingFinished'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'LoadingFinished':
+        return cls(
+            request_id=RequestId.from_json(json['requestId']),
+            timestamp=MonotonicTime.from_json(json['timestamp']),
+            encoded_data_length=float(json['encodedDataLength']),
+            should_report_corb_blocking=bool(json['shouldReportCorbBlocking']),
+        )
 
 
 @dataclass
@@ -151,6 +208,27 @@ class RequestIntercepted:
     #: mocked.
     request_id: RequestId
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Network'
+    _method = 'requestIntercepted'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'RequestIntercepted':
+        return cls(
+            interception_id=InterceptionId.from_json(json['interceptionId']),
+            request=Request.from_json(json['request']),
+            frame_id=page.FrameId.from_json(json['frameId']),
+            resource_type=ResourceType.from_json(json['resourceType']),
+            is_navigation_request=bool(json['isNavigationRequest']),
+            is_download=bool(json['isDownload']),
+            redirect_url=str(json['redirectUrl']),
+            auth_challenge=AuthChallenge.from_json(json['authChallenge']),
+            response_error_reason=ErrorReason.from_json(json['responseErrorReason']),
+            response_status_code=int(json['responseStatusCode']),
+            response_headers=Headers.from_json(json['responseHeaders']),
+            request_id=RequestId.from_json(json['requestId']),
+        )
+
 
 @dataclass
 class RequestServedFromCache:
@@ -159,6 +237,16 @@ class RequestServedFromCache:
     '''
     #: Fired if request ended up loading from cache.
     request_id: RequestId
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Network'
+    _method = 'requestServedFromCache'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'RequestServedFromCache':
+        return cls(
+            request_id=RequestId.from_json(json['requestId']),
+        )
 
 
 @dataclass
@@ -199,6 +287,26 @@ class RequestWillBeSent:
     #: Fired when page is about to send HTTP request.
     has_user_gesture: bool
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Network'
+    _method = 'requestWillBeSent'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'RequestWillBeSent':
+        return cls(
+            request_id=RequestId.from_json(json['requestId']),
+            loader_id=LoaderId.from_json(json['loaderId']),
+            document_url=str(json['documentURL']),
+            request=Request.from_json(json['request']),
+            timestamp=MonotonicTime.from_json(json['timestamp']),
+            wall_time=TimeSinceEpoch.from_json(json['wallTime']),
+            initiator=Initiator.from_json(json['initiator']),
+            redirect_response=Response.from_json(json['redirectResponse']),
+            type=ResourceType.from_json(json['type']),
+            frame_id=page.FrameId.from_json(json['frameId']),
+            has_user_gesture=bool(json['hasUserGesture']),
+        )
+
 
 @dataclass
 class ResourceChangedPriority:
@@ -214,6 +322,18 @@ class ResourceChangedPriority:
     #: Fired when resource loading priority is changed
     timestamp: MonotonicTime
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Network'
+    _method = 'resourceChangedPriority'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'ResourceChangedPriority':
+        return cls(
+            request_id=RequestId.from_json(json['requestId']),
+            new_priority=ResourcePriority.from_json(json['newPriority']),
+            timestamp=MonotonicTime.from_json(json['timestamp']),
+        )
+
 
 @dataclass
 class SignedExchangeReceived:
@@ -225,6 +345,17 @@ class SignedExchangeReceived:
 
     #: Fired when a signed exchange was received over the network
     info: SignedExchangeInfo
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Network'
+    _method = 'signedExchangeReceived'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'SignedExchangeReceived':
+        return cls(
+            request_id=RequestId.from_json(json['requestId']),
+            info=SignedExchangeInfo.from_json(json['info']),
+        )
 
 
 @dataclass
@@ -250,6 +381,21 @@ class ResponseReceived:
     #: Fired when HTTP response is available.
     frame_id: page.FrameId
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Network'
+    _method = 'responseReceived'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'ResponseReceived':
+        return cls(
+            request_id=RequestId.from_json(json['requestId']),
+            loader_id=LoaderId.from_json(json['loaderId']),
+            timestamp=MonotonicTime.from_json(json['timestamp']),
+            type=ResourceType.from_json(json['type']),
+            response=Response.from_json(json['response']),
+            frame_id=page.FrameId.from_json(json['frameId']),
+        )
+
 
 @dataclass
 class WebSocketClosed:
@@ -261,6 +407,17 @@ class WebSocketClosed:
 
     #: Fired when WebSocket is closed.
     timestamp: MonotonicTime
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Network'
+    _method = 'webSocketClosed'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'WebSocketClosed':
+        return cls(
+            request_id=RequestId.from_json(json['requestId']),
+            timestamp=MonotonicTime.from_json(json['timestamp']),
+        )
 
 
 @dataclass
@@ -277,6 +434,18 @@ class WebSocketCreated:
     #: Fired upon WebSocket creation.
     initiator: Initiator
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Network'
+    _method = 'webSocketCreated'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'WebSocketCreated':
+        return cls(
+            request_id=RequestId.from_json(json['requestId']),
+            url=str(json['url']),
+            initiator=Initiator.from_json(json['initiator']),
+        )
+
 
 @dataclass
 class WebSocketFrameError:
@@ -291,6 +460,18 @@ class WebSocketFrameError:
 
     #: Fired when WebSocket message error occurs.
     error_message: str
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Network'
+    _method = 'webSocketFrameError'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'WebSocketFrameError':
+        return cls(
+            request_id=RequestId.from_json(json['requestId']),
+            timestamp=MonotonicTime.from_json(json['timestamp']),
+            error_message=str(json['errorMessage']),
+        )
 
 
 @dataclass
@@ -307,6 +488,18 @@ class WebSocketFrameReceived:
     #: Fired when WebSocket message is received.
     response: WebSocketFrame
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Network'
+    _method = 'webSocketFrameReceived'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'WebSocketFrameReceived':
+        return cls(
+            request_id=RequestId.from_json(json['requestId']),
+            timestamp=MonotonicTime.from_json(json['timestamp']),
+            response=WebSocketFrame.from_json(json['response']),
+        )
+
 
 @dataclass
 class WebSocketFrameSent:
@@ -322,6 +515,18 @@ class WebSocketFrameSent:
     #: Fired when WebSocket message is sent.
     response: WebSocketFrame
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Network'
+    _method = 'webSocketFrameSent'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'WebSocketFrameSent':
+        return cls(
+            request_id=RequestId.from_json(json['requestId']),
+            timestamp=MonotonicTime.from_json(json['timestamp']),
+            response=WebSocketFrame.from_json(json['response']),
+        )
+
 
 @dataclass
 class WebSocketHandshakeResponseReceived:
@@ -336,6 +541,18 @@ class WebSocketHandshakeResponseReceived:
 
     #: Fired when WebSocket handshake response becomes available.
     response: WebSocketResponse
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Network'
+    _method = 'webSocketHandshakeResponseReceived'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'WebSocketHandshakeResponseReceived':
+        return cls(
+            request_id=RequestId.from_json(json['requestId']),
+            timestamp=MonotonicTime.from_json(json['timestamp']),
+            response=WebSocketResponse.from_json(json['response']),
+        )
 
 
 @dataclass
@@ -354,4 +571,17 @@ class WebSocketWillSendHandshakeRequest:
 
     #: Fired when WebSocket is about to initiate handshake.
     request: WebSocketRequest
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Network'
+    _method = 'webSocketWillSendHandshakeRequest'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'WebSocketWillSendHandshakeRequest':
+        return cls(
+            request_id=RequestId.from_json(json['requestId']),
+            timestamp=MonotonicTime.from_json(json['timestamp']),
+            wall_time=TimeSinceEpoch.from_json(json['wallTime']),
+            request=WebSocketRequest.from_json(json['request']),
+        )
 

@@ -8,13 +8,19 @@ Domain: indexed_db
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
 
 
-def clear_object_store(security_origin: str, database_name: str, object_store_name: str) -> typing.Generator[dict,dict,None]:
+def clear_object_store(
+        security_origin: str,
+        database_name: str,
+        object_store_name: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Clears all entries from an object store.
     
@@ -22,37 +28,45 @@ def clear_object_store(security_origin: str, database_name: str, object_store_na
     :param database_name: Database name.
     :param object_store_name: Object store name.
     '''
-
-    cmd_dict = {
-        'method': 'IndexedDB.clearObjectStore',
-        'params': {
-            'securityOrigin': security_origin,
-            'databaseName': database_name,
-            'objectStoreName': object_store_name,
-        }
+    params: T_JSON_DICT = {
+        'securityOrigin': security_origin,
+        'databaseName': database_name,
+        'objectStoreName': object_store_name,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'IndexedDB.clearObjectStore',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def delete_database(security_origin: str, database_name: str) -> typing.Generator[dict,dict,None]:
+def delete_database(
+        security_origin: str,
+        database_name: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Deletes a database.
     
     :param security_origin: Security origin.
     :param database_name: Database name.
     '''
-
-    cmd_dict = {
-        'method': 'IndexedDB.deleteDatabase',
-        'params': {
-            'securityOrigin': security_origin,
-            'databaseName': database_name,
-        }
+    params: T_JSON_DICT = {
+        'securityOrigin': security_origin,
+        'databaseName': database_name,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'IndexedDB.deleteDatabase',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def delete_object_store_entries(security_origin: str, database_name: str, object_store_name: str, key_range: KeyRange) -> typing.Generator[dict,dict,None]:
+def delete_object_store_entries(
+        security_origin: str,
+        database_name: str,
+        object_store_name: str,
+        key_range: KeyRange,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Delete a range of entries from an object store
     
@@ -61,42 +75,48 @@ def delete_object_store_entries(security_origin: str, database_name: str, object
     :param object_store_name: 
     :param key_range: Range of entry keys to delete
     '''
-
-    cmd_dict = {
-        'method': 'IndexedDB.deleteObjectStoreEntries',
-        'params': {
-            'securityOrigin': security_origin,
-            'databaseName': database_name,
-            'objectStoreName': object_store_name,
-            'keyRange': key_range,
-        }
+    params: T_JSON_DICT = {
+        'securityOrigin': security_origin,
+        'databaseName': database_name,
+        'objectStoreName': object_store_name,
+        'keyRange': key_range.to_json(),
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'IndexedDB.deleteObjectStoreEntries',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def disable() -> typing.Generator[dict,dict,None]:
+def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Disables events from backend.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'IndexedDB.disable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def enable() -> typing.Generator[dict,dict,None]:
+def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enables events from backend.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'IndexedDB.enable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def request_data(security_origin: str, database_name: str, object_store_name: str, index_name: str, skip_count: int, page_size: int, key_range: KeyRange) -> typing.Generator[dict,dict,dict]:
+def request_data(
+        security_origin: str,
+        database_name: str,
+        object_store_name: str,
+        index_name: str,
+        skip_count: int,
+        page_size: int,
+        key_range: typing.Optional[KeyRange] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     Requests data from object store or index.
     
@@ -111,27 +131,33 @@ def request_data(security_origin: str, database_name: str, object_store_name: st
         * objectStoreDataEntries: Array of object store data entries.
         * hasMore: If true, there are more entries to fetch in the given range.
     '''
-
-    cmd_dict = {
+    params: T_JSON_DICT = {
+        'securityOrigin': security_origin,
+        'databaseName': database_name,
+        'objectStoreName': object_store_name,
+        'indexName': index_name,
+        'skipCount': skip_count,
+        'pageSize': page_size,
+    }
+    if key_range is not None:
+        params['keyRange'] = key_range.to_json()
+    cmd_dict: T_JSON_DICT = {
         'method': 'IndexedDB.requestData',
-        'params': {
-            'securityOrigin': security_origin,
-            'databaseName': database_name,
-            'objectStoreName': object_store_name,
-            'indexName': index_name,
-            'skipCount': skip_count,
-            'pageSize': page_size,
-            'keyRange': key_range,
-        }
+        'params': params,
     }
-    response = yield cmd_dict
-    return {
-        'objectStoreDataEntries': [DataEntry.from_response(i) for i in response['objectStoreDataEntries']],
-        'hasMore': bool(response['hasMore']),
+    json = yield cmd_dict
+    result: T_JSON_DICT = {
+        'objectStoreDataEntries': [DataEntry.from_json(i) for i in json['objectStoreDataEntries']],
+        'hasMore': bool(json['hasMore']),
     }
+    return result
 
 
-def get_metadata(security_origin: str, database_name: str, object_store_name: str) -> typing.Generator[dict,dict,dict]:
+def get_metadata(
+        security_origin: str,
+        database_name: str,
+        object_store_name: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     Gets metadata of an object store
     
@@ -144,23 +170,27 @@ def get_metadata(security_origin: str, database_name: str, object_store_name: st
     key into the object store. Valid if objectStore.autoIncrement
     is true.
     '''
-
-    cmd_dict = {
+    params: T_JSON_DICT = {
+        'securityOrigin': security_origin,
+        'databaseName': database_name,
+        'objectStoreName': object_store_name,
+    }
+    cmd_dict: T_JSON_DICT = {
         'method': 'IndexedDB.getMetadata',
-        'params': {
-            'securityOrigin': security_origin,
-            'databaseName': database_name,
-            'objectStoreName': object_store_name,
-        }
+        'params': params,
     }
-    response = yield cmd_dict
-    return {
-        'entriesCount': float(response['entriesCount']),
-        'keyGeneratorValue': float(response['keyGeneratorValue']),
+    json = yield cmd_dict
+    result: T_JSON_DICT = {
+        'entriesCount': float(json['entriesCount']),
+        'keyGeneratorValue': float(json['keyGeneratorValue']),
     }
+    return result
 
 
-def request_database(security_origin: str, database_name: str) -> typing.Generator[dict,dict,DatabaseWithObjectStores]:
+def request_database(
+        security_origin: str,
+        database_name: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,DatabaseWithObjectStores]:
     '''
     Requests database with given name in given frame.
     
@@ -168,33 +198,35 @@ def request_database(security_origin: str, database_name: str) -> typing.Generat
     :param database_name: Database name.
     :returns: Database with an array of object stores.
     '''
-
-    cmd_dict = {
-        'method': 'IndexedDB.requestDatabase',
-        'params': {
-            'securityOrigin': security_origin,
-            'databaseName': database_name,
-        }
+    params: T_JSON_DICT = {
+        'securityOrigin': security_origin,
+        'databaseName': database_name,
     }
-    response = yield cmd_dict
-    return DatabaseWithObjectStores.from_response(response['databaseWithObjectStores'])
+    cmd_dict: T_JSON_DICT = {
+        'method': 'IndexedDB.requestDatabase',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return DatabaseWithObjectStores.from_json(json['databaseWithObjectStores'])
 
 
-def request_database_names(security_origin: str) -> typing.Generator[dict,dict,typing.List]:
+def request_database_names(
+        security_origin: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['str']]:
     '''
     Requests database names for given security origin.
     
     :param security_origin: Security origin.
     :returns: Database names for origin.
     '''
-
-    cmd_dict = {
-        'method': 'IndexedDB.requestDatabaseNames',
-        'params': {
-            'securityOrigin': security_origin,
-        }
+    params: T_JSON_DICT = {
+        'securityOrigin': security_origin,
     }
-    response = yield cmd_dict
-    return [str(i) for i in response['databaseNames']]
+    cmd_dict: T_JSON_DICT = {
+        'method': 'IndexedDB.requestDatabaseNames',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return [str(i) for i in json['databaseNames']]
 
 

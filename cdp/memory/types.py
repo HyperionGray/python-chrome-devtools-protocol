@@ -8,17 +8,25 @@ Domain: memory
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 
-
-class PressureLevel:
+class PressureLevel(enum.Enum):
     '''
     Memory pressure level.
     '''
     MODERATE = "moderate"
     CRITICAL = "critical"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> 'PressureLevel':
+        return cls(json)
 
 
 @dataclass
@@ -33,16 +41,23 @@ class SamplingProfileNode:
     total: float
 
     #: Execution stack at the point of allocation.
-    stack: typing.List
+    stack: typing.List['str']
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'size': self.size,
+            'total': self.total,
+            'stack': [i for i in self.stack],
+        }
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'SamplingProfileNode':
         return cls(
-            size=float(response.get('size')),
-            total=float(response.get('total')),
-            stack=[str(i) for i in response.get('stack')],
+            size=json['size'],
+            total=json['total'],
+            stack=[i for i in json['stack']],
         )
-
 
 @dataclass
 class SamplingProfile:
@@ -53,13 +68,19 @@ class SamplingProfile:
 
     modules: typing.List['Module']
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            samples=[SamplingProfileNode.from_response(i) for i in response.get('samples')],
-            modules=[Module.from_response(i) for i in response.get('modules')],
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'samples': [i.to_json() for i in self.samples],
+            'modules': [i.to_json() for i in self.modules],
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'SamplingProfile':
+        return cls(
+            samples=[SamplingProfileNode.from_json(i) for i in json['samples']],
+            modules=[Module.from_json(i) for i in json['modules']],
+        )
 
 @dataclass
 class Module:
@@ -79,12 +100,21 @@ class Module:
     #: Size of the module in bytes.
     size: float
 
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'name': self.name,
+            'uuid': self.uuid,
+            'baseAddress': self.base_address,
+            'size': self.size,
+        }
+        return json
+
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'Module':
         return cls(
-            name=str(response.get('name')),
-            uuid=str(response.get('uuid')),
-            base_address=str(response.get('baseAddress')),
-            size=float(response.get('size')),
+            name=json['name'],
+            uuid=json['uuid'],
+            base_address=json['baseAddress'],
+            size=json['size'],
         )
 

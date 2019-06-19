@@ -8,14 +8,19 @@ Domain: target
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 
 class TargetID(str):
+    def to_json(self) -> str:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: str) -> 'TargetID':
+        return cls(json)
 
     def __repr__(self):
         return 'TargetID({})'.format(str.__repr__(self))
@@ -25,29 +30,34 @@ class SessionID(str):
     '''
     Unique identifier of attached debugging session.
     '''
+    def to_json(self) -> str:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: str) -> 'SessionID':
+        return cls(json)
 
     def __repr__(self):
         return 'SessionID({})'.format(str.__repr__(self))
 
 
 class BrowserContextID(str):
+    def to_json(self) -> str:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: str) -> 'BrowserContextID':
+        return cls(json)
 
     def __repr__(self):
         return 'BrowserContextID({})'.format(str.__repr__(self))
-
 
 
 @dataclass
 class TargetInfo:
     target_id: TargetID
 
-    type_: str
+    type: str
 
     title: str
 
@@ -57,22 +67,37 @@ class TargetInfo:
     attached: bool
 
     #: Opener target Id
-    opener_id: TargetID
+    opener_id: typing.Optional[TargetID] = None
 
-    browser_context_id: BrowserContextID
+    browser_context_id: typing.Optional[BrowserContextID] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'targetId': self.target_id.to_json(),
+            'type': self.type,
+            'title': self.title,
+            'url': self.url,
+            'attached': self.attached,
+        }
+        if self.opener_id is not None:
+            json['openerId'] = self.opener_id.to_json()
+        if self.browser_context_id is not None:
+            json['browserContextId'] = self.browser_context_id.to_json()
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'TargetInfo':
+        opener_id = TargetID.from_json(json['openerId']) if 'openerId' in json else None
+        browser_context_id = BrowserContextID.from_json(json['browserContextId']) if 'browserContextId' in json else None
         return cls(
-            target_id=TargetID.from_response(response.get('targetId')),
-            type_=str(response.get('type')),
-            title=str(response.get('title')),
-            url=str(response.get('url')),
-            attached=bool(response.get('attached')),
-            opener_id=TargetID.from_response(response.get('openerId')),
-            browser_context_id=BrowserContextID.from_response(response.get('browserContextId')),
+            target_id=TargetID.from_json(json['targetId']),
+            type=json['type'],
+            title=json['title'],
+            url=json['url'],
+            attached=json['attached'],
+            opener_id=opener_id,
+            browser_context_id=browser_context_id,
         )
-
 
 @dataclass
 class RemoteLocation:
@@ -80,10 +105,17 @@ class RemoteLocation:
 
     port: int
 
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'host': self.host,
+            'port': self.port,
+        }
+        return json
+
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'RemoteLocation':
         return cls(
-            host=str(response.get('host')),
-            port=int(response.get('port')),
+            host=json['host'],
+            port=json['port'],
         )
 

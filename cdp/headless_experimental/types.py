@@ -8,9 +8,10 @@ Domain: headless_experimental
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
-
 
 
 @dataclass
@@ -19,15 +20,26 @@ class ScreenshotParams:
     Encoding options for a screenshot.
     '''
     #: Image compression format (defaults to png).
-    format: str
+    format: typing.Optional[str] = None
 
     #: Compression quality from range [0..100] (jpeg only).
-    quality: int
+    quality: typing.Optional[int] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+        }
+        if self.format is not None:
+            json['format'] = self.format
+        if self.quality is not None:
+            json['quality'] = self.quality
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'ScreenshotParams':
+        format = json['format'] if 'format' in json else None
+        quality = json['quality'] if 'quality' in json else None
         return cls(
-            format=str(response.get('format')),
-            quality=int(response.get('quality')),
+            format=format,
+            quality=quality,
         )
 

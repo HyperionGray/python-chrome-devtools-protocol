@@ -8,12 +8,13 @@ Domain: storage
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 
-
-class StorageType:
+class StorageType(enum.Enum):
     '''
     Enum of possible storage types.
     '''
@@ -29,6 +30,13 @@ class StorageType:
     ALL = "all"
     OTHER = "other"
 
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> 'StorageType':
+        return cls(json)
+
 
 @dataclass
 class UsageForType:
@@ -41,10 +49,17 @@ class UsageForType:
     #: Storage usage (bytes).
     usage: float
 
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'storageType': self.storage_type.to_json(),
+            'usage': self.usage,
+        }
+        return json
+
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'UsageForType':
         return cls(
-            storage_type=StorageType.from_response(response.get('storageType')),
-            usage=float(response.get('usage')),
+            storage_type=StorageType.from_json(json['storageType']),
+            usage=json['usage'],
         )
 

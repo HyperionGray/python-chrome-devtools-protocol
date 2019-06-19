@@ -8,7 +8,9 @@ Domain: fetch
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from ..network import types as network
@@ -18,16 +20,18 @@ class RequestId(str):
     '''
     Unique request identifier.
     '''
+    def to_json(self) -> str:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: str) -> 'RequestId':
+        return cls(json)
 
     def __repr__(self):
         return 'RequestId({})'.format(str.__repr__(self))
 
 
-
-class RequestStage:
+class RequestStage(enum.Enum):
     '''
     Stages of the request to handle. Request will intercept before the request is
     sent. Response will intercept after the response is received (but before response
@@ -36,27 +40,47 @@ class RequestStage:
     REQUEST = "Request"
     RESPONSE = "Response"
 
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> 'RequestStage':
+        return cls(json)
+
 
 @dataclass
 class RequestPattern:
     #: Wildcards ('*' -> zero or more, '?' -> exactly one) are allowed. Escape character is
     #: backslash. Omitting is equivalent to "*".
-    url_pattern: str
+    url_pattern: typing.Optional[str] = None
 
     #: If set, only requests for matching resource types will be intercepted.
-    resource_type: network.ResourceType
+    resource_type: typing.Optional[network.ResourceType] = None
 
     #: Stage at wich to begin intercepting requests. Default is Request.
-    request_stage: RequestStage
+    request_stage: typing.Optional[RequestStage] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+        }
+        if self.url_pattern is not None:
+            json['urlPattern'] = self.url_pattern
+        if self.resource_type is not None:
+            json['resourceType'] = self.resource_type.to_json()
+        if self.request_stage is not None:
+            json['requestStage'] = self.request_stage.to_json()
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'RequestPattern':
+        url_pattern = json['urlPattern'] if 'urlPattern' in json else None
+        resource_type = network.ResourceType.from_json(json['resourceType']) if 'resourceType' in json else None
+        request_stage = RequestStage.from_json(json['requestStage']) if 'requestStage' in json else None
         return cls(
-            url_pattern=str(response.get('urlPattern')),
-            resource_type=network.ResourceType.from_response(response.get('resourceType')),
-            request_stage=RequestStage.from_response(response.get('requestStage')),
+            url_pattern=url_pattern,
+            resource_type=resource_type,
+            request_stage=request_stage,
         )
-
 
 @dataclass
 class HeaderEntry:
@@ -67,22 +91,25 @@ class HeaderEntry:
 
     value: str
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            name=str(response.get('name')),
-            value=str(response.get('value')),
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'name': self.name,
+            'value': self.value,
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'HeaderEntry':
+        return cls(
+            name=json['name'],
+            value=json['value'],
+        )
 
 @dataclass
 class AuthChallenge:
     '''
     Authorization challenge for HTTP status code 401 or 407.
     '''
-    #: Source of the authentication challenge.
-    source: str
-
     #: Origin of the challenger.
     origin: str
 
@@ -92,15 +119,28 @@ class AuthChallenge:
     #: The realm of the challenge. May be empty.
     realm: str
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            source=str(response.get('source')),
-            origin=str(response.get('origin')),
-            scheme=str(response.get('scheme')),
-            realm=str(response.get('realm')),
-        )
+    #: Source of the authentication challenge.
+    source: typing.Optional[str] = None
 
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'origin': self.origin,
+            'scheme': self.scheme,
+            'realm': self.realm,
+        }
+        if self.source is not None:
+            json['source'] = self.source
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'AuthChallenge':
+        source = json['source'] if 'source' in json else None
+        return cls(
+            source=source,
+            origin=json['origin'],
+            scheme=json['scheme'],
+            realm=json['realm'],
+        )
 
 @dataclass
 class AuthChallengeResponse:
@@ -114,17 +154,29 @@ class AuthChallengeResponse:
 
     #: The username to provide, possibly empty. Should only be set if response is
     #: ProvideCredentials.
-    username: str
+    username: typing.Optional[str] = None
 
     #: The password to provide, possibly empty. Should only be set if response is
     #: ProvideCredentials.
-    password: str
+    password: typing.Optional[str] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'response': self.response,
+        }
+        if self.username is not None:
+            json['username'] = self.username
+        if self.password is not None:
+            json['password'] = self.password
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'AuthChallengeResponse':
+        username = json['username'] if 'username' in json else None
+        password = json['password'] if 'password' in json else None
         return cls(
-            response=str(response.get('response')),
-            username=str(response.get('username')),
-            password=str(response.get('password')),
+            response=json['response'],
+            username=username,
+            password=password,
         )
 

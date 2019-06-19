@@ -8,70 +8,70 @@ Domain: log
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
 
 
-def clear() -> typing.Generator[dict,dict,None]:
+def clear() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Clears the log.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Log.clear',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def disable() -> typing.Generator[dict,dict,None]:
+def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Disables log domain, prevents further log entries from being reported to the client.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Log.disable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def enable() -> typing.Generator[dict,dict,None]:
+def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enables log domain, sends the entries collected so far to the client by means of the
     `entryAdded` notification.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Log.enable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def start_violations_report(config: typing.List['ViolationSetting']) -> typing.Generator[dict,dict,None]:
+def start_violations_report(
+        config: typing.List['ViolationSetting'],
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     start violation reporting.
     
     :param config: Configuration for violations.
     '''
-
-    cmd_dict = {
-        'method': 'Log.startViolationsReport',
-        'params': {
-            'config': config,
-        }
+    params: T_JSON_DICT = {
+        'config': [i.to_json() for i in config],
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Log.startViolationsReport',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def stop_violations_report() -> typing.Generator[dict,dict,None]:
+def stop_violations_report() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Stop violation reporting.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Log.stopViolationsReport',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 

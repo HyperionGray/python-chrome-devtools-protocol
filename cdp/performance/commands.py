@@ -8,35 +8,37 @@ Domain: performance
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
 
 
-def disable() -> typing.Generator[dict,dict,None]:
+def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Disable collecting and reporting metrics.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Performance.disable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def enable() -> typing.Generator[dict,dict,None]:
+def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enable collecting and reporting metrics.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Performance.enable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def set_time_domain(time_domain: str) -> typing.Generator[dict,dict,None]:
+def set_time_domain(
+        time_domain: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Sets time domain to use for collecting and reporting duration metrics.
     Note that this must be called before enabling metrics collection. Calling
@@ -44,26 +46,25 @@ def set_time_domain(time_domain: str) -> typing.Generator[dict,dict,None]:
     
     :param time_domain: Time domain
     '''
-
-    cmd_dict = {
-        'method': 'Performance.setTimeDomain',
-        'params': {
-            'timeDomain': time_domain,
-        }
+    params: T_JSON_DICT = {
+        'timeDomain': time_domain,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Performance.setTimeDomain',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def get_metrics() -> typing.Generator[dict,dict,typing.List['Metric']]:
+def get_metrics() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['Metric']]:
     '''
     Retrieve current values of run-time metrics.
     :returns: Current values for run-time metrics.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Performance.getMetrics',
     }
-    response = yield cmd_dict
-    return [Metric.from_response(i) for i in response['metrics']]
+    json = yield cmd_dict
+    return [Metric.from_json(i) for i in json['metrics']]
 
 

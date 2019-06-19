@@ -8,21 +8,25 @@ Domain: browser
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 
 class WindowID(int):
+    def to_json(self) -> int:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: int) -> 'WindowID':
+        return cls(json)
 
     def __repr__(self):
         return 'WindowID({})'.format(int.__repr__(self))
 
 
-
-class WindowState:
+class WindowState(enum.Enum):
     '''
     The state of the browser window.
     '''
@@ -31,8 +35,15 @@ class WindowState:
     MAXIMIZED = "maximized"
     FULLSCREEN = "fullscreen"
 
+    def to_json(self) -> str:
+        return self.value
 
-class PermissionType:
+    @classmethod
+    def from_json(cls, json: str) -> 'WindowState':
+        return cls(json)
+
+
+class PermissionType(enum.Enum):
     ACCESSIBILITY_EVENTS = "accessibilityEvents"
     AUDIO_CAPTURE = "audioCapture"
     BACKGROUND_SYNC = "backgroundSync"
@@ -52,6 +63,13 @@ class PermissionType:
     VIDEO_CAPTURE = "videoCapture"
     IDLE_DETECTION = "idleDetection"
 
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> 'PermissionType':
+        return cls(json)
+
 
 @dataclass
 class Bounds:
@@ -59,30 +77,49 @@ class Bounds:
     Browser window bounds information
     '''
     #: The offset from the left edge of the screen to the window in pixels.
-    left: int
+    left: typing.Optional[int] = None
 
     #: The offset from the top edge of the screen to the window in pixels.
-    top: int
+    top: typing.Optional[int] = None
 
     #: The window width in pixels.
-    width: int
+    width: typing.Optional[int] = None
 
     #: The window height in pixels.
-    height: int
+    height: typing.Optional[int] = None
 
     #: The window state. Default to normal.
-    window_state: WindowState
+    window_state: typing.Optional[WindowState] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+        }
+        if self.left is not None:
+            json['left'] = self.left
+        if self.top is not None:
+            json['top'] = self.top
+        if self.width is not None:
+            json['width'] = self.width
+        if self.height is not None:
+            json['height'] = self.height
+        if self.window_state is not None:
+            json['windowState'] = self.window_state.to_json()
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'Bounds':
+        left = json['left'] if 'left' in json else None
+        top = json['top'] if 'top' in json else None
+        width = json['width'] if 'width' in json else None
+        height = json['height'] if 'height' in json else None
+        window_state = WindowState.from_json(json['windowState']) if 'windowState' in json else None
         return cls(
-            left=int(response.get('left')),
-            top=int(response.get('top')),
-            width=int(response.get('width')),
-            height=int(response.get('height')),
-            window_state=WindowState.from_response(response.get('windowState')),
+            left=left,
+            top=top,
+            width=width,
+            height=height,
+            window_state=window_state,
         )
-
 
 @dataclass
 class Bucket:
@@ -98,14 +135,21 @@ class Bucket:
     #: Number of samples.
     count: int
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            low=int(response.get('low')),
-            high=int(response.get('high')),
-            count=int(response.get('count')),
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'low': self.low,
+            'high': self.high,
+            'count': self.count,
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'Bucket':
+        return cls(
+            low=json['low'],
+            high=json['high'],
+            count=json['count'],
+        )
 
 @dataclass
 class Histogram:
@@ -124,12 +168,21 @@ class Histogram:
     #: Buckets.
     buckets: typing.List['Bucket']
 
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'name': self.name,
+            'sum': self.sum,
+            'count': self.count,
+            'buckets': [i.to_json() for i in self.buckets],
+        }
+        return json
+
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'Histogram':
         return cls(
-            name=str(response.get('name')),
-            sum=int(response.get('sum')),
-            count=int(response.get('count')),
-            buckets=[Bucket.from_response(i) for i in response.get('buckets')],
+            name=json['name'],
+            sum=json['sum'],
+            count=json['count'],
+            buckets=[Bucket.from_json(i) for i in json['buckets']],
         )
 

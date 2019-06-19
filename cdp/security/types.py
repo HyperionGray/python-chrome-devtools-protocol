@@ -8,7 +8,9 @@ Domain: security
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 
@@ -16,16 +18,18 @@ class CertificateId(int):
     '''
     An internal certificate ID value.
     '''
+    def to_json(self) -> int:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: int) -> 'CertificateId':
+        return cls(json)
 
     def __repr__(self):
         return 'CertificateId({})'.format(int.__repr__(self))
 
 
-
-class MixedContentType:
+class MixedContentType(enum.Enum):
     '''
     A description of mixed content (HTTP resources on HTTPS pages), as defined by
     https://www.w3.org/TR/mixed-content/#categories
@@ -34,8 +38,15 @@ class MixedContentType:
     OPTIONALLY_BLOCKABLE = "optionally-blockable"
     NONE = "none"
 
+    def to_json(self) -> str:
+        return self.value
 
-class SecurityState:
+    @classmethod
+    def from_json(cls, json: str) -> 'MixedContentType':
+        return cls(json)
+
+
+class SecurityState(enum.Enum):
     '''
     The security level of a page or resource.
     '''
@@ -45,14 +56,28 @@ class SecurityState:
     SECURE = "secure"
     INFO = "info"
 
+    def to_json(self) -> str:
+        return self.value
 
-class CertificateErrorAction:
+    @classmethod
+    def from_json(cls, json: str) -> 'SecurityState':
+        return cls(json)
+
+
+class CertificateErrorAction(enum.Enum):
     '''
     The action to take when a certificate error occurs. continue will continue processing the
     request and cancel will cancel the request.
     '''
     CONTINUE = "continue"
     CANCEL = "cancel"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> 'CertificateErrorAction':
+        return cls(json)
 
 
 @dataclass
@@ -76,23 +101,36 @@ class SecurityStateExplanation:
     mixed_content_type: MixedContentType
 
     #: Page certificate.
-    certificate: typing.List
+    certificate: typing.List['str']
 
     #: Recommendations to fix any issues.
-    recommendations: typing.List
+    recommendations: typing.Optional[typing.List['str']] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'securityState': self.security_state.to_json(),
+            'title': self.title,
+            'summary': self.summary,
+            'description': self.description,
+            'mixedContentType': self.mixed_content_type.to_json(),
+            'certificate': [i for i in self.certificate],
+        }
+        if self.recommendations is not None:
+            json['recommendations'] = [i for i in self.recommendations]
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'SecurityStateExplanation':
+        recommendations = [i for i in json['recommendations']] if 'recommendations' in json else None
         return cls(
-            security_state=SecurityState.from_response(response.get('securityState')),
-            title=str(response.get('title')),
-            summary=str(response.get('summary')),
-            description=str(response.get('description')),
-            mixed_content_type=MixedContentType.from_response(response.get('mixedContentType')),
-            certificate=[str(i) for i in response.get('certificate')],
-            recommendations=[str(i) for i in response.get('recommendations')],
+            security_state=SecurityState.from_json(json['securityState']),
+            title=json['title'],
+            summary=json['summary'],
+            description=json['description'],
+            mixed_content_type=MixedContentType.from_json(json['mixedContentType']),
+            certificate=[i for i in json['certificate']],
+            recommendations=recommendations,
         )
-
 
 @dataclass
 class InsecureContentStatus:
@@ -120,15 +158,27 @@ class InsecureContentStatus:
     #: Always set to unknown.
     displayed_insecure_content_style: SecurityState
 
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'ranMixedContent': self.ran_mixed_content,
+            'displayedMixedContent': self.displayed_mixed_content,
+            'containedMixedForm': self.contained_mixed_form,
+            'ranContentWithCertErrors': self.ran_content_with_cert_errors,
+            'displayedContentWithCertErrors': self.displayed_content_with_cert_errors,
+            'ranInsecureContentStyle': self.ran_insecure_content_style.to_json(),
+            'displayedInsecureContentStyle': self.displayed_insecure_content_style.to_json(),
+        }
+        return json
+
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'InsecureContentStatus':
         return cls(
-            ran_mixed_content=bool(response.get('ranMixedContent')),
-            displayed_mixed_content=bool(response.get('displayedMixedContent')),
-            contained_mixed_form=bool(response.get('containedMixedForm')),
-            ran_content_with_cert_errors=bool(response.get('ranContentWithCertErrors')),
-            displayed_content_with_cert_errors=bool(response.get('displayedContentWithCertErrors')),
-            ran_insecure_content_style=SecurityState.from_response(response.get('ranInsecureContentStyle')),
-            displayed_insecure_content_style=SecurityState.from_response(response.get('displayedInsecureContentStyle')),
+            ran_mixed_content=json['ranMixedContent'],
+            displayed_mixed_content=json['displayedMixedContent'],
+            contained_mixed_form=json['containedMixedForm'],
+            ran_content_with_cert_errors=json['ranContentWithCertErrors'],
+            displayed_content_with_cert_errors=json['displayedContentWithCertErrors'],
+            ran_insecure_content_style=SecurityState.from_json(json['ranInsecureContentStyle']),
+            displayed_insecure_content_style=SecurityState.from_json(json['displayedInsecureContentStyle']),
         )
 

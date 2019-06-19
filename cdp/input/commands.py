@@ -8,13 +8,30 @@ Domain: input
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
 
 
-def dispatch_key_event(type: str, modifiers: int, timestamp: TimeSinceEpoch, text: str, unmodified_text: str, key_identifier: str, code: str, key: str, windows_virtual_key_code: int, native_virtual_key_code: int, auto_repeat: bool, is_keypad: bool, is_system_key: bool, location: int) -> typing.Generator[dict,dict,None]:
+def dispatch_key_event(
+        type: str,
+        modifiers: typing.Optional[int] = None,
+        timestamp: typing.Optional[TimeSinceEpoch] = None,
+        text: typing.Optional[str] = None,
+        unmodified_text: typing.Optional[str] = None,
+        key_identifier: typing.Optional[str] = None,
+        code: typing.Optional[str] = None,
+        key: typing.Optional[str] = None,
+        windows_virtual_key_code: typing.Optional[int] = None,
+        native_virtual_key_code: typing.Optional[int] = None,
+        auto_repeat: typing.Optional[bool] = None,
+        is_keypad: typing.Optional[bool] = None,
+        is_system_key: typing.Optional[bool] = None,
+        location: typing.Optional[int] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Dispatches a key event to the page.
     
@@ -38,47 +55,74 @@ def dispatch_key_event(type: str, modifiers: int, timestamp: TimeSinceEpoch, tex
     :param location: Whether the event was from the left or right side of the keyboard. 1=Left, 2=Right (default:
     0).
     '''
-
-    cmd_dict = {
-        'method': 'Input.dispatchKeyEvent',
-        'params': {
-            'type': type,
-            'modifiers': modifiers,
-            'timestamp': timestamp,
-            'text': text,
-            'unmodifiedText': unmodified_text,
-            'keyIdentifier': key_identifier,
-            'code': code,
-            'key': key,
-            'windowsVirtualKeyCode': windows_virtual_key_code,
-            'nativeVirtualKeyCode': native_virtual_key_code,
-            'autoRepeat': auto_repeat,
-            'isKeypad': is_keypad,
-            'isSystemKey': is_system_key,
-            'location': location,
-        }
+    params: T_JSON_DICT = {
+        'type': type,
     }
-    response = yield cmd_dict
+    if modifiers is not None:
+        params['modifiers'] = modifiers
+    if timestamp is not None:
+        params['timestamp'] = timestamp.to_json()
+    if text is not None:
+        params['text'] = text
+    if unmodified_text is not None:
+        params['unmodifiedText'] = unmodified_text
+    if key_identifier is not None:
+        params['keyIdentifier'] = key_identifier
+    if code is not None:
+        params['code'] = code
+    if key is not None:
+        params['key'] = key
+    if windows_virtual_key_code is not None:
+        params['windowsVirtualKeyCode'] = windows_virtual_key_code
+    if native_virtual_key_code is not None:
+        params['nativeVirtualKeyCode'] = native_virtual_key_code
+    if auto_repeat is not None:
+        params['autoRepeat'] = auto_repeat
+    if is_keypad is not None:
+        params['isKeypad'] = is_keypad
+    if is_system_key is not None:
+        params['isSystemKey'] = is_system_key
+    if location is not None:
+        params['location'] = location
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Input.dispatchKeyEvent',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def insert_text(text: str) -> typing.Generator[dict,dict,None]:
+def insert_text(
+        text: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     This method emulates inserting text that doesn't come from a key press,
     for example an emoji keyboard or an IME.
     
     :param text: The text to insert.
     '''
-
-    cmd_dict = {
-        'method': 'Input.insertText',
-        'params': {
-            'text': text,
-        }
+    params: T_JSON_DICT = {
+        'text': text,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Input.insertText',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def dispatch_mouse_event(type: str, x: float, y: float, modifiers: int, timestamp: TimeSinceEpoch, button: str, buttons: int, click_count: int, delta_x: float, delta_y: float, pointer_type: str) -> typing.Generator[dict,dict,None]:
+def dispatch_mouse_event(
+        type: str,
+        x: float,
+        y: float,
+        modifiers: typing.Optional[int] = None,
+        timestamp: typing.Optional[TimeSinceEpoch] = None,
+        button: typing.Optional[str] = None,
+        buttons: typing.Optional[int] = None,
+        click_count: typing.Optional[int] = None,
+        delta_x: typing.Optional[float] = None,
+        delta_y: typing.Optional[float] = None,
+        pointer_type: typing.Optional[str] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Dispatches a mouse event to the page.
     
@@ -97,27 +141,40 @@ def dispatch_mouse_event(type: str, x: float, y: float, modifiers: int, timestam
     :param delta_y: Y delta in CSS pixels for mouse wheel event (default: 0).
     :param pointer_type: Pointer type (default: "mouse").
     '''
-
-    cmd_dict = {
-        'method': 'Input.dispatchMouseEvent',
-        'params': {
-            'type': type,
-            'x': x,
-            'y': y,
-            'modifiers': modifiers,
-            'timestamp': timestamp,
-            'button': button,
-            'buttons': buttons,
-            'clickCount': click_count,
-            'deltaX': delta_x,
-            'deltaY': delta_y,
-            'pointerType': pointer_type,
-        }
+    params: T_JSON_DICT = {
+        'type': type,
+        'x': x,
+        'y': y,
     }
-    response = yield cmd_dict
+    if modifiers is not None:
+        params['modifiers'] = modifiers
+    if timestamp is not None:
+        params['timestamp'] = timestamp.to_json()
+    if button is not None:
+        params['button'] = button
+    if buttons is not None:
+        params['buttons'] = buttons
+    if click_count is not None:
+        params['clickCount'] = click_count
+    if delta_x is not None:
+        params['deltaX'] = delta_x
+    if delta_y is not None:
+        params['deltaY'] = delta_y
+    if pointer_type is not None:
+        params['pointerType'] = pointer_type
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Input.dispatchMouseEvent',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def dispatch_touch_event(type: str, touch_points: typing.List['TouchPoint'], modifiers: int, timestamp: TimeSinceEpoch) -> typing.Generator[dict,dict,None]:
+def dispatch_touch_event(
+        type: str,
+        touch_points: typing.List['TouchPoint'],
+        modifiers: typing.Optional[int] = None,
+        timestamp: typing.Optional[TimeSinceEpoch] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Dispatches a touch event to the page.
     
@@ -130,20 +187,32 @@ def dispatch_touch_event(type: str, touch_points: typing.List['TouchPoint'], mod
     (default: 0).
     :param timestamp: Time at which the event occurred.
     '''
-
-    cmd_dict = {
-        'method': 'Input.dispatchTouchEvent',
-        'params': {
-            'type': type,
-            'touchPoints': touch_points,
-            'modifiers': modifiers,
-            'timestamp': timestamp,
-        }
+    params: T_JSON_DICT = {
+        'type': type,
+        'touchPoints': [i.to_json() for i in touch_points],
     }
-    response = yield cmd_dict
+    if modifiers is not None:
+        params['modifiers'] = modifiers
+    if timestamp is not None:
+        params['timestamp'] = timestamp.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Input.dispatchTouchEvent',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def emulate_touch_from_mouse_event(type: str, x: int, y: int, button: str, timestamp: TimeSinceEpoch, delta_x: float, delta_y: float, modifiers: int, click_count: int) -> typing.Generator[dict,dict,None]:
+def emulate_touch_from_mouse_event(
+        type: str,
+        x: int,
+        y: int,
+        button: str,
+        timestamp: typing.Optional[TimeSinceEpoch] = None,
+        delta_x: typing.Optional[float] = None,
+        delta_y: typing.Optional[float] = None,
+        modifiers: typing.Optional[int] = None,
+        click_count: typing.Optional[int] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Emulates touch event from the mouse event parameters.
     
@@ -158,41 +227,54 @@ def emulate_touch_from_mouse_event(type: str, x: int, y: int, button: str, times
     (default: 0).
     :param click_count: Number of times the mouse button was clicked (default: 0).
     '''
-
-    cmd_dict = {
-        'method': 'Input.emulateTouchFromMouseEvent',
-        'params': {
-            'type': type,
-            'x': x,
-            'y': y,
-            'button': button,
-            'timestamp': timestamp,
-            'deltaX': delta_x,
-            'deltaY': delta_y,
-            'modifiers': modifiers,
-            'clickCount': click_count,
-        }
+    params: T_JSON_DICT = {
+        'type': type,
+        'x': x,
+        'y': y,
+        'button': button,
     }
-    response = yield cmd_dict
+    if timestamp is not None:
+        params['timestamp'] = timestamp.to_json()
+    if delta_x is not None:
+        params['deltaX'] = delta_x
+    if delta_y is not None:
+        params['deltaY'] = delta_y
+    if modifiers is not None:
+        params['modifiers'] = modifiers
+    if click_count is not None:
+        params['clickCount'] = click_count
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Input.emulateTouchFromMouseEvent',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_ignore_input_events(ignore: bool) -> typing.Generator[dict,dict,None]:
+def set_ignore_input_events(
+        ignore: bool,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Ignores input events (useful while auditing page).
     
     :param ignore: Ignores input events processing when set to true.
     '''
-
-    cmd_dict = {
-        'method': 'Input.setIgnoreInputEvents',
-        'params': {
-            'ignore': ignore,
-        }
+    params: T_JSON_DICT = {
+        'ignore': ignore,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Input.setIgnoreInputEvents',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def synthesize_pinch_gesture(x: float, y: float, scale_factor: float, relative_speed: int, gesture_source_type: GestureSourceType) -> typing.Generator[dict,dict,None]:
+def synthesize_pinch_gesture(
+        x: float,
+        y: float,
+        scale_factor: float,
+        relative_speed: typing.Optional[int] = None,
+        gesture_source_type: typing.Optional[GestureSourceType] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Synthesizes a pinch gesture over a time period by issuing appropriate touch events.
     
@@ -203,21 +285,36 @@ def synthesize_pinch_gesture(x: float, y: float, scale_factor: float, relative_s
     :param gesture_source_type: Which type of input events to be generated (default: 'default', which queries the platform
     for the preferred input type).
     '''
-
-    cmd_dict = {
-        'method': 'Input.synthesizePinchGesture',
-        'params': {
-            'x': x,
-            'y': y,
-            'scaleFactor': scale_factor,
-            'relativeSpeed': relative_speed,
-            'gestureSourceType': gesture_source_type,
-        }
+    params: T_JSON_DICT = {
+        'x': x,
+        'y': y,
+        'scaleFactor': scale_factor,
     }
-    response = yield cmd_dict
+    if relative_speed is not None:
+        params['relativeSpeed'] = relative_speed
+    if gesture_source_type is not None:
+        params['gestureSourceType'] = gesture_source_type.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Input.synthesizePinchGesture',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def synthesize_scroll_gesture(x: float, y: float, x_distance: float, y_distance: float, x_overscroll: float, y_overscroll: float, prevent_fling: bool, speed: int, gesture_source_type: GestureSourceType, repeat_count: int, repeat_delay_ms: int, interaction_marker_name: str) -> typing.Generator[dict,dict,None]:
+def synthesize_scroll_gesture(
+        x: float,
+        y: float,
+        x_distance: typing.Optional[float] = None,
+        y_distance: typing.Optional[float] = None,
+        x_overscroll: typing.Optional[float] = None,
+        y_overscroll: typing.Optional[float] = None,
+        prevent_fling: typing.Optional[bool] = None,
+        speed: typing.Optional[int] = None,
+        gesture_source_type: typing.Optional[GestureSourceType] = None,
+        repeat_count: typing.Optional[int] = None,
+        repeat_delay_ms: typing.Optional[int] = None,
+        interaction_marker_name: typing.Optional[str] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Synthesizes a scroll gesture over a time period by issuing appropriate touch events.
     
@@ -237,28 +334,44 @@ def synthesize_scroll_gesture(x: float, y: float, x_distance: float, y_distance:
     :param repeat_delay_ms: The number of milliseconds delay between each repeat. (default: 250).
     :param interaction_marker_name: The name of the interaction markers to generate, if not empty (default: "").
     '''
-
-    cmd_dict = {
-        'method': 'Input.synthesizeScrollGesture',
-        'params': {
-            'x': x,
-            'y': y,
-            'xDistance': x_distance,
-            'yDistance': y_distance,
-            'xOverscroll': x_overscroll,
-            'yOverscroll': y_overscroll,
-            'preventFling': prevent_fling,
-            'speed': speed,
-            'gestureSourceType': gesture_source_type,
-            'repeatCount': repeat_count,
-            'repeatDelayMs': repeat_delay_ms,
-            'interactionMarkerName': interaction_marker_name,
-        }
+    params: T_JSON_DICT = {
+        'x': x,
+        'y': y,
     }
-    response = yield cmd_dict
+    if x_distance is not None:
+        params['xDistance'] = x_distance
+    if y_distance is not None:
+        params['yDistance'] = y_distance
+    if x_overscroll is not None:
+        params['xOverscroll'] = x_overscroll
+    if y_overscroll is not None:
+        params['yOverscroll'] = y_overscroll
+    if prevent_fling is not None:
+        params['preventFling'] = prevent_fling
+    if speed is not None:
+        params['speed'] = speed
+    if gesture_source_type is not None:
+        params['gestureSourceType'] = gesture_source_type.to_json()
+    if repeat_count is not None:
+        params['repeatCount'] = repeat_count
+    if repeat_delay_ms is not None:
+        params['repeatDelayMs'] = repeat_delay_ms
+    if interaction_marker_name is not None:
+        params['interactionMarkerName'] = interaction_marker_name
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Input.synthesizeScrollGesture',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def synthesize_tap_gesture(x: float, y: float, duration: int, tap_count: int, gesture_source_type: GestureSourceType) -> typing.Generator[dict,dict,None]:
+def synthesize_tap_gesture(
+        x: float,
+        y: float,
+        duration: typing.Optional[int] = None,
+        tap_count: typing.Optional[int] = None,
+        gesture_source_type: typing.Optional[GestureSourceType] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Synthesizes a tap gesture over a time period by issuing appropriate touch events.
     
@@ -269,17 +382,20 @@ def synthesize_tap_gesture(x: float, y: float, duration: int, tap_count: int, ge
     :param gesture_source_type: Which type of input events to be generated (default: 'default', which queries the platform
     for the preferred input type).
     '''
-
-    cmd_dict = {
-        'method': 'Input.synthesizeTapGesture',
-        'params': {
-            'x': x,
-            'y': y,
-            'duration': duration,
-            'tapCount': tap_count,
-            'gestureSourceType': gesture_source_type,
-        }
+    params: T_JSON_DICT = {
+        'x': x,
+        'y': y,
     }
-    response = yield cmd_dict
+    if duration is not None:
+        params['duration'] = duration
+    if tap_count is not None:
+        params['tapCount'] = tap_count
+    if gesture_source_type is not None:
+        params['gestureSourceType'] = gesture_source_type.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Input.synthesizeTapGesture',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 

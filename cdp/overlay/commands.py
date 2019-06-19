@@ -8,7 +8,9 @@ Domain: overlay
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -18,29 +20,30 @@ from ..runtime import types as runtime
 
 
 
-def disable() -> typing.Generator[dict,dict,None]:
+def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Disables domain notifications.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Overlay.disable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def enable() -> typing.Generator[dict,dict,None]:
+def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enables domain notifications.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Overlay.enable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def get_highlight_object_for_test(node_id: dom.NodeId, include_distance: bool) -> typing.Generator[dict,dict,dict]:
+def get_highlight_object_for_test(
+        node_id: dom.NodeId,
+        include_distance: typing.Optional[bool] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     For testing.
     
@@ -48,30 +51,34 @@ def get_highlight_object_for_test(node_id: dom.NodeId, include_distance: bool) -
     :param include_distance: Whether to include distance info.
     :returns: Highlight data for the node.
     '''
-
-    cmd_dict = {
-        'method': 'Overlay.getHighlightObjectForTest',
-        'params': {
-            'nodeId': node_id,
-            'includeDistance': include_distance,
-        }
+    params: T_JSON_DICT = {
+        'nodeId': node_id.to_json(),
     }
-    response = yield cmd_dict
-    return dict(response['highlight'])
+    if include_distance is not None:
+        params['includeDistance'] = include_distance
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Overlay.getHighlightObjectForTest',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return dict(json['highlight'])
 
 
-def hide_highlight() -> typing.Generator[dict,dict,None]:
+def hide_highlight() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Hides any highlight.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Overlay.hideHighlight',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def highlight_frame(frame_id: page.FrameId, content_color: dom.RGBA, content_outline_color: dom.RGBA) -> typing.Generator[dict,dict,None]:
+def highlight_frame(
+        frame_id: page.FrameId,
+        content_color: typing.Optional[dom.RGBA] = None,
+        content_outline_color: typing.Optional[dom.RGBA] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Highlights owner element of the frame with given id.
     
@@ -79,19 +86,27 @@ def highlight_frame(frame_id: page.FrameId, content_color: dom.RGBA, content_out
     :param content_color: The content box highlight fill color (default: transparent).
     :param content_outline_color: The content box highlight outline color (default: transparent).
     '''
-
-    cmd_dict = {
-        'method': 'Overlay.highlightFrame',
-        'params': {
-            'frameId': frame_id,
-            'contentColor': content_color,
-            'contentOutlineColor': content_outline_color,
-        }
+    params: T_JSON_DICT = {
+        'frameId': frame_id.to_json(),
     }
-    response = yield cmd_dict
+    if content_color is not None:
+        params['contentColor'] = content_color.to_json()
+    if content_outline_color is not None:
+        params['contentOutlineColor'] = content_outline_color.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Overlay.highlightFrame',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def highlight_node(highlight_config: HighlightConfig, node_id: dom.NodeId, backend_node_id: dom.BackendNodeId, object_id: runtime.RemoteObjectId, selector: str) -> typing.Generator[dict,dict,None]:
+def highlight_node(
+        highlight_config: HighlightConfig,
+        node_id: typing.Optional[dom.NodeId] = None,
+        backend_node_id: typing.Optional[dom.BackendNodeId] = None,
+        object_id: typing.Optional[runtime.RemoteObjectId] = None,
+        selector: typing.Optional[str] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Highlights DOM node with given id or with the given JavaScript object wrapper. Either nodeId or
     objectId must be specified.
@@ -102,21 +117,29 @@ def highlight_node(highlight_config: HighlightConfig, node_id: dom.NodeId, backe
     :param object_id: JavaScript object id of the node to be highlighted.
     :param selector: Selectors to highlight relevant nodes.
     '''
-
-    cmd_dict = {
-        'method': 'Overlay.highlightNode',
-        'params': {
-            'highlightConfig': highlight_config,
-            'nodeId': node_id,
-            'backendNodeId': backend_node_id,
-            'objectId': object_id,
-            'selector': selector,
-        }
+    params: T_JSON_DICT = {
+        'highlightConfig': highlight_config.to_json(),
     }
-    response = yield cmd_dict
+    if node_id is not None:
+        params['nodeId'] = node_id.to_json()
+    if backend_node_id is not None:
+        params['backendNodeId'] = backend_node_id.to_json()
+    if object_id is not None:
+        params['objectId'] = object_id.to_json()
+    if selector is not None:
+        params['selector'] = selector
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Overlay.highlightNode',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def highlight_quad(quad: dom.Quad, color: dom.RGBA, outline_color: dom.RGBA) -> typing.Generator[dict,dict,None]:
+def highlight_quad(
+        quad: dom.Quad,
+        color: typing.Optional[dom.RGBA] = None,
+        outline_color: typing.Optional[dom.RGBA] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Highlights given quad. Coordinates are absolute with respect to the main frame viewport.
     
@@ -124,19 +147,28 @@ def highlight_quad(quad: dom.Quad, color: dom.RGBA, outline_color: dom.RGBA) -> 
     :param color: The highlight fill color (default: transparent).
     :param outline_color: The highlight outline color (default: transparent).
     '''
-
-    cmd_dict = {
-        'method': 'Overlay.highlightQuad',
-        'params': {
-            'quad': quad,
-            'color': color,
-            'outlineColor': outline_color,
-        }
+    params: T_JSON_DICT = {
+        'quad': quad.to_json(),
     }
-    response = yield cmd_dict
+    if color is not None:
+        params['color'] = color.to_json()
+    if outline_color is not None:
+        params['outlineColor'] = outline_color.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Overlay.highlightQuad',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def highlight_rect(x: int, y: int, width: int, height: int, color: dom.RGBA, outline_color: dom.RGBA) -> typing.Generator[dict,dict,None]:
+def highlight_rect(
+        x: int,
+        y: int,
+        width: int,
+        height: int,
+        color: typing.Optional[dom.RGBA] = None,
+        outline_color: typing.Optional[dom.RGBA] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Highlights given rectangle. Coordinates are absolute with respect to the main frame viewport.
     
@@ -147,22 +179,27 @@ def highlight_rect(x: int, y: int, width: int, height: int, color: dom.RGBA, out
     :param color: The highlight fill color (default: transparent).
     :param outline_color: The highlight outline color (default: transparent).
     '''
-
-    cmd_dict = {
-        'method': 'Overlay.highlightRect',
-        'params': {
-            'x': x,
-            'y': y,
-            'width': width,
-            'height': height,
-            'color': color,
-            'outlineColor': outline_color,
-        }
+    params: T_JSON_DICT = {
+        'x': x,
+        'y': y,
+        'width': width,
+        'height': height,
     }
-    response = yield cmd_dict
+    if color is not None:
+        params['color'] = color.to_json()
+    if outline_color is not None:
+        params['outlineColor'] = outline_color.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Overlay.highlightRect',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_inspect_mode(mode: InspectMode, highlight_config: HighlightConfig) -> typing.Generator[dict,dict,None]:
+def set_inspect_mode(
+        mode: InspectMode,
+        highlight_config: typing.Optional[HighlightConfig] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enters the 'inspect' mode. In this mode, elements that user is hovering over are highlighted.
     Backend then generates 'inspectNodeRequested' event upon element selection.
@@ -171,142 +208,160 @@ def set_inspect_mode(mode: InspectMode, highlight_config: HighlightConfig) -> ty
     :param highlight_config: A descriptor for the highlight appearance of hovered-over nodes. May be omitted if `enabled
     == false`.
     '''
-
-    cmd_dict = {
-        'method': 'Overlay.setInspectMode',
-        'params': {
-            'mode': mode,
-            'highlightConfig': highlight_config,
-        }
+    params: T_JSON_DICT = {
+        'mode': mode.to_json(),
     }
-    response = yield cmd_dict
+    if highlight_config is not None:
+        params['highlightConfig'] = highlight_config.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Overlay.setInspectMode',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_show_ad_highlights(show: bool) -> typing.Generator[dict,dict,None]:
+def set_show_ad_highlights(
+        show: bool,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Highlights owner element of all frames detected to be ads.
     
     :param show: True for showing ad highlights
     '''
-
-    cmd_dict = {
-        'method': 'Overlay.setShowAdHighlights',
-        'params': {
-            'show': show,
-        }
+    params: T_JSON_DICT = {
+        'show': show,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Overlay.setShowAdHighlights',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_paused_in_debugger_message(message: str) -> typing.Generator[dict,dict,None]:
+def set_paused_in_debugger_message(
+        message: typing.Optional[str] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     
     
     :param message: The message to display, also triggers resume and step over controls.
     '''
-
-    cmd_dict = {
-        'method': 'Overlay.setPausedInDebuggerMessage',
-        'params': {
-            'message': message,
-        }
+    params: T_JSON_DICT = {
     }
-    response = yield cmd_dict
+    if message is not None:
+        params['message'] = message
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Overlay.setPausedInDebuggerMessage',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_show_debug_borders(show: bool) -> typing.Generator[dict,dict,None]:
+def set_show_debug_borders(
+        show: bool,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Requests that backend shows debug borders on layers
     
     :param show: True for showing debug borders
     '''
-
-    cmd_dict = {
-        'method': 'Overlay.setShowDebugBorders',
-        'params': {
-            'show': show,
-        }
+    params: T_JSON_DICT = {
+        'show': show,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Overlay.setShowDebugBorders',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_show_fps_counter(show: bool) -> typing.Generator[dict,dict,None]:
+def set_show_fps_counter(
+        show: bool,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Requests that backend shows the FPS counter
     
     :param show: True for showing the FPS counter
     '''
-
-    cmd_dict = {
-        'method': 'Overlay.setShowFPSCounter',
-        'params': {
-            'show': show,
-        }
+    params: T_JSON_DICT = {
+        'show': show,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Overlay.setShowFPSCounter',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_show_paint_rects(result: bool) -> typing.Generator[dict,dict,None]:
+def set_show_paint_rects(
+        result: bool,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Requests that backend shows paint rectangles
     
     :param result: True for showing paint rectangles
     '''
-
-    cmd_dict = {
-        'method': 'Overlay.setShowPaintRects',
-        'params': {
-            'result': result,
-        }
+    params: T_JSON_DICT = {
+        'result': result,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Overlay.setShowPaintRects',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_show_scroll_bottleneck_rects(show: bool) -> typing.Generator[dict,dict,None]:
+def set_show_scroll_bottleneck_rects(
+        show: bool,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Requests that backend shows scroll bottleneck rects
     
     :param show: True for showing scroll bottleneck rects
     '''
-
-    cmd_dict = {
-        'method': 'Overlay.setShowScrollBottleneckRects',
-        'params': {
-            'show': show,
-        }
+    params: T_JSON_DICT = {
+        'show': show,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Overlay.setShowScrollBottleneckRects',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_show_hit_test_borders(show: bool) -> typing.Generator[dict,dict,None]:
+def set_show_hit_test_borders(
+        show: bool,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Requests that backend shows hit-test borders on layers
     
     :param show: True for showing hit-test borders
     '''
-
-    cmd_dict = {
-        'method': 'Overlay.setShowHitTestBorders',
-        'params': {
-            'show': show,
-        }
+    params: T_JSON_DICT = {
+        'show': show,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Overlay.setShowHitTestBorders',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_show_viewport_size_on_resize(show: bool) -> typing.Generator[dict,dict,None]:
+def set_show_viewport_size_on_resize(
+        show: bool,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Paints viewport size upon main frame resize.
     
     :param show: Whether to paint size or not.
     '''
-
-    cmd_dict = {
-        'method': 'Overlay.setShowViewportSizeOnResize',
-        'params': {
-            'show': show,
-        }
+    params: T_JSON_DICT = {
+        'show': show,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Overlay.setShowViewportSizeOnResize',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 

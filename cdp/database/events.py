@@ -8,7 +8,9 @@ Domain: database
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -17,4 +19,14 @@ from .types import *
 @dataclass
 class AddDatabase:
     database: Database
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Database'
+    _method = 'addDatabase'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'AddDatabase':
+        return cls(
+            database=Database.from_json(json['database']),
+        )
 

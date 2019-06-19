@@ -8,7 +8,9 @@ Domain: accessibility
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from ..dom import types as dom
@@ -18,16 +20,18 @@ class AXNodeId(str):
     '''
     Unique accessibility node identifier.
     '''
+    def to_json(self) -> str:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: str) -> 'AXNodeId':
+        return cls(json)
 
     def __repr__(self):
         return 'AXNodeId({})'.format(str.__repr__(self))
 
 
-
-class AXValueType:
+class AXValueType(enum.Enum):
     '''
     Enum of possible property types.
     '''
@@ -49,8 +53,15 @@ class AXValueType:
     INTERNAL_ROLE = "internalRole"
     VALUE_UNDEFINED = "valueUndefined"
 
+    def to_json(self) -> str:
+        return self.value
 
-class AXValueSourceType:
+    @classmethod
+    def from_json(cls, json: str) -> 'AXValueType':
+        return cls(json)
+
+
+class AXValueSourceType(enum.Enum):
     '''
     Enum of possible property sources.
     '''
@@ -61,8 +72,15 @@ class AXValueSourceType:
     PLACEHOLDER = "placeholder"
     RELATED_ELEMENT = "relatedElement"
 
+    def to_json(self) -> str:
+        return self.value
 
-class AXValueNativeSourceType:
+    @classmethod
+    def from_json(cls, json: str) -> 'AXValueSourceType':
+        return cls(json)
+
+
+class AXValueNativeSourceType(enum.Enum):
     '''
     Enum of possible native property sources (as a subtype of a particular AXValueSourceType).
     '''
@@ -75,8 +93,15 @@ class AXValueNativeSourceType:
     TITLE = "title"
     OTHER = "other"
 
+    def to_json(self) -> str:
+        return self.value
 
-class AXPropertyName:
+    @classmethod
+    def from_json(cls, json: str) -> 'AXValueNativeSourceType':
+        return cls(json)
+
+
+class AXPropertyName(enum.Enum):
     '''
     Values of AXProperty name:
     - from 'busy' to 'roledescription': states which apply to every AX node
@@ -125,6 +150,13 @@ class AXPropertyName:
     LABELLEDBY = "labelledby"
     OWNS = "owns"
 
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> 'AXPropertyName':
+        return cls(json)
+
 
 @dataclass
 class AXRelatedNode:
@@ -132,19 +164,30 @@ class AXRelatedNode:
     backend_dom_node_id: dom.BackendNodeId
 
     #: The IDRef value provided, if any.
-    idref: str
+    idref: typing.Optional[str] = None
 
     #: The text alternative of this node in the current context.
-    text: str
+    text: typing.Optional[str] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'backendDOMNodeId': self.backend_dom_node_id.to_json(),
+        }
+        if self.idref is not None:
+            json['idref'] = self.idref
+        if self.text is not None:
+            json['text'] = self.text
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'AXRelatedNode':
+        idref = json['idref'] if 'idref' in json else None
+        text = json['text'] if 'text' in json else None
         return cls(
-            backend_dom_node_id=dom.BackendNodeId.from_response(response.get('backendDOMNodeId')),
-            idref=str(response.get('idref')),
-            text=str(response.get('text')),
+            backend_dom_node_id=dom.BackendNodeId.from_json(json['backendDOMNodeId']),
+            idref=idref,
+            text=text,
         )
-
 
 @dataclass
 class AXValue:
@@ -152,26 +195,40 @@ class AXValue:
     A single computed AX property.
     '''
     #: The type of this value.
-    type_: AXValueType
+    type: AXValueType
 
     #: The computed value of this property.
-    value: typing.Any
+    value: typing.Optional[typing.Any] = None
 
     #: One or more related nodes, if applicable.
-    related_nodes: typing.List['AXRelatedNode']
+    related_nodes: typing.Optional[typing.List['AXRelatedNode']] = None
 
     #: The sources which contributed to the computation of this property.
-    sources: typing.List['AXValueSource']
+    sources: typing.Optional[typing.List['AXValueSource']] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'type': self.type.to_json(),
+        }
+        if self.value is not None:
+            json['value'] = self.value
+        if self.related_nodes is not None:
+            json['relatedNodes'] = [i.to_json() for i in self.related_nodes]
+        if self.sources is not None:
+            json['sources'] = [i.to_json() for i in self.sources]
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'AXValue':
+        value = json['value'] if 'value' in json else None
+        related_nodes = [AXRelatedNode.from_json(i) for i in json['relatedNodes']] if 'relatedNodes' in json else None
+        sources = [AXValueSource.from_json(i) for i in json['sources']] if 'sources' in json else None
         return cls(
-            type_=AXValueType.from_response(response.get('type')),
-            value=typing.Any(response.get('value')),
-            related_nodes=[AXRelatedNode.from_response(i) for i in response.get('relatedNodes')],
-            sources=[AXValueSource.from_response(i) for i in response.get('sources')],
+            type=AXValueType.from_json(json['type']),
+            value=value,
+            related_nodes=related_nodes,
+            sources=sources,
         )
-
 
 @dataclass
 class AXNode:
@@ -185,44 +242,74 @@ class AXNode:
     ignored: bool
 
     #: Collection of reasons why this node is hidden.
-    ignored_reasons: typing.List['AXProperty']
+    ignored_reasons: typing.Optional[typing.List['AXProperty']] = None
 
     #: This `Node`'s role, whether explicit or implicit.
-    role: AXValue
+    role: typing.Optional[AXValue] = None
 
     #: The accessible name for this `Node`.
-    name: AXValue
+    name: typing.Optional[AXValue] = None
 
     #: The accessible description for this `Node`.
-    description: AXValue
+    description: typing.Optional[AXValue] = None
 
     #: The value for this `Node`.
-    value: AXValue
+    value: typing.Optional[AXValue] = None
 
     #: All other properties
-    properties: typing.List['AXProperty']
+    properties: typing.Optional[typing.List['AXProperty']] = None
 
     #: IDs for each of this node's child nodes.
-    child_ids: typing.List['AXNodeId']
+    child_ids: typing.Optional[typing.List['AXNodeId']] = None
 
     #: The backend ID for the associated DOM node, if any.
-    backend_dom_node_id: dom.BackendNodeId
+    backend_dom_node_id: typing.Optional[dom.BackendNodeId] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'nodeId': self.node_id.to_json(),
+            'ignored': self.ignored,
+        }
+        if self.ignored_reasons is not None:
+            json['ignoredReasons'] = [i.to_json() for i in self.ignored_reasons]
+        if self.role is not None:
+            json['role'] = self.role.to_json()
+        if self.name is not None:
+            json['name'] = self.name.to_json()
+        if self.description is not None:
+            json['description'] = self.description.to_json()
+        if self.value is not None:
+            json['value'] = self.value.to_json()
+        if self.properties is not None:
+            json['properties'] = [i.to_json() for i in self.properties]
+        if self.child_ids is not None:
+            json['childIds'] = [i.to_json() for i in self.child_ids]
+        if self.backend_dom_node_id is not None:
+            json['backendDOMNodeId'] = self.backend_dom_node_id.to_json()
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'AXNode':
+        ignored_reasons = [AXProperty.from_json(i) for i in json['ignoredReasons']] if 'ignoredReasons' in json else None
+        role = AXValue.from_json(json['role']) if 'role' in json else None
+        name = AXValue.from_json(json['name']) if 'name' in json else None
+        description = AXValue.from_json(json['description']) if 'description' in json else None
+        value = AXValue.from_json(json['value']) if 'value' in json else None
+        properties = [AXProperty.from_json(i) for i in json['properties']] if 'properties' in json else None
+        child_ids = [AXNodeId.from_json(i) for i in json['childIds']] if 'childIds' in json else None
+        backend_dom_node_id = dom.BackendNodeId.from_json(json['backendDOMNodeId']) if 'backendDOMNodeId' in json else None
         return cls(
-            node_id=AXNodeId.from_response(response.get('nodeId')),
-            ignored=bool(response.get('ignored')),
-            ignored_reasons=[AXProperty.from_response(i) for i in response.get('ignoredReasons')],
-            role=AXValue.from_response(response.get('role')),
-            name=AXValue.from_response(response.get('name')),
-            description=AXValue.from_response(response.get('description')),
-            value=AXValue.from_response(response.get('value')),
-            properties=[AXProperty.from_response(i) for i in response.get('properties')],
-            child_ids=[AXNodeId.from_response(i) for i in response.get('childIds')],
-            backend_dom_node_id=dom.BackendNodeId.from_response(response.get('backendDOMNodeId')),
+            node_id=AXNodeId.from_json(json['nodeId']),
+            ignored=json['ignored'],
+            ignored_reasons=ignored_reasons,
+            role=role,
+            name=name,
+            description=description,
+            value=value,
+            properties=properties,
+            child_ids=child_ids,
+            backend_dom_node_id=backend_dom_node_id,
         )
-
 
 @dataclass
 class AXValueSource:
@@ -230,46 +317,75 @@ class AXValueSource:
     A single source for a computed AX property.
     '''
     #: What type of source this is.
-    type_: AXValueSourceType
+    type: AXValueSourceType
 
     #: The value of this property source.
-    value: AXValue
+    value: typing.Optional[AXValue] = None
 
     #: The name of the relevant attribute, if any.
-    attribute: str
+    attribute: typing.Optional[str] = None
 
     #: The value of the relevant attribute, if any.
-    attribute_value: AXValue
+    attribute_value: typing.Optional[AXValue] = None
 
     #: Whether this source is superseded by a higher priority source.
-    superseded: bool
+    superseded: typing.Optional[bool] = None
 
     #: The native markup source for this value, e.g. a <label> element.
-    native_source: AXValueNativeSourceType
+    native_source: typing.Optional[AXValueNativeSourceType] = None
 
     #: The value, such as a node or node list, of the native source.
-    native_source_value: AXValue
+    native_source_value: typing.Optional[AXValue] = None
 
     #: Whether the value for this property is invalid.
-    invalid: bool
+    invalid: typing.Optional[bool] = None
 
     #: Reason for the value being invalid, if it is.
-    invalid_reason: str
+    invalid_reason: typing.Optional[str] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'type': self.type.to_json(),
+        }
+        if self.value is not None:
+            json['value'] = self.value.to_json()
+        if self.attribute is not None:
+            json['attribute'] = self.attribute
+        if self.attribute_value is not None:
+            json['attributeValue'] = self.attribute_value.to_json()
+        if self.superseded is not None:
+            json['superseded'] = self.superseded
+        if self.native_source is not None:
+            json['nativeSource'] = self.native_source.to_json()
+        if self.native_source_value is not None:
+            json['nativeSourceValue'] = self.native_source_value.to_json()
+        if self.invalid is not None:
+            json['invalid'] = self.invalid
+        if self.invalid_reason is not None:
+            json['invalidReason'] = self.invalid_reason
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'AXValueSource':
+        value = AXValue.from_json(json['value']) if 'value' in json else None
+        attribute = json['attribute'] if 'attribute' in json else None
+        attribute_value = AXValue.from_json(json['attributeValue']) if 'attributeValue' in json else None
+        superseded = json['superseded'] if 'superseded' in json else None
+        native_source = AXValueNativeSourceType.from_json(json['nativeSource']) if 'nativeSource' in json else None
+        native_source_value = AXValue.from_json(json['nativeSourceValue']) if 'nativeSourceValue' in json else None
+        invalid = json['invalid'] if 'invalid' in json else None
+        invalid_reason = json['invalidReason'] if 'invalidReason' in json else None
         return cls(
-            type_=AXValueSourceType.from_response(response.get('type')),
-            value=AXValue.from_response(response.get('value')),
-            attribute=str(response.get('attribute')),
-            attribute_value=AXValue.from_response(response.get('attributeValue')),
-            superseded=bool(response.get('superseded')),
-            native_source=AXValueNativeSourceType.from_response(response.get('nativeSource')),
-            native_source_value=AXValue.from_response(response.get('nativeSourceValue')),
-            invalid=bool(response.get('invalid')),
-            invalid_reason=str(response.get('invalidReason')),
+            type=AXValueSourceType.from_json(json['type']),
+            value=value,
+            attribute=attribute,
+            attribute_value=attribute_value,
+            superseded=superseded,
+            native_source=native_source,
+            native_source_value=native_source_value,
+            invalid=invalid,
+            invalid_reason=invalid_reason,
         )
-
 
 @dataclass
 class AXProperty:
@@ -279,10 +395,17 @@ class AXProperty:
     #: The value of this property.
     value: AXValue
 
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'name': self.name.to_json(),
+            'value': self.value.to_json(),
+        }
+        return json
+
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'AXProperty':
         return cls(
-            name=AXPropertyName.from_response(response.get('name')),
-            value=AXValue.from_response(response.get('value')),
+            name=AXPropertyName.from_json(json['name']),
+            value=AXValue.from_json(json['value']),
         )
 

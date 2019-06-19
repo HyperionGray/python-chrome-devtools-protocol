@@ -8,19 +8,27 @@ Domain: overlay
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from ..dom import types as dom
 
 
-
-class InspectMode:
+class InspectMode(enum.Enum):
     SEARCH_FOR_NODE = "searchForNode"
     SEARCH_FOR_UA_SHADOW_DOM = "searchForUAShadowDOM"
     CAPTURE_AREA_SCREENSHOT = "captureAreaScreenshot"
     SHOW_DISTANCES = "showDistances"
     NONE = "none"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> 'InspectMode':
+        return cls(json)
 
 
 @dataclass
@@ -29,55 +37,96 @@ class HighlightConfig:
     Configuration data for the highlighting of page elements.
     '''
     #: Whether the node info tooltip should be shown (default: false).
-    show_info: bool
+    show_info: typing.Optional[bool] = None
 
     #: Whether the node styles in the tooltip (default: false).
-    show_styles: bool
+    show_styles: typing.Optional[bool] = None
 
     #: Whether the rulers should be shown (default: false).
-    show_rulers: bool
+    show_rulers: typing.Optional[bool] = None
 
     #: Whether the extension lines from node to the rulers should be shown (default: false).
-    show_extension_lines: bool
+    show_extension_lines: typing.Optional[bool] = None
 
     #: The content box highlight fill color (default: transparent).
-    content_color: dom.RGBA
+    content_color: typing.Optional[dom.RGBA] = None
 
     #: The padding highlight fill color (default: transparent).
-    padding_color: dom.RGBA
+    padding_color: typing.Optional[dom.RGBA] = None
 
     #: The border highlight fill color (default: transparent).
-    border_color: dom.RGBA
+    border_color: typing.Optional[dom.RGBA] = None
 
     #: The margin highlight fill color (default: transparent).
-    margin_color: dom.RGBA
+    margin_color: typing.Optional[dom.RGBA] = None
 
     #: The event target element highlight fill color (default: transparent).
-    event_target_color: dom.RGBA
+    event_target_color: typing.Optional[dom.RGBA] = None
 
     #: The shape outside fill color (default: transparent).
-    shape_color: dom.RGBA
+    shape_color: typing.Optional[dom.RGBA] = None
 
     #: The shape margin fill color (default: transparent).
-    shape_margin_color: dom.RGBA
+    shape_margin_color: typing.Optional[dom.RGBA] = None
 
     #: The grid layout color (default: transparent).
-    css_grid_color: dom.RGBA
+    css_grid_color: typing.Optional[dom.RGBA] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+        }
+        if self.show_info is not None:
+            json['showInfo'] = self.show_info
+        if self.show_styles is not None:
+            json['showStyles'] = self.show_styles
+        if self.show_rulers is not None:
+            json['showRulers'] = self.show_rulers
+        if self.show_extension_lines is not None:
+            json['showExtensionLines'] = self.show_extension_lines
+        if self.content_color is not None:
+            json['contentColor'] = self.content_color.to_json()
+        if self.padding_color is not None:
+            json['paddingColor'] = self.padding_color.to_json()
+        if self.border_color is not None:
+            json['borderColor'] = self.border_color.to_json()
+        if self.margin_color is not None:
+            json['marginColor'] = self.margin_color.to_json()
+        if self.event_target_color is not None:
+            json['eventTargetColor'] = self.event_target_color.to_json()
+        if self.shape_color is not None:
+            json['shapeColor'] = self.shape_color.to_json()
+        if self.shape_margin_color is not None:
+            json['shapeMarginColor'] = self.shape_margin_color.to_json()
+        if self.css_grid_color is not None:
+            json['cssGridColor'] = self.css_grid_color.to_json()
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'HighlightConfig':
+        show_info = json['showInfo'] if 'showInfo' in json else None
+        show_styles = json['showStyles'] if 'showStyles' in json else None
+        show_rulers = json['showRulers'] if 'showRulers' in json else None
+        show_extension_lines = json['showExtensionLines'] if 'showExtensionLines' in json else None
+        content_color = dom.RGBA.from_json(json['contentColor']) if 'contentColor' in json else None
+        padding_color = dom.RGBA.from_json(json['paddingColor']) if 'paddingColor' in json else None
+        border_color = dom.RGBA.from_json(json['borderColor']) if 'borderColor' in json else None
+        margin_color = dom.RGBA.from_json(json['marginColor']) if 'marginColor' in json else None
+        event_target_color = dom.RGBA.from_json(json['eventTargetColor']) if 'eventTargetColor' in json else None
+        shape_color = dom.RGBA.from_json(json['shapeColor']) if 'shapeColor' in json else None
+        shape_margin_color = dom.RGBA.from_json(json['shapeMarginColor']) if 'shapeMarginColor' in json else None
+        css_grid_color = dom.RGBA.from_json(json['cssGridColor']) if 'cssGridColor' in json else None
         return cls(
-            show_info=bool(response.get('showInfo')),
-            show_styles=bool(response.get('showStyles')),
-            show_rulers=bool(response.get('showRulers')),
-            show_extension_lines=bool(response.get('showExtensionLines')),
-            content_color=dom.RGBA.from_response(response.get('contentColor')),
-            padding_color=dom.RGBA.from_response(response.get('paddingColor')),
-            border_color=dom.RGBA.from_response(response.get('borderColor')),
-            margin_color=dom.RGBA.from_response(response.get('marginColor')),
-            event_target_color=dom.RGBA.from_response(response.get('eventTargetColor')),
-            shape_color=dom.RGBA.from_response(response.get('shapeColor')),
-            shape_margin_color=dom.RGBA.from_response(response.get('shapeMarginColor')),
-            css_grid_color=dom.RGBA.from_response(response.get('cssGridColor')),
+            show_info=show_info,
+            show_styles=show_styles,
+            show_rulers=show_rulers,
+            show_extension_lines=show_extension_lines,
+            content_color=content_color,
+            padding_color=padding_color,
+            border_color=border_color,
+            margin_color=margin_color,
+            event_target_color=event_target_color,
+            shape_color=shape_color,
+            shape_margin_color=shape_margin_color,
+            css_grid_color=css_grid_color,
         )
 

@@ -8,7 +8,9 @@ Domain: background_service
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -25,6 +27,17 @@ class RecordingStateChanged:
     #: Called when the recording state for the service has been updated.
     service: ServiceName
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'BackgroundService'
+    _method = 'recordingStateChanged'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'RecordingStateChanged':
+        return cls(
+            is_recording=bool(json['isRecording']),
+            service=ServiceName.from_json(json['service']),
+        )
+
 
 @dataclass
 class BackgroundServiceEventReceived:
@@ -35,4 +48,14 @@ class BackgroundServiceEventReceived:
     #: Called with all existing backgroundServiceEvents when enabled, and all new
     #: events afterwards if enabled and recording.
     background_service_event: BackgroundServiceEvent
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'BackgroundService'
+    _method = 'backgroundServiceEventReceived'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'BackgroundServiceEventReceived':
+        return cls(
+            background_service_event=BackgroundServiceEvent.from_json(json['backgroundServiceEvent']),
+        )
 

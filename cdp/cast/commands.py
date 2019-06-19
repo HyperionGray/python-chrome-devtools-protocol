@@ -8,13 +8,17 @@ Domain: cast
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
 
 
-def enable(presentation_url: str) -> typing.Generator[dict,dict,None]:
+def enable(
+        presentation_url: typing.Optional[str] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Starts observing for sinks that can be used for tab mirroring, and if set,
     sinks compatible with |presentationUrl| as well. When sinks are found, a
@@ -24,73 +28,79 @@ def enable(presentation_url: str) -> typing.Generator[dict,dict,None]:
     
     :param presentation_url: 
     '''
-
-    cmd_dict = {
-        'method': 'Cast.enable',
-        'params': {
-            'presentationUrl': presentation_url,
-        }
+    params: T_JSON_DICT = {
     }
-    response = yield cmd_dict
+    if presentation_url is not None:
+        params['presentationUrl'] = presentation_url
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Cast.enable',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def disable() -> typing.Generator[dict,dict,None]:
+def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Stops observing for sinks and issues.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Cast.disable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def set_sink_to_use(sink_name: str) -> typing.Generator[dict,dict,None]:
+def set_sink_to_use(
+        sink_name: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Sets a sink to be used when the web page requests the browser to choose a
     sink via Presentation API, Remote Playback API, or Cast SDK.
     
     :param sink_name: 
     '''
-
-    cmd_dict = {
-        'method': 'Cast.setSinkToUse',
-        'params': {
-            'sinkName': sink_name,
-        }
+    params: T_JSON_DICT = {
+        'sinkName': sink_name,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Cast.setSinkToUse',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def start_tab_mirroring(sink_name: str) -> typing.Generator[dict,dict,None]:
+def start_tab_mirroring(
+        sink_name: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Starts mirroring the tab to the sink.
     
     :param sink_name: 
     '''
-
-    cmd_dict = {
-        'method': 'Cast.startTabMirroring',
-        'params': {
-            'sinkName': sink_name,
-        }
+    params: T_JSON_DICT = {
+        'sinkName': sink_name,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Cast.startTabMirroring',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def stop_casting(sink_name: str) -> typing.Generator[dict,dict,None]:
+def stop_casting(
+        sink_name: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Stops the active Cast session on the sink.
     
     :param sink_name: 
     '''
-
-    cmd_dict = {
-        'method': 'Cast.stopCasting',
-        'params': {
-            'sinkName': sink_name,
-        }
+    params: T_JSON_DICT = {
+        'sinkName': sink_name,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Cast.stopCasting',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 

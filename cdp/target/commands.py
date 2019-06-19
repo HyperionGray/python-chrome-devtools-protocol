@@ -8,29 +8,36 @@ Domain: target
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
 
 
-def activate_target(target_id: TargetID) -> typing.Generator[dict,dict,None]:
+def activate_target(
+        target_id: TargetID,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Activates (focuses) the target.
     
     :param target_id: 
     '''
-
-    cmd_dict = {
-        'method': 'Target.activateTarget',
-        'params': {
-            'targetId': target_id,
-        }
+    params: T_JSON_DICT = {
+        'targetId': target_id.to_json(),
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Target.activateTarget',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def attach_to_target(target_id: TargetID, flatten: bool) -> typing.Generator[dict,dict,SessionID]:
+def attach_to_target(
+        target_id: TargetID,
+        flatten: typing.Optional[bool] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,SessionID]:
     '''
     Attaches to the target with given id.
     
@@ -38,50 +45,55 @@ def attach_to_target(target_id: TargetID, flatten: bool) -> typing.Generator[dic
     :param flatten: Enables "flat" access to the session via specifying sessionId attribute in the commands.
     :returns: Id assigned to the session.
     '''
-
-    cmd_dict = {
-        'method': 'Target.attachToTarget',
-        'params': {
-            'targetId': target_id,
-            'flatten': flatten,
-        }
+    params: T_JSON_DICT = {
+        'targetId': target_id.to_json(),
     }
-    response = yield cmd_dict
-    return SessionID.from_response(response['sessionId'])
+    if flatten is not None:
+        params['flatten'] = flatten
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Target.attachToTarget',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return SessionID.from_json(json['sessionId'])
 
 
-def attach_to_browser_target() -> typing.Generator[dict,dict,SessionID]:
+def attach_to_browser_target() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,SessionID]:
     '''
     Attaches to the browser target, only uses flat sessionId mode.
     :returns: Id assigned to the session.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Target.attachToBrowserTarget',
     }
-    response = yield cmd_dict
-    return SessionID.from_response(response['sessionId'])
+    json = yield cmd_dict
+    return SessionID.from_json(json['sessionId'])
 
 
-def close_target(target_id: TargetID) -> typing.Generator[dict,dict,bool]:
+def close_target(
+        target_id: TargetID,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,bool]:
     '''
     Closes the target. If the target is a page that gets closed too.
     
     :param target_id: 
     :returns: 
     '''
-
-    cmd_dict = {
-        'method': 'Target.closeTarget',
-        'params': {
-            'targetId': target_id,
-        }
+    params: T_JSON_DICT = {
+        'targetId': target_id.to_json(),
     }
-    response = yield cmd_dict
-    return bool(response['success'])
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Target.closeTarget',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return bool(json['success'])
 
 
-def expose_dev_tools_protocol(target_id: TargetID, binding_name: str) -> typing.Generator[dict,dict,None]:
+def expose_dev_tools_protocol(
+        target_id: TargetID,
+        binding_name: typing.Optional[str] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Inject object to the target's main frame that provides a communication
     channel with browser target.
@@ -95,45 +107,52 @@ def expose_dev_tools_protocol(target_id: TargetID, binding_name: str) -> typing.
     :param target_id: 
     :param binding_name: Binding name, 'cdp' if not specified.
     '''
-
-    cmd_dict = {
-        'method': 'Target.exposeDevToolsProtocol',
-        'params': {
-            'targetId': target_id,
-            'bindingName': binding_name,
-        }
+    params: T_JSON_DICT = {
+        'targetId': target_id.to_json(),
     }
-    response = yield cmd_dict
+    if binding_name is not None:
+        params['bindingName'] = binding_name
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Target.exposeDevToolsProtocol',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def create_browser_context() -> typing.Generator[dict,dict,BrowserContextID]:
+def create_browser_context() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,BrowserContextID]:
     '''
     Creates a new empty BrowserContext. Similar to an incognito profile but you can have more than
     one.
     :returns: The id of the context created.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Target.createBrowserContext',
     }
-    response = yield cmd_dict
-    return BrowserContextID.from_response(response['browserContextId'])
+    json = yield cmd_dict
+    return BrowserContextID.from_json(json['browserContextId'])
 
 
-def get_browser_contexts() -> typing.Generator[dict,dict,typing.List['BrowserContextID']]:
+def get_browser_contexts() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['BrowserContextID']]:
     '''
     Returns all browser contexts created with `Target.createBrowserContext` method.
     :returns: An array of browser context ids.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Target.getBrowserContexts',
     }
-    response = yield cmd_dict
-    return [BrowserContextID.from_response(i) for i in response['browserContextIds']]
+    json = yield cmd_dict
+    return [BrowserContextID.from_json(i) for i in json['browserContextIds']]
 
 
-def create_target(url: str, width: int, height: int, browser_context_id: BrowserContextID, enable_begin_frame_control: bool, new_window: bool, background: bool) -> typing.Generator[dict,dict,TargetID]:
+def create_target(
+        url: str,
+        width: typing.Optional[int] = None,
+        height: typing.Optional[int] = None,
+        browser_context_id: typing.Optional[BrowserContextID] = None,
+        enable_begin_frame_control: typing.Optional[bool] = None,
+        new_window: typing.Optional[bool] = None,
+        background: typing.Optional[bool] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,TargetID]:
     '''
     Creates a new page.
     
@@ -148,90 +167,109 @@ def create_target(url: str, width: int, height: int, browser_context_id: Browser
     false by default).
     :returns: The id of the page opened.
     '''
-
-    cmd_dict = {
-        'method': 'Target.createTarget',
-        'params': {
-            'url': url,
-            'width': width,
-            'height': height,
-            'browserContextId': browser_context_id,
-            'enableBeginFrameControl': enable_begin_frame_control,
-            'newWindow': new_window,
-            'background': background,
-        }
+    params: T_JSON_DICT = {
+        'url': url,
     }
-    response = yield cmd_dict
-    return TargetID.from_response(response['targetId'])
+    if width is not None:
+        params['width'] = width
+    if height is not None:
+        params['height'] = height
+    if browser_context_id is not None:
+        params['browserContextId'] = browser_context_id.to_json()
+    if enable_begin_frame_control is not None:
+        params['enableBeginFrameControl'] = enable_begin_frame_control
+    if new_window is not None:
+        params['newWindow'] = new_window
+    if background is not None:
+        params['background'] = background
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Target.createTarget',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return TargetID.from_json(json['targetId'])
 
 
-def detach_from_target(session_id: SessionID, target_id: TargetID) -> typing.Generator[dict,dict,None]:
+def detach_from_target(
+        session_id: typing.Optional[SessionID] = None,
+        target_id: typing.Optional[TargetID] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Detaches session with given id.
     
     :param session_id: Session to detach.
     :param target_id: Deprecated.
     '''
-
-    cmd_dict = {
-        'method': 'Target.detachFromTarget',
-        'params': {
-            'sessionId': session_id,
-            'targetId': target_id,
-        }
+    params: T_JSON_DICT = {
     }
-    response = yield cmd_dict
+    if session_id is not None:
+        params['sessionId'] = session_id.to_json()
+    if target_id is not None:
+        params['targetId'] = target_id.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Target.detachFromTarget',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def dispose_browser_context(browser_context_id: BrowserContextID) -> typing.Generator[dict,dict,None]:
+def dispose_browser_context(
+        browser_context_id: BrowserContextID,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Deletes a BrowserContext. All the belonging pages will be closed without calling their
     beforeunload hooks.
     
     :param browser_context_id: 
     '''
-
-    cmd_dict = {
-        'method': 'Target.disposeBrowserContext',
-        'params': {
-            'browserContextId': browser_context_id,
-        }
+    params: T_JSON_DICT = {
+        'browserContextId': browser_context_id.to_json(),
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Target.disposeBrowserContext',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def get_target_info(target_id: TargetID) -> typing.Generator[dict,dict,TargetInfo]:
+def get_target_info(
+        target_id: typing.Optional[TargetID] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,TargetInfo]:
     '''
     Returns information about a target.
     
     :param target_id: 
     :returns: 
     '''
-
-    cmd_dict = {
-        'method': 'Target.getTargetInfo',
-        'params': {
-            'targetId': target_id,
-        }
+    params: T_JSON_DICT = {
     }
-    response = yield cmd_dict
-    return TargetInfo.from_response(response['targetInfo'])
+    if target_id is not None:
+        params['targetId'] = target_id.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Target.getTargetInfo',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return TargetInfo.from_json(json['targetInfo'])
 
 
-def get_targets() -> typing.Generator[dict,dict,typing.List['TargetInfo']]:
+def get_targets() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['TargetInfo']]:
     '''
     Retrieves a list of available targets.
     :returns: The list of targets.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Target.getTargets',
     }
-    response = yield cmd_dict
-    return [TargetInfo.from_response(i) for i in response['targetInfos']]
+    json = yield cmd_dict
+    return [TargetInfo.from_json(i) for i in json['targetInfos']]
 
 
-def send_message_to_target(message: str, session_id: SessionID, target_id: TargetID) -> typing.Generator[dict,dict,None]:
+def send_message_to_target(
+        message: str,
+        session_id: typing.Optional[SessionID] = None,
+        target_id: typing.Optional[TargetID] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Sends protocol message over session with given id.
     
@@ -239,19 +277,25 @@ def send_message_to_target(message: str, session_id: SessionID, target_id: Targe
     :param session_id: Identifier of the session.
     :param target_id: Deprecated.
     '''
-
-    cmd_dict = {
-        'method': 'Target.sendMessageToTarget',
-        'params': {
-            'message': message,
-            'sessionId': session_id,
-            'targetId': target_id,
-        }
+    params: T_JSON_DICT = {
+        'message': message,
     }
-    response = yield cmd_dict
+    if session_id is not None:
+        params['sessionId'] = session_id.to_json()
+    if target_id is not None:
+        params['targetId'] = target_id.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Target.sendMessageToTarget',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_auto_attach(auto_attach: bool, wait_for_debugger_on_start: bool, flatten: bool) -> typing.Generator[dict,dict,None]:
+def set_auto_attach(
+        auto_attach: bool,
+        wait_for_debugger_on_start: bool,
+        flatten: typing.Optional[bool] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Controls whether to automatically attach to new targets which are considered to be related to
     this one. When turned on, attaches to all existing related targets as well. When turned off,
@@ -262,49 +306,54 @@ def set_auto_attach(auto_attach: bool, wait_for_debugger_on_start: bool, flatten
     to run paused targets.
     :param flatten: Enables "flat" access to the session via specifying sessionId attribute in the commands.
     '''
-
-    cmd_dict = {
-        'method': 'Target.setAutoAttach',
-        'params': {
-            'autoAttach': auto_attach,
-            'waitForDebuggerOnStart': wait_for_debugger_on_start,
-            'flatten': flatten,
-        }
+    params: T_JSON_DICT = {
+        'autoAttach': auto_attach,
+        'waitForDebuggerOnStart': wait_for_debugger_on_start,
     }
-    response = yield cmd_dict
+    if flatten is not None:
+        params['flatten'] = flatten
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Target.setAutoAttach',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_discover_targets(discover: bool) -> typing.Generator[dict,dict,None]:
+def set_discover_targets(
+        discover: bool,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Controls whether to discover available targets and notify via
     `targetCreated/targetInfoChanged/targetDestroyed` events.
     
     :param discover: Whether to discover available targets.
     '''
-
-    cmd_dict = {
-        'method': 'Target.setDiscoverTargets',
-        'params': {
-            'discover': discover,
-        }
+    params: T_JSON_DICT = {
+        'discover': discover,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Target.setDiscoverTargets',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_remote_locations(locations: typing.List['RemoteLocation']) -> typing.Generator[dict,dict,None]:
+def set_remote_locations(
+        locations: typing.List['RemoteLocation'],
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enables target discovery for the specified locations, when `setDiscoverTargets` was set to
     `true`.
     
     :param locations: List of remote locations.
     '''
-
-    cmd_dict = {
-        'method': 'Target.setRemoteLocations',
-        'params': {
-            'locations': locations,
-        }
+    params: T_JSON_DICT = {
+        'locations': [i.to_json() for i in locations],
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Target.setRemoteLocations',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 

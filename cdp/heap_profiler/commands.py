@@ -8,7 +8,9 @@ Domain: heap_profiler
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -16,66 +18,70 @@ from ..runtime import types as runtime
 
 
 
-def add_inspected_heap_object(heap_object_id: HeapSnapshotObjectId) -> typing.Generator[dict,dict,None]:
+def add_inspected_heap_object(
+        heap_object_id: HeapSnapshotObjectId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enables console to refer to the node with given id via $x (see Command Line API for more details
     $x functions).
     
     :param heap_object_id: Heap snapshot object id to be accessible by means of $x command line API.
     '''
-
-    cmd_dict = {
-        'method': 'HeapProfiler.addInspectedHeapObject',
-        'params': {
-            'heapObjectId': heap_object_id,
-        }
+    params: T_JSON_DICT = {
+        'heapObjectId': heap_object_id.to_json(),
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'HeapProfiler.addInspectedHeapObject',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def collect_garbage() -> typing.Generator[dict,dict,None]:
-
-    cmd_dict = {
+def collect_garbage() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    cmd_dict: T_JSON_DICT = {
         'method': 'HeapProfiler.collectGarbage',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def disable() -> typing.Generator[dict,dict,None]:
-
-    cmd_dict = {
+def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    cmd_dict: T_JSON_DICT = {
         'method': 'HeapProfiler.disable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def enable() -> typing.Generator[dict,dict,None]:
-
-    cmd_dict = {
+def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    cmd_dict: T_JSON_DICT = {
         'method': 'HeapProfiler.enable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def get_heap_object_id(object_id: runtime.RemoteObjectId) -> typing.Generator[dict,dict,HeapSnapshotObjectId]:
+def get_heap_object_id(
+        object_id: runtime.RemoteObjectId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,HeapSnapshotObjectId]:
     '''
     
     
     :param object_id: Identifier of the object to get heap object id for.
     :returns: Id of the heap snapshot object corresponding to the passed remote object id.
     '''
-
-    cmd_dict = {
-        'method': 'HeapProfiler.getHeapObjectId',
-        'params': {
-            'objectId': object_id,
-        }
+    params: T_JSON_DICT = {
+        'objectId': object_id.to_json(),
     }
-    response = yield cmd_dict
-    return HeapSnapshotObjectId.from_response(response['heapSnapshotObjectId'])
+    cmd_dict: T_JSON_DICT = {
+        'method': 'HeapProfiler.getHeapObjectId',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return HeapSnapshotObjectId.from_json(json['heapSnapshotObjectId'])
 
 
-def get_object_by_heap_object_id(object_id: HeapSnapshotObjectId, object_group: str) -> typing.Generator[dict,dict,runtime.RemoteObject]:
+def get_object_by_heap_object_id(
+        object_id: HeapSnapshotObjectId,
+        object_group: typing.Optional[str] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,runtime.RemoteObject]:
     '''
     
     
@@ -83,107 +89,118 @@ def get_object_by_heap_object_id(object_id: HeapSnapshotObjectId, object_group: 
     :param object_group: Symbolic group name that can be used to release multiple objects.
     :returns: Evaluation result.
     '''
-
-    cmd_dict = {
-        'method': 'HeapProfiler.getObjectByHeapObjectId',
-        'params': {
-            'objectId': object_id,
-            'objectGroup': object_group,
-        }
+    params: T_JSON_DICT = {
+        'objectId': object_id.to_json(),
     }
-    response = yield cmd_dict
-    return runtime.RemoteObject.from_response(response['result'])
+    if object_group is not None:
+        params['objectGroup'] = object_group
+    cmd_dict: T_JSON_DICT = {
+        'method': 'HeapProfiler.getObjectByHeapObjectId',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return runtime.RemoteObject.from_json(json['result'])
 
 
-def get_sampling_profile() -> typing.Generator[dict,dict,SamplingHeapProfile]:
+def get_sampling_profile() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,SamplingHeapProfile]:
     '''
     
     :returns: Return the sampling profile being collected.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'HeapProfiler.getSamplingProfile',
     }
-    response = yield cmd_dict
-    return SamplingHeapProfile.from_response(response['profile'])
+    json = yield cmd_dict
+    return SamplingHeapProfile.from_json(json['profile'])
 
 
-def start_sampling(sampling_interval: float) -> typing.Generator[dict,dict,None]:
+def start_sampling(
+        sampling_interval: typing.Optional[float] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     
     
     :param sampling_interval: Average sample interval in bytes. Poisson distribution is used for the intervals. The
     default value is 32768 bytes.
     '''
-
-    cmd_dict = {
-        'method': 'HeapProfiler.startSampling',
-        'params': {
-            'samplingInterval': sampling_interval,
-        }
+    params: T_JSON_DICT = {
     }
-    response = yield cmd_dict
+    if sampling_interval is not None:
+        params['samplingInterval'] = sampling_interval
+    cmd_dict: T_JSON_DICT = {
+        'method': 'HeapProfiler.startSampling',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def start_tracking_heap_objects(track_allocations: bool) -> typing.Generator[dict,dict,None]:
+def start_tracking_heap_objects(
+        track_allocations: typing.Optional[bool] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     
     
     :param track_allocations: 
     '''
-
-    cmd_dict = {
-        'method': 'HeapProfiler.startTrackingHeapObjects',
-        'params': {
-            'trackAllocations': track_allocations,
-        }
+    params: T_JSON_DICT = {
     }
-    response = yield cmd_dict
+    if track_allocations is not None:
+        params['trackAllocations'] = track_allocations
+    cmd_dict: T_JSON_DICT = {
+        'method': 'HeapProfiler.startTrackingHeapObjects',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def stop_sampling() -> typing.Generator[dict,dict,SamplingHeapProfile]:
+def stop_sampling() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,SamplingHeapProfile]:
     '''
     
     :returns: Recorded sampling heap profile.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'HeapProfiler.stopSampling',
     }
-    response = yield cmd_dict
-    return SamplingHeapProfile.from_response(response['profile'])
+    json = yield cmd_dict
+    return SamplingHeapProfile.from_json(json['profile'])
 
 
-def stop_tracking_heap_objects(report_progress: bool) -> typing.Generator[dict,dict,None]:
+def stop_tracking_heap_objects(
+        report_progress: typing.Optional[bool] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     
     
     :param report_progress: If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken
     when the tracking is stopped.
     '''
-
-    cmd_dict = {
-        'method': 'HeapProfiler.stopTrackingHeapObjects',
-        'params': {
-            'reportProgress': report_progress,
-        }
+    params: T_JSON_DICT = {
     }
-    response = yield cmd_dict
+    if report_progress is not None:
+        params['reportProgress'] = report_progress
+    cmd_dict: T_JSON_DICT = {
+        'method': 'HeapProfiler.stopTrackingHeapObjects',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def take_heap_snapshot(report_progress: bool) -> typing.Generator[dict,dict,None]:
+def take_heap_snapshot(
+        report_progress: typing.Optional[bool] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     
     
     :param report_progress: If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken.
     '''
-
-    cmd_dict = {
-        'method': 'HeapProfiler.takeHeapSnapshot',
-        'params': {
-            'reportProgress': report_progress,
-        }
+    params: T_JSON_DICT = {
     }
-    response = yield cmd_dict
+    if report_progress is not None:
+        params['reportProgress'] = report_progress
+    cmd_dict: T_JSON_DICT = {
+        'method': 'HeapProfiler.takeHeapSnapshot',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 

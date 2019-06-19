@@ -8,27 +8,38 @@ Domain: input
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 
-
-class GestureSourceType:
+class GestureSourceType(enum.Enum):
     DEFAULT = "default"
     TOUCH = "touch"
     MOUSE = "mouse"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> 'GestureSourceType':
+        return cls(json)
+
 
 class TimeSinceEpoch(float):
     '''
     UTC time in seconds, counted from January 1, 1970.
     '''
+    def to_json(self) -> float:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: float) -> 'TimeSinceEpoch':
+        return cls(json)
 
     def __repr__(self):
         return 'TimeSinceEpoch({})'.format(float.__repr__(self))
-
 
 
 @dataclass
@@ -41,29 +52,51 @@ class TouchPoint:
     y: float
 
     #: X radius of the touch area (default: 1.0).
-    radius_x: float
+    radius_x: typing.Optional[float] = None
 
     #: Y radius of the touch area (default: 1.0).
-    radius_y: float
+    radius_y: typing.Optional[float] = None
 
     #: Rotation angle (default: 0.0).
-    rotation_angle: float
+    rotation_angle: typing.Optional[float] = None
 
     #: Force (default: 1.0).
-    force: float
+    force: typing.Optional[float] = None
 
     #: Identifier used to track touch sources between events, must be unique within an event.
-    id: float
+    id: typing.Optional[float] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'x': self.x,
+            'y': self.y,
+        }
+        if self.radius_x is not None:
+            json['radiusX'] = self.radius_x
+        if self.radius_y is not None:
+            json['radiusY'] = self.radius_y
+        if self.rotation_angle is not None:
+            json['rotationAngle'] = self.rotation_angle
+        if self.force is not None:
+            json['force'] = self.force
+        if self.id is not None:
+            json['id'] = self.id
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'TouchPoint':
+        radius_x = json['radiusX'] if 'radiusX' in json else None
+        radius_y = json['radiusY'] if 'radiusY' in json else None
+        rotation_angle = json['rotationAngle'] if 'rotationAngle' in json else None
+        force = json['force'] if 'force' in json else None
+        id = json['id'] if 'id' in json else None
         return cls(
-            x=float(response.get('x')),
-            y=float(response.get('y')),
-            radius_x=float(response.get('radiusX')),
-            radius_y=float(response.get('radiusY')),
-            rotation_angle=float(response.get('rotationAngle')),
-            force=float(response.get('force')),
-            id=float(response.get('id')),
+            x=json['x'],
+            y=json['y'],
+            radius_x=radius_x,
+            radius_y=radius_y,
+            rotation_angle=rotation_angle,
+            force=force,
+            id=id,
         )
 

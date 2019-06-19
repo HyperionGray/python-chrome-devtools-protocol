@@ -8,13 +8,19 @@ Domain: runtime
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
 
 
-def await_promise(promise_object_id: RemoteObjectId, return_by_value: bool, generate_preview: bool) -> typing.Generator[dict,dict,dict]:
+def await_promise(
+        promise_object_id: RemoteObjectId,
+        return_by_value: typing.Optional[bool] = None,
+        generate_preview: typing.Optional[bool] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     Add handler to promise with given promise object id.
     
@@ -23,25 +29,40 @@ def await_promise(promise_object_id: RemoteObjectId, return_by_value: bool, gene
     :param generate_preview: Whether preview should be generated for the result.
     :returns: a dict with the following keys:
         * result: Promise result. Will contain rejected value if promise was rejected.
-        * exceptionDetails: Exception details if stack strace is available.
+        * exceptionDetails: (Optional) Exception details if stack strace is available.
     '''
-
-    cmd_dict = {
+    params: T_JSON_DICT = {
+        'promiseObjectId': promise_object_id.to_json(),
+    }
+    if return_by_value is not None:
+        params['returnByValue'] = return_by_value
+    if generate_preview is not None:
+        params['generatePreview'] = generate_preview
+    cmd_dict: T_JSON_DICT = {
         'method': 'Runtime.awaitPromise',
-        'params': {
-            'promiseObjectId': promise_object_id,
-            'returnByValue': return_by_value,
-            'generatePreview': generate_preview,
-        }
+        'params': params,
     }
-    response = yield cmd_dict
-    return {
-        'result': RemoteObject.from_response(response['result']),
-        'exceptionDetails': ExceptionDetails.from_response(response['exceptionDetails']),
+    json = yield cmd_dict
+    result: T_JSON_DICT = {
+        'result': RemoteObject.from_json(json['result']),
     }
+    if 'exceptionDetails' in json:
+        result['exceptionDetails'] = ExceptionDetails.from_json(json['exceptionDetails'])
+    return result
 
 
-def call_function_on(function_declaration: str, object_id: RemoteObjectId, arguments: typing.List['CallArgument'], silent: bool, return_by_value: bool, generate_preview: bool, user_gesture: bool, await_promise: bool, execution_context_id: ExecutionContextId, object_group: str) -> typing.Generator[dict,dict,dict]:
+def call_function_on(
+        function_declaration: str,
+        object_id: typing.Optional[RemoteObjectId] = None,
+        arguments: typing.Optional[typing.List['CallArgument']] = None,
+        silent: typing.Optional[bool] = None,
+        return_by_value: typing.Optional[bool] = None,
+        generate_preview: typing.Optional[bool] = None,
+        user_gesture: typing.Optional[bool] = None,
+        await_promise: typing.Optional[bool] = None,
+        execution_context_id: typing.Optional[ExecutionContextId] = None,
+        object_group: typing.Optional[str] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     Calls function with given declaration on the given object. Object group of the result is
     inherited from the target object.
@@ -64,32 +85,48 @@ def call_function_on(function_declaration: str, object_id: RemoteObjectId, argum
     specified and objectId is, objectGroup will be inherited from object.
     :returns: a dict with the following keys:
         * result: Call result.
-        * exceptionDetails: Exception details.
+        * exceptionDetails: (Optional) Exception details.
     '''
-
-    cmd_dict = {
+    params: T_JSON_DICT = {
+        'functionDeclaration': function_declaration,
+    }
+    if object_id is not None:
+        params['objectId'] = object_id.to_json()
+    if arguments is not None:
+        params['arguments'] = [i.to_json() for i in arguments]
+    if silent is not None:
+        params['silent'] = silent
+    if return_by_value is not None:
+        params['returnByValue'] = return_by_value
+    if generate_preview is not None:
+        params['generatePreview'] = generate_preview
+    if user_gesture is not None:
+        params['userGesture'] = user_gesture
+    if await_promise is not None:
+        params['awaitPromise'] = await_promise
+    if execution_context_id is not None:
+        params['executionContextId'] = execution_context_id.to_json()
+    if object_group is not None:
+        params['objectGroup'] = object_group
+    cmd_dict: T_JSON_DICT = {
         'method': 'Runtime.callFunctionOn',
-        'params': {
-            'functionDeclaration': function_declaration,
-            'objectId': object_id,
-            'arguments': arguments,
-            'silent': silent,
-            'returnByValue': return_by_value,
-            'generatePreview': generate_preview,
-            'userGesture': user_gesture,
-            'awaitPromise': await_promise,
-            'executionContextId': execution_context_id,
-            'objectGroup': object_group,
-        }
+        'params': params,
     }
-    response = yield cmd_dict
-    return {
-        'result': RemoteObject.from_response(response['result']),
-        'exceptionDetails': ExceptionDetails.from_response(response['exceptionDetails']),
+    json = yield cmd_dict
+    result: T_JSON_DICT = {
+        'result': RemoteObject.from_json(json['result']),
     }
+    if 'exceptionDetails' in json:
+        result['exceptionDetails'] = ExceptionDetails.from_json(json['exceptionDetails'])
+    return result
 
 
-def compile_script(expression: str, source_url: str, persist_script: bool, execution_context_id: ExecutionContextId) -> typing.Generator[dict,dict,dict]:
+def compile_script(
+        expression: str,
+        source_url: str,
+        persist_script: bool,
+        execution_context_id: typing.Optional[ExecutionContextId] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     Compiles expression.
     
@@ -99,62 +136,75 @@ def compile_script(expression: str, source_url: str, persist_script: bool, execu
     :param execution_context_id: Specifies in which execution context to perform script run. If the parameter is omitted the
     evaluation will be performed in the context of the inspected page.
     :returns: a dict with the following keys:
-        * scriptId: Id of the script.
-        * exceptionDetails: Exception details.
+        * scriptId: (Optional) Id of the script.
+        * exceptionDetails: (Optional) Exception details.
     '''
-
-    cmd_dict = {
+    params: T_JSON_DICT = {
+        'expression': expression,
+        'sourceURL': source_url,
+        'persistScript': persist_script,
+    }
+    if execution_context_id is not None:
+        params['executionContextId'] = execution_context_id.to_json()
+    cmd_dict: T_JSON_DICT = {
         'method': 'Runtime.compileScript',
-        'params': {
-            'expression': expression,
-            'sourceURL': source_url,
-            'persistScript': persist_script,
-            'executionContextId': execution_context_id,
-        }
+        'params': params,
     }
-    response = yield cmd_dict
-    return {
-        'scriptId': ScriptId.from_response(response['scriptId']),
-        'exceptionDetails': ExceptionDetails.from_response(response['exceptionDetails']),
+    json = yield cmd_dict
+    result: T_JSON_DICT = {
     }
+    if 'scriptId' in json:
+        result['scriptId'] = ScriptId.from_json(json['scriptId'])
+    if 'exceptionDetails' in json:
+        result['exceptionDetails'] = ExceptionDetails.from_json(json['exceptionDetails'])
+    return result
 
 
-def disable() -> typing.Generator[dict,dict,None]:
+def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Disables reporting of execution contexts creation.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Runtime.disable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def discard_console_entries() -> typing.Generator[dict,dict,None]:
+def discard_console_entries() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Discards collected exceptions and console API calls.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Runtime.discardConsoleEntries',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def enable() -> typing.Generator[dict,dict,None]:
+def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enables reporting of execution contexts creation by means of `executionContextCreated` event.
     When the reporting gets enabled the event will be sent immediately for each existing execution
     context.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Runtime.enable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def evaluate(expression: str, object_group: str, include_command_line_api: bool, silent: bool, context_id: ExecutionContextId, return_by_value: bool, generate_preview: bool, user_gesture: bool, await_promise: bool, throw_on_side_effect: bool, timeout: TimeDelta) -> typing.Generator[dict,dict,dict]:
+def evaluate(
+        expression: str,
+        object_group: typing.Optional[str] = None,
+        include_command_line_api: typing.Optional[bool] = None,
+        silent: typing.Optional[bool] = None,
+        context_id: typing.Optional[ExecutionContextId] = None,
+        return_by_value: typing.Optional[bool] = None,
+        generate_preview: typing.Optional[bool] = None,
+        user_gesture: typing.Optional[bool] = None,
+        await_promise: typing.Optional[bool] = None,
+        throw_on_side_effect: typing.Optional[bool] = None,
+        timeout: typing.Optional[TimeDelta] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     Evaluates expression on global object.
     
@@ -174,46 +224,57 @@ def evaluate(expression: str, object_group: str, include_command_line_api: bool,
     :param timeout: Terminate execution after timing out (number of milliseconds).
     :returns: a dict with the following keys:
         * result: Evaluation result.
-        * exceptionDetails: Exception details.
+        * exceptionDetails: (Optional) Exception details.
     '''
-
-    cmd_dict = {
+    params: T_JSON_DICT = {
+        'expression': expression,
+    }
+    if object_group is not None:
+        params['objectGroup'] = object_group
+    if include_command_line_api is not None:
+        params['includeCommandLineAPI'] = include_command_line_api
+    if silent is not None:
+        params['silent'] = silent
+    if context_id is not None:
+        params['contextId'] = context_id.to_json()
+    if return_by_value is not None:
+        params['returnByValue'] = return_by_value
+    if generate_preview is not None:
+        params['generatePreview'] = generate_preview
+    if user_gesture is not None:
+        params['userGesture'] = user_gesture
+    if await_promise is not None:
+        params['awaitPromise'] = await_promise
+    if throw_on_side_effect is not None:
+        params['throwOnSideEffect'] = throw_on_side_effect
+    if timeout is not None:
+        params['timeout'] = timeout.to_json()
+    cmd_dict: T_JSON_DICT = {
         'method': 'Runtime.evaluate',
-        'params': {
-            'expression': expression,
-            'objectGroup': object_group,
-            'includeCommandLineAPI': include_command_line_api,
-            'silent': silent,
-            'contextId': context_id,
-            'returnByValue': return_by_value,
-            'generatePreview': generate_preview,
-            'userGesture': user_gesture,
-            'awaitPromise': await_promise,
-            'throwOnSideEffect': throw_on_side_effect,
-            'timeout': timeout,
-        }
+        'params': params,
     }
-    response = yield cmd_dict
-    return {
-        'result': RemoteObject.from_response(response['result']),
-        'exceptionDetails': ExceptionDetails.from_response(response['exceptionDetails']),
+    json = yield cmd_dict
+    result: T_JSON_DICT = {
+        'result': RemoteObject.from_json(json['result']),
     }
+    if 'exceptionDetails' in json:
+        result['exceptionDetails'] = ExceptionDetails.from_json(json['exceptionDetails'])
+    return result
 
 
-def get_isolate_id() -> typing.Generator[dict,dict,str]:
+def get_isolate_id() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,str]:
     '''
     Returns the isolate id.
     :returns: The isolate id.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Runtime.getIsolateId',
     }
-    response = yield cmd_dict
-    return str(response['id'])
+    json = yield cmd_dict
+    return str(json['id'])
 
 
-def get_heap_usage() -> typing.Generator[dict,dict,dict]:
+def get_heap_usage() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     Returns the JavaScript heap usage.
     It is the total usage of the corresponding isolate not scoped to a particular Runtime.
@@ -221,18 +282,23 @@ def get_heap_usage() -> typing.Generator[dict,dict,dict]:
         * usedSize: Used heap size in bytes.
         * totalSize: Allocated heap size in bytes.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Runtime.getHeapUsage',
     }
-    response = yield cmd_dict
-    return {
-        'usedSize': float(response['usedSize']),
-        'totalSize': float(response['totalSize']),
+    json = yield cmd_dict
+    result: T_JSON_DICT = {
+        'usedSize': float(json['usedSize']),
+        'totalSize': float(json['totalSize']),
     }
+    return result
 
 
-def get_properties(object_id: RemoteObjectId, own_properties: bool, accessor_properties_only: bool, generate_preview: bool) -> typing.Generator[dict,dict,dict]:
+def get_properties(
+        object_id: RemoteObjectId,
+        own_properties: typing.Optional[bool] = None,
+        accessor_properties_only: typing.Optional[bool] = None,
+        generate_preview: typing.Optional[bool] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     Returns properties of a given object. Object group of the result is inherited from the target
     object.
@@ -245,48 +311,61 @@ def get_properties(object_id: RemoteObjectId, own_properties: bool, accessor_pro
     :param generate_preview: Whether preview should be generated for the results.
     :returns: a dict with the following keys:
         * result: Object properties.
-        * internalProperties: Internal object properties (only of the element itself).
-        * privateProperties: Object private properties.
-        * exceptionDetails: Exception details.
+        * internalProperties: (Optional) Internal object properties (only of the element itself).
+        * privateProperties: (Optional) Object private properties.
+        * exceptionDetails: (Optional) Exception details.
     '''
-
-    cmd_dict = {
+    params: T_JSON_DICT = {
+        'objectId': object_id.to_json(),
+    }
+    if own_properties is not None:
+        params['ownProperties'] = own_properties
+    if accessor_properties_only is not None:
+        params['accessorPropertiesOnly'] = accessor_properties_only
+    if generate_preview is not None:
+        params['generatePreview'] = generate_preview
+    cmd_dict: T_JSON_DICT = {
         'method': 'Runtime.getProperties',
-        'params': {
-            'objectId': object_id,
-            'ownProperties': own_properties,
-            'accessorPropertiesOnly': accessor_properties_only,
-            'generatePreview': generate_preview,
-        }
+        'params': params,
     }
-    response = yield cmd_dict
-    return {
-        'result': [PropertyDescriptor.from_response(i) for i in response['result']],
-        'internalProperties': [InternalPropertyDescriptor.from_response(i) for i in response['internalProperties']],
-        'privateProperties': [PrivatePropertyDescriptor.from_response(i) for i in response['privateProperties']],
-        'exceptionDetails': ExceptionDetails.from_response(response['exceptionDetails']),
+    json = yield cmd_dict
+    result: T_JSON_DICT = {
+        'result': [PropertyDescriptor.from_json(i) for i in json['result']],
     }
+    if 'internalProperties' in json:
+        result['internalProperties'] = [InternalPropertyDescriptor.from_json(i) for i in json['internalProperties']]
+    if 'privateProperties' in json:
+        result['privateProperties'] = [PrivatePropertyDescriptor.from_json(i) for i in json['privateProperties']]
+    if 'exceptionDetails' in json:
+        result['exceptionDetails'] = ExceptionDetails.from_json(json['exceptionDetails'])
+    return result
 
 
-def global_lexical_scope_names(execution_context_id: ExecutionContextId) -> typing.Generator[dict,dict,typing.List]:
+def global_lexical_scope_names(
+        execution_context_id: typing.Optional[ExecutionContextId] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['str']]:
     '''
     Returns all let, const and class variables from global scope.
     
     :param execution_context_id: Specifies in which execution context to lookup global scope variables.
     :returns: 
     '''
-
-    cmd_dict = {
-        'method': 'Runtime.globalLexicalScopeNames',
-        'params': {
-            'executionContextId': execution_context_id,
-        }
+    params: T_JSON_DICT = {
     }
-    response = yield cmd_dict
-    return [str(i) for i in response['names']]
+    if execution_context_id is not None:
+        params['executionContextId'] = execution_context_id.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Runtime.globalLexicalScopeNames',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return [str(i) for i in json['names']]
 
 
-def query_objects(prototype_object_id: RemoteObjectId, object_group: str) -> typing.Generator[dict,dict,RemoteObject]:
+def query_objects(
+        prototype_object_id: RemoteObjectId,
+        object_group: typing.Optional[str] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,RemoteObject]:
     '''
     
     
@@ -294,62 +373,75 @@ def query_objects(prototype_object_id: RemoteObjectId, object_group: str) -> typ
     :param object_group: Symbolic group name that can be used to release the results.
     :returns: Array with objects.
     '''
-
-    cmd_dict = {
-        'method': 'Runtime.queryObjects',
-        'params': {
-            'prototypeObjectId': prototype_object_id,
-            'objectGroup': object_group,
-        }
+    params: T_JSON_DICT = {
+        'prototypeObjectId': prototype_object_id.to_json(),
     }
-    response = yield cmd_dict
-    return RemoteObject.from_response(response['objects'])
+    if object_group is not None:
+        params['objectGroup'] = object_group
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Runtime.queryObjects',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return RemoteObject.from_json(json['objects'])
 
 
-def release_object(object_id: RemoteObjectId) -> typing.Generator[dict,dict,None]:
+def release_object(
+        object_id: RemoteObjectId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Releases remote object with given id.
     
     :param object_id: Identifier of the object to release.
     '''
-
-    cmd_dict = {
-        'method': 'Runtime.releaseObject',
-        'params': {
-            'objectId': object_id,
-        }
+    params: T_JSON_DICT = {
+        'objectId': object_id.to_json(),
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Runtime.releaseObject',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def release_object_group(object_group: str) -> typing.Generator[dict,dict,None]:
+def release_object_group(
+        object_group: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Releases all remote objects that belong to a given group.
     
     :param object_group: Symbolic object group name.
     '''
-
-    cmd_dict = {
-        'method': 'Runtime.releaseObjectGroup',
-        'params': {
-            'objectGroup': object_group,
-        }
+    params: T_JSON_DICT = {
+        'objectGroup': object_group,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Runtime.releaseObjectGroup',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def run_if_waiting_for_debugger() -> typing.Generator[dict,dict,None]:
+def run_if_waiting_for_debugger() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Tells inspected instance to run if it was waiting for debugger to attach.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Runtime.runIfWaitingForDebugger',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def run_script(script_id: ScriptId, execution_context_id: ExecutionContextId, object_group: str, silent: bool, include_command_line_api: bool, return_by_value: bool, generate_preview: bool, await_promise: bool) -> typing.Generator[dict,dict,dict]:
+def run_script(
+        script_id: ScriptId,
+        execution_context_id: typing.Optional[ExecutionContextId] = None,
+        object_group: typing.Optional[str] = None,
+        silent: typing.Optional[bool] = None,
+        include_command_line_api: typing.Optional[bool] = None,
+        return_by_value: typing.Optional[bool] = None,
+        generate_preview: typing.Optional[bool] = None,
+        await_promise: typing.Optional[bool] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     Runs script with given id in a given context.
     
@@ -366,91 +458,108 @@ def run_script(script_id: ScriptId, execution_context_id: ExecutionContextId, ob
     resolved.
     :returns: a dict with the following keys:
         * result: Run result.
-        * exceptionDetails: Exception details.
+        * exceptionDetails: (Optional) Exception details.
     '''
-
-    cmd_dict = {
+    params: T_JSON_DICT = {
+        'scriptId': script_id.to_json(),
+    }
+    if execution_context_id is not None:
+        params['executionContextId'] = execution_context_id.to_json()
+    if object_group is not None:
+        params['objectGroup'] = object_group
+    if silent is not None:
+        params['silent'] = silent
+    if include_command_line_api is not None:
+        params['includeCommandLineAPI'] = include_command_line_api
+    if return_by_value is not None:
+        params['returnByValue'] = return_by_value
+    if generate_preview is not None:
+        params['generatePreview'] = generate_preview
+    if await_promise is not None:
+        params['awaitPromise'] = await_promise
+    cmd_dict: T_JSON_DICT = {
         'method': 'Runtime.runScript',
-        'params': {
-            'scriptId': script_id,
-            'executionContextId': execution_context_id,
-            'objectGroup': object_group,
-            'silent': silent,
-            'includeCommandLineAPI': include_command_line_api,
-            'returnByValue': return_by_value,
-            'generatePreview': generate_preview,
-            'awaitPromise': await_promise,
-        }
+        'params': params,
     }
-    response = yield cmd_dict
-    return {
-        'result': RemoteObject.from_response(response['result']),
-        'exceptionDetails': ExceptionDetails.from_response(response['exceptionDetails']),
+    json = yield cmd_dict
+    result: T_JSON_DICT = {
+        'result': RemoteObject.from_json(json['result']),
     }
+    if 'exceptionDetails' in json:
+        result['exceptionDetails'] = ExceptionDetails.from_json(json['exceptionDetails'])
+    return result
 
 
-def set_async_call_stack_depth(max_depth: int) -> typing.Generator[dict,dict,None]:
+def set_async_call_stack_depth(
+        max_depth: int,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enables or disables async call stacks tracking.
     
     :param max_depth: Maximum depth of async call stacks. Setting to `0` will effectively disable collecting async
     call stacks (default).
     '''
-
-    cmd_dict = {
-        'method': 'Runtime.setAsyncCallStackDepth',
-        'params': {
-            'maxDepth': max_depth,
-        }
+    params: T_JSON_DICT = {
+        'maxDepth': max_depth,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Runtime.setAsyncCallStackDepth',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_custom_object_formatter_enabled(enabled: bool) -> typing.Generator[dict,dict,None]:
+def set_custom_object_formatter_enabled(
+        enabled: bool,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     
     
     :param enabled: 
     '''
-
-    cmd_dict = {
-        'method': 'Runtime.setCustomObjectFormatterEnabled',
-        'params': {
-            'enabled': enabled,
-        }
+    params: T_JSON_DICT = {
+        'enabled': enabled,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Runtime.setCustomObjectFormatterEnabled',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_max_call_stack_size_to_capture(size: int) -> typing.Generator[dict,dict,None]:
+def set_max_call_stack_size_to_capture(
+        size: int,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     
     
     :param size: 
     '''
-
-    cmd_dict = {
-        'method': 'Runtime.setMaxCallStackSizeToCapture',
-        'params': {
-            'size': size,
-        }
+    params: T_JSON_DICT = {
+        'size': size,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Runtime.setMaxCallStackSizeToCapture',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def terminate_execution() -> typing.Generator[dict,dict,None]:
+def terminate_execution() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Terminate current or next JavaScript execution.
     Will cancel the termination when the outer-most script execution ends.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Runtime.terminateExecution',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def add_binding(name: str, execution_context_id: ExecutionContextId) -> typing.Generator[dict,dict,None]:
+def add_binding(
+        name: str,
+        execution_context_id: typing.Optional[ExecutionContextId] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     If executionContextId is empty, adds binding with the given name on the
     global objects of all inspected contexts, including those created later,
@@ -464,31 +573,34 @@ def add_binding(name: str, execution_context_id: ExecutionContextId) -> typing.G
     :param name: 
     :param execution_context_id: 
     '''
-
-    cmd_dict = {
-        'method': 'Runtime.addBinding',
-        'params': {
-            'name': name,
-            'executionContextId': execution_context_id,
-        }
+    params: T_JSON_DICT = {
+        'name': name,
     }
-    response = yield cmd_dict
+    if execution_context_id is not None:
+        params['executionContextId'] = execution_context_id.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Runtime.addBinding',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def remove_binding(name: str) -> typing.Generator[dict,dict,None]:
+def remove_binding(
+        name: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     This method does not remove binding function from global object but
     unsubscribes current runtime agent from Runtime.bindingCalled notifications.
     
     :param name: 
     '''
-
-    cmd_dict = {
-        'method': 'Runtime.removeBinding',
-        'params': {
-            'name': name,
-        }
+    params: T_JSON_DICT = {
+        'name': name,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Runtime.removeBinding',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 

@@ -8,12 +8,13 @@ Domain: emulation
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 
-
-class VirtualTimePolicy:
+class VirtualTimePolicy(enum.Enum):
     '''
     advance: If the scheduler runs out of immediate work, the virtual time base may fast forward to
     allow the next delayed task (if any) to run; pause: The virtual time base may not advance;
@@ -24,6 +25,13 @@ class VirtualTimePolicy:
     PAUSE = "pause"
     PAUSE_IF_NETWORK_FETCHES_PENDING = "pauseIfNetworkFetchesPending"
 
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> 'VirtualTimePolicy':
+        return cls(json)
+
 
 @dataclass
 class ScreenOrientation:
@@ -31,15 +39,22 @@ class ScreenOrientation:
     Screen orientation.
     '''
     #: Orientation type.
-    type_: str
+    type: str
 
     #: Orientation angle.
     angle: int
 
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'type': self.type,
+            'angle': self.angle,
+        }
+        return json
+
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'ScreenOrientation':
         return cls(
-            type_=str(response.get('type')),
-            angle=int(response.get('angle')),
+            type=json['type'],
+            angle=json['angle'],
         )
 

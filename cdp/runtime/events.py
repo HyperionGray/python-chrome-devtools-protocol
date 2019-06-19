@@ -8,7 +8,9 @@ Domain: runtime
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -27,6 +29,18 @@ class BindingCalled:
 
     #: Notification is issued every time when binding is called.
     execution_context_id: ExecutionContextId
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Runtime'
+    _method = 'bindingCalled'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'BindingCalled':
+        return cls(
+            name=str(json['name']),
+            payload=str(json['payload']),
+            execution_context_id=ExecutionContextId.from_json(json['executionContextId']),
+        )
 
 
 @dataclass
@@ -52,6 +66,21 @@ class ConsoleAPICalled:
     #: Issued when console API was called.
     context: str
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Runtime'
+    _method = 'consoleAPICalled'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'ConsoleAPICalled':
+        return cls(
+            type=str(json['type']),
+            args=[RemoteObject.from_json(i) for i in json['args']],
+            execution_context_id=ExecutionContextId.from_json(json['executionContextId']),
+            timestamp=Timestamp.from_json(json['timestamp']),
+            stack_trace=StackTrace.from_json(json['stackTrace']),
+            context=str(json['context']),
+        )
+
 
 @dataclass
 class ExceptionRevoked:
@@ -63,6 +92,17 @@ class ExceptionRevoked:
 
     #: Issued when unhandled exception was revoked.
     exception_id: int
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Runtime'
+    _method = 'exceptionRevoked'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'ExceptionRevoked':
+        return cls(
+            reason=str(json['reason']),
+            exception_id=int(json['exceptionId']),
+        )
 
 
 @dataclass
@@ -76,6 +116,17 @@ class ExceptionThrown:
     #: Issued when exception was thrown and unhandled.
     exception_details: ExceptionDetails
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Runtime'
+    _method = 'exceptionThrown'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'ExceptionThrown':
+        return cls(
+            timestamp=Timestamp.from_json(json['timestamp']),
+            exception_details=ExceptionDetails.from_json(json['exceptionDetails']),
+        )
+
 
 @dataclass
 class ExecutionContextCreated:
@@ -84,6 +135,16 @@ class ExecutionContextCreated:
     '''
     #: Issued when new execution context is created.
     context: ExecutionContextDescription
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Runtime'
+    _method = 'executionContextCreated'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'ExecutionContextCreated':
+        return cls(
+            context=ExecutionContextDescription.from_json(json['context']),
+        )
 
 
 @dataclass
@@ -94,13 +155,30 @@ class ExecutionContextDestroyed:
     #: Issued when execution context is destroyed.
     execution_context_id: ExecutionContextId
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Runtime'
+    _method = 'executionContextDestroyed'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'ExecutionContextDestroyed':
+        return cls(
+            execution_context_id=ExecutionContextId.from_json(json['executionContextId']),
+        )
+
 
 @dataclass
 class ExecutionContextsCleared:
     '''
     Issued when all executionContexts were cleared in browser
     '''
-    pass
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Runtime'
+    _method = 'executionContextsCleared'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'ExecutionContextsCleared':
+        return cls(
+        )
 
 
 @dataclass
@@ -116,4 +194,15 @@ class InspectRequested:
     #: Issued when object should be inspected (for example, as a result of inspect() command line API
     #: call).
     hints: dict
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Runtime'
+    _method = 'inspectRequested'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'InspectRequested':
+        return cls(
+            object=RemoteObject.from_json(json['object']),
+            hints=dict(json['hints']),
+        )
 

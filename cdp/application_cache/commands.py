@@ -8,7 +8,9 @@ Domain: application_cache
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -16,65 +18,67 @@ from ..page import types as page
 
 
 
-def enable() -> typing.Generator[dict,dict,None]:
+def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enables application cache domain notifications.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'ApplicationCache.enable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def get_application_cache_for_frame(frame_id: page.FrameId) -> typing.Generator[dict,dict,ApplicationCache]:
+def get_application_cache_for_frame(
+        frame_id: page.FrameId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,ApplicationCache]:
     '''
     Returns relevant application cache data for the document in given frame.
     
     :param frame_id: Identifier of the frame containing document whose application cache is retrieved.
     :returns: Relevant application cache data for the document in given frame.
     '''
-
-    cmd_dict = {
-        'method': 'ApplicationCache.getApplicationCacheForFrame',
-        'params': {
-            'frameId': frame_id,
-        }
+    params: T_JSON_DICT = {
+        'frameId': frame_id.to_json(),
     }
-    response = yield cmd_dict
-    return ApplicationCache.from_response(response['applicationCache'])
+    cmd_dict: T_JSON_DICT = {
+        'method': 'ApplicationCache.getApplicationCacheForFrame',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return ApplicationCache.from_json(json['applicationCache'])
 
 
-def get_frames_with_manifests() -> typing.Generator[dict,dict,typing.List['FrameWithManifest']]:
+def get_frames_with_manifests() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['FrameWithManifest']]:
     '''
     Returns array of frame identifiers with manifest urls for each frame containing a document
     associated with some application cache.
     :returns: Array of frame identifiers with manifest urls for each frame containing a document
     associated with some application cache.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'ApplicationCache.getFramesWithManifests',
     }
-    response = yield cmd_dict
-    return [FrameWithManifest.from_response(i) for i in response['frameIds']]
+    json = yield cmd_dict
+    return [FrameWithManifest.from_json(i) for i in json['frameIds']]
 
 
-def get_manifest_for_frame(frame_id: page.FrameId) -> typing.Generator[dict,dict,str]:
+def get_manifest_for_frame(
+        frame_id: page.FrameId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,str]:
     '''
     Returns manifest URL for document in the given frame.
     
     :param frame_id: Identifier of the frame containing document whose manifest is retrieved.
     :returns: Manifest URL for document in the given frame.
     '''
-
-    cmd_dict = {
-        'method': 'ApplicationCache.getManifestForFrame',
-        'params': {
-            'frameId': frame_id,
-        }
+    params: T_JSON_DICT = {
+        'frameId': frame_id.to_json(),
     }
-    response = yield cmd_dict
-    return str(response['manifestURL'])
+    cmd_dict: T_JSON_DICT = {
+        'method': 'ApplicationCache.getManifestForFrame',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return str(json['manifestURL'])
 
 

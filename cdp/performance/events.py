@@ -8,7 +8,9 @@ Domain: performance
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -24,4 +26,15 @@ class Metrics:
 
     #: Current values of the metrics.
     title: str
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Performance'
+    _method = 'metrics'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'Metrics':
+        return cls(
+            metrics=[Metric.from_json(i) for i in json['metrics']],
+            title=str(json['title']),
+        )
 

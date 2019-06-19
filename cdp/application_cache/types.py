@@ -8,11 +8,12 @@ Domain: application_cache
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from ..page import types as page
-
 
 
 @dataclass
@@ -27,16 +28,23 @@ class ApplicationCacheResource:
     size: int
 
     #: Resource type.
-    type_: str
+    type: str
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'url': self.url,
+            'size': self.size,
+            'type': self.type,
+        }
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'ApplicationCacheResource':
         return cls(
-            url=str(response.get('url')),
-            size=int(response.get('size')),
-            type_=str(response.get('type')),
+            url=json['url'],
+            size=json['size'],
+            type=json['type'],
         )
-
 
 @dataclass
 class ApplicationCache:
@@ -58,16 +66,25 @@ class ApplicationCache:
     #: Application cache resources.
     resources: typing.List['ApplicationCacheResource']
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            manifest_url=str(response.get('manifestURL')),
-            size=float(response.get('size')),
-            creation_time=float(response.get('creationTime')),
-            update_time=float(response.get('updateTime')),
-            resources=[ApplicationCacheResource.from_response(i) for i in response.get('resources')],
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'manifestURL': self.manifest_url,
+            'size': self.size,
+            'creationTime': self.creation_time,
+            'updateTime': self.update_time,
+            'resources': [i.to_json() for i in self.resources],
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'ApplicationCache':
+        return cls(
+            manifest_url=json['manifestURL'],
+            size=json['size'],
+            creation_time=json['creationTime'],
+            update_time=json['updateTime'],
+            resources=[ApplicationCacheResource.from_json(i) for i in json['resources']],
+        )
 
 @dataclass
 class FrameWithManifest:
@@ -83,11 +100,19 @@ class FrameWithManifest:
     #: Application cache status.
     status: int
 
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'frameId': self.frame_id.to_json(),
+            'manifestURL': self.manifest_url,
+            'status': self.status,
+        }
+        return json
+
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'FrameWithManifest':
         return cls(
-            frame_id=page.FrameId.from_response(response.get('frameId')),
-            manifest_url=str(response.get('manifestURL')),
-            status=int(response.get('status')),
+            frame_id=page.FrameId.from_json(json['frameId']),
+            manifest_url=json['manifestURL'],
+            status=json['status'],
         )
 

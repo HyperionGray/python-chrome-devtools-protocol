@@ -8,9 +8,10 @@ Domain: cast
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
-
 
 
 @dataclass
@@ -21,13 +22,23 @@ class Sink:
 
     #: Text describing the current session. Present only if there is an active
     #: session on the sink.
-    session: str
+    session: typing.Optional[str] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'name': self.name,
+            'id': self.id,
+        }
+        if self.session is not None:
+            json['session'] = self.session
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'Sink':
+        session = json['session'] if 'session' in json else None
         return cls(
-            name=str(response.get('name')),
-            id=str(response.get('id')),
-            session=str(response.get('session')),
+            name=json['name'],
+            id=json['id'],
+            session=session,
         )
 

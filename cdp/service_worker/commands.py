@@ -8,13 +8,19 @@ Domain: service_worker
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
 
 
-def deliver_push_message(origin: str, registration_id: RegistrationID, data: str) -> typing.Generator[dict,dict,None]:
+def deliver_push_message(
+        origin: str,
+        registration_id: RegistrationID,
+        data: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     
     
@@ -22,27 +28,31 @@ def deliver_push_message(origin: str, registration_id: RegistrationID, data: str
     :param registration_id: 
     :param data: 
     '''
-
-    cmd_dict = {
-        'method': 'ServiceWorker.deliverPushMessage',
-        'params': {
-            'origin': origin,
-            'registrationId': registration_id,
-            'data': data,
-        }
+    params: T_JSON_DICT = {
+        'origin': origin,
+        'registrationId': registration_id.to_json(),
+        'data': data,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'ServiceWorker.deliverPushMessage',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def disable() -> typing.Generator[dict,dict,None]:
-
-    cmd_dict = {
+def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    cmd_dict: T_JSON_DICT = {
         'method': 'ServiceWorker.disable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def dispatch_sync_event(origin: str, registration_id: RegistrationID, tag: str, last_chance: bool) -> typing.Generator[dict,dict,None]:
+def dispatch_sync_event(
+        origin: str,
+        registration_id: RegistrationID,
+        tag: str,
+        last_chance: bool,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     
     
@@ -51,144 +61,156 @@ def dispatch_sync_event(origin: str, registration_id: RegistrationID, tag: str, 
     :param tag: 
     :param last_chance: 
     '''
-
-    cmd_dict = {
-        'method': 'ServiceWorker.dispatchSyncEvent',
-        'params': {
-            'origin': origin,
-            'registrationId': registration_id,
-            'tag': tag,
-            'lastChance': last_chance,
-        }
+    params: T_JSON_DICT = {
+        'origin': origin,
+        'registrationId': registration_id.to_json(),
+        'tag': tag,
+        'lastChance': last_chance,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'ServiceWorker.dispatchSyncEvent',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def enable() -> typing.Generator[dict,dict,None]:
-
-    cmd_dict = {
+def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    cmd_dict: T_JSON_DICT = {
         'method': 'ServiceWorker.enable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def inspect_worker(version_id: str) -> typing.Generator[dict,dict,None]:
+def inspect_worker(
+        version_id: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     
     
     :param version_id: 
     '''
-
-    cmd_dict = {
-        'method': 'ServiceWorker.inspectWorker',
-        'params': {
-            'versionId': version_id,
-        }
+    params: T_JSON_DICT = {
+        'versionId': version_id,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'ServiceWorker.inspectWorker',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_force_update_on_page_load(force_update_on_page_load: bool) -> typing.Generator[dict,dict,None]:
+def set_force_update_on_page_load(
+        force_update_on_page_load: bool,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     
     
     :param force_update_on_page_load: 
     '''
-
-    cmd_dict = {
+    params: T_JSON_DICT = {
+        'forceUpdateOnPageLoad': force_update_on_page_load,
+    }
+    cmd_dict: T_JSON_DICT = {
         'method': 'ServiceWorker.setForceUpdateOnPageLoad',
-        'params': {
-            'forceUpdateOnPageLoad': force_update_on_page_load,
-        }
+        'params': params,
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def skip_waiting(scope_url: str) -> typing.Generator[dict,dict,None]:
+def skip_waiting(
+        scope_url: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     
     
     :param scope_url: 
     '''
-
-    cmd_dict = {
+    params: T_JSON_DICT = {
+        'scopeURL': scope_url,
+    }
+    cmd_dict: T_JSON_DICT = {
         'method': 'ServiceWorker.skipWaiting',
-        'params': {
-            'scopeURL': scope_url,
-        }
+        'params': params,
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def start_worker(scope_url: str) -> typing.Generator[dict,dict,None]:
+def start_worker(
+        scope_url: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     
     
     :param scope_url: 
     '''
-
-    cmd_dict = {
-        'method': 'ServiceWorker.startWorker',
-        'params': {
-            'scopeURL': scope_url,
-        }
+    params: T_JSON_DICT = {
+        'scopeURL': scope_url,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'ServiceWorker.startWorker',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def stop_all_workers() -> typing.Generator[dict,dict,None]:
-
-    cmd_dict = {
+def stop_all_workers() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    cmd_dict: T_JSON_DICT = {
         'method': 'ServiceWorker.stopAllWorkers',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def stop_worker(version_id: str) -> typing.Generator[dict,dict,None]:
+def stop_worker(
+        version_id: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     
     
     :param version_id: 
     '''
-
-    cmd_dict = {
+    params: T_JSON_DICT = {
+        'versionId': version_id,
+    }
+    cmd_dict: T_JSON_DICT = {
         'method': 'ServiceWorker.stopWorker',
-        'params': {
-            'versionId': version_id,
-        }
+        'params': params,
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def unregister(scope_url: str) -> typing.Generator[dict,dict,None]:
+def unregister(
+        scope_url: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     
     
     :param scope_url: 
     '''
-
-    cmd_dict = {
+    params: T_JSON_DICT = {
+        'scopeURL': scope_url,
+    }
+    cmd_dict: T_JSON_DICT = {
         'method': 'ServiceWorker.unregister',
-        'params': {
-            'scopeURL': scope_url,
-        }
+        'params': params,
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def update_registration(scope_url: str) -> typing.Generator[dict,dict,None]:
+def update_registration(
+        scope_url: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     
     
     :param scope_url: 
     '''
-
-    cmd_dict = {
-        'method': 'ServiceWorker.updateRegistration',
-        'params': {
-            'scopeURL': scope_url,
-        }
+    params: T_JSON_DICT = {
+        'scopeURL': scope_url,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'ServiceWorker.updateRegistration',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 

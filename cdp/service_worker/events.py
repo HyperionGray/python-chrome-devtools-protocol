@@ -8,7 +8,9 @@ Domain: service_worker
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -18,13 +20,43 @@ from .types import *
 class WorkerErrorReported:
     error_message: ServiceWorkerErrorMessage
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'ServiceWorker'
+    _method = 'workerErrorReported'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'WorkerErrorReported':
+        return cls(
+            error_message=ServiceWorkerErrorMessage.from_json(json['errorMessage']),
+        )
+
 
 @dataclass
 class WorkerRegistrationUpdated:
     registrations: typing.List['ServiceWorkerRegistration']
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'ServiceWorker'
+    _method = 'workerRegistrationUpdated'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'WorkerRegistrationUpdated':
+        return cls(
+            registrations=[ServiceWorkerRegistration.from_json(i) for i in json['registrations']],
+        )
+
 
 @dataclass
 class WorkerVersionUpdated:
     versions: typing.List['ServiceWorkerVersion']
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'ServiceWorker'
+    _method = 'workerVersionUpdated'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'WorkerVersionUpdated':
+        return cls(
+            versions=[ServiceWorkerVersion.from_json(i) for i in json['versions']],
+        )
 

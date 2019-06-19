@@ -8,9 +8,10 @@ Domain: console
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
-
 
 
 @dataclass
@@ -28,22 +29,39 @@ class ConsoleMessage:
     text: str
 
     #: URL of the message origin.
-    url: str
+    url: typing.Optional[str] = None
 
     #: Line number in the resource that generated this message (1-based).
-    line: int
+    line: typing.Optional[int] = None
 
     #: Column number in the resource that generated this message (1-based).
-    column: int
+    column: typing.Optional[int] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'source': self.source,
+            'level': self.level,
+            'text': self.text,
+        }
+        if self.url is not None:
+            json['url'] = self.url
+        if self.line is not None:
+            json['line'] = self.line
+        if self.column is not None:
+            json['column'] = self.column
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'ConsoleMessage':
+        url = json['url'] if 'url' in json else None
+        line = json['line'] if 'line' in json else None
+        column = json['column'] if 'column' in json else None
         return cls(
-            source=str(response.get('source')),
-            level=str(response.get('level')),
-            text=str(response.get('text')),
-            url=str(response.get('url')),
-            line=int(response.get('line')),
-            column=int(response.get('column')),
+            source=json['source'],
+            level=json['level'],
+            text=json['text'],
+            url=url,
+            line=line,
+            column=column,
         )
 

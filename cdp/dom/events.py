@@ -8,7 +8,9 @@ Domain: dom
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -28,6 +30,18 @@ class AttributeModified:
     #: Fired when `Element`'s attribute is modified.
     value: str
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'DOM'
+    _method = 'attributeModified'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'AttributeModified':
+        return cls(
+            node_id=NodeId.from_json(json['nodeId']),
+            name=str(json['name']),
+            value=str(json['value']),
+        )
+
 
 @dataclass
 class AttributeRemoved:
@@ -39,6 +53,17 @@ class AttributeRemoved:
 
     #: Fired when `Element`'s attribute is removed.
     name: str
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'DOM'
+    _method = 'attributeRemoved'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'AttributeRemoved':
+        return cls(
+            node_id=NodeId.from_json(json['nodeId']),
+            name=str(json['name']),
+        )
 
 
 @dataclass
@@ -52,6 +77,17 @@ class CharacterDataModified:
     #: Mirrors `DOMCharacterDataModified` event.
     character_data: str
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'DOM'
+    _method = 'characterDataModified'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'CharacterDataModified':
+        return cls(
+            node_id=NodeId.from_json(json['nodeId']),
+            character_data=str(json['characterData']),
+        )
+
 
 @dataclass
 class ChildNodeCountUpdated:
@@ -63,6 +99,17 @@ class ChildNodeCountUpdated:
 
     #: Fired when `Container`'s child node count has changed.
     child_node_count: int
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'DOM'
+    _method = 'childNodeCountUpdated'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'ChildNodeCountUpdated':
+        return cls(
+            node_id=NodeId.from_json(json['nodeId']),
+            child_node_count=int(json['childNodeCount']),
+        )
 
 
 @dataclass
@@ -79,6 +126,18 @@ class ChildNodeInserted:
     #: Mirrors `DOMNodeInserted` event.
     node: Node
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'DOM'
+    _method = 'childNodeInserted'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'ChildNodeInserted':
+        return cls(
+            parent_node_id=NodeId.from_json(json['parentNodeId']),
+            previous_node_id=NodeId.from_json(json['previousNodeId']),
+            node=Node.from_json(json['node']),
+        )
+
 
 @dataclass
 class ChildNodeRemoved:
@@ -90,6 +149,17 @@ class ChildNodeRemoved:
 
     #: Mirrors `DOMNodeRemoved` event.
     node_id: NodeId
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'DOM'
+    _method = 'childNodeRemoved'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'ChildNodeRemoved':
+        return cls(
+            parent_node_id=NodeId.from_json(json['parentNodeId']),
+            node_id=NodeId.from_json(json['nodeId']),
+        )
 
 
 @dataclass
@@ -103,13 +173,31 @@ class DistributedNodesUpdated:
     #: Called when distrubution is changed.
     distributed_nodes: typing.List['BackendNode']
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'DOM'
+    _method = 'distributedNodesUpdated'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'DistributedNodesUpdated':
+        return cls(
+            insertion_point_id=NodeId.from_json(json['insertionPointId']),
+            distributed_nodes=[BackendNode.from_json(i) for i in json['distributedNodes']],
+        )
+
 
 @dataclass
 class DocumentUpdated:
     '''
     Fired when `Document` has been totally updated. Node ids are no longer valid.
     '''
-    pass
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'DOM'
+    _method = 'documentUpdated'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'DocumentUpdated':
+        return cls(
+        )
 
 
 @dataclass
@@ -119,6 +207,16 @@ class InlineStyleInvalidated:
     '''
     #: Fired when `Element`'s inline style is modified via a CSS property modification.
     node_ids: typing.List['NodeId']
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'DOM'
+    _method = 'inlineStyleInvalidated'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'InlineStyleInvalidated':
+        return cls(
+            node_ids=[NodeId.from_json(i) for i in json['nodeIds']],
+        )
 
 
 @dataclass
@@ -132,6 +230,17 @@ class PseudoElementAdded:
     #: Called when a pseudo element is added to an element.
     pseudo_element: Node
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'DOM'
+    _method = 'pseudoElementAdded'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'PseudoElementAdded':
+        return cls(
+            parent_id=NodeId.from_json(json['parentId']),
+            pseudo_element=Node.from_json(json['pseudoElement']),
+        )
+
 
 @dataclass
 class PseudoElementRemoved:
@@ -143,6 +252,17 @@ class PseudoElementRemoved:
 
     #: Called when a pseudo element is removed from an element.
     pseudo_element_id: NodeId
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'DOM'
+    _method = 'pseudoElementRemoved'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'PseudoElementRemoved':
+        return cls(
+            parent_id=NodeId.from_json(json['parentId']),
+            pseudo_element_id=NodeId.from_json(json['pseudoElementId']),
+        )
 
 
 @dataclass
@@ -159,6 +279,17 @@ class SetChildNodes:
     #: most of the calls requesting node ids.
     nodes: typing.List['Node']
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'DOM'
+    _method = 'setChildNodes'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'SetChildNodes':
+        return cls(
+            parent_id=NodeId.from_json(json['parentId']),
+            nodes=[Node.from_json(i) for i in json['nodes']],
+        )
+
 
 @dataclass
 class ShadowRootPopped:
@@ -171,6 +302,17 @@ class ShadowRootPopped:
     #: Called when shadow root is popped from the element.
     root_id: NodeId
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'DOM'
+    _method = 'shadowRootPopped'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'ShadowRootPopped':
+        return cls(
+            host_id=NodeId.from_json(json['hostId']),
+            root_id=NodeId.from_json(json['rootId']),
+        )
+
 
 @dataclass
 class ShadowRootPushed:
@@ -182,4 +324,15 @@ class ShadowRootPushed:
 
     #: Called when shadow root is pushed into the element.
     root: Node
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'DOM'
+    _method = 'shadowRootPushed'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'ShadowRootPushed':
+        return cls(
+            host_id=NodeId.from_json(json['hostId']),
+            root=Node.from_json(json['root']),
+        )
 

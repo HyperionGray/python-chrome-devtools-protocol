@@ -8,24 +8,29 @@ Domain: device_orientation
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
 
 
-def clear_device_orientation_override() -> typing.Generator[dict,dict,None]:
+def clear_device_orientation_override() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Clears the overridden Device Orientation.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'DeviceOrientation.clearDeviceOrientationOverride',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def set_device_orientation_override(alpha: float, beta: float, gamma: float) -> typing.Generator[dict,dict,None]:
+def set_device_orientation_override(
+        alpha: float,
+        beta: float,
+        gamma: float,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Overrides the Device Orientation.
     
@@ -33,15 +38,15 @@ def set_device_orientation_override(alpha: float, beta: float, gamma: float) -> 
     :param beta: Mock beta
     :param gamma: Mock gamma
     '''
-
-    cmd_dict = {
-        'method': 'DeviceOrientation.setDeviceOrientationOverride',
-        'params': {
-            'alpha': alpha,
-            'beta': beta,
-            'gamma': gamma,
-        }
+    params: T_JSON_DICT = {
+        'alpha': alpha,
+        'beta': beta,
+        'gamma': gamma,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DeviceOrientation.setDeviceOrientationOverride',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 

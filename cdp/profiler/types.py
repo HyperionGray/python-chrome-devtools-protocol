@@ -8,11 +8,12 @@ Domain: profiler
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from ..runtime import types as runtime
-
 
 
 @dataclass
@@ -27,29 +28,47 @@ class ProfileNode:
     call_frame: runtime.CallFrame
 
     #: Number of samples where this node was on top of the call stack.
-    hit_count: int
+    hit_count: typing.Optional[int] = None
 
     #: Child node ids.
-    children: typing.List
+    children: typing.Optional[typing.List['int']] = None
 
     #: The reason of being not optimized. The function may be deoptimized or marked as don't
     #: optimize.
-    deopt_reason: str
+    deopt_reason: typing.Optional[str] = None
 
     #: An array of source position ticks.
-    position_ticks: typing.List['PositionTickInfo']
+    position_ticks: typing.Optional[typing.List['PositionTickInfo']] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'id': self.id,
+            'callFrame': self.call_frame.to_json(),
+        }
+        if self.hit_count is not None:
+            json['hitCount'] = self.hit_count
+        if self.children is not None:
+            json['children'] = [i for i in self.children]
+        if self.deopt_reason is not None:
+            json['deoptReason'] = self.deopt_reason
+        if self.position_ticks is not None:
+            json['positionTicks'] = [i.to_json() for i in self.position_ticks]
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'ProfileNode':
+        hit_count = json['hitCount'] if 'hitCount' in json else None
+        children = [i for i in json['children']] if 'children' in json else None
+        deopt_reason = json['deoptReason'] if 'deoptReason' in json else None
+        position_ticks = [PositionTickInfo.from_json(i) for i in json['positionTicks']] if 'positionTicks' in json else None
         return cls(
-            id=int(response.get('id')),
-            call_frame=runtime.CallFrame.from_response(response.get('callFrame')),
-            hit_count=int(response.get('hitCount')),
-            children=[int(i) for i in response.get('children')],
-            deopt_reason=str(response.get('deoptReason')),
-            position_ticks=[PositionTickInfo.from_response(i) for i in response.get('positionTicks')],
+            id=json['id'],
+            call_frame=runtime.CallFrame.from_json(json['callFrame']),
+            hit_count=hit_count,
+            children=children,
+            deopt_reason=deopt_reason,
+            position_ticks=position_ticks,
         )
-
 
 @dataclass
 class Profile:
@@ -66,22 +85,35 @@ class Profile:
     end_time: float
 
     #: Ids of samples top nodes.
-    samples: typing.List
+    samples: typing.Optional[typing.List['int']] = None
 
     #: Time intervals between adjacent samples in microseconds. The first delta is relative to the
     #: profile startTime.
-    time_deltas: typing.List
+    time_deltas: typing.Optional[typing.List['int']] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'nodes': [i.to_json() for i in self.nodes],
+            'startTime': self.start_time,
+            'endTime': self.end_time,
+        }
+        if self.samples is not None:
+            json['samples'] = [i for i in self.samples]
+        if self.time_deltas is not None:
+            json['timeDeltas'] = [i for i in self.time_deltas]
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'Profile':
+        samples = [i for i in json['samples']] if 'samples' in json else None
+        time_deltas = [i for i in json['timeDeltas']] if 'timeDeltas' in json else None
         return cls(
-            nodes=[ProfileNode.from_response(i) for i in response.get('nodes')],
-            start_time=float(response.get('startTime')),
-            end_time=float(response.get('endTime')),
-            samples=[int(i) for i in response.get('samples')],
-            time_deltas=[int(i) for i in response.get('timeDeltas')],
+            nodes=[ProfileNode.from_json(i) for i in json['nodes']],
+            start_time=json['startTime'],
+            end_time=json['endTime'],
+            samples=samples,
+            time_deltas=time_deltas,
         )
-
 
 @dataclass
 class PositionTickInfo:
@@ -94,13 +126,19 @@ class PositionTickInfo:
     #: Number of samples attributed to the source line.
     ticks: int
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            line=int(response.get('line')),
-            ticks=int(response.get('ticks')),
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'line': self.line,
+            'ticks': self.ticks,
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'PositionTickInfo':
+        return cls(
+            line=json['line'],
+            ticks=json['ticks'],
+        )
 
 @dataclass
 class CoverageRange:
@@ -116,14 +154,21 @@ class CoverageRange:
     #: Collected execution count of the source range.
     count: int
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            start_offset=int(response.get('startOffset')),
-            end_offset=int(response.get('endOffset')),
-            count=int(response.get('count')),
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'startOffset': self.start_offset,
+            'endOffset': self.end_offset,
+            'count': self.count,
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'CoverageRange':
+        return cls(
+            start_offset=json['startOffset'],
+            end_offset=json['endOffset'],
+            count=json['count'],
+        )
 
 @dataclass
 class FunctionCoverage:
@@ -139,14 +184,21 @@ class FunctionCoverage:
     #: Whether coverage data for this function has block granularity.
     is_block_coverage: bool
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            function_name=str(response.get('functionName')),
-            ranges=[CoverageRange.from_response(i) for i in response.get('ranges')],
-            is_block_coverage=bool(response.get('isBlockCoverage')),
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'functionName': self.function_name,
+            'ranges': [i.to_json() for i in self.ranges],
+            'isBlockCoverage': self.is_block_coverage,
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'FunctionCoverage':
+        return cls(
+            function_name=json['functionName'],
+            ranges=[CoverageRange.from_json(i) for i in json['ranges']],
+            is_block_coverage=json['isBlockCoverage'],
+        )
 
 @dataclass
 class ScriptCoverage:
@@ -162,14 +214,21 @@ class ScriptCoverage:
     #: Functions contained in the script that has coverage data.
     functions: typing.List['FunctionCoverage']
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            script_id=runtime.ScriptId.from_response(response.get('scriptId')),
-            url=str(response.get('url')),
-            functions=[FunctionCoverage.from_response(i) for i in response.get('functions')],
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'scriptId': self.script_id.to_json(),
+            'url': self.url,
+            'functions': [i.to_json() for i in self.functions],
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'ScriptCoverage':
+        return cls(
+            script_id=runtime.ScriptId.from_json(json['scriptId']),
+            url=json['url'],
+            functions=[FunctionCoverage.from_json(i) for i in json['functions']],
+        )
 
 @dataclass
 class TypeObject:
@@ -179,12 +238,17 @@ class TypeObject:
     #: Name of a type collected with type profiling.
     name: str
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            name=str(response.get('name')),
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'name': self.name,
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'TypeObject':
+        return cls(
+            name=json['name'],
+        )
 
 @dataclass
 class TypeProfileEntry:
@@ -197,13 +261,19 @@ class TypeProfileEntry:
     #: The types for this parameter or return value.
     types: typing.List['TypeObject']
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            offset=int(response.get('offset')),
-            types=[TypeObject.from_response(i) for i in response.get('types')],
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'offset': self.offset,
+            'types': [i.to_json() for i in self.types],
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'TypeProfileEntry':
+        return cls(
+            offset=json['offset'],
+            types=[TypeObject.from_json(i) for i in json['types']],
+        )
 
 @dataclass
 class ScriptTypeProfile:
@@ -219,11 +289,19 @@ class ScriptTypeProfile:
     #: Type profile entries for parameters and return values of the functions in the script.
     entries: typing.List['TypeProfileEntry']
 
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'scriptId': self.script_id.to_json(),
+            'url': self.url,
+            'entries': [i.to_json() for i in self.entries],
+        }
+        return json
+
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'ScriptTypeProfile':
         return cls(
-            script_id=runtime.ScriptId.from_response(response.get('scriptId')),
-            url=str(response.get('url')),
-            entries=[TypeProfileEntry.from_response(i) for i in response.get('entries')],
+            script_id=runtime.ScriptId.from_json(json['scriptId']),
+            url=json['url'],
+            entries=[TypeProfileEntry.from_json(i) for i in json['entries']],
         )
 

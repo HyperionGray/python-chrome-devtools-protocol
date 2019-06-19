@@ -8,7 +8,9 @@ Domain: profiler
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -26,6 +28,19 @@ class ConsoleProfileFinished:
 
     title: str
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Profiler'
+    _method = 'consoleProfileFinished'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'ConsoleProfileFinished':
+        return cls(
+            id=str(json['id']),
+            location=debugger.Location.from_json(json['location']),
+            profile=Profile.from_json(json['profile']),
+            title=str(json['title']),
+        )
+
 
 @dataclass
 class ConsoleProfileStarted:
@@ -40,4 +55,16 @@ class ConsoleProfileStarted:
 
     #: Sent when new profile recording is started using console.profile() call.
     title: str
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Profiler'
+    _method = 'consoleProfileStarted'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'ConsoleProfileStarted':
+        return cls(
+            id=str(json['id']),
+            location=debugger.Location.from_json(json['location']),
+            title=str(json['title']),
+        )
 

@@ -8,7 +8,9 @@ Domain: storage
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -25,6 +27,17 @@ class CacheStorageContentUpdated:
     #: A cache's contents have been modified.
     cache_name: str
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Storage'
+    _method = 'cacheStorageContentUpdated'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'CacheStorageContentUpdated':
+        return cls(
+            origin=str(json['origin']),
+            cache_name=str(json['cacheName']),
+        )
+
 
 @dataclass
 class CacheStorageListUpdated:
@@ -33,6 +46,16 @@ class CacheStorageListUpdated:
     '''
     #: A cache has been added/deleted.
     origin: str
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Storage'
+    _method = 'cacheStorageListUpdated'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'CacheStorageListUpdated':
+        return cls(
+            origin=str(json['origin']),
+        )
 
 
 @dataclass
@@ -49,6 +72,18 @@ class IndexedDBContentUpdated:
     #: The origin's IndexedDB object store has been modified.
     object_store_name: str
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Storage'
+    _method = 'indexedDBContentUpdated'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'IndexedDBContentUpdated':
+        return cls(
+            origin=str(json['origin']),
+            database_name=str(json['databaseName']),
+            object_store_name=str(json['objectStoreName']),
+        )
+
 
 @dataclass
 class IndexedDBListUpdated:
@@ -57,4 +92,14 @@ class IndexedDBListUpdated:
     '''
     #: The origin's IndexedDB database list has been modified.
     origin: str
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Storage'
+    _method = 'indexedDBListUpdated'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'IndexedDBListUpdated':
+        return cls(
+            origin=str(json['origin']),
+        )
 

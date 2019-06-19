@@ -8,9 +8,10 @@ Domain: system_info
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
-
 
 
 @dataclass
@@ -36,17 +37,27 @@ class GPUDevice:
     #: String description of the GPU driver version.
     driver_version: str
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            vendor_id=float(response.get('vendorId')),
-            device_id=float(response.get('deviceId')),
-            vendor_string=str(response.get('vendorString')),
-            device_string=str(response.get('deviceString')),
-            driver_vendor=str(response.get('driverVendor')),
-            driver_version=str(response.get('driverVersion')),
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'vendorId': self.vendor_id,
+            'deviceId': self.device_id,
+            'vendorString': self.vendor_string,
+            'deviceString': self.device_string,
+            'driverVendor': self.driver_vendor,
+            'driverVersion': self.driver_version,
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'GPUDevice':
+        return cls(
+            vendor_id=json['vendorId'],
+            device_id=json['deviceId'],
+            vendor_string=json['vendorString'],
+            device_string=json['deviceString'],
+            driver_vendor=json['driverVendor'],
+            driver_version=json['driverVersion'],
+        )
 
 @dataclass
 class GPUInfo:
@@ -56,24 +67,36 @@ class GPUInfo:
     #: The graphics devices on the system. Element 0 is the primary GPU.
     devices: typing.List['GPUDevice']
 
+    #: An optional array of GPU driver bug workarounds.
+    driver_bug_workarounds: typing.List['str']
+
     #: An optional dictionary of additional GPU related attributes.
-    aux_attributes: dict
+    aux_attributes: typing.Optional[dict] = None
 
     #: An optional dictionary of graphics features and their status.
-    feature_status: dict
+    feature_status: typing.Optional[dict] = None
 
-    #: An optional array of GPU driver bug workarounds.
-    driver_bug_workarounds: typing.List
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'devices': [i.to_json() for i in self.devices],
+            'driverBugWorkarounds': [i for i in self.driver_bug_workarounds],
+        }
+        if self.aux_attributes is not None:
+            json['auxAttributes'] = self.aux_attributes
+        if self.feature_status is not None:
+            json['featureStatus'] = self.feature_status
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'GPUInfo':
+        aux_attributes = json['auxAttributes'] if 'auxAttributes' in json else None
+        feature_status = json['featureStatus'] if 'featureStatus' in json else None
         return cls(
-            devices=[GPUDevice.from_response(i) for i in response.get('devices')],
-            aux_attributes=dict(response.get('auxAttributes')),
-            feature_status=dict(response.get('featureStatus')),
-            driver_bug_workarounds=[str(i) for i in response.get('driverBugWorkarounds')],
+            devices=[GPUDevice.from_json(i) for i in json['devices']],
+            aux_attributes=aux_attributes,
+            feature_status=feature_status,
+            driver_bug_workarounds=[i for i in json['driverBugWorkarounds']],
         )
-
 
 @dataclass
 class ProcessInfo:
@@ -81,7 +104,7 @@ class ProcessInfo:
     Represents process info.
     '''
     #: Specifies process type.
-    type_: str
+    type: str
 
     #: Specifies process id.
     id: int
@@ -90,11 +113,19 @@ class ProcessInfo:
     #: process since the process start.
     cpu_time: float
 
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'type': self.type,
+            'id': self.id,
+            'cpuTime': self.cpu_time,
+        }
+        return json
+
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'ProcessInfo':
         return cls(
-            type_=str(response.get('type')),
-            id=int(response.get('id')),
-            cpu_time=float(response.get('cpuTime')),
+            type=json['type'],
+            id=json['id'],
+            cpu_time=json['cpuTime'],
         )
 

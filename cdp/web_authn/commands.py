@@ -8,32 +8,32 @@ Domain: web_authn
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
 
 
-def enable() -> typing.Generator[dict,dict,None]:
+def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enable the WebAuthn domain and start intercepting credential storage and
     retrieval with a virtual authenticator.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'WebAuthn.enable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def disable() -> typing.Generator[dict,dict,None]:
+def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Disable the WebAuthn domain.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'WebAuthn.disable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 

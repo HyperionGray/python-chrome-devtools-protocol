@@ -8,7 +8,9 @@ Domain: emulation
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -18,85 +20,87 @@ from ..page import types as page
 
 
 
-def can_emulate() -> typing.Generator[dict,dict,bool]:
+def can_emulate() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,bool]:
     '''
     Tells whether emulation is supported.
     :returns: True if emulation is supported.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Emulation.canEmulate',
     }
-    response = yield cmd_dict
-    return bool(response['result'])
+    json = yield cmd_dict
+    return bool(json['result'])
 
 
-def clear_device_metrics_override() -> typing.Generator[dict,dict,None]:
+def clear_device_metrics_override() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Clears the overriden device metrics.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Emulation.clearDeviceMetricsOverride',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def clear_geolocation_override() -> typing.Generator[dict,dict,None]:
+def clear_geolocation_override() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Clears the overriden Geolocation Position and Error.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Emulation.clearGeolocationOverride',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def reset_page_scale_factor() -> typing.Generator[dict,dict,None]:
+def reset_page_scale_factor() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Requests that page scale factor is reset to initial values.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Emulation.resetPageScaleFactor',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def set_focus_emulation_enabled(enabled: bool) -> typing.Generator[dict,dict,None]:
+def set_focus_emulation_enabled(
+        enabled: bool,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enables or disables simulating a focused and active page.
     
     :param enabled: Whether to enable to disable focus emulation.
     '''
-
-    cmd_dict = {
-        'method': 'Emulation.setFocusEmulationEnabled',
-        'params': {
-            'enabled': enabled,
-        }
+    params: T_JSON_DICT = {
+        'enabled': enabled,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.setFocusEmulationEnabled',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_cpu_throttling_rate(rate: float) -> typing.Generator[dict,dict,None]:
+def set_cpu_throttling_rate(
+        rate: float,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enables CPU throttling to emulate slow CPUs.
     
     :param rate: Throttling rate as a slowdown factor (1 is no throttle, 2 is 2x slowdown, etc).
     '''
-
-    cmd_dict = {
-        'method': 'Emulation.setCPUThrottlingRate',
-        'params': {
-            'rate': rate,
-        }
+    params: T_JSON_DICT = {
+        'rate': rate,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.setCPUThrottlingRate',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_default_background_color_override(color: dom.RGBA) -> typing.Generator[dict,dict,None]:
+def set_default_background_color_override(
+        color: typing.Optional[dom.RGBA] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Sets or clears an override of the default background color of the frame. This override is used
     if the content does not specify one.
@@ -104,17 +108,31 @@ def set_default_background_color_override(color: dom.RGBA) -> typing.Generator[d
     :param color: RGBA of the default background color. If not specified, any existing override will be
     cleared.
     '''
-
-    cmd_dict = {
-        'method': 'Emulation.setDefaultBackgroundColorOverride',
-        'params': {
-            'color': color,
-        }
+    params: T_JSON_DICT = {
     }
-    response = yield cmd_dict
+    if color is not None:
+        params['color'] = color.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.setDefaultBackgroundColorOverride',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_device_metrics_override(width: int, height: int, device_scale_factor: float, mobile: bool, scale: float, screen_width: int, screen_height: int, position_x: int, position_y: int, dont_set_visible_size: bool, screen_orientation: ScreenOrientation, viewport: page.Viewport) -> typing.Generator[dict,dict,None]:
+def set_device_metrics_override(
+        width: int,
+        height: int,
+        device_scale_factor: float,
+        mobile: bool,
+        scale: typing.Optional[float] = None,
+        screen_width: typing.Optional[int] = None,
+        screen_height: typing.Optional[int] = None,
+        position_x: typing.Optional[int] = None,
+        position_y: typing.Optional[int] = None,
+        dont_set_visible_size: typing.Optional[bool] = None,
+        screen_orientation: typing.Optional[ScreenOrientation] = None,
+        viewport: typing.Optional[page.Viewport] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Overrides the values of device screen dimensions (window.screen.width, window.screen.height,
     window.innerWidth, window.innerHeight, and "device-width"/"device-height"-related CSS media
@@ -135,94 +153,116 @@ def set_device_metrics_override(width: int, height: int, device_scale_factor: fl
     :param viewport: If set, the visible area of the page will be overridden to this viewport. This viewport
     change is not observed by the page, e.g. viewport-relative elements do not change positions.
     '''
-
-    cmd_dict = {
-        'method': 'Emulation.setDeviceMetricsOverride',
-        'params': {
-            'width': width,
-            'height': height,
-            'deviceScaleFactor': device_scale_factor,
-            'mobile': mobile,
-            'scale': scale,
-            'screenWidth': screen_width,
-            'screenHeight': screen_height,
-            'positionX': position_x,
-            'positionY': position_y,
-            'dontSetVisibleSize': dont_set_visible_size,
-            'screenOrientation': screen_orientation,
-            'viewport': viewport,
-        }
+    params: T_JSON_DICT = {
+        'width': width,
+        'height': height,
+        'deviceScaleFactor': device_scale_factor,
+        'mobile': mobile,
     }
-    response = yield cmd_dict
+    if scale is not None:
+        params['scale'] = scale
+    if screen_width is not None:
+        params['screenWidth'] = screen_width
+    if screen_height is not None:
+        params['screenHeight'] = screen_height
+    if position_x is not None:
+        params['positionX'] = position_x
+    if position_y is not None:
+        params['positionY'] = position_y
+    if dont_set_visible_size is not None:
+        params['dontSetVisibleSize'] = dont_set_visible_size
+    if screen_orientation is not None:
+        params['screenOrientation'] = screen_orientation.to_json()
+    if viewport is not None:
+        params['viewport'] = viewport.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.setDeviceMetricsOverride',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_scrollbars_hidden(hidden: bool) -> typing.Generator[dict,dict,None]:
+def set_scrollbars_hidden(
+        hidden: bool,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     
     
     :param hidden: Whether scrollbars should be always hidden.
     '''
-
-    cmd_dict = {
-        'method': 'Emulation.setScrollbarsHidden',
-        'params': {
-            'hidden': hidden,
-        }
+    params: T_JSON_DICT = {
+        'hidden': hidden,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.setScrollbarsHidden',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_document_cookie_disabled(disabled: bool) -> typing.Generator[dict,dict,None]:
+def set_document_cookie_disabled(
+        disabled: bool,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     
     
     :param disabled: Whether document.coookie API should be disabled.
     '''
-
-    cmd_dict = {
-        'method': 'Emulation.setDocumentCookieDisabled',
-        'params': {
-            'disabled': disabled,
-        }
+    params: T_JSON_DICT = {
+        'disabled': disabled,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.setDocumentCookieDisabled',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_emit_touch_events_for_mouse(enabled: bool, configuration: str) -> typing.Generator[dict,dict,None]:
+def set_emit_touch_events_for_mouse(
+        enabled: bool,
+        configuration: typing.Optional[str] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     
     
     :param enabled: Whether touch emulation based on mouse input should be enabled.
     :param configuration: Touch/gesture events configuration. Default: current platform.
     '''
-
-    cmd_dict = {
-        'method': 'Emulation.setEmitTouchEventsForMouse',
-        'params': {
-            'enabled': enabled,
-            'configuration': configuration,
-        }
+    params: T_JSON_DICT = {
+        'enabled': enabled,
     }
-    response = yield cmd_dict
+    if configuration is not None:
+        params['configuration'] = configuration
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.setEmitTouchEventsForMouse',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_emulated_media(media: str) -> typing.Generator[dict,dict,None]:
+def set_emulated_media(
+        media: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Emulates the given media for CSS media queries.
     
     :param media: Media type to emulate. Empty string disables the override.
     '''
-
-    cmd_dict = {
-        'method': 'Emulation.setEmulatedMedia',
-        'params': {
-            'media': media,
-        }
+    params: T_JSON_DICT = {
+        'media': media,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.setEmulatedMedia',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_geolocation_override(latitude: float, longitude: float, accuracy: float) -> typing.Generator[dict,dict,None]:
+def set_geolocation_override(
+        latitude: typing.Optional[float] = None,
+        longitude: typing.Optional[float] = None,
+        accuracy: typing.Optional[float] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Overrides the Geolocation Position or Error. Omitting any of the parameters emulates position
     unavailable.
@@ -231,85 +271,104 @@ def set_geolocation_override(latitude: float, longitude: float, accuracy: float)
     :param longitude: Mock longitude
     :param accuracy: Mock accuracy
     '''
-
-    cmd_dict = {
-        'method': 'Emulation.setGeolocationOverride',
-        'params': {
-            'latitude': latitude,
-            'longitude': longitude,
-            'accuracy': accuracy,
-        }
+    params: T_JSON_DICT = {
     }
-    response = yield cmd_dict
+    if latitude is not None:
+        params['latitude'] = latitude
+    if longitude is not None:
+        params['longitude'] = longitude
+    if accuracy is not None:
+        params['accuracy'] = accuracy
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.setGeolocationOverride',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_navigator_overrides(platform: str) -> typing.Generator[dict,dict,None]:
+def set_navigator_overrides(
+        platform: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Overrides value returned by the javascript navigator object.
     
     :param platform: The platform navigator.platform should return.
     '''
-
-    cmd_dict = {
-        'method': 'Emulation.setNavigatorOverrides',
-        'params': {
-            'platform': platform,
-        }
+    params: T_JSON_DICT = {
+        'platform': platform,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.setNavigatorOverrides',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_page_scale_factor(page_scale_factor: float) -> typing.Generator[dict,dict,None]:
+def set_page_scale_factor(
+        page_scale_factor: float,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Sets a specified page scale factor.
     
     :param page_scale_factor: Page scale factor.
     '''
-
-    cmd_dict = {
-        'method': 'Emulation.setPageScaleFactor',
-        'params': {
-            'pageScaleFactor': page_scale_factor,
-        }
+    params: T_JSON_DICT = {
+        'pageScaleFactor': page_scale_factor,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.setPageScaleFactor',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_script_execution_disabled(value: bool) -> typing.Generator[dict,dict,None]:
+def set_script_execution_disabled(
+        value: bool,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Switches script execution in the page.
     
     :param value: Whether script execution should be disabled in the page.
     '''
-
-    cmd_dict = {
-        'method': 'Emulation.setScriptExecutionDisabled',
-        'params': {
-            'value': value,
-        }
+    params: T_JSON_DICT = {
+        'value': value,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.setScriptExecutionDisabled',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_touch_emulation_enabled(enabled: bool, max_touch_points: int) -> typing.Generator[dict,dict,None]:
+def set_touch_emulation_enabled(
+        enabled: bool,
+        max_touch_points: typing.Optional[int] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enables touch on platforms which do not support them.
     
     :param enabled: Whether the touch event emulation should be enabled.
     :param max_touch_points: Maximum touch points supported. Defaults to one.
     '''
-
-    cmd_dict = {
-        'method': 'Emulation.setTouchEmulationEnabled',
-        'params': {
-            'enabled': enabled,
-            'maxTouchPoints': max_touch_points,
-        }
+    params: T_JSON_DICT = {
+        'enabled': enabled,
     }
-    response = yield cmd_dict
+    if max_touch_points is not None:
+        params['maxTouchPoints'] = max_touch_points
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.setTouchEmulationEnabled',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_virtual_time_policy(policy: VirtualTimePolicy, budget: float, max_virtual_time_task_starvation_count: int, wait_for_navigation: bool, initial_virtual_time: network.TimeSinceEpoch) -> typing.Generator[dict,dict,float]:
+def set_virtual_time_policy(
+        policy: VirtualTimePolicy,
+        budget: typing.Optional[float] = None,
+        max_virtual_time_task_starvation_count: typing.Optional[int] = None,
+        wait_for_navigation: typing.Optional[bool] = None,
+        initial_virtual_time: typing.Optional[network.TimeSinceEpoch] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,float]:
     '''
     Turns on virtual time for all frames (replacing real-time with a synthetic time source) and sets
     the current virtual time policy.  Note this supersedes any previous time budget.
@@ -324,39 +383,48 @@ def set_virtual_time_policy(policy: VirtualTimePolicy, budget: float, max_virtua
     :param initial_virtual_time: If set, base::Time::Now will be overriden to initially return this value.
     :returns: Absolute timestamp at which virtual time was first enabled (up time in milliseconds).
     '''
-
-    cmd_dict = {
-        'method': 'Emulation.setVirtualTimePolicy',
-        'params': {
-            'policy': policy,
-            'budget': budget,
-            'maxVirtualTimeTaskStarvationCount': max_virtual_time_task_starvation_count,
-            'waitForNavigation': wait_for_navigation,
-            'initialVirtualTime': initial_virtual_time,
-        }
+    params: T_JSON_DICT = {
+        'policy': policy.to_json(),
     }
-    response = yield cmd_dict
-    return float(response['virtualTimeTicksBase'])
+    if budget is not None:
+        params['budget'] = budget
+    if max_virtual_time_task_starvation_count is not None:
+        params['maxVirtualTimeTaskStarvationCount'] = max_virtual_time_task_starvation_count
+    if wait_for_navigation is not None:
+        params['waitForNavigation'] = wait_for_navigation
+    if initial_virtual_time is not None:
+        params['initialVirtualTime'] = initial_virtual_time.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.setVirtualTimePolicy',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return float(json['virtualTimeTicksBase'])
 
 
-def set_timezone_override(timezone_id: str) -> typing.Generator[dict,dict,None]:
+def set_timezone_override(
+        timezone_id: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Overrides default host system timezone with the specified one.
     
     :param timezone_id: The timezone identifier. If empty, disables the override and
     restores default host system timezone.
     '''
-
-    cmd_dict = {
-        'method': 'Emulation.setTimezoneOverride',
-        'params': {
-            'timezoneId': timezone_id,
-        }
+    params: T_JSON_DICT = {
+        'timezoneId': timezone_id,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.setTimezoneOverride',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_visible_size(width: int, height: int) -> typing.Generator[dict,dict,None]:
+def set_visible_size(
+        width: int,
+        height: int,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Resizes the frame/viewport of the page. Note that this does not affect the frame's container
     (e.g. browser window). Can be used to produce screenshots of the specified size. Not supported
@@ -365,18 +433,22 @@ def set_visible_size(width: int, height: int) -> typing.Generator[dict,dict,None
     :param width: Frame width (DIP).
     :param height: Frame height (DIP).
     '''
-
-    cmd_dict = {
-        'method': 'Emulation.setVisibleSize',
-        'params': {
-            'width': width,
-            'height': height,
-        }
+    params: T_JSON_DICT = {
+        'width': width,
+        'height': height,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.setVisibleSize',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_user_agent_override(user_agent: str, accept_language: str, platform: str) -> typing.Generator[dict,dict,None]:
+def set_user_agent_override(
+        user_agent: str,
+        accept_language: typing.Optional[str] = None,
+        platform: typing.Optional[str] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Allows overriding user agent with the given string.
     
@@ -384,15 +456,17 @@ def set_user_agent_override(user_agent: str, accept_language: str, platform: str
     :param accept_language: Browser langugage to emulate.
     :param platform: The platform navigator.platform should return.
     '''
-
-    cmd_dict = {
-        'method': 'Emulation.setUserAgentOverride',
-        'params': {
-            'userAgent': user_agent,
-            'acceptLanguage': accept_language,
-            'platform': platform,
-        }
+    params: T_JSON_DICT = {
+        'userAgent': user_agent,
     }
-    response = yield cmd_dict
+    if accept_language is not None:
+        params['acceptLanguage'] = accept_language
+    if platform is not None:
+        params['platform'] = platform
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.setUserAgentOverride',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 

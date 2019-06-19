@@ -8,12 +8,13 @@ Domain: tracing
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 
-
-class StreamFormat:
+class StreamFormat(enum.Enum):
     '''
     Data format of a trace. Can be either the legacy JSON format or the
     protocol buffer format. Note that the JSON format will be deprecated soon.
@@ -21,13 +22,27 @@ class StreamFormat:
     JSON = "json"
     PROTO = "proto"
 
+    def to_json(self) -> str:
+        return self.value
 
-class StreamCompression:
+    @classmethod
+    def from_json(cls, json: str) -> 'StreamFormat':
+        return cls(json)
+
+
+class StreamCompression(enum.Enum):
     '''
     Compression type to use for traces returned via streams.
     '''
     NONE = "none"
     GZIP = "gzip"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> 'StreamCompression':
+        return cls(json)
 
 
 @dataclass
@@ -35,48 +50,81 @@ class MemoryDumpConfig:
     '''
     Configuration for memory dump. Used only when "memory-infra" category is enabled.
     '''
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+        }
+        return json
+
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'MemoryDumpConfig':
         return cls(
         )
-
 
 @dataclass
 class TraceConfig:
     #: Controls how the trace buffer stores data.
-    record_mode: str
+    record_mode: typing.Optional[str] = None
 
     #: Turns on JavaScript stack sampling.
-    enable_sampling: bool
+    enable_sampling: typing.Optional[bool] = None
 
     #: Turns on system tracing.
-    enable_systrace: bool
+    enable_systrace: typing.Optional[bool] = None
 
     #: Turns on argument filter.
-    enable_argument_filter: bool
+    enable_argument_filter: typing.Optional[bool] = None
 
     #: Included category filters.
-    included_categories: typing.List
+    included_categories: typing.Optional[typing.List['str']] = None
 
     #: Excluded category filters.
-    excluded_categories: typing.List
+    excluded_categories: typing.Optional[typing.List['str']] = None
 
     #: Configuration to synthesize the delays in tracing.
-    synthetic_delays: typing.List
+    synthetic_delays: typing.Optional[typing.List['str']] = None
 
     #: Configuration for memory dump triggers. Used only when "memory-infra" category is enabled.
-    memory_dump_config: MemoryDumpConfig
+    memory_dump_config: typing.Optional[MemoryDumpConfig] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+        }
+        if self.record_mode is not None:
+            json['recordMode'] = self.record_mode
+        if self.enable_sampling is not None:
+            json['enableSampling'] = self.enable_sampling
+        if self.enable_systrace is not None:
+            json['enableSystrace'] = self.enable_systrace
+        if self.enable_argument_filter is not None:
+            json['enableArgumentFilter'] = self.enable_argument_filter
+        if self.included_categories is not None:
+            json['includedCategories'] = [i for i in self.included_categories]
+        if self.excluded_categories is not None:
+            json['excludedCategories'] = [i for i in self.excluded_categories]
+        if self.synthetic_delays is not None:
+            json['syntheticDelays'] = [i for i in self.synthetic_delays]
+        if self.memory_dump_config is not None:
+            json['memoryDumpConfig'] = self.memory_dump_config.to_json()
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'TraceConfig':
+        record_mode = json['recordMode'] if 'recordMode' in json else None
+        enable_sampling = json['enableSampling'] if 'enableSampling' in json else None
+        enable_systrace = json['enableSystrace'] if 'enableSystrace' in json else None
+        enable_argument_filter = json['enableArgumentFilter'] if 'enableArgumentFilter' in json else None
+        included_categories = [i for i in json['includedCategories']] if 'includedCategories' in json else None
+        excluded_categories = [i for i in json['excludedCategories']] if 'excludedCategories' in json else None
+        synthetic_delays = [i for i in json['syntheticDelays']] if 'syntheticDelays' in json else None
+        memory_dump_config = MemoryDumpConfig.from_json(json['memoryDumpConfig']) if 'memoryDumpConfig' in json else None
         return cls(
-            record_mode=str(response.get('recordMode')),
-            enable_sampling=bool(response.get('enableSampling')),
-            enable_systrace=bool(response.get('enableSystrace')),
-            enable_argument_filter=bool(response.get('enableArgumentFilter')),
-            included_categories=[str(i) for i in response.get('includedCategories')],
-            excluded_categories=[str(i) for i in response.get('excludedCategories')],
-            synthetic_delays=[str(i) for i in response.get('syntheticDelays')],
-            memory_dump_config=MemoryDumpConfig.from_response(response.get('memoryDumpConfig')),
+            record_mode=record_mode,
+            enable_sampling=enable_sampling,
+            enable_systrace=enable_systrace,
+            enable_argument_filter=enable_argument_filter,
+            included_categories=included_categories,
+            excluded_categories=excluded_categories,
+            synthetic_delays=synthetic_delays,
+            memory_dump_config=memory_dump_config,
         )
 

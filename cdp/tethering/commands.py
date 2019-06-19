@@ -8,41 +8,47 @@ Domain: tethering
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
 
 
-def bind(port: int) -> typing.Generator[dict,dict,None]:
+def bind(
+        port: int,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Request browser port binding.
     
     :param port: Port number to bind.
     '''
-
-    cmd_dict = {
-        'method': 'Tethering.bind',
-        'params': {
-            'port': port,
-        }
+    params: T_JSON_DICT = {
+        'port': port,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Tethering.bind',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def unbind(port: int) -> typing.Generator[dict,dict,None]:
+def unbind(
+        port: int,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Request browser port unbinding.
     
     :param port: Port number to unbind.
     '''
-
-    cmd_dict = {
-        'method': 'Tethering.unbind',
-        'params': {
-            'port': port,
-        }
+    params: T_JSON_DICT = {
+        'port': port,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Tethering.unbind',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 

@@ -8,7 +8,9 @@ Domain: web_audio
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 
@@ -16,30 +18,46 @@ class ContextId(str):
     '''
     Context's UUID in string
     '''
+    def to_json(self) -> str:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: str) -> 'ContextId':
+        return cls(json)
 
     def __repr__(self):
         return 'ContextId({})'.format(str.__repr__(self))
 
 
-
-class ContextType:
+class ContextType(enum.Enum):
     '''
     Enum of BaseAudioContext types
     '''
     REALTIME = "realtime"
     OFFLINE = "offline"
 
+    def to_json(self) -> str:
+        return self.value
 
-class ContextState:
+    @classmethod
+    def from_json(cls, json: str) -> 'ContextType':
+        return cls(json)
+
+
+class ContextState(enum.Enum):
     '''
     Enum of AudioContextState from the spec
     '''
     SUSPENDED = "suspended"
     RUNNING = "running"
     CLOSED = "closed"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> 'ContextState':
+        return cls(json)
 
 
 @dataclass
@@ -49,20 +67,30 @@ class ContextRealtimeData:
     on OfflineAudioContext.
     '''
     #: The current context time in second in BaseAudioContext.
-    current_time: float
+    current_time: typing.Optional[float] = None
 
     #: The time spent on rendering graph divided by render qunatum duration,
     #: and multiplied by 100. 100 means the audio renderer reached the full
     #: capacity and glitch may occur.
-    render_capacity: float
+    render_capacity: typing.Optional[float] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+        }
+        if self.current_time is not None:
+            json['currentTime'] = self.current_time
+        if self.render_capacity is not None:
+            json['renderCapacity'] = self.render_capacity
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'ContextRealtimeData':
+        current_time = json['currentTime'] if 'currentTime' in json else None
+        render_capacity = json['renderCapacity'] if 'renderCapacity' in json else None
         return cls(
-            current_time=float(response.get('currentTime')),
-            render_capacity=float(response.get('renderCapacity')),
+            current_time=current_time,
+            render_capacity=render_capacity,
         )
-
 
 @dataclass
 class BaseAudioContext:
@@ -75,8 +103,6 @@ class BaseAudioContext:
 
     context_state: ContextState
 
-    realtime_data: ContextRealtimeData
-
     #: Platform-dependent callback buffer size.
     callback_buffer_size: float
 
@@ -86,15 +112,31 @@ class BaseAudioContext:
     #: Context sample rate.
     sample_rate: float
 
+    realtime_data: typing.Optional[ContextRealtimeData] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'contextId': self.context_id.to_json(),
+            'contextType': self.context_type.to_json(),
+            'contextState': self.context_state.to_json(),
+            'callbackBufferSize': self.callback_buffer_size,
+            'maxOutputChannelCount': self.max_output_channel_count,
+            'sampleRate': self.sample_rate,
+        }
+        if self.realtime_data is not None:
+            json['realtimeData'] = self.realtime_data.to_json()
+        return json
+
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'BaseAudioContext':
+        realtime_data = ContextRealtimeData.from_json(json['realtimeData']) if 'realtimeData' in json else None
         return cls(
-            context_id=ContextId.from_response(response.get('contextId')),
-            context_type=ContextType.from_response(response.get('contextType')),
-            context_state=ContextState.from_response(response.get('contextState')),
-            realtime_data=ContextRealtimeData.from_response(response.get('realtimeData')),
-            callback_buffer_size=float(response.get('callbackBufferSize')),
-            max_output_channel_count=float(response.get('maxOutputChannelCount')),
-            sample_rate=float(response.get('sampleRate')),
+            context_id=ContextId.from_json(json['contextId']),
+            context_type=ContextType.from_json(json['contextType']),
+            context_state=ContextState.from_json(json['contextState']),
+            realtime_data=realtime_data,
+            callback_buffer_size=json['callbackBufferSize'],
+            max_output_channel_count=json['maxOutputChannelCount'],
+            sample_rate=json['sampleRate'],
         )
 

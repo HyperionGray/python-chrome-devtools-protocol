@@ -8,65 +8,78 @@ Domain: cache_storage
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
 
 
-def delete_cache(cache_id: CacheId) -> typing.Generator[dict,dict,None]:
+def delete_cache(
+        cache_id: CacheId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Deletes a cache.
     
     :param cache_id: Id of cache for deletion.
     '''
-
-    cmd_dict = {
-        'method': 'CacheStorage.deleteCache',
-        'params': {
-            'cacheId': cache_id,
-        }
+    params: T_JSON_DICT = {
+        'cacheId': cache_id.to_json(),
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'CacheStorage.deleteCache',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def delete_entry(cache_id: CacheId, request: str) -> typing.Generator[dict,dict,None]:
+def delete_entry(
+        cache_id: CacheId,
+        request: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Deletes a cache entry.
     
     :param cache_id: Id of cache where the entry will be deleted.
     :param request: URL spec of the request.
     '''
-
-    cmd_dict = {
-        'method': 'CacheStorage.deleteEntry',
-        'params': {
-            'cacheId': cache_id,
-            'request': request,
-        }
+    params: T_JSON_DICT = {
+        'cacheId': cache_id.to_json(),
+        'request': request,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'CacheStorage.deleteEntry',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def request_cache_names(security_origin: str) -> typing.Generator[dict,dict,typing.List['Cache']]:
+def request_cache_names(
+        security_origin: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['Cache']]:
     '''
     Requests cache names.
     
     :param security_origin: Security origin.
     :returns: Caches for the security origin.
     '''
-
-    cmd_dict = {
-        'method': 'CacheStorage.requestCacheNames',
-        'params': {
-            'securityOrigin': security_origin,
-        }
+    params: T_JSON_DICT = {
+        'securityOrigin': security_origin,
     }
-    response = yield cmd_dict
-    return [Cache.from_response(i) for i in response['caches']]
+    cmd_dict: T_JSON_DICT = {
+        'method': 'CacheStorage.requestCacheNames',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return [Cache.from_json(i) for i in json['caches']]
 
 
-def request_cached_response(cache_id: CacheId, request_url: str, request_headers: typing.List['Header']) -> typing.Generator[dict,dict,CachedResponse]:
+def request_cached_response(
+        cache_id: CacheId,
+        request_url: str,
+        request_headers: typing.List['Header'],
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,CachedResponse]:
     '''
     Fetches cache entry.
     
@@ -75,20 +88,25 @@ def request_cached_response(cache_id: CacheId, request_url: str, request_headers
     :param request_headers: headers of the request.
     :returns: Response read from the cache.
     '''
-
-    cmd_dict = {
-        'method': 'CacheStorage.requestCachedResponse',
-        'params': {
-            'cacheId': cache_id,
-            'requestURL': request_url,
-            'requestHeaders': request_headers,
-        }
+    params: T_JSON_DICT = {
+        'cacheId': cache_id.to_json(),
+        'requestURL': request_url,
+        'requestHeaders': [i.to_json() for i in request_headers],
     }
-    response = yield cmd_dict
-    return CachedResponse.from_response(response['response'])
+    cmd_dict: T_JSON_DICT = {
+        'method': 'CacheStorage.requestCachedResponse',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return CachedResponse.from_json(json['response'])
 
 
-def request_entries(cache_id: CacheId, skip_count: int, page_size: int, path_filter: str) -> typing.Generator[dict,dict,dict]:
+def request_entries(
+        cache_id: CacheId,
+        skip_count: int,
+        page_size: int,
+        path_filter: typing.Optional[str] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     Requests data from cache.
     
@@ -101,20 +119,22 @@ def request_entries(cache_id: CacheId, skip_count: int, page_size: int, path_fil
         * returnCount: Count of returned entries from this storage. If pathFilter is empty, it
     is the count of all entries from this storage.
     '''
-
-    cmd_dict = {
+    params: T_JSON_DICT = {
+        'cacheId': cache_id.to_json(),
+        'skipCount': skip_count,
+        'pageSize': page_size,
+    }
+    if path_filter is not None:
+        params['pathFilter'] = path_filter
+    cmd_dict: T_JSON_DICT = {
         'method': 'CacheStorage.requestEntries',
-        'params': {
-            'cacheId': cache_id,
-            'skipCount': skip_count,
-            'pageSize': page_size,
-            'pathFilter': path_filter,
-        }
+        'params': params,
     }
-    response = yield cmd_dict
-    return {
-        'cacheDataEntries': [DataEntry.from_response(i) for i in response['cacheDataEntries']],
-        'returnCount': float(response['returnCount']),
+    json = yield cmd_dict
+    result: T_JSON_DICT = {
+        'cacheDataEntries': [DataEntry.from_json(i) for i in json['cacheDataEntries']],
+        'returnCount': float(json['returnCount']),
     }
+    return result
 
 

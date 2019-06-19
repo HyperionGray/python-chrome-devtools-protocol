@@ -8,7 +8,9 @@ Domain: fetch
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -17,18 +19,20 @@ from ..network import types as network
 
 
 
-def disable() -> typing.Generator[dict,dict,None]:
+def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Disables the fetch domain.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Fetch.disable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def enable(patterns: typing.List['RequestPattern'], handle_auth_requests: bool) -> typing.Generator[dict,dict,None]:
+def enable(
+        patterns: typing.Optional[typing.List['RequestPattern']] = None,
+        handle_auth_requests: typing.Optional[bool] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enables issuing of requestPaused events. A request will be paused until client
     calls one of failRequest, fulfillRequest or continueRequest/continueWithAuth.
@@ -39,36 +43,47 @@ def enable(patterns: typing.List['RequestPattern'], handle_auth_requests: bool) 
     :param handle_auth_requests: If true, authRequired events will be issued and requests will be paused
     expecting a call to continueWithAuth.
     '''
-
-    cmd_dict = {
-        'method': 'Fetch.enable',
-        'params': {
-            'patterns': patterns,
-            'handleAuthRequests': handle_auth_requests,
-        }
+    params: T_JSON_DICT = {
     }
-    response = yield cmd_dict
+    if patterns is not None:
+        params['patterns'] = [i.to_json() for i in patterns]
+    if handle_auth_requests is not None:
+        params['handleAuthRequests'] = handle_auth_requests
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Fetch.enable',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def fail_request(request_id: RequestId, error_reason: network.ErrorReason) -> typing.Generator[dict,dict,None]:
+def fail_request(
+        request_id: RequestId,
+        error_reason: network.ErrorReason,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Causes the request to fail with specified reason.
     
     :param request_id: An id the client received in requestPaused event.
     :param error_reason: Causes the request to fail with the given reason.
     '''
-
-    cmd_dict = {
-        'method': 'Fetch.failRequest',
-        'params': {
-            'requestId': request_id,
-            'errorReason': error_reason,
-        }
+    params: T_JSON_DICT = {
+        'requestId': request_id.to_json(),
+        'errorReason': error_reason.to_json(),
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Fetch.failRequest',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def fulfill_request(request_id: RequestId, response_code: int, response_headers: typing.List['HeaderEntry'], body: str, response_phrase: str) -> typing.Generator[dict,dict,None]:
+def fulfill_request(
+        request_id: RequestId,
+        response_code: int,
+        response_headers: typing.List['HeaderEntry'],
+        body: typing.Optional[str] = None,
+        response_phrase: typing.Optional[str] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Provides response to the request.
     
@@ -79,21 +94,29 @@ def fulfill_request(request_id: RequestId, response_code: int, response_headers:
     :param response_phrase: A textual representation of responseCode.
     If absent, a standard phrase mathcing responseCode is used.
     '''
-
-    cmd_dict = {
-        'method': 'Fetch.fulfillRequest',
-        'params': {
-            'requestId': request_id,
-            'responseCode': response_code,
-            'responseHeaders': response_headers,
-            'body': body,
-            'responsePhrase': response_phrase,
-        }
+    params: T_JSON_DICT = {
+        'requestId': request_id.to_json(),
+        'responseCode': response_code,
+        'responseHeaders': [i.to_json() for i in response_headers],
     }
-    response = yield cmd_dict
+    if body is not None:
+        params['body'] = body
+    if response_phrase is not None:
+        params['responsePhrase'] = response_phrase
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Fetch.fulfillRequest',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def continue_request(request_id: RequestId, url: str, method: str, post_data: str, headers: typing.List['HeaderEntry']) -> typing.Generator[dict,dict,None]:
+def continue_request(
+        request_id: RequestId,
+        url: typing.Optional[str] = None,
+        method: typing.Optional[str] = None,
+        post_data: typing.Optional[str] = None,
+        headers: typing.Optional[typing.List['HeaderEntry']] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Continues the request, optionally modifying some of its parameters.
     
@@ -103,39 +126,48 @@ def continue_request(request_id: RequestId, url: str, method: str, post_data: st
     :param post_data: If set, overrides the post data in the request.
     :param headers: If set, overrides the request headrts.
     '''
-
-    cmd_dict = {
-        'method': 'Fetch.continueRequest',
-        'params': {
-            'requestId': request_id,
-            'url': url,
-            'method': method,
-            'postData': post_data,
-            'headers': headers,
-        }
+    params: T_JSON_DICT = {
+        'requestId': request_id.to_json(),
     }
-    response = yield cmd_dict
+    if url is not None:
+        params['url'] = url
+    if method is not None:
+        params['method'] = method
+    if post_data is not None:
+        params['postData'] = post_data
+    if headers is not None:
+        params['headers'] = [i.to_json() for i in headers]
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Fetch.continueRequest',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def continue_with_auth(request_id: RequestId, auth_challenge_response: AuthChallengeResponse) -> typing.Generator[dict,dict,None]:
+def continue_with_auth(
+        request_id: RequestId,
+        auth_challenge_response: AuthChallengeResponse,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Continues a request supplying authChallengeResponse following authRequired event.
     
     :param request_id: An id the client received in authRequired event.
     :param auth_challenge_response: Response to  with an authChallenge.
     '''
-
-    cmd_dict = {
-        'method': 'Fetch.continueWithAuth',
-        'params': {
-            'requestId': request_id,
-            'authChallengeResponse': auth_challenge_response,
-        }
+    params: T_JSON_DICT = {
+        'requestId': request_id.to_json(),
+        'authChallengeResponse': auth_challenge_response.to_json(),
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Fetch.continueWithAuth',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def get_response_body(request_id: RequestId) -> typing.Generator[dict,dict,dict]:
+def get_response_body(
+        request_id: RequestId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     Causes the body of the response to be received from the server and
     returned as a single string. May only be issued for a request that
@@ -149,21 +181,24 @@ def get_response_body(request_id: RequestId) -> typing.Generator[dict,dict,dict]
         * body: Response body.
         * base64Encoded: True, if content was sent as base64.
     '''
-
-    cmd_dict = {
+    params: T_JSON_DICT = {
+        'requestId': request_id.to_json(),
+    }
+    cmd_dict: T_JSON_DICT = {
         'method': 'Fetch.getResponseBody',
-        'params': {
-            'requestId': request_id,
-        }
+        'params': params,
     }
-    response = yield cmd_dict
-    return {
-        'body': str(response['body']),
-        'base64Encoded': bool(response['base64Encoded']),
+    json = yield cmd_dict
+    result: T_JSON_DICT = {
+        'body': str(json['body']),
+        'base64Encoded': bool(json['base64Encoded']),
     }
+    return result
 
 
-def take_response_body_as_stream(request_id: RequestId) -> typing.Generator[dict,dict,io.StreamHandle]:
+def take_response_body_as_stream(
+        request_id: RequestId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,io.StreamHandle]:
     '''
     Returns a handle to the stream representing the response body.
     The request must be paused in the HeadersReceived stage.
@@ -179,14 +214,14 @@ def take_response_body_as_stream(request_id: RequestId) -> typing.Generator[dict
     :param request_id: 
     :returns: 
     '''
-
-    cmd_dict = {
-        'method': 'Fetch.takeResponseBodyAsStream',
-        'params': {
-            'requestId': request_id,
-        }
+    params: T_JSON_DICT = {
+        'requestId': request_id.to_json(),
     }
-    response = yield cmd_dict
-    return io.StreamHandle.from_response(response['stream'])
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Fetch.takeResponseBodyAsStream',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return io.StreamHandle.from_json(json['stream'])
 
 

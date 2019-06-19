@@ -8,7 +8,9 @@ Domain: inspector
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -22,13 +24,30 @@ class Detached:
     #: Fired when remote debugging connection is about to be terminated. Contains detach reason.
     reason: str
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Inspector'
+    _method = 'detached'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'Detached':
+        return cls(
+            reason=str(json['reason']),
+        )
+
 
 @dataclass
 class TargetCrashed:
     '''
     Fired when debugging target has crashed
     '''
-    pass
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Inspector'
+    _method = 'targetCrashed'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'TargetCrashed':
+        return cls(
+        )
 
 
 @dataclass
@@ -36,5 +55,12 @@ class TargetReloadedAfterCrash:
     '''
     Fired when debugging target has reloaded after crash
     '''
-    pass
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Inspector'
+    _method = 'targetReloadedAfterCrash'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'TargetReloadedAfterCrash':
+        return cls(
+        )
 

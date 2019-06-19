@@ -8,7 +8,9 @@ Domain: tracing
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -24,6 +26,18 @@ class BufferUsage:
 
     value: float
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Tracing'
+    _method = 'bufferUsage'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'BufferUsage':
+        return cls(
+            percent_full=float(json['percentFull']),
+            event_count=float(json['eventCount']),
+            value=float(json['value']),
+        )
+
 
 @dataclass
 class DataCollected:
@@ -33,7 +47,17 @@ class DataCollected:
     '''
     #: Contains an bucket of collected trace events. When tracing is stopped collected events will be
     #: send as a sequence of dataCollected events followed by tracingComplete event.
-    value: typing.List
+    value: typing.List['dict']
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Tracing'
+    _method = 'dataCollected'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'DataCollected':
+        return cls(
+            value=[dict(i) for i in json['value']],
+        )
 
 
 @dataclass
@@ -53,4 +77,16 @@ class TracingComplete:
     #: Signals that tracing is stopped and there is no trace buffers pending flush, all data were
     #: delivered via dataCollected events.
     stream_compression: StreamCompression
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Tracing'
+    _method = 'tracingComplete'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'TracingComplete':
+        return cls(
+            stream=io.StreamHandle.from_json(json['stream']),
+            trace_format=StreamFormat.from_json(json['traceFormat']),
+            stream_compression=StreamCompression.from_json(json['streamCompression']),
+        )
 

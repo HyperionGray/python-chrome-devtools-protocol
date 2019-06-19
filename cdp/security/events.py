@@ -8,7 +8,9 @@ Domain: security
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -40,6 +42,18 @@ class CertificateError:
     #: certificate errors at the same time.
     request_url: str
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Security'
+    _method = 'certificateError'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'CertificateError':
+        return cls(
+            event_id=int(json['eventId']),
+            error_type=str(json['errorType']),
+            request_url=str(json['requestURL']),
+        )
+
 
 @dataclass
 class SecurityStateChanged:
@@ -60,4 +74,18 @@ class SecurityStateChanged:
 
     #: The security state of the page changed.
     summary: str
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Security'
+    _method = 'securityStateChanged'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'SecurityStateChanged':
+        return cls(
+            security_state=SecurityState.from_json(json['securityState']),
+            scheme_is_cryptographic=bool(json['schemeIsCryptographic']),
+            explanations=[SecurityStateExplanation.from_json(i) for i in json['explanations']],
+            insecure_content_status=InsecureContentStatus.from_json(json['insecureContentStatus']),
+            summary=str(json['summary']),
+        )
 

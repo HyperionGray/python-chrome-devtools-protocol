@@ -8,7 +8,9 @@ Domain: cache_storage
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 
@@ -16,16 +18,18 @@ class CacheId(str):
     '''
     Unique identifier of the Cache object.
     '''
+    def to_json(self) -> str:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: str) -> 'CacheId':
+        return cls(json)
 
     def __repr__(self):
         return 'CacheId({})'.format(str.__repr__(self))
 
 
-
-class CachedResponseType:
+class CachedResponseType(enum.Enum):
     '''
     type of HTTP response cached
     '''
@@ -35,6 +39,13 @@ class CachedResponseType:
     ERROR = "error"
     OPAQUE_RESPONSE = "opaqueResponse"
     OPAQUE_REDIRECT = "opaqueRedirect"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> 'CachedResponseType':
+        return cls(json)
 
 
 @dataclass
@@ -66,19 +77,31 @@ class DataEntry:
     #: Response headers
     response_headers: typing.List['Header']
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            request_url=str(response.get('requestURL')),
-            request_method=str(response.get('requestMethod')),
-            request_headers=[Header.from_response(i) for i in response.get('requestHeaders')],
-            response_time=float(response.get('responseTime')),
-            response_status=int(response.get('responseStatus')),
-            response_status_text=str(response.get('responseStatusText')),
-            response_type=CachedResponseType.from_response(response.get('responseType')),
-            response_headers=[Header.from_response(i) for i in response.get('responseHeaders')],
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'requestURL': self.request_url,
+            'requestMethod': self.request_method,
+            'requestHeaders': [i.to_json() for i in self.request_headers],
+            'responseTime': self.response_time,
+            'responseStatus': self.response_status,
+            'responseStatusText': self.response_status_text,
+            'responseType': self.response_type.to_json(),
+            'responseHeaders': [i.to_json() for i in self.response_headers],
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'DataEntry':
+        return cls(
+            request_url=json['requestURL'],
+            request_method=json['requestMethod'],
+            request_headers=[Header.from_json(i) for i in json['requestHeaders']],
+            response_time=json['responseTime'],
+            response_status=json['responseStatus'],
+            response_status_text=json['responseStatusText'],
+            response_type=CachedResponseType.from_json(json['responseType']),
+            response_headers=[Header.from_json(i) for i in json['responseHeaders']],
+        )
 
 @dataclass
 class Cache:
@@ -94,14 +117,21 @@ class Cache:
     #: The name of the cache.
     cache_name: str
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            cache_id=CacheId.from_response(response.get('cacheId')),
-            security_origin=str(response.get('securityOrigin')),
-            cache_name=str(response.get('cacheName')),
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'cacheId': self.cache_id.to_json(),
+            'securityOrigin': self.security_origin,
+            'cacheName': self.cache_name,
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'Cache':
+        return cls(
+            cache_id=CacheId.from_json(json['cacheId']),
+            security_origin=json['securityOrigin'],
+            cache_name=json['cacheName'],
+        )
 
 @dataclass
 class Header:
@@ -109,13 +139,19 @@ class Header:
 
     value: str
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            name=str(response.get('name')),
-            value=str(response.get('value')),
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'name': self.name,
+            'value': self.value,
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'Header':
+        return cls(
+            name=json['name'],
+            value=json['value'],
+        )
 
 @dataclass
 class CachedResponse:
@@ -125,9 +161,15 @@ class CachedResponse:
     #: Entry content, base64-encoded.
     body: str
 
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'body': self.body,
+        }
+        return json
+
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'CachedResponse':
         return cls(
-            body=str(response.get('body')),
+            body=json['body'],
         )
 

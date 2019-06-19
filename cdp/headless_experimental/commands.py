@@ -8,13 +8,20 @@ Domain: headless_experimental
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
 
 
-def begin_frame(frame_time_ticks: float, interval: float, no_display_updates: bool, screenshot: ScreenshotParams) -> typing.Generator[dict,dict,dict]:
+def begin_frame(
+        frame_time_ticks: typing.Optional[float] = None,
+        interval: typing.Optional[float] = None,
+        no_display_updates: typing.Optional[bool] = None,
+        screenshot: typing.Optional[ScreenshotParams] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     Sends a BeginFrame to the target and returns when the frame was completed. Optionally captures a
     screenshot from the resulting frame. Requires that the target was created with enabled
@@ -34,44 +41,48 @@ def begin_frame(frame_time_ticks: float, interval: float, no_display_updates: bo
     :returns: a dict with the following keys:
         * hasDamage: Whether the BeginFrame resulted in damage and, thus, a new frame was committed to the
     display. Reported for diagnostic uses, may be removed in the future.
-        * screenshotData: Base64-encoded image data of the screenshot, if one was requested and successfully taken.
+        * screenshotData: (Optional) Base64-encoded image data of the screenshot, if one was requested and successfully taken.
     '''
-
-    cmd_dict = {
+    params: T_JSON_DICT = {
+    }
+    if frame_time_ticks is not None:
+        params['frameTimeTicks'] = frame_time_ticks
+    if interval is not None:
+        params['interval'] = interval
+    if no_display_updates is not None:
+        params['noDisplayUpdates'] = no_display_updates
+    if screenshot is not None:
+        params['screenshot'] = screenshot.to_json()
+    cmd_dict: T_JSON_DICT = {
         'method': 'HeadlessExperimental.beginFrame',
-        'params': {
-            'frameTimeTicks': frame_time_ticks,
-            'interval': interval,
-            'noDisplayUpdates': no_display_updates,
-            'screenshot': screenshot,
-        }
+        'params': params,
     }
-    response = yield cmd_dict
-    return {
-        'hasDamage': bool(response['hasDamage']),
-        'screenshotData': str(response['screenshotData']),
+    json = yield cmd_dict
+    result: T_JSON_DICT = {
+        'hasDamage': bool(json['hasDamage']),
     }
+    if 'screenshotData' in json:
+        result['screenshotData'] = str(json['screenshotData'])
+    return result
 
 
-def disable() -> typing.Generator[dict,dict,None]:
+def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Disables headless events for the target.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'HeadlessExperimental.disable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def enable() -> typing.Generator[dict,dict,None]:
+def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enables headless events for the target.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'HeadlessExperimental.enable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 

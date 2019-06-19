@@ -8,7 +8,9 @@ Domain: browser
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -16,7 +18,11 @@ from ..target import types as target
 
 
 
-def grant_permissions(origin: str, permissions: typing.List['PermissionType'], browser_context_id: target.BrowserContextID) -> typing.Generator[dict,dict,None]:
+def grant_permissions(
+        origin: str,
+        permissions: typing.List['PermissionType'],
+        browser_context_id: typing.Optional[target.BrowserContextID] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Grant specific permissions to the given origin and reject all others.
     
@@ -24,68 +30,69 @@ def grant_permissions(origin: str, permissions: typing.List['PermissionType'], b
     :param permissions: 
     :param browser_context_id: BrowserContext to override permissions. When omitted, default browser context is used.
     '''
-
-    cmd_dict = {
-        'method': 'Browser.grantPermissions',
-        'params': {
-            'origin': origin,
-            'permissions': permissions,
-            'browserContextId': browser_context_id,
-        }
+    params: T_JSON_DICT = {
+        'origin': origin,
+        'permissions': [i.to_json() for i in permissions],
     }
-    response = yield cmd_dict
+    if browser_context_id is not None:
+        params['browserContextId'] = browser_context_id.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Browser.grantPermissions',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def reset_permissions(browser_context_id: target.BrowserContextID) -> typing.Generator[dict,dict,None]:
+def reset_permissions(
+        browser_context_id: typing.Optional[target.BrowserContextID] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Reset all permission management for all origins.
     
     :param browser_context_id: BrowserContext to reset permissions. When omitted, default browser context is used.
     '''
-
-    cmd_dict = {
-        'method': 'Browser.resetPermissions',
-        'params': {
-            'browserContextId': browser_context_id,
-        }
+    params: T_JSON_DICT = {
     }
-    response = yield cmd_dict
+    if browser_context_id is not None:
+        params['browserContextId'] = browser_context_id.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Browser.resetPermissions',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def close() -> typing.Generator[dict,dict,None]:
+def close() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Close browser gracefully.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Browser.close',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def crash() -> typing.Generator[dict,dict,None]:
+def crash() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Crashes browser on the main thread.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Browser.crash',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def crash_gpu_process() -> typing.Generator[dict,dict,None]:
+def crash_gpu_process() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Crashes GPU process.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Browser.crashGpuProcess',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def get_version() -> typing.Generator[dict,dict,dict]:
+def get_version() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     Returns version information.
     :returns: a dict with the following keys:
@@ -95,35 +102,37 @@ def get_version() -> typing.Generator[dict,dict,dict]:
         * userAgent: User-Agent.
         * jsVersion: V8 version.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Browser.getVersion',
     }
-    response = yield cmd_dict
-    return {
-        'protocolVersion': str(response['protocolVersion']),
-        'product': str(response['product']),
-        'revision': str(response['revision']),
-        'userAgent': str(response['userAgent']),
-        'jsVersion': str(response['jsVersion']),
+    json = yield cmd_dict
+    result: T_JSON_DICT = {
+        'protocolVersion': str(json['protocolVersion']),
+        'product': str(json['product']),
+        'revision': str(json['revision']),
+        'userAgent': str(json['userAgent']),
+        'jsVersion': str(json['jsVersion']),
     }
+    return result
 
 
-def get_browser_command_line() -> typing.Generator[dict,dict,typing.List]:
+def get_browser_command_line() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['str']]:
     '''
     Returns the command line switches for the browser process if, and only if
     --enable-automation is on the commandline.
     :returns: Commandline parameters
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Browser.getBrowserCommandLine',
     }
-    response = yield cmd_dict
-    return [str(i) for i in response['arguments']]
+    json = yield cmd_dict
+    return [str(i) for i in json['arguments']]
 
 
-def get_histograms(query: str, delta: bool) -> typing.Generator[dict,dict,typing.List['Histogram']]:
+def get_histograms(
+        query: typing.Optional[str] = None,
+        delta: typing.Optional[bool] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['Histogram']]:
     '''
     Get Chrome histograms.
     
@@ -133,19 +142,24 @@ def get_histograms(query: str, delta: bool) -> typing.Generator[dict,dict,typing
     :param delta: If true, retrieve delta since last call.
     :returns: Histograms.
     '''
-
-    cmd_dict = {
-        'method': 'Browser.getHistograms',
-        'params': {
-            'query': query,
-            'delta': delta,
-        }
+    params: T_JSON_DICT = {
     }
-    response = yield cmd_dict
-    return [Histogram.from_response(i) for i in response['histograms']]
+    if query is not None:
+        params['query'] = query
+    if delta is not None:
+        params['delta'] = delta
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Browser.getHistograms',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return [Histogram.from_json(i) for i in json['histograms']]
 
 
-def get_histogram(name: str, delta: bool) -> typing.Generator[dict,dict,Histogram]:
+def get_histogram(
+        name: str,
+        delta: typing.Optional[bool] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,Histogram]:
     '''
     Get a Chrome histogram by name.
     
@@ -153,19 +167,22 @@ def get_histogram(name: str, delta: bool) -> typing.Generator[dict,dict,Histogra
     :param delta: If true, retrieve delta since last call.
     :returns: Histogram.
     '''
-
-    cmd_dict = {
-        'method': 'Browser.getHistogram',
-        'params': {
-            'name': name,
-            'delta': delta,
-        }
+    params: T_JSON_DICT = {
+        'name': name,
     }
-    response = yield cmd_dict
-    return Histogram.from_response(response['histogram'])
+    if delta is not None:
+        params['delta'] = delta
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Browser.getHistogram',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return Histogram.from_json(json['histogram'])
 
 
-def get_window_bounds(window_id: WindowID) -> typing.Generator[dict,dict,Bounds]:
+def get_window_bounds(
+        window_id: WindowID,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,Bounds]:
     '''
     Get position and size of the browser window.
     
@@ -173,18 +190,20 @@ def get_window_bounds(window_id: WindowID) -> typing.Generator[dict,dict,Bounds]
     :returns: Bounds information of the window. When window state is 'minimized', the restored window
     position and size are returned.
     '''
-
-    cmd_dict = {
-        'method': 'Browser.getWindowBounds',
-        'params': {
-            'windowId': window_id,
-        }
+    params: T_JSON_DICT = {
+        'windowId': window_id.to_json(),
     }
-    response = yield cmd_dict
-    return Bounds.from_response(response['bounds'])
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Browser.getWindowBounds',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return Bounds.from_json(json['bounds'])
 
 
-def get_window_for_target(target_id: target.TargetID) -> typing.Generator[dict,dict,dict]:
+def get_window_for_target(
+        target_id: typing.Optional[target.TargetID] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     Get the browser window that contains the devtools target.
     
@@ -194,21 +213,26 @@ def get_window_for_target(target_id: target.TargetID) -> typing.Generator[dict,d
         * bounds: Bounds information of the window. When window state is 'minimized', the restored window
     position and size are returned.
     '''
-
-    cmd_dict = {
+    params: T_JSON_DICT = {
+    }
+    if target_id is not None:
+        params['targetId'] = target_id.to_json()
+    cmd_dict: T_JSON_DICT = {
         'method': 'Browser.getWindowForTarget',
-        'params': {
-            'targetId': target_id,
-        }
+        'params': params,
     }
-    response = yield cmd_dict
-    return {
-        'windowId': WindowID.from_response(response['windowId']),
-        'bounds': Bounds.from_response(response['bounds']),
+    json = yield cmd_dict
+    result: T_JSON_DICT = {
+        'windowId': WindowID.from_json(json['windowId']),
+        'bounds': Bounds.from_json(json['bounds']),
     }
+    return result
 
 
-def set_window_bounds(window_id: WindowID, bounds: Bounds) -> typing.Generator[dict,dict,None]:
+def set_window_bounds(
+        window_id: WindowID,
+        bounds: Bounds,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Set position and/or size of the browser window.
     
@@ -216,32 +240,37 @@ def set_window_bounds(window_id: WindowID, bounds: Bounds) -> typing.Generator[d
     :param bounds: New window bounds. The 'minimized', 'maximized' and 'fullscreen' states cannot be combined
     with 'left', 'top', 'width' or 'height'. Leaves unspecified fields unchanged.
     '''
-
-    cmd_dict = {
-        'method': 'Browser.setWindowBounds',
-        'params': {
-            'windowId': window_id,
-            'bounds': bounds,
-        }
+    params: T_JSON_DICT = {
+        'windowId': window_id.to_json(),
+        'bounds': bounds.to_json(),
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Browser.setWindowBounds',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_dock_tile(badge_label: str, image: str) -> typing.Generator[dict,dict,None]:
+def set_dock_tile(
+        badge_label: typing.Optional[str] = None,
+        image: typing.Optional[str] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Set dock tile details, platform-specific.
     
     :param badge_label: 
     :param image: Png encoded image.
     '''
-
-    cmd_dict = {
-        'method': 'Browser.setDockTile',
-        'params': {
-            'badgeLabel': badge_label,
-            'image': image,
-        }
+    params: T_JSON_DICT = {
     }
-    response = yield cmd_dict
+    if badge_label is not None:
+        params['badgeLabel'] = badge_label
+    if image is not None:
+        params['image'] = image
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Browser.setDockTile',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 

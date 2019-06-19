@@ -8,7 +8,9 @@ Domain: tethering
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -24,4 +26,15 @@ class Accepted:
 
     #: Informs that port was successfully bound and got a specified connection id.
     connection_id: str
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Tethering'
+    _method = 'accepted'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'Accepted':
+        return cls(
+            port=int(json['port']),
+            connection_id=str(json['connectionId']),
+        )
 

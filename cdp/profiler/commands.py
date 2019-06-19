@@ -8,67 +8,70 @@ Domain: profiler
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
 
 
-def disable() -> typing.Generator[dict,dict,None]:
-
-    cmd_dict = {
+def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    cmd_dict: T_JSON_DICT = {
         'method': 'Profiler.disable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def enable() -> typing.Generator[dict,dict,None]:
-
-    cmd_dict = {
+def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    cmd_dict: T_JSON_DICT = {
         'method': 'Profiler.enable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def get_best_effort_coverage() -> typing.Generator[dict,dict,typing.List['ScriptCoverage']]:
+def get_best_effort_coverage() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['ScriptCoverage']]:
     '''
     Collect coverage data for the current isolate. The coverage data may be incomplete due to
     garbage collection.
     :returns: Coverage data for the current isolate.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Profiler.getBestEffortCoverage',
     }
-    response = yield cmd_dict
-    return [ScriptCoverage.from_response(i) for i in response['result']]
+    json = yield cmd_dict
+    return [ScriptCoverage.from_json(i) for i in json['result']]
 
 
-def set_sampling_interval(interval: int) -> typing.Generator[dict,dict,None]:
+def set_sampling_interval(
+        interval: int,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Changes CPU profiler sampling interval. Must be called before CPU profiles recording started.
     
     :param interval: New sampling interval in microseconds.
     '''
-
-    cmd_dict = {
-        'method': 'Profiler.setSamplingInterval',
-        'params': {
-            'interval': interval,
-        }
+    params: T_JSON_DICT = {
+        'interval': interval,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Profiler.setSamplingInterval',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def start() -> typing.Generator[dict,dict,None]:
-
-    cmd_dict = {
+def start() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    cmd_dict: T_JSON_DICT = {
         'method': 'Profiler.start',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def start_precise_coverage(call_count: bool, detailed: bool) -> typing.Generator[dict,dict,None]:
+def start_precise_coverage(
+        call_count: typing.Optional[bool] = None,
+        detailed: typing.Optional[bool] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enable precise code coverage. Coverage data for JavaScript executed before enabling precise code
     coverage may be incomplete. Enabling prevents running optimized code and resets execution
@@ -77,88 +80,84 @@ def start_precise_coverage(call_count: bool, detailed: bool) -> typing.Generator
     :param call_count: Collect accurate call counts beyond simple 'covered' or 'not covered'.
     :param detailed: Collect block-based coverage.
     '''
-
-    cmd_dict = {
-        'method': 'Profiler.startPreciseCoverage',
-        'params': {
-            'callCount': call_count,
-            'detailed': detailed,
-        }
+    params: T_JSON_DICT = {
     }
-    response = yield cmd_dict
+    if call_count is not None:
+        params['callCount'] = call_count
+    if detailed is not None:
+        params['detailed'] = detailed
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Profiler.startPreciseCoverage',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def start_type_profile() -> typing.Generator[dict,dict,None]:
+def start_type_profile() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enable type profile.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Profiler.startTypeProfile',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def stop() -> typing.Generator[dict,dict,Profile]:
+def stop() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,Profile]:
     '''
     
     :returns: Recorded profile.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Profiler.stop',
     }
-    response = yield cmd_dict
-    return Profile.from_response(response['profile'])
+    json = yield cmd_dict
+    return Profile.from_json(json['profile'])
 
 
-def stop_precise_coverage() -> typing.Generator[dict,dict,None]:
+def stop_precise_coverage() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Disable precise code coverage. Disabling releases unnecessary execution count records and allows
     executing optimized code.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Profiler.stopPreciseCoverage',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def stop_type_profile() -> typing.Generator[dict,dict,None]:
+def stop_type_profile() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Disable type profile. Disabling releases type profile data collected so far.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Profiler.stopTypeProfile',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def take_precise_coverage() -> typing.Generator[dict,dict,typing.List['ScriptCoverage']]:
+def take_precise_coverage() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['ScriptCoverage']]:
     '''
     Collect coverage data for the current isolate, and resets execution counters. Precise code
     coverage needs to have started.
     :returns: Coverage data for the current isolate.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Profiler.takePreciseCoverage',
     }
-    response = yield cmd_dict
-    return [ScriptCoverage.from_response(i) for i in response['result']]
+    json = yield cmd_dict
+    return [ScriptCoverage.from_json(i) for i in json['result']]
 
 
-def take_type_profile() -> typing.Generator[dict,dict,typing.List['ScriptTypeProfile']]:
+def take_type_profile() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['ScriptTypeProfile']]:
     '''
     Collect type profile.
     :returns: Type profile for all scripts since startTypeProfile() was turned on.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Profiler.takeTypeProfile',
     }
-    response = yield cmd_dict
-    return [ScriptTypeProfile.from_response(i) for i in response['result']]
+    json = yield cmd_dict
+    return [ScriptTypeProfile.from_json(i) for i in json['result']]
 
 

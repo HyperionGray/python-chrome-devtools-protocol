@@ -8,7 +8,9 @@ Domain: cast
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -24,6 +26,16 @@ class SinksUpdated:
     #: device or a software surface that you can cast to.
     sinks: typing.List['Sink']
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Cast'
+    _method = 'sinksUpdated'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'SinksUpdated':
+        return cls(
+            sinks=[Sink.from_json(i) for i in json['sinks']],
+        )
+
 
 @dataclass
 class IssueUpdated:
@@ -34,4 +46,14 @@ class IssueUpdated:
     #: This is fired whenever the outstanding issue/error message changes.
     #: |issueMessage| is empty if there is no issue.
     issue_message: str
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Cast'
+    _method = 'issueUpdated'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'IssueUpdated':
+        return cls(
+            issue_message=str(json['issueMessage']),
+        )
 

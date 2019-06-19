@@ -8,7 +8,9 @@ Domain: heap_profiler
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -18,6 +20,16 @@ from .types import *
 class AddHeapSnapshotChunk:
     chunk: str
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'HeapProfiler'
+    _method = 'addHeapSnapshotChunk'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'AddHeapSnapshotChunk':
+        return cls(
+            chunk=str(json['chunk']),
+        )
+
 
 @dataclass
 class HeapStatsUpdate:
@@ -25,7 +37,17 @@ class HeapStatsUpdate:
     If heap objects tracking has been started then backend may send update for one or more fragments
     '''
     #: If heap objects tracking has been started then backend may send update for one or more fragments
-    stats_update: typing.List
+    stats_update: typing.List['int']
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'HeapProfiler'
+    _method = 'heapStatsUpdate'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'HeapStatsUpdate':
+        return cls(
+            stats_update=[int(i) for i in json['statsUpdate']],
+        )
 
 
 @dataclass
@@ -45,6 +67,17 @@ class LastSeenObjectId:
     #: then one or more heapStatsUpdate events will be sent before a new lastSeenObjectId event.
     timestamp: float
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'HeapProfiler'
+    _method = 'lastSeenObjectId'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'LastSeenObjectId':
+        return cls(
+            last_seen_object_id=int(json['lastSeenObjectId']),
+            timestamp=float(json['timestamp']),
+        )
+
 
 @dataclass
 class ReportHeapSnapshotProgress:
@@ -54,8 +87,27 @@ class ReportHeapSnapshotProgress:
 
     finished: bool
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'HeapProfiler'
+    _method = 'reportHeapSnapshotProgress'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'ReportHeapSnapshotProgress':
+        return cls(
+            done=int(json['done']),
+            total=int(json['total']),
+            finished=bool(json['finished']),
+        )
+
 
 @dataclass
 class ResetProfiles:
-    pass
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'HeapProfiler'
+    _method = 'resetProfiles'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'ResetProfiles':
+        return cls(
+        )
 

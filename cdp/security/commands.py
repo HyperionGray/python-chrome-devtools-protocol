@@ -8,82 +8,89 @@ Domain: security
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
 
 
-def disable() -> typing.Generator[dict,dict,None]:
+def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Disables tracking security state changes.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Security.disable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def enable() -> typing.Generator[dict,dict,None]:
+def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enables tracking security state changes.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Security.enable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def set_ignore_certificate_errors(ignore: bool) -> typing.Generator[dict,dict,None]:
+def set_ignore_certificate_errors(
+        ignore: bool,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enable/disable whether all certificate errors should be ignored.
     
     :param ignore: If true, all certificate errors will be ignored.
     '''
-
-    cmd_dict = {
-        'method': 'Security.setIgnoreCertificateErrors',
-        'params': {
-            'ignore': ignore,
-        }
+    params: T_JSON_DICT = {
+        'ignore': ignore,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Security.setIgnoreCertificateErrors',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def handle_certificate_error(event_id: int, action: CertificateErrorAction) -> typing.Generator[dict,dict,None]:
+def handle_certificate_error(
+        event_id: int,
+        action: CertificateErrorAction,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Handles a certificate error that fired a certificateError event.
     
     :param event_id: The ID of the event.
     :param action: The action to take on the certificate error.
     '''
-
-    cmd_dict = {
-        'method': 'Security.handleCertificateError',
-        'params': {
-            'eventId': event_id,
-            'action': action,
-        }
+    params: T_JSON_DICT = {
+        'eventId': event_id,
+        'action': action.to_json(),
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Security.handleCertificateError',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_override_certificate_errors(override: bool) -> typing.Generator[dict,dict,None]:
+def set_override_certificate_errors(
+        override: bool,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enable/disable overriding certificate errors. If enabled, all certificate error events need to
     be handled by the DevTools client and should be answered with `handleCertificateError` commands.
     
     :param override: If true, certificate errors will be overridden.
     '''
-
-    cmd_dict = {
-        'method': 'Security.setOverrideCertificateErrors',
-        'params': {
-            'override': override,
-        }
+    params: T_JSON_DICT = {
+        'override': override,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Security.setOverrideCertificateErrors',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 

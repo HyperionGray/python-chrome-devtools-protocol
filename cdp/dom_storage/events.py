@@ -8,7 +8,9 @@ Domain: dom_storage
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -22,12 +24,35 @@ class DomStorageItemAdded:
 
     new_value: str
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'DOMStorage'
+    _method = 'domStorageItemAdded'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'DomStorageItemAdded':
+        return cls(
+            storage_id=StorageId.from_json(json['storageId']),
+            key=str(json['key']),
+            new_value=str(json['newValue']),
+        )
+
 
 @dataclass
 class DomStorageItemRemoved:
     storage_id: StorageId
 
     key: str
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'DOMStorage'
+    _method = 'domStorageItemRemoved'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'DomStorageItemRemoved':
+        return cls(
+            storage_id=StorageId.from_json(json['storageId']),
+            key=str(json['key']),
+        )
 
 
 @dataclass
@@ -40,8 +65,31 @@ class DomStorageItemUpdated:
 
     new_value: str
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'DOMStorage'
+    _method = 'domStorageItemUpdated'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'DomStorageItemUpdated':
+        return cls(
+            storage_id=StorageId.from_json(json['storageId']),
+            key=str(json['key']),
+            old_value=str(json['oldValue']),
+            new_value=str(json['newValue']),
+        )
+
 
 @dataclass
 class DomStorageItemsCleared:
     storage_id: StorageId
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'DOMStorage'
+    _method = 'domStorageItemsCleared'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'DomStorageItemsCleared':
+        return cls(
+            storage_id=StorageId.from_json(json['storageId']),
+        )
 

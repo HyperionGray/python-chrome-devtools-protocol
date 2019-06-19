@@ -8,7 +8,9 @@ Domain: log
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -21,4 +23,14 @@ class EntryAdded:
     '''
     #: Issued when new message was logged.
     entry: LogEntry
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Log'
+    _method = 'entryAdded'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'EntryAdded':
+        return cls(
+            entry=LogEntry.from_json(json['entry']),
+        )
 

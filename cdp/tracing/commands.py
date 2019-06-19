@@ -8,71 +8,81 @@ Domain: tracing
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
 
 
-def end() -> typing.Generator[dict,dict,None]:
+def end() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Stop trace events collection.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Tracing.end',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def get_categories() -> typing.Generator[dict,dict,typing.List]:
+def get_categories() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['str']]:
     '''
     Gets supported tracing categories.
     :returns: A list of supported tracing categories.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Tracing.getCategories',
     }
-    response = yield cmd_dict
-    return [str(i) for i in response['categories']]
+    json = yield cmd_dict
+    return [str(i) for i in json['categories']]
 
 
-def record_clock_sync_marker(sync_id: str) -> typing.Generator[dict,dict,None]:
+def record_clock_sync_marker(
+        sync_id: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Record a clock sync marker in the trace.
     
     :param sync_id: The ID of this clock sync marker
     '''
-
-    cmd_dict = {
-        'method': 'Tracing.recordClockSyncMarker',
-        'params': {
-            'syncId': sync_id,
-        }
+    params: T_JSON_DICT = {
+        'syncId': sync_id,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Tracing.recordClockSyncMarker',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def request_memory_dump() -> typing.Generator[dict,dict,dict]:
+def request_memory_dump() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     Request a global memory dump.
     :returns: a dict with the following keys:
         * dumpGuid: GUID of the resulting global memory dump.
         * success: True iff the global memory dump succeeded.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Tracing.requestMemoryDump',
     }
-    response = yield cmd_dict
-    return {
-        'dumpGuid': str(response['dumpGuid']),
-        'success': bool(response['success']),
+    json = yield cmd_dict
+    result: T_JSON_DICT = {
+        'dumpGuid': str(json['dumpGuid']),
+        'success': bool(json['success']),
     }
+    return result
 
 
-def start(categories: str, options: str, buffer_usage_reporting_interval: float, transfer_mode: str, stream_format: StreamFormat, stream_compression: StreamCompression, trace_config: TraceConfig) -> typing.Generator[dict,dict,None]:
+def start(
+        categories: typing.Optional[str] = None,
+        options: typing.Optional[str] = None,
+        buffer_usage_reporting_interval: typing.Optional[float] = None,
+        transfer_mode: typing.Optional[str] = None,
+        stream_format: typing.Optional[StreamFormat] = None,
+        stream_compression: typing.Optional[StreamCompression] = None,
+        trace_config: typing.Optional[TraceConfig] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Start trace events collection.
     
@@ -87,19 +97,26 @@ def start(categories: str, options: str, buffer_usage_reporting_interval: float,
     transfer mode (defaults to `none`)
     :param trace_config: 
     '''
-
-    cmd_dict = {
-        'method': 'Tracing.start',
-        'params': {
-            'categories': categories,
-            'options': options,
-            'bufferUsageReportingInterval': buffer_usage_reporting_interval,
-            'transferMode': transfer_mode,
-            'streamFormat': stream_format,
-            'streamCompression': stream_compression,
-            'traceConfig': trace_config,
-        }
+    params: T_JSON_DICT = {
     }
-    response = yield cmd_dict
+    if categories is not None:
+        params['categories'] = categories
+    if options is not None:
+        params['options'] = options
+    if buffer_usage_reporting_interval is not None:
+        params['bufferUsageReportingInterval'] = buffer_usage_reporting_interval
+    if transfer_mode is not None:
+        params['transferMode'] = transfer_mode
+    if stream_format is not None:
+        params['streamFormat'] = stream_format.to_json()
+    if stream_compression is not None:
+        params['streamCompression'] = stream_compression.to_json()
+    if trace_config is not None:
+        params['traceConfig'] = trace_config.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Tracing.start',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 

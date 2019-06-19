@@ -8,13 +8,15 @@ Domain: system_info
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
 
 
-def get_info() -> typing.Generator[dict,dict,dict]:
+def get_info() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     Returns information about the system.
     :returns: a dict with the following keys:
@@ -26,29 +28,28 @@ def get_info() -> typing.Generator[dict,dict,dict]:
         * commandLine: The command line string used to launch the browser. Will be the empty string if not
     supported.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'SystemInfo.getInfo',
     }
-    response = yield cmd_dict
-    return {
-        'gpu': GPUInfo.from_response(response['gpu']),
-        'modelName': str(response['modelName']),
-        'modelVersion': str(response['modelVersion']),
-        'commandLine': str(response['commandLine']),
+    json = yield cmd_dict
+    result: T_JSON_DICT = {
+        'gpu': GPUInfo.from_json(json['gpu']),
+        'modelName': str(json['modelName']),
+        'modelVersion': str(json['modelVersion']),
+        'commandLine': str(json['commandLine']),
     }
+    return result
 
 
-def get_process_info() -> typing.Generator[dict,dict,typing.List['ProcessInfo']]:
+def get_process_info() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['ProcessInfo']]:
     '''
     Returns information about all running processes.
     :returns: An array of process info blocks.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'SystemInfo.getProcessInfo',
     }
-    response = yield cmd_dict
-    return [ProcessInfo.from_response(i) for i in response['processInfo']]
+    json = yield cmd_dict
+    return [ProcessInfo.from_json(i) for i in json['processInfo']]
 
 

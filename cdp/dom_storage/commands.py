@@ -8,87 +8,98 @@ Domain: dom_storage
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
 
 
-def clear(storage_id: StorageId) -> typing.Generator[dict,dict,None]:
+def clear(
+        storage_id: StorageId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     
     
     :param storage_id: 
     '''
-
-    cmd_dict = {
-        'method': 'DOMStorage.clear',
-        'params': {
-            'storageId': storage_id,
-        }
+    params: T_JSON_DICT = {
+        'storageId': storage_id.to_json(),
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOMStorage.clear',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def disable() -> typing.Generator[dict,dict,None]:
+def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Disables storage tracking, prevents storage events from being sent to the client.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'DOMStorage.disable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def enable() -> typing.Generator[dict,dict,None]:
+def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enables storage tracking, storage events will now be delivered to the client.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'DOMStorage.enable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def get_dom_storage_items(storage_id: StorageId) -> typing.Generator[dict,dict,typing.List['Item']]:
+def get_dom_storage_items(
+        storage_id: StorageId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['Item']]:
     '''
     
     
     :param storage_id: 
     :returns: 
     '''
-
-    cmd_dict = {
-        'method': 'DOMStorage.getDOMStorageItems',
-        'params': {
-            'storageId': storage_id,
-        }
+    params: T_JSON_DICT = {
+        'storageId': storage_id.to_json(),
     }
-    response = yield cmd_dict
-    return [Item.from_response(i) for i in response['entries']]
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOMStorage.getDOMStorageItems',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return [Item.from_json(i) for i in json['entries']]
 
 
-def remove_dom_storage_item(storage_id: StorageId, key: str) -> typing.Generator[dict,dict,None]:
+def remove_dom_storage_item(
+        storage_id: StorageId,
+        key: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     
     
     :param storage_id: 
     :param key: 
     '''
-
-    cmd_dict = {
-        'method': 'DOMStorage.removeDOMStorageItem',
-        'params': {
-            'storageId': storage_id,
-            'key': key,
-        }
+    params: T_JSON_DICT = {
+        'storageId': storage_id.to_json(),
+        'key': key,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOMStorage.removeDOMStorageItem',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_dom_storage_item(storage_id: StorageId, key: str, value: str) -> typing.Generator[dict,dict,None]:
+def set_dom_storage_item(
+        storage_id: StorageId,
+        key: str,
+        value: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     
     
@@ -96,15 +107,15 @@ def set_dom_storage_item(storage_id: StorageId, key: str, value: str) -> typing.
     :param key: 
     :param value: 
     '''
-
-    cmd_dict = {
-        'method': 'DOMStorage.setDOMStorageItem',
-        'params': {
-            'storageId': storage_id,
-            'key': key,
-            'value': value,
-        }
+    params: T_JSON_DICT = {
+        'storageId': storage_id.to_json(),
+        'key': key,
+        'value': value,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOMStorage.setDOMStorageItem',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 

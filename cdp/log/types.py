@@ -8,12 +8,13 @@ Domain: log
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from ..network import types as network
 from ..runtime import types as runtime
-
 
 
 @dataclass
@@ -34,38 +35,64 @@ class LogEntry:
     timestamp: runtime.Timestamp
 
     #: URL of the resource if known.
-    url: str
+    url: typing.Optional[str] = None
 
     #: Line number in the resource.
-    line_number: int
+    line_number: typing.Optional[int] = None
 
     #: JavaScript stack trace.
-    stack_trace: runtime.StackTrace
+    stack_trace: typing.Optional[runtime.StackTrace] = None
 
     #: Identifier of the network request associated with this entry.
-    network_request_id: network.RequestId
+    network_request_id: typing.Optional[network.RequestId] = None
 
     #: Identifier of the worker associated with this entry.
-    worker_id: str
+    worker_id: typing.Optional[str] = None
 
     #: Call arguments.
-    args: typing.List['runtime.RemoteObject']
+    args: typing.Optional[typing.List['runtime.RemoteObject']] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'source': self.source,
+            'level': self.level,
+            'text': self.text,
+            'timestamp': self.timestamp.to_json(),
+        }
+        if self.url is not None:
+            json['url'] = self.url
+        if self.line_number is not None:
+            json['lineNumber'] = self.line_number
+        if self.stack_trace is not None:
+            json['stackTrace'] = self.stack_trace.to_json()
+        if self.network_request_id is not None:
+            json['networkRequestId'] = self.network_request_id.to_json()
+        if self.worker_id is not None:
+            json['workerId'] = self.worker_id
+        if self.args is not None:
+            json['args'] = [i.to_json() for i in self.args]
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'LogEntry':
+        url = json['url'] if 'url' in json else None
+        line_number = json['lineNumber'] if 'lineNumber' in json else None
+        stack_trace = runtime.StackTrace.from_json(json['stackTrace']) if 'stackTrace' in json else None
+        network_request_id = network.RequestId.from_json(json['networkRequestId']) if 'networkRequestId' in json else None
+        worker_id = json['workerId'] if 'workerId' in json else None
+        args = [runtime.RemoteObject.from_json(i) for i in json['args']] if 'args' in json else None
         return cls(
-            source=str(response.get('source')),
-            level=str(response.get('level')),
-            text=str(response.get('text')),
-            timestamp=runtime.Timestamp.from_response(response.get('timestamp')),
-            url=str(response.get('url')),
-            line_number=int(response.get('lineNumber')),
-            stack_trace=runtime.StackTrace.from_response(response.get('stackTrace')),
-            network_request_id=network.RequestId.from_response(response.get('networkRequestId')),
-            worker_id=str(response.get('workerId')),
-            args=[runtime.RemoteObject.from_response(i) for i in response.get('args')],
+            source=json['source'],
+            level=json['level'],
+            text=json['text'],
+            timestamp=runtime.Timestamp.from_json(json['timestamp']),
+            url=url,
+            line_number=line_number,
+            stack_trace=stack_trace,
+            network_request_id=network_request_id,
+            worker_id=worker_id,
+            args=args,
         )
-
 
 @dataclass
 class ViolationSetting:
@@ -78,10 +105,17 @@ class ViolationSetting:
     #: Time threshold to trigger upon.
     threshold: float
 
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'name': self.name,
+            'threshold': self.threshold,
+        }
+        return json
+
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'ViolationSetting':
         return cls(
-            name=str(response.get('name')),
-            threshold=float(response.get('threshold')),
+            name=json['name'],
+            threshold=json['threshold'],
         )
 

@@ -8,9 +8,10 @@ Domain: performance
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
-
 
 
 @dataclass
@@ -24,10 +25,17 @@ class Metric:
     #: Metric value.
     value: float
 
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'name': self.name,
+            'value': self.value,
+        }
+        return json
+
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'Metric':
         return cls(
-            name=str(response.get('name')),
-            value=float(response.get('value')),
+            name=json['name'],
+            value=json['value'],
         )
 

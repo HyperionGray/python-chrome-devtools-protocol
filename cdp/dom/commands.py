@@ -8,7 +8,9 @@ Domain: dom
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -18,25 +20,31 @@ from ..runtime import types as runtime
 
 
 
-def collect_class_names_from_subtree(node_id: NodeId) -> typing.Generator[dict,dict,typing.List]:
+def collect_class_names_from_subtree(
+        node_id: NodeId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['str']]:
     '''
     Collects class names for the node with given id and all of it's child nodes.
     
     :param node_id: Id of the node to collect class names.
     :returns: Class name list.
     '''
-
-    cmd_dict = {
-        'method': 'DOM.collectClassNamesFromSubtree',
-        'params': {
-            'nodeId': node_id,
-        }
+    params: T_JSON_DICT = {
+        'nodeId': node_id.to_json(),
     }
-    response = yield cmd_dict
-    return [str(i) for i in response['classNames']]
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.collectClassNamesFromSubtree',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return [str(i) for i in json['classNames']]
 
 
-def copy_to(node_id: NodeId, target_node_id: NodeId, insert_before_node_id: NodeId) -> typing.Generator[dict,dict,NodeId]:
+def copy_to(
+        node_id: NodeId,
+        target_node_id: NodeId,
+        insert_before_node_id: typing.Optional[NodeId] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,NodeId]:
     '''
     Creates a deep copy of the specified node and places it into the target container before the
     given anchor.
@@ -47,20 +55,27 @@ def copy_to(node_id: NodeId, target_node_id: NodeId, insert_before_node_id: Node
     `targetNodeId`).
     :returns: Id of the node clone.
     '''
-
-    cmd_dict = {
-        'method': 'DOM.copyTo',
-        'params': {
-            'nodeId': node_id,
-            'targetNodeId': target_node_id,
-            'insertBeforeNodeId': insert_before_node_id,
-        }
+    params: T_JSON_DICT = {
+        'nodeId': node_id.to_json(),
+        'targetNodeId': target_node_id.to_json(),
     }
-    response = yield cmd_dict
-    return NodeId.from_response(response['nodeId'])
+    if insert_before_node_id is not None:
+        params['insertBeforeNodeId'] = insert_before_node_id.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.copyTo',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return NodeId.from_json(json['nodeId'])
 
 
-def describe_node(node_id: NodeId, backend_node_id: BackendNodeId, object_id: runtime.RemoteObjectId, depth: int, pierce: bool) -> typing.Generator[dict,dict,Node]:
+def describe_node(
+        node_id: typing.Optional[NodeId] = None,
+        backend_node_id: typing.Optional[BackendNodeId] = None,
+        object_id: typing.Optional[runtime.RemoteObjectId] = None,
+        depth: typing.Optional[int] = None,
+        pierce: typing.Optional[bool] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,Node]:
     '''
     Describes node given its id, does not require domain to be enabled. Does not start tracking any
     objects, can be used for automation.
@@ -74,61 +89,70 @@ def describe_node(node_id: NodeId, backend_node_id: BackendNodeId, object_id: ru
     (default is false).
     :returns: Node description.
     '''
-
-    cmd_dict = {
-        'method': 'DOM.describeNode',
-        'params': {
-            'nodeId': node_id,
-            'backendNodeId': backend_node_id,
-            'objectId': object_id,
-            'depth': depth,
-            'pierce': pierce,
-        }
+    params: T_JSON_DICT = {
     }
-    response = yield cmd_dict
-    return Node.from_response(response['node'])
+    if node_id is not None:
+        params['nodeId'] = node_id.to_json()
+    if backend_node_id is not None:
+        params['backendNodeId'] = backend_node_id.to_json()
+    if object_id is not None:
+        params['objectId'] = object_id.to_json()
+    if depth is not None:
+        params['depth'] = depth
+    if pierce is not None:
+        params['pierce'] = pierce
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.describeNode',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return Node.from_json(json['node'])
 
 
-def disable() -> typing.Generator[dict,dict,None]:
+def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Disables DOM agent for the given page.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'DOM.disable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def discard_search_results(search_id: str) -> typing.Generator[dict,dict,None]:
+def discard_search_results(
+        search_id: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Discards search results from the session with the given id. `getSearchResults` should no longer
     be called for that search.
     
     :param search_id: Unique search session identifier.
     '''
-
-    cmd_dict = {
-        'method': 'DOM.discardSearchResults',
-        'params': {
-            'searchId': search_id,
-        }
+    params: T_JSON_DICT = {
+        'searchId': search_id,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.discardSearchResults',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def enable() -> typing.Generator[dict,dict,None]:
+def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enables DOM agent for the given page.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'DOM.enable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def focus(node_id: NodeId, backend_node_id: BackendNodeId, object_id: runtime.RemoteObjectId) -> typing.Generator[dict,dict,None]:
+def focus(
+        node_id: typing.Optional[NodeId] = None,
+        backend_node_id: typing.Optional[BackendNodeId] = None,
+        object_id: typing.Optional[runtime.RemoteObjectId] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Focuses the given element.
     
@@ -136,37 +160,46 @@ def focus(node_id: NodeId, backend_node_id: BackendNodeId, object_id: runtime.Re
     :param backend_node_id: Identifier of the backend node.
     :param object_id: JavaScript object id of the node wrapper.
     '''
-
-    cmd_dict = {
-        'method': 'DOM.focus',
-        'params': {
-            'nodeId': node_id,
-            'backendNodeId': backend_node_id,
-            'objectId': object_id,
-        }
+    params: T_JSON_DICT = {
     }
-    response = yield cmd_dict
+    if node_id is not None:
+        params['nodeId'] = node_id.to_json()
+    if backend_node_id is not None:
+        params['backendNodeId'] = backend_node_id.to_json()
+    if object_id is not None:
+        params['objectId'] = object_id.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.focus',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def get_attributes(node_id: NodeId) -> typing.Generator[dict,dict,typing.List]:
+def get_attributes(
+        node_id: NodeId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['str']]:
     '''
     Returns attributes for the specified node.
     
     :param node_id: Id of the node to retrieve attibutes for.
     :returns: An interleaved array of node attribute names and values.
     '''
-
-    cmd_dict = {
-        'method': 'DOM.getAttributes',
-        'params': {
-            'nodeId': node_id,
-        }
+    params: T_JSON_DICT = {
+        'nodeId': node_id.to_json(),
     }
-    response = yield cmd_dict
-    return [str(i) for i in response['attributes']]
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.getAttributes',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return [str(i) for i in json['attributes']]
 
 
-def get_box_model(node_id: NodeId, backend_node_id: BackendNodeId, object_id: runtime.RemoteObjectId) -> typing.Generator[dict,dict,BoxModel]:
+def get_box_model(
+        node_id: typing.Optional[NodeId] = None,
+        backend_node_id: typing.Optional[BackendNodeId] = None,
+        object_id: typing.Optional[runtime.RemoteObjectId] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,BoxModel]:
     '''
     Returns boxes for the given node.
     
@@ -175,20 +208,27 @@ def get_box_model(node_id: NodeId, backend_node_id: BackendNodeId, object_id: ru
     :param object_id: JavaScript object id of the node wrapper.
     :returns: Box model for the node.
     '''
-
-    cmd_dict = {
-        'method': 'DOM.getBoxModel',
-        'params': {
-            'nodeId': node_id,
-            'backendNodeId': backend_node_id,
-            'objectId': object_id,
-        }
+    params: T_JSON_DICT = {
     }
-    response = yield cmd_dict
-    return BoxModel.from_response(response['model'])
+    if node_id is not None:
+        params['nodeId'] = node_id.to_json()
+    if backend_node_id is not None:
+        params['backendNodeId'] = backend_node_id.to_json()
+    if object_id is not None:
+        params['objectId'] = object_id.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.getBoxModel',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return BoxModel.from_json(json['model'])
 
 
-def get_content_quads(node_id: NodeId, backend_node_id: BackendNodeId, object_id: runtime.RemoteObjectId) -> typing.Generator[dict,dict,typing.List['Quad']]:
+def get_content_quads(
+        node_id: typing.Optional[NodeId] = None,
+        backend_node_id: typing.Optional[BackendNodeId] = None,
+        object_id: typing.Optional[runtime.RemoteObjectId] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['Quad']]:
     '''
     Returns quads that describe node position on the page. This method
     might return multiple quads for inline nodes.
@@ -198,20 +238,26 @@ def get_content_quads(node_id: NodeId, backend_node_id: BackendNodeId, object_id
     :param object_id: JavaScript object id of the node wrapper.
     :returns: Quads that describe node layout relative to viewport.
     '''
-
-    cmd_dict = {
+    params: T_JSON_DICT = {
+    }
+    if node_id is not None:
+        params['nodeId'] = node_id.to_json()
+    if backend_node_id is not None:
+        params['backendNodeId'] = backend_node_id.to_json()
+    if object_id is not None:
+        params['objectId'] = object_id.to_json()
+    cmd_dict: T_JSON_DICT = {
         'method': 'DOM.getContentQuads',
-        'params': {
-            'nodeId': node_id,
-            'backendNodeId': backend_node_id,
-            'objectId': object_id,
-        }
+        'params': params,
     }
-    response = yield cmd_dict
-    return [Quad.from_response(i) for i in response['quads']]
+    json = yield cmd_dict
+    return [Quad.from_json(i) for i in json['quads']]
 
 
-def get_document(depth: int, pierce: bool) -> typing.Generator[dict,dict,Node]:
+def get_document(
+        depth: typing.Optional[int] = None,
+        pierce: typing.Optional[bool] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,Node]:
     '''
     Returns the root DOM node (and optionally the subtree) to the caller.
     
@@ -221,19 +267,24 @@ def get_document(depth: int, pierce: bool) -> typing.Generator[dict,dict,Node]:
     (default is false).
     :returns: Resulting node.
     '''
-
-    cmd_dict = {
+    params: T_JSON_DICT = {
+    }
+    if depth is not None:
+        params['depth'] = depth
+    if pierce is not None:
+        params['pierce'] = pierce
+    cmd_dict: T_JSON_DICT = {
         'method': 'DOM.getDocument',
-        'params': {
-            'depth': depth,
-            'pierce': pierce,
-        }
+        'params': params,
     }
-    response = yield cmd_dict
-    return Node.from_response(response['root'])
+    json = yield cmd_dict
+    return Node.from_json(json['root'])
 
 
-def get_flattened_document(depth: int, pierce: bool) -> typing.Generator[dict,dict,typing.List['Node']]:
+def get_flattened_document(
+        depth: typing.Optional[int] = None,
+        pierce: typing.Optional[bool] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['Node']]:
     '''
     Returns the root DOM node (and optionally the subtree) to the caller.
     
@@ -243,19 +294,25 @@ def get_flattened_document(depth: int, pierce: bool) -> typing.Generator[dict,di
     (default is false).
     :returns: Resulting node.
     '''
-
-    cmd_dict = {
-        'method': 'DOM.getFlattenedDocument',
-        'params': {
-            'depth': depth,
-            'pierce': pierce,
-        }
+    params: T_JSON_DICT = {
     }
-    response = yield cmd_dict
-    return [Node.from_response(i) for i in response['nodes']]
+    if depth is not None:
+        params['depth'] = depth
+    if pierce is not None:
+        params['pierce'] = pierce
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.getFlattenedDocument',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return [Node.from_json(i) for i in json['nodes']]
 
 
-def get_node_for_location(x: int, y: int, include_user_agent_shadow_dom: bool) -> typing.Generator[dict,dict,dict]:
+def get_node_for_location(
+        x: int,
+        y: int,
+        include_user_agent_shadow_dom: typing.Optional[bool] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     Returns node id at given location. Depending on whether DOM domain is enabled, nodeId is
     either returned or not.
@@ -265,25 +322,32 @@ def get_node_for_location(x: int, y: int, include_user_agent_shadow_dom: bool) -
     :param include_user_agent_shadow_dom: False to skip to the nearest non-UA shadow root ancestor (default: false).
     :returns: a dict with the following keys:
         * backendNodeId: Resulting node.
-        * nodeId: Id of the node at given coordinates, only when enabled and requested document.
+        * nodeId: (Optional) Id of the node at given coordinates, only when enabled and requested document.
     '''
-
-    cmd_dict = {
+    params: T_JSON_DICT = {
+        'x': x,
+        'y': y,
+    }
+    if include_user_agent_shadow_dom is not None:
+        params['includeUserAgentShadowDOM'] = include_user_agent_shadow_dom
+    cmd_dict: T_JSON_DICT = {
         'method': 'DOM.getNodeForLocation',
-        'params': {
-            'x': x,
-            'y': y,
-            'includeUserAgentShadowDOM': include_user_agent_shadow_dom,
-        }
+        'params': params,
     }
-    response = yield cmd_dict
-    return {
-        'backendNodeId': BackendNodeId.from_response(response['backendNodeId']),
-        'nodeId': NodeId.from_response(response['nodeId']),
+    json = yield cmd_dict
+    result: T_JSON_DICT = {
+        'backendNodeId': BackendNodeId.from_json(json['backendNodeId']),
     }
+    if 'nodeId' in json:
+        result['nodeId'] = NodeId.from_json(json['nodeId'])
+    return result
 
 
-def get_outer_html(node_id: NodeId, backend_node_id: BackendNodeId, object_id: runtime.RemoteObjectId) -> typing.Generator[dict,dict,str]:
+def get_outer_html(
+        node_id: typing.Optional[NodeId] = None,
+        backend_node_id: typing.Optional[BackendNodeId] = None,
+        object_id: typing.Optional[runtime.RemoteObjectId] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,str]:
     '''
     Returns node's HTML markup.
     
@@ -292,38 +356,47 @@ def get_outer_html(node_id: NodeId, backend_node_id: BackendNodeId, object_id: r
     :param object_id: JavaScript object id of the node wrapper.
     :returns: Outer HTML markup.
     '''
-
-    cmd_dict = {
-        'method': 'DOM.getOuterHTML',
-        'params': {
-            'nodeId': node_id,
-            'backendNodeId': backend_node_id,
-            'objectId': object_id,
-        }
+    params: T_JSON_DICT = {
     }
-    response = yield cmd_dict
-    return str(response['outerHTML'])
+    if node_id is not None:
+        params['nodeId'] = node_id.to_json()
+    if backend_node_id is not None:
+        params['backendNodeId'] = backend_node_id.to_json()
+    if object_id is not None:
+        params['objectId'] = object_id.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.getOuterHTML',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return str(json['outerHTML'])
 
 
-def get_relayout_boundary(node_id: NodeId) -> typing.Generator[dict,dict,NodeId]:
+def get_relayout_boundary(
+        node_id: NodeId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,NodeId]:
     '''
     Returns the id of the nearest ancestor that is a relayout boundary.
     
     :param node_id: Id of the node.
     :returns: Relayout boundary node id for the given node.
     '''
-
-    cmd_dict = {
-        'method': 'DOM.getRelayoutBoundary',
-        'params': {
-            'nodeId': node_id,
-        }
+    params: T_JSON_DICT = {
+        'nodeId': node_id.to_json(),
     }
-    response = yield cmd_dict
-    return NodeId.from_response(response['nodeId'])
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.getRelayoutBoundary',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return NodeId.from_json(json['nodeId'])
 
 
-def get_search_results(search_id: str, from_index: int, to_index: int) -> typing.Generator[dict,dict,typing.List['NodeId']]:
+def get_search_results(
+        search_id: str,
+        from_index: int,
+        to_index: int,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['NodeId']]:
     '''
     Returns search results from given `fromIndex` to given `toIndex` from the search with the given
     identifier.
@@ -333,64 +406,64 @@ def get_search_results(search_id: str, from_index: int, to_index: int) -> typing
     :param to_index: End index of the search result to be returned.
     :returns: Ids of the search result nodes.
     '''
-
-    cmd_dict = {
-        'method': 'DOM.getSearchResults',
-        'params': {
-            'searchId': search_id,
-            'fromIndex': from_index,
-            'toIndex': to_index,
-        }
+    params: T_JSON_DICT = {
+        'searchId': search_id,
+        'fromIndex': from_index,
+        'toIndex': to_index,
     }
-    response = yield cmd_dict
-    return [NodeId.from_response(i) for i in response['nodeIds']]
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.getSearchResults',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return [NodeId.from_json(i) for i in json['nodeIds']]
 
 
-def hide_highlight() -> typing.Generator[dict,dict,None]:
+def hide_highlight() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Hides any highlight.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'DOM.hideHighlight',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def highlight_node() -> typing.Generator[dict,dict,None]:
+def highlight_node() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Highlights DOM node.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'DOM.highlightNode',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def highlight_rect() -> typing.Generator[dict,dict,None]:
+def highlight_rect() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Highlights given rectangle.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'DOM.highlightRect',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def mark_undoable_state() -> typing.Generator[dict,dict,None]:
+def mark_undoable_state() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Marks last undoable state.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'DOM.markUndoableState',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def move_to(node_id: NodeId, target_node_id: NodeId, insert_before_node_id: NodeId) -> typing.Generator[dict,dict,NodeId]:
+def move_to(
+        node_id: NodeId,
+        target_node_id: NodeId,
+        insert_before_node_id: typing.Optional[NodeId] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,NodeId]:
     '''
     Moves node into the new container, places it before the given anchor.
     
@@ -400,20 +473,24 @@ def move_to(node_id: NodeId, target_node_id: NodeId, insert_before_node_id: Node
     `targetNodeId`).
     :returns: New id of the moved node.
     '''
-
-    cmd_dict = {
-        'method': 'DOM.moveTo',
-        'params': {
-            'nodeId': node_id,
-            'targetNodeId': target_node_id,
-            'insertBeforeNodeId': insert_before_node_id,
-        }
+    params: T_JSON_DICT = {
+        'nodeId': node_id.to_json(),
+        'targetNodeId': target_node_id.to_json(),
     }
-    response = yield cmd_dict
-    return NodeId.from_response(response['nodeId'])
+    if insert_before_node_id is not None:
+        params['insertBeforeNodeId'] = insert_before_node_id.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.moveTo',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return NodeId.from_json(json['nodeId'])
 
 
-def perform_search(query: str, include_user_agent_shadow_dom: bool) -> typing.Generator[dict,dict,dict]:
+def perform_search(
+        query: str,
+        include_user_agent_shadow_dom: typing.Optional[bool] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     Searches for a given string in the DOM tree. Use `getSearchResults` to access search results or
     `cancelSearch` to end this search session.
@@ -424,40 +501,46 @@ def perform_search(query: str, include_user_agent_shadow_dom: bool) -> typing.Ge
         * searchId: Unique search session identifier.
         * resultCount: Number of search results.
     '''
-
-    cmd_dict = {
+    params: T_JSON_DICT = {
+        'query': query,
+    }
+    if include_user_agent_shadow_dom is not None:
+        params['includeUserAgentShadowDOM'] = include_user_agent_shadow_dom
+    cmd_dict: T_JSON_DICT = {
         'method': 'DOM.performSearch',
-        'params': {
-            'query': query,
-            'includeUserAgentShadowDOM': include_user_agent_shadow_dom,
-        }
+        'params': params,
     }
-    response = yield cmd_dict
-    return {
-        'searchId': str(response['searchId']),
-        'resultCount': int(response['resultCount']),
+    json = yield cmd_dict
+    result: T_JSON_DICT = {
+        'searchId': str(json['searchId']),
+        'resultCount': int(json['resultCount']),
     }
+    return result
 
 
-def push_node_by_path_to_frontend(path: str) -> typing.Generator[dict,dict,NodeId]:
+def push_node_by_path_to_frontend(
+        path: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,NodeId]:
     '''
     Requests that the node is sent to the caller given its path. // FIXME, use XPath
     
     :param path: Path to node in the proprietary format.
     :returns: Id of the node for given path.
     '''
-
-    cmd_dict = {
-        'method': 'DOM.pushNodeByPathToFrontend',
-        'params': {
-            'path': path,
-        }
+    params: T_JSON_DICT = {
+        'path': path,
     }
-    response = yield cmd_dict
-    return NodeId.from_response(response['nodeId'])
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.pushNodeByPathToFrontend',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return NodeId.from_json(json['nodeId'])
 
 
-def push_nodes_by_backend_ids_to_frontend(backend_node_ids: typing.List['BackendNodeId']) -> typing.Generator[dict,dict,typing.List['NodeId']]:
+def push_nodes_by_backend_ids_to_frontend(
+        backend_node_ids: typing.List['BackendNodeId'],
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['NodeId']]:
     '''
     Requests that a batch of nodes is sent to the caller given their backend node ids.
     
@@ -465,18 +548,21 @@ def push_nodes_by_backend_ids_to_frontend(backend_node_ids: typing.List['Backend
     :returns: The array of ids of pushed nodes that correspond to the backend ids specified in
     backendNodeIds.
     '''
-
-    cmd_dict = {
-        'method': 'DOM.pushNodesByBackendIdsToFrontend',
-        'params': {
-            'backendNodeIds': backend_node_ids,
-        }
+    params: T_JSON_DICT = {
+        'backendNodeIds': [i.to_json() for i in backend_node_ids],
     }
-    response = yield cmd_dict
-    return [NodeId.from_response(i) for i in response['nodeIds']]
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.pushNodesByBackendIdsToFrontend',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return [NodeId.from_json(i) for i in json['nodeIds']]
 
 
-def query_selector(node_id: NodeId, selector: str) -> typing.Generator[dict,dict,NodeId]:
+def query_selector(
+        node_id: NodeId,
+        selector: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,NodeId]:
     '''
     Executes `querySelector` on a given node.
     
@@ -484,19 +570,22 @@ def query_selector(node_id: NodeId, selector: str) -> typing.Generator[dict,dict
     :param selector: Selector string.
     :returns: Query selector result.
     '''
-
-    cmd_dict = {
-        'method': 'DOM.querySelector',
-        'params': {
-            'nodeId': node_id,
-            'selector': selector,
-        }
+    params: T_JSON_DICT = {
+        'nodeId': node_id.to_json(),
+        'selector': selector,
     }
-    response = yield cmd_dict
-    return NodeId.from_response(response['nodeId'])
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.querySelector',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return NodeId.from_json(json['nodeId'])
 
 
-def query_selector_all(node_id: NodeId, selector: str) -> typing.Generator[dict,dict,typing.List['NodeId']]:
+def query_selector_all(
+        node_id: NodeId,
+        selector: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['NodeId']]:
     '''
     Executes `querySelectorAll` on a given node.
     
@@ -504,64 +593,72 @@ def query_selector_all(node_id: NodeId, selector: str) -> typing.Generator[dict,
     :param selector: Selector string.
     :returns: Query selector result.
     '''
-
-    cmd_dict = {
-        'method': 'DOM.querySelectorAll',
-        'params': {
-            'nodeId': node_id,
-            'selector': selector,
-        }
+    params: T_JSON_DICT = {
+        'nodeId': node_id.to_json(),
+        'selector': selector,
     }
-    response = yield cmd_dict
-    return [NodeId.from_response(i) for i in response['nodeIds']]
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.querySelectorAll',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return [NodeId.from_json(i) for i in json['nodeIds']]
 
 
-def redo() -> typing.Generator[dict,dict,None]:
+def redo() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Re-does the last undone action.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'DOM.redo',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def remove_attribute(node_id: NodeId, name: str) -> typing.Generator[dict,dict,None]:
+def remove_attribute(
+        node_id: NodeId,
+        name: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Removes attribute with given name from an element with given id.
     
     :param node_id: Id of the element to remove attribute from.
     :param name: Name of the attribute to remove.
     '''
-
-    cmd_dict = {
-        'method': 'DOM.removeAttribute',
-        'params': {
-            'nodeId': node_id,
-            'name': name,
-        }
+    params: T_JSON_DICT = {
+        'nodeId': node_id.to_json(),
+        'name': name,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.removeAttribute',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def remove_node(node_id: NodeId) -> typing.Generator[dict,dict,None]:
+def remove_node(
+        node_id: NodeId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Removes node with given id.
     
     :param node_id: Id of the node to remove.
     '''
-
-    cmd_dict = {
-        'method': 'DOM.removeNode',
-        'params': {
-            'nodeId': node_id,
-        }
+    params: T_JSON_DICT = {
+        'nodeId': node_id.to_json(),
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.removeNode',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def request_child_nodes(node_id: NodeId, depth: int, pierce: bool) -> typing.Generator[dict,dict,None]:
+def request_child_nodes(
+        node_id: NodeId,
+        depth: typing.Optional[int] = None,
+        pierce: typing.Optional[bool] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Requests that children of the node with given id are returned to the caller in form of
     `setChildNodes` events where not only immediate children are retrieved, but all children down to
@@ -573,19 +670,23 @@ def request_child_nodes(node_id: NodeId, depth: int, pierce: bool) -> typing.Gen
     :param pierce: Whether or not iframes and shadow roots should be traversed when returning the sub-tree
     (default is false).
     '''
-
-    cmd_dict = {
-        'method': 'DOM.requestChildNodes',
-        'params': {
-            'nodeId': node_id,
-            'depth': depth,
-            'pierce': pierce,
-        }
+    params: T_JSON_DICT = {
+        'nodeId': node_id.to_json(),
     }
-    response = yield cmd_dict
+    if depth is not None:
+        params['depth'] = depth
+    if pierce is not None:
+        params['pierce'] = pierce
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.requestChildNodes',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def request_node(object_id: runtime.RemoteObjectId) -> typing.Generator[dict,dict,NodeId]:
+def request_node(
+        object_id: runtime.RemoteObjectId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,NodeId]:
     '''
     Requests that the node is sent to the caller given the JavaScript node object reference. All
     nodes that form the path from the node to the root are also sent to the client as a series of
@@ -594,18 +695,23 @@ def request_node(object_id: runtime.RemoteObjectId) -> typing.Generator[dict,dic
     :param object_id: JavaScript object id to convert into node.
     :returns: Node id for given object.
     '''
-
-    cmd_dict = {
-        'method': 'DOM.requestNode',
-        'params': {
-            'objectId': object_id,
-        }
+    params: T_JSON_DICT = {
+        'objectId': object_id.to_json(),
     }
-    response = yield cmd_dict
-    return NodeId.from_response(response['nodeId'])
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.requestNode',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return NodeId.from_json(json['nodeId'])
 
 
-def resolve_node(node_id: NodeId, backend_node_id: dom.BackendNodeId, object_group: str, execution_context_id: runtime.ExecutionContextId) -> typing.Generator[dict,dict,runtime.RemoteObject]:
+def resolve_node(
+        node_id: typing.Optional[NodeId] = None,
+        backend_node_id: typing.Optional[dom.BackendNodeId] = None,
+        object_group: typing.Optional[str] = None,
+        execution_context_id: typing.Optional[runtime.ExecutionContextId] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,runtime.RemoteObject]:
     '''
     Resolves the JavaScript node object for a given NodeId or BackendNodeId.
     
@@ -615,21 +721,29 @@ def resolve_node(node_id: NodeId, backend_node_id: dom.BackendNodeId, object_gro
     :param execution_context_id: Execution context in which to resolve the node.
     :returns: JavaScript object wrapper for given node.
     '''
-
-    cmd_dict = {
-        'method': 'DOM.resolveNode',
-        'params': {
-            'nodeId': node_id,
-            'backendNodeId': backend_node_id,
-            'objectGroup': object_group,
-            'executionContextId': execution_context_id,
-        }
+    params: T_JSON_DICT = {
     }
-    response = yield cmd_dict
-    return runtime.RemoteObject.from_response(response['object'])
+    if node_id is not None:
+        params['nodeId'] = node_id.to_json()
+    if backend_node_id is not None:
+        params['backendNodeId'] = backend_node_id.to_json()
+    if object_group is not None:
+        params['objectGroup'] = object_group
+    if execution_context_id is not None:
+        params['executionContextId'] = execution_context_id.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.resolveNode',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return runtime.RemoteObject.from_json(json['object'])
 
 
-def set_attribute_value(node_id: NodeId, name: str, value: str) -> typing.Generator[dict,dict,None]:
+def set_attribute_value(
+        node_id: NodeId,
+        name: str,
+        value: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Sets attribute for an element with given id.
     
@@ -637,19 +751,23 @@ def set_attribute_value(node_id: NodeId, name: str, value: str) -> typing.Genera
     :param name: Attribute name.
     :param value: Attribute value.
     '''
-
-    cmd_dict = {
-        'method': 'DOM.setAttributeValue',
-        'params': {
-            'nodeId': node_id,
-            'name': name,
-            'value': value,
-        }
+    params: T_JSON_DICT = {
+        'nodeId': node_id.to_json(),
+        'name': name,
+        'value': value,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.setAttributeValue',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_attributes_as_text(node_id: NodeId, text: str, name: str) -> typing.Generator[dict,dict,None]:
+def set_attributes_as_text(
+        node_id: NodeId,
+        text: str,
+        name: typing.Optional[str] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Sets attributes on element with given id. This method is useful when user edits some existing
     attribute value and types in several attribute name/value pairs.
@@ -659,19 +777,25 @@ def set_attributes_as_text(node_id: NodeId, text: str, name: str) -> typing.Gene
     :param name: Attribute name to replace with new attributes derived from text in case text parsed
     successfully.
     '''
-
-    cmd_dict = {
-        'method': 'DOM.setAttributesAsText',
-        'params': {
-            'nodeId': node_id,
-            'text': text,
-            'name': name,
-        }
+    params: T_JSON_DICT = {
+        'nodeId': node_id.to_json(),
+        'text': text,
     }
-    response = yield cmd_dict
+    if name is not None:
+        params['name'] = name
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.setAttributesAsText',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_file_input_files(files: typing.List, node_id: NodeId, backend_node_id: BackendNodeId, object_id: runtime.RemoteObjectId) -> typing.Generator[dict,dict,None]:
+def set_file_input_files(
+        files: typing.List['str'],
+        node_id: typing.Optional[NodeId] = None,
+        backend_node_id: typing.Optional[BackendNodeId] = None,
+        object_id: typing.Optional[runtime.RemoteObjectId] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Sets files for the given file input element.
     
@@ -680,20 +804,25 @@ def set_file_input_files(files: typing.List, node_id: NodeId, backend_node_id: B
     :param backend_node_id: Identifier of the backend node.
     :param object_id: JavaScript object id of the node wrapper.
     '''
-
-    cmd_dict = {
-        'method': 'DOM.setFileInputFiles',
-        'params': {
-            'files': files,
-            'nodeId': node_id,
-            'backendNodeId': backend_node_id,
-            'objectId': object_id,
-        }
+    params: T_JSON_DICT = {
+        'files': [i for i in files],
     }
-    response = yield cmd_dict
+    if node_id is not None:
+        params['nodeId'] = node_id.to_json()
+    if backend_node_id is not None:
+        params['backendNodeId'] = backend_node_id.to_json()
+    if object_id is not None:
+        params['objectId'] = object_id.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.setFileInputFiles',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def get_file_info(object_id: runtime.RemoteObjectId) -> typing.Generator[dict,dict,str]:
+def get_file_info(
+        object_id: runtime.RemoteObjectId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,str]:
     '''
     Returns file information for the given
     File wrapper.
@@ -701,35 +830,40 @@ def get_file_info(object_id: runtime.RemoteObjectId) -> typing.Generator[dict,di
     :param object_id: JavaScript object id of the node wrapper.
     :returns: 
     '''
-
-    cmd_dict = {
-        'method': 'DOM.getFileInfo',
-        'params': {
-            'objectId': object_id,
-        }
+    params: T_JSON_DICT = {
+        'objectId': object_id.to_json(),
     }
-    response = yield cmd_dict
-    return str(response['path'])
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.getFileInfo',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return str(json['path'])
 
 
-def set_inspected_node(node_id: NodeId) -> typing.Generator[dict,dict,None]:
+def set_inspected_node(
+        node_id: NodeId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enables console to refer to the node with given id via $x (see Command Line API for more details
     $x functions).
     
     :param node_id: DOM node id to be accessible by means of $x command line API.
     '''
-
-    cmd_dict = {
-        'method': 'DOM.setInspectedNode',
-        'params': {
-            'nodeId': node_id,
-        }
+    params: T_JSON_DICT = {
+        'nodeId': node_id.to_json(),
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.setInspectedNode',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_node_name(node_id: NodeId, name: str) -> typing.Generator[dict,dict,NodeId]:
+def set_node_name(
+        node_id: NodeId,
+        name: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,NodeId]:
     '''
     Sets node name for a node with given id.
     
@@ -737,85 +871,94 @@ def set_node_name(node_id: NodeId, name: str) -> typing.Generator[dict,dict,Node
     :param name: New node's name.
     :returns: New node's id.
     '''
-
-    cmd_dict = {
-        'method': 'DOM.setNodeName',
-        'params': {
-            'nodeId': node_id,
-            'name': name,
-        }
+    params: T_JSON_DICT = {
+        'nodeId': node_id.to_json(),
+        'name': name,
     }
-    response = yield cmd_dict
-    return NodeId.from_response(response['nodeId'])
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.setNodeName',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return NodeId.from_json(json['nodeId'])
 
 
-def set_node_value(node_id: NodeId, value: str) -> typing.Generator[dict,dict,None]:
+def set_node_value(
+        node_id: NodeId,
+        value: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Sets node value for a node with given id.
     
     :param node_id: Id of the node to set value for.
     :param value: New node's value.
     '''
-
-    cmd_dict = {
-        'method': 'DOM.setNodeValue',
-        'params': {
-            'nodeId': node_id,
-            'value': value,
-        }
+    params: T_JSON_DICT = {
+        'nodeId': node_id.to_json(),
+        'value': value,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.setNodeValue',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_outer_html(node_id: NodeId, outer_html: str) -> typing.Generator[dict,dict,None]:
+def set_outer_html(
+        node_id: NodeId,
+        outer_html: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Sets node HTML markup, returns new node id.
     
     :param node_id: Id of the node to set markup for.
     :param outer_html: Outer HTML markup to set.
     '''
-
-    cmd_dict = {
-        'method': 'DOM.setOuterHTML',
-        'params': {
-            'nodeId': node_id,
-            'outerHTML': outer_html,
-        }
+    params: T_JSON_DICT = {
+        'nodeId': node_id.to_json(),
+        'outerHTML': outer_html,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.setOuterHTML',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def undo() -> typing.Generator[dict,dict,None]:
+def undo() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Undoes the last performed action.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'DOM.undo',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def get_frame_owner(frame_id: page.FrameId) -> typing.Generator[dict,dict,dict]:
+def get_frame_owner(
+        frame_id: page.FrameId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     Returns iframe node that owns iframe with the given domain.
     
     :param frame_id: 
     :returns: a dict with the following keys:
         * backendNodeId: Resulting node.
-        * nodeId: Id of the node at given coordinates, only when enabled and requested document.
+        * nodeId: (Optional) Id of the node at given coordinates, only when enabled and requested document.
     '''
-
-    cmd_dict = {
+    params: T_JSON_DICT = {
+        'frameId': frame_id.to_json(),
+    }
+    cmd_dict: T_JSON_DICT = {
         'method': 'DOM.getFrameOwner',
-        'params': {
-            'frameId': frame_id,
-        }
+        'params': params,
     }
-    response = yield cmd_dict
-    return {
-        'backendNodeId': BackendNodeId.from_response(response['backendNodeId']),
-        'nodeId': NodeId.from_response(response['nodeId']),
+    json = yield cmd_dict
+    result: T_JSON_DICT = {
+        'backendNodeId': BackendNodeId.from_json(json['backendNodeId']),
     }
+    if 'nodeId' in json:
+        result['nodeId'] = NodeId.from_json(json['nodeId'])
+    return result
 
 

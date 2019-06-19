@@ -8,7 +8,9 @@ Domain: network
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -17,68 +19,72 @@ from ..io import types as io
 
 
 
-def can_clear_browser_cache() -> typing.Generator[dict,dict,bool]:
+def can_clear_browser_cache() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,bool]:
     '''
     Tells whether clearing browser cache is supported.
     :returns: True if browser cache can be cleared.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Network.canClearBrowserCache',
     }
-    response = yield cmd_dict
-    return bool(response['result'])
+    json = yield cmd_dict
+    return bool(json['result'])
 
 
-def can_clear_browser_cookies() -> typing.Generator[dict,dict,bool]:
+def can_clear_browser_cookies() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,bool]:
     '''
     Tells whether clearing browser cookies is supported.
     :returns: True if browser cookies can be cleared.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Network.canClearBrowserCookies',
     }
-    response = yield cmd_dict
-    return bool(response['result'])
+    json = yield cmd_dict
+    return bool(json['result'])
 
 
-def can_emulate_network_conditions() -> typing.Generator[dict,dict,bool]:
+def can_emulate_network_conditions() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,bool]:
     '''
     Tells whether emulation of network conditions is supported.
     :returns: True if emulation of network conditions is supported.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Network.canEmulateNetworkConditions',
     }
-    response = yield cmd_dict
-    return bool(response['result'])
+    json = yield cmd_dict
+    return bool(json['result'])
 
 
-def clear_browser_cache() -> typing.Generator[dict,dict,None]:
+def clear_browser_cache() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Clears browser cache.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Network.clearBrowserCache',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def clear_browser_cookies() -> typing.Generator[dict,dict,None]:
+def clear_browser_cookies() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Clears browser cookies.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Network.clearBrowserCookies',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def continue_intercepted_request(interception_id: InterceptionId, error_reason: ErrorReason, raw_response: str, url: str, method: str, post_data: str, headers: Headers, auth_challenge_response: AuthChallengeResponse) -> typing.Generator[dict,dict,None]:
+def continue_intercepted_request(
+        interception_id: InterceptionId,
+        error_reason: typing.Optional[ErrorReason] = None,
+        raw_response: typing.Optional[str] = None,
+        url: typing.Optional[str] = None,
+        method: typing.Optional[str] = None,
+        post_data: typing.Optional[str] = None,
+        headers: typing.Optional[Headers] = None,
+        auth_challenge_response: typing.Optional[AuthChallengeResponse] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Response to Network.requestIntercepted which either modifies the request to continue with any
     modifications, or blocks it, or completes it with the provided response bytes. If a network
@@ -100,24 +106,36 @@ def continue_intercepted_request(interception_id: InterceptionId, error_reason: 
     authChallenge.
     :param auth_challenge_response: Response to a requestIntercepted with an authChallenge. Must not be set otherwise.
     '''
-
-    cmd_dict = {
-        'method': 'Network.continueInterceptedRequest',
-        'params': {
-            'interceptionId': interception_id,
-            'errorReason': error_reason,
-            'rawResponse': raw_response,
-            'url': url,
-            'method': method,
-            'postData': post_data,
-            'headers': headers,
-            'authChallengeResponse': auth_challenge_response,
-        }
+    params: T_JSON_DICT = {
+        'interceptionId': interception_id.to_json(),
     }
-    response = yield cmd_dict
+    if error_reason is not None:
+        params['errorReason'] = error_reason.to_json()
+    if raw_response is not None:
+        params['rawResponse'] = raw_response
+    if url is not None:
+        params['url'] = url
+    if method is not None:
+        params['method'] = method
+    if post_data is not None:
+        params['postData'] = post_data
+    if headers is not None:
+        params['headers'] = headers.to_json()
+    if auth_challenge_response is not None:
+        params['authChallengeResponse'] = auth_challenge_response.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Network.continueInterceptedRequest',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def delete_cookies(name: str, url: str, domain: str, path: str) -> typing.Generator[dict,dict,None]:
+def delete_cookies(
+        name: str,
+        url: typing.Optional[str] = None,
+        domain: typing.Optional[str] = None,
+        path: typing.Optional[str] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Deletes browser cookies with matching name and url or domain/path pair.
     
@@ -127,31 +145,39 @@ def delete_cookies(name: str, url: str, domain: str, path: str) -> typing.Genera
     :param domain: If specified, deletes only cookies with the exact domain.
     :param path: If specified, deletes only cookies with the exact path.
     '''
-
-    cmd_dict = {
-        'method': 'Network.deleteCookies',
-        'params': {
-            'name': name,
-            'url': url,
-            'domain': domain,
-            'path': path,
-        }
+    params: T_JSON_DICT = {
+        'name': name,
     }
-    response = yield cmd_dict
+    if url is not None:
+        params['url'] = url
+    if domain is not None:
+        params['domain'] = domain
+    if path is not None:
+        params['path'] = path
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Network.deleteCookies',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def disable() -> typing.Generator[dict,dict,None]:
+def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Disables network tracking, prevents network events from being sent to the client.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Network.disable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def emulate_network_conditions(offline: bool, latency: float, download_throughput: float, upload_throughput: float, connection_type: ConnectionType) -> typing.Generator[dict,dict,None]:
+def emulate_network_conditions(
+        offline: bool,
+        latency: float,
+        download_throughput: float,
+        upload_throughput: float,
+        connection_type: typing.Optional[ConnectionType] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Activates emulation of network conditions.
     
@@ -161,21 +187,26 @@ def emulate_network_conditions(offline: bool, latency: float, download_throughpu
     :param upload_throughput: Maximal aggregated upload throughput (bytes/sec).  -1 disables upload throttling.
     :param connection_type: Connection type if known.
     '''
-
-    cmd_dict = {
-        'method': 'Network.emulateNetworkConditions',
-        'params': {
-            'offline': offline,
-            'latency': latency,
-            'downloadThroughput': download_throughput,
-            'uploadThroughput': upload_throughput,
-            'connectionType': connection_type,
-        }
+    params: T_JSON_DICT = {
+        'offline': offline,
+        'latency': latency,
+        'downloadThroughput': download_throughput,
+        'uploadThroughput': upload_throughput,
     }
-    response = yield cmd_dict
+    if connection_type is not None:
+        params['connectionType'] = connection_type.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Network.emulateNetworkConditions',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def enable(max_total_buffer_size: int, max_resource_buffer_size: int, max_post_data_size: int) -> typing.Generator[dict,dict,None]:
+def enable(
+        max_total_buffer_size: typing.Optional[int] = None,
+        max_resource_buffer_size: typing.Optional[int] = None,
+        max_post_data_size: typing.Optional[int] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enables network tracking, network events will now be delivered to the client.
     
@@ -183,51 +214,57 @@ def enable(max_total_buffer_size: int, max_resource_buffer_size: int, max_post_d
     :param max_resource_buffer_size: Per-resource buffer size in bytes to use when preserving network payloads (XHRs, etc).
     :param max_post_data_size: Longest post body size (in bytes) that would be included in requestWillBeSent notification
     '''
-
-    cmd_dict = {
-        'method': 'Network.enable',
-        'params': {
-            'maxTotalBufferSize': max_total_buffer_size,
-            'maxResourceBufferSize': max_resource_buffer_size,
-            'maxPostDataSize': max_post_data_size,
-        }
+    params: T_JSON_DICT = {
     }
-    response = yield cmd_dict
+    if max_total_buffer_size is not None:
+        params['maxTotalBufferSize'] = max_total_buffer_size
+    if max_resource_buffer_size is not None:
+        params['maxResourceBufferSize'] = max_resource_buffer_size
+    if max_post_data_size is not None:
+        params['maxPostDataSize'] = max_post_data_size
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Network.enable',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def get_all_cookies() -> typing.Generator[dict,dict,typing.List['Cookie']]:
+def get_all_cookies() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['Cookie']]:
     '''
     Returns all browser cookies. Depending on the backend support, will return detailed cookie
     information in the `cookies` field.
     :returns: Array of cookie objects.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Network.getAllCookies',
     }
-    response = yield cmd_dict
-    return [Cookie.from_response(i) for i in response['cookies']]
+    json = yield cmd_dict
+    return [Cookie.from_json(i) for i in json['cookies']]
 
 
-def get_certificate(origin: str) -> typing.Generator[dict,dict,typing.List]:
+def get_certificate(
+        origin: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['str']]:
     '''
     Returns the DER-encoded certificate.
     
     :param origin: Origin to get certificate for.
     :returns: 
     '''
-
-    cmd_dict = {
-        'method': 'Network.getCertificate',
-        'params': {
-            'origin': origin,
-        }
+    params: T_JSON_DICT = {
+        'origin': origin,
     }
-    response = yield cmd_dict
-    return [str(i) for i in response['tableNames']]
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Network.getCertificate',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return [str(i) for i in json['tableNames']]
 
 
-def get_cookies(urls: typing.List) -> typing.Generator[dict,dict,typing.List['Cookie']]:
+def get_cookies(
+        urls: typing.Optional[typing.List['str']] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['Cookie']]:
     '''
     Returns all browser cookies for the current URL. Depending on the backend support, will return
     detailed cookie information in the `cookies` field.
@@ -235,18 +272,21 @@ def get_cookies(urls: typing.List) -> typing.Generator[dict,dict,typing.List['Co
     :param urls: The list of URLs for which applicable cookies will be fetched
     :returns: Array of cookie objects.
     '''
-
-    cmd_dict = {
-        'method': 'Network.getCookies',
-        'params': {
-            'urls': urls,
-        }
+    params: T_JSON_DICT = {
     }
-    response = yield cmd_dict
-    return [Cookie.from_response(i) for i in response['cookies']]
+    if urls is not None:
+        params['urls'] = [i for i in urls]
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Network.getCookies',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return [Cookie.from_json(i) for i in json['cookies']]
 
 
-def get_response_body(request_id: RequestId) -> typing.Generator[dict,dict,dict]:
+def get_response_body(
+        request_id: RequestId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     Returns content served for the given request.
     
@@ -255,39 +295,44 @@ def get_response_body(request_id: RequestId) -> typing.Generator[dict,dict,dict]
         * body: Response body.
         * base64Encoded: True, if content was sent as base64.
     '''
-
-    cmd_dict = {
+    params: T_JSON_DICT = {
+        'requestId': request_id.to_json(),
+    }
+    cmd_dict: T_JSON_DICT = {
         'method': 'Network.getResponseBody',
-        'params': {
-            'requestId': request_id,
-        }
+        'params': params,
     }
-    response = yield cmd_dict
-    return {
-        'body': str(response['body']),
-        'base64Encoded': bool(response['base64Encoded']),
+    json = yield cmd_dict
+    result: T_JSON_DICT = {
+        'body': str(json['body']),
+        'base64Encoded': bool(json['base64Encoded']),
     }
+    return result
 
 
-def get_request_post_data(request_id: RequestId) -> typing.Generator[dict,dict,str]:
+def get_request_post_data(
+        request_id: RequestId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,str]:
     '''
     Returns post data sent with the request. Returns an error when no data was sent with the request.
     
     :param request_id: Identifier of the network request to get content for.
     :returns: Request body string, omitting files from multipart requests
     '''
-
-    cmd_dict = {
-        'method': 'Network.getRequestPostData',
-        'params': {
-            'requestId': request_id,
-        }
+    params: T_JSON_DICT = {
+        'requestId': request_id.to_json(),
     }
-    response = yield cmd_dict
-    return str(response['postData'])
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Network.getRequestPostData',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return str(json['postData'])
 
 
-def get_response_body_for_interception(interception_id: InterceptionId) -> typing.Generator[dict,dict,dict]:
+def get_response_body_for_interception(
+        interception_id: InterceptionId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     Returns content served for the given currently intercepted request.
     
@@ -296,21 +341,24 @@ def get_response_body_for_interception(interception_id: InterceptionId) -> typin
         * body: Response body.
         * base64Encoded: True, if content was sent as base64.
     '''
-
-    cmd_dict = {
+    params: T_JSON_DICT = {
+        'interceptionId': interception_id.to_json(),
+    }
+    cmd_dict: T_JSON_DICT = {
         'method': 'Network.getResponseBodyForInterception',
-        'params': {
-            'interceptionId': interception_id,
-        }
+        'params': params,
     }
-    response = yield cmd_dict
-    return {
-        'body': str(response['body']),
-        'base64Encoded': bool(response['base64Encoded']),
+    json = yield cmd_dict
+    result: T_JSON_DICT = {
+        'body': str(json['body']),
+        'base64Encoded': bool(json['base64Encoded']),
     }
+    return result
 
 
-def take_response_body_for_interception_as_stream(interception_id: InterceptionId) -> typing.Generator[dict,dict,io.StreamHandle]:
+def take_response_body_for_interception_as_stream(
+        interception_id: InterceptionId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,io.StreamHandle]:
     '''
     Returns a handle to the stream representing the response body. Note that after this command,
     the intercepted request can't be continued as is -- you either need to cancel it or to provide
@@ -320,18 +368,20 @@ def take_response_body_for_interception_as_stream(interception_id: InterceptionI
     :param interception_id: 
     :returns: 
     '''
-
-    cmd_dict = {
-        'method': 'Network.takeResponseBodyForInterceptionAsStream',
-        'params': {
-            'interceptionId': interception_id,
-        }
+    params: T_JSON_DICT = {
+        'interceptionId': interception_id.to_json(),
     }
-    response = yield cmd_dict
-    return io.StreamHandle.from_response(response['stream'])
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Network.takeResponseBodyForInterceptionAsStream',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return io.StreamHandle.from_json(json['stream'])
 
 
-def replay_xhr(request_id: RequestId) -> typing.Generator[dict,dict,None]:
+def replay_xhr(
+        request_id: RequestId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     This method sends a new XMLHttpRequest which is identical to the original one. The following
     parameters should be identical: method, url, async, request body, extra headers, withCredentials
@@ -339,17 +389,22 @@ def replay_xhr(request_id: RequestId) -> typing.Generator[dict,dict,None]:
     
     :param request_id: Identifier of XHR to replay.
     '''
-
-    cmd_dict = {
-        'method': 'Network.replayXHR',
-        'params': {
-            'requestId': request_id,
-        }
+    params: T_JSON_DICT = {
+        'requestId': request_id.to_json(),
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Network.replayXHR',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def search_in_response_body(request_id: RequestId, query: str, case_sensitive: bool, is_regex: bool) -> typing.Generator[dict,dict,typing.List['debugger.SearchMatch']]:
+def search_in_response_body(
+        request_id: RequestId,
+        query: str,
+        case_sensitive: typing.Optional[bool] = None,
+        is_regex: typing.Optional[bool] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['debugger.SearchMatch']]:
     '''
     Searches for given string in response content.
     
@@ -359,69 +414,87 @@ def search_in_response_body(request_id: RequestId, query: str, case_sensitive: b
     :param is_regex: If true, treats string parameter as regex.
     :returns: List of search matches.
     '''
-
-    cmd_dict = {
-        'method': 'Network.searchInResponseBody',
-        'params': {
-            'requestId': request_id,
-            'query': query,
-            'caseSensitive': case_sensitive,
-            'isRegex': is_regex,
-        }
+    params: T_JSON_DICT = {
+        'requestId': request_id.to_json(),
+        'query': query,
     }
-    response = yield cmd_dict
-    return [debugger.SearchMatch.from_response(i) for i in response['result']]
+    if case_sensitive is not None:
+        params['caseSensitive'] = case_sensitive
+    if is_regex is not None:
+        params['isRegex'] = is_regex
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Network.searchInResponseBody',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return [debugger.SearchMatch.from_json(i) for i in json['result']]
 
 
-def set_blocked_ur_ls(urls: typing.List) -> typing.Generator[dict,dict,None]:
+def set_blocked_ur_ls(
+        urls: typing.List['str'],
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Blocks URLs from loading.
     
     :param urls: URL patterns to block. Wildcards ('*') are allowed.
     '''
-
-    cmd_dict = {
-        'method': 'Network.setBlockedURLs',
-        'params': {
-            'urls': urls,
-        }
+    params: T_JSON_DICT = {
+        'urls': [i for i in urls],
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Network.setBlockedURLs',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_bypass_service_worker(bypass: bool) -> typing.Generator[dict,dict,None]:
+def set_bypass_service_worker(
+        bypass: bool,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Toggles ignoring of service worker for each request.
     
     :param bypass: Bypass service worker and load from network.
     '''
-
-    cmd_dict = {
-        'method': 'Network.setBypassServiceWorker',
-        'params': {
-            'bypass': bypass,
-        }
+    params: T_JSON_DICT = {
+        'bypass': bypass,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Network.setBypassServiceWorker',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_cache_disabled(cache_disabled: bool) -> typing.Generator[dict,dict,None]:
+def set_cache_disabled(
+        cache_disabled: bool,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Toggles ignoring cache for each request. If `true`, cache will not be used.
     
     :param cache_disabled: Cache disabled state.
     '''
-
-    cmd_dict = {
-        'method': 'Network.setCacheDisabled',
-        'params': {
-            'cacheDisabled': cache_disabled,
-        }
+    params: T_JSON_DICT = {
+        'cacheDisabled': cache_disabled,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Network.setCacheDisabled',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_cookie(name: str, value: str, url: str, domain: str, path: str, secure: bool, http_only: bool, same_site: CookieSameSite, expires: TimeSinceEpoch) -> typing.Generator[dict,dict,bool]:
+def set_cookie(
+        name: str,
+        value: str,
+        url: typing.Optional[str] = None,
+        domain: typing.Optional[str] = None,
+        path: typing.Optional[str] = None,
+        secure: typing.Optional[bool] = None,
+        http_only: typing.Optional[bool] = None,
+        same_site: typing.Optional[CookieSameSite] = None,
+        expires: typing.Optional[TimeSinceEpoch] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,bool]:
     '''
     Sets a cookie with the given cookie data; may overwrite equivalent cookies if they exist.
     
@@ -437,93 +510,113 @@ def set_cookie(name: str, value: str, url: str, domain: str, path: str, secure: 
     :param expires: Cookie expiration date, session cookie if not set
     :returns: True if successfully set cookie.
     '''
-
-    cmd_dict = {
-        'method': 'Network.setCookie',
-        'params': {
-            'name': name,
-            'value': value,
-            'url': url,
-            'domain': domain,
-            'path': path,
-            'secure': secure,
-            'httpOnly': http_only,
-            'sameSite': same_site,
-            'expires': expires,
-        }
+    params: T_JSON_DICT = {
+        'name': name,
+        'value': value,
     }
-    response = yield cmd_dict
-    return bool(response['success'])
+    if url is not None:
+        params['url'] = url
+    if domain is not None:
+        params['domain'] = domain
+    if path is not None:
+        params['path'] = path
+    if secure is not None:
+        params['secure'] = secure
+    if http_only is not None:
+        params['httpOnly'] = http_only
+    if same_site is not None:
+        params['sameSite'] = same_site.to_json()
+    if expires is not None:
+        params['expires'] = expires.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Network.setCookie',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return bool(json['success'])
 
 
-def set_cookies(cookies: typing.List['CookieParam']) -> typing.Generator[dict,dict,None]:
+def set_cookies(
+        cookies: typing.List['CookieParam'],
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Sets given cookies.
     
     :param cookies: Cookies to be set.
     '''
-
-    cmd_dict = {
-        'method': 'Network.setCookies',
-        'params': {
-            'cookies': cookies,
-        }
+    params: T_JSON_DICT = {
+        'cookies': [i.to_json() for i in cookies],
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Network.setCookies',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_data_size_limits_for_test(max_total_size: int, max_resource_size: int) -> typing.Generator[dict,dict,None]:
+def set_data_size_limits_for_test(
+        max_total_size: int,
+        max_resource_size: int,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     For testing.
     
     :param max_total_size: Maximum total buffer size.
     :param max_resource_size: Maximum per-resource size.
     '''
-
-    cmd_dict = {
-        'method': 'Network.setDataSizeLimitsForTest',
-        'params': {
-            'maxTotalSize': max_total_size,
-            'maxResourceSize': max_resource_size,
-        }
+    params: T_JSON_DICT = {
+        'maxTotalSize': max_total_size,
+        'maxResourceSize': max_resource_size,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Network.setDataSizeLimitsForTest',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_extra_http_headers(headers: Headers) -> typing.Generator[dict,dict,None]:
+def set_extra_http_headers(
+        headers: Headers,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Specifies whether to always send extra HTTP headers with the requests from this page.
     
     :param headers: Map with extra HTTP headers.
     '''
-
-    cmd_dict = {
-        'method': 'Network.setExtraHTTPHeaders',
-        'params': {
-            'headers': headers,
-        }
+    params: T_JSON_DICT = {
+        'headers': headers.to_json(),
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Network.setExtraHTTPHeaders',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_request_interception(patterns: typing.List['RequestPattern']) -> typing.Generator[dict,dict,None]:
+def set_request_interception(
+        patterns: typing.List['RequestPattern'],
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Sets the requests to intercept that match the provided patterns and optionally resource types.
     
     :param patterns: Requests matching any of these patterns will be forwarded and wait for the corresponding
     continueInterceptedRequest call.
     '''
-
-    cmd_dict = {
-        'method': 'Network.setRequestInterception',
-        'params': {
-            'patterns': patterns,
-        }
+    params: T_JSON_DICT = {
+        'patterns': [i.to_json() for i in patterns],
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Network.setRequestInterception',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_user_agent_override(user_agent: str, accept_language: str, platform: str) -> typing.Generator[dict,dict,None]:
+def set_user_agent_override(
+        user_agent: str,
+        accept_language: typing.Optional[str] = None,
+        platform: typing.Optional[str] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Allows overriding user agent with the given string.
     
@@ -531,15 +624,17 @@ def set_user_agent_override(user_agent: str, accept_language: str, platform: str
     :param accept_language: Browser langugage to emulate.
     :param platform: The platform navigator.platform should return.
     '''
-
-    cmd_dict = {
-        'method': 'Network.setUserAgentOverride',
-        'params': {
-            'userAgent': user_agent,
-            'acceptLanguage': accept_language,
-            'platform': platform,
-        }
+    params: T_JSON_DICT = {
+        'userAgent': user_agent,
     }
-    response = yield cmd_dict
+    if accept_language is not None:
+        params['acceptLanguage'] = accept_language
+    if platform is not None:
+        params['platform'] = platform
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Network.setUserAgentOverride',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 

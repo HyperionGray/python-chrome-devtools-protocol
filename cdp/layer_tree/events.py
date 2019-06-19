@@ -8,7 +8,9 @@ Domain: layer_tree
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -22,8 +24,29 @@ class LayerPainted:
 
     clip: dom.Rect
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'LayerTree'
+    _method = 'layerPainted'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'LayerPainted':
+        return cls(
+            layer_id=LayerId.from_json(json['layerId']),
+            clip=dom.Rect.from_json(json['clip']),
+        )
+
 
 @dataclass
 class LayerTreeDidChange:
     layers: typing.List['Layer']
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'LayerTree'
+    _method = 'layerTreeDidChange'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'LayerTreeDidChange':
+        return cls(
+            layers=[Layer.from_json(i) for i in json['layers']],
+        )
 

@@ -8,21 +8,25 @@ Domain: dom_storage
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 
-class Item(typing.List):
+class Item(typing.List['str']):
     '''
     DOM Storage item.
     '''
+    def to_json(self) -> typing.List['str']:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: typing.List['str']) -> 'Item':
+        return cls(json)
 
     def __repr__(self):
-        return 'Item({})'.format(typing.List.__repr__(self))
-
+        return 'Item({})'.format(typing.List['str'].__repr__(self))
 
 
 @dataclass
@@ -36,10 +40,17 @@ class StorageId:
     #: Whether the storage is local storage (not session storage).
     is_local_storage: bool
 
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'securityOrigin': self.security_origin,
+            'isLocalStorage': self.is_local_storage,
+        }
+        return json
+
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'StorageId':
         return cls(
-            security_origin=str(response.get('securityOrigin')),
-            is_local_storage=bool(response.get('isLocalStorage')),
+            security_origin=json['securityOrigin'],
+            is_local_storage=json['isLocalStorage'],
         )
 

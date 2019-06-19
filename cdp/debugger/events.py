@@ -8,7 +8,9 @@ Domain: debugger
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -27,6 +29,17 @@ class BreakpointResolved:
     #: Fired when breakpoint is resolved to an actual script and location.
     location: Location
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Debugger'
+    _method = 'breakpointResolved'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'BreakpointResolved':
+        return cls(
+            breakpoint_id=BreakpointId.from_json(json['breakpointId']),
+            location=Location.from_json(json['location']),
+        )
+
 
 @dataclass
 class Paused:
@@ -43,7 +56,7 @@ class Paused:
     data: dict
 
     #: Fired when the virtual machine stopped on breakpoint or exception or any other stop criteria.
-    hit_breakpoints: typing.List
+    hit_breakpoints: typing.List['str']
 
     #: Fired when the virtual machine stopped on breakpoint or exception or any other stop criteria.
     async_stack_trace: runtime.StackTrace
@@ -54,13 +67,36 @@ class Paused:
     #: Fired when the virtual machine stopped on breakpoint or exception or any other stop criteria.
     async_call_stack_trace_id: runtime.StackTraceId
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Debugger'
+    _method = 'paused'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'Paused':
+        return cls(
+            call_frames=[CallFrame.from_json(i) for i in json['callFrames']],
+            reason=str(json['reason']),
+            data=dict(json['data']),
+            hit_breakpoints=[str(i) for i in json['hitBreakpoints']],
+            async_stack_trace=runtime.StackTrace.from_json(json['asyncStackTrace']),
+            async_stack_trace_id=runtime.StackTraceId.from_json(json['asyncStackTraceId']),
+            async_call_stack_trace_id=runtime.StackTraceId.from_json(json['asyncCallStackTraceId']),
+        )
+
 
 @dataclass
 class Resumed:
     '''
     Fired when the virtual machine resumed execution.
     '''
-    pass
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Debugger'
+    _method = 'resumed'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'Resumed':
+        return cls(
+        )
 
 
 @dataclass
@@ -109,6 +145,29 @@ class ScriptFailedToParse:
 
     #: Fired when virtual machine fails to parse the script.
     stack_trace: runtime.StackTrace
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Debugger'
+    _method = 'scriptFailedToParse'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'ScriptFailedToParse':
+        return cls(
+            script_id=runtime.ScriptId.from_json(json['scriptId']),
+            url=str(json['url']),
+            start_line=int(json['startLine']),
+            start_column=int(json['startColumn']),
+            end_line=int(json['endLine']),
+            end_column=int(json['endColumn']),
+            execution_context_id=runtime.ExecutionContextId.from_json(json['executionContextId']),
+            hash=str(json['hash']),
+            execution_context_aux_data=dict(json['executionContextAuxData']),
+            source_map_url=str(json['sourceMapURL']),
+            has_source_url=bool(json['hasSourceURL']),
+            is_module=bool(json['isModule']),
+            length=int(json['length']),
+            stack_trace=runtime.StackTrace.from_json(json['stackTrace']),
+        )
 
 
 @dataclass
@@ -176,4 +235,28 @@ class ScriptParsed:
     #: Fired when virtual machine parses script. This event is also fired for all known and uncollected
     #: scripts upon enabling debugger.
     stack_trace: runtime.StackTrace
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Debugger'
+    _method = 'scriptParsed'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'ScriptParsed':
+        return cls(
+            script_id=runtime.ScriptId.from_json(json['scriptId']),
+            url=str(json['url']),
+            start_line=int(json['startLine']),
+            start_column=int(json['startColumn']),
+            end_line=int(json['endLine']),
+            end_column=int(json['endColumn']),
+            execution_context_id=runtime.ExecutionContextId.from_json(json['executionContextId']),
+            hash=str(json['hash']),
+            execution_context_aux_data=dict(json['executionContextAuxData']),
+            is_live_edit=bool(json['isLiveEdit']),
+            source_map_url=str(json['sourceMapURL']),
+            has_source_url=bool(json['hasSourceURL']),
+            is_module=bool(json['isModule']),
+            length=int(json['length']),
+            stack_trace=runtime.StackTrace.from_json(json['stackTrace']),
+        )
 

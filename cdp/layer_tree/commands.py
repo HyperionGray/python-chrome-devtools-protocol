@@ -8,7 +8,9 @@ Domain: layer_tree
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -16,83 +18,92 @@ from ..dom import types as dom
 
 
 
-def compositing_reasons(layer_id: LayerId) -> typing.Generator[dict,dict,typing.List]:
+def compositing_reasons(
+        layer_id: LayerId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['str']]:
     '''
     Provides the reasons why the given layer was composited.
     
     :param layer_id: The id of the layer for which we want to get the reasons it was composited.
     :returns: A list of strings specifying reasons for the given layer to become composited.
     '''
-
-    cmd_dict = {
-        'method': 'LayerTree.compositingReasons',
-        'params': {
-            'layerId': layer_id,
-        }
+    params: T_JSON_DICT = {
+        'layerId': layer_id.to_json(),
     }
-    response = yield cmd_dict
-    return [str(i) for i in response['compositingReasons']]
+    cmd_dict: T_JSON_DICT = {
+        'method': 'LayerTree.compositingReasons',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return [str(i) for i in json['compositingReasons']]
 
 
-def disable() -> typing.Generator[dict,dict,None]:
+def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Disables compositing tree inspection.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'LayerTree.disable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def enable() -> typing.Generator[dict,dict,None]:
+def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enables compositing tree inspection.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'LayerTree.enable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def load_snapshot(tiles: typing.List['PictureTile']) -> typing.Generator[dict,dict,SnapshotId]:
+def load_snapshot(
+        tiles: typing.List['PictureTile'],
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,SnapshotId]:
     '''
     Returns the snapshot identifier.
     
     :param tiles: An array of tiles composing the snapshot.
     :returns: The id of the snapshot.
     '''
-
-    cmd_dict = {
-        'method': 'LayerTree.loadSnapshot',
-        'params': {
-            'tiles': tiles,
-        }
+    params: T_JSON_DICT = {
+        'tiles': [i.to_json() for i in tiles],
     }
-    response = yield cmd_dict
-    return SnapshotId.from_response(response['snapshotId'])
+    cmd_dict: T_JSON_DICT = {
+        'method': 'LayerTree.loadSnapshot',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return SnapshotId.from_json(json['snapshotId'])
 
 
-def make_snapshot(layer_id: LayerId) -> typing.Generator[dict,dict,SnapshotId]:
+def make_snapshot(
+        layer_id: LayerId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,SnapshotId]:
     '''
     Returns the layer snapshot identifier.
     
     :param layer_id: The id of the layer.
     :returns: The id of the layer snapshot.
     '''
-
-    cmd_dict = {
-        'method': 'LayerTree.makeSnapshot',
-        'params': {
-            'layerId': layer_id,
-        }
+    params: T_JSON_DICT = {
+        'layerId': layer_id.to_json(),
     }
-    response = yield cmd_dict
-    return SnapshotId.from_response(response['snapshotId'])
+    cmd_dict: T_JSON_DICT = {
+        'method': 'LayerTree.makeSnapshot',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return SnapshotId.from_json(json['snapshotId'])
 
 
-def profile_snapshot(snapshot_id: SnapshotId, min_repeat_count: int, min_duration: float, clip_rect: dom.Rect) -> typing.Generator[dict,dict,typing.List['PaintProfile']]:
+def profile_snapshot(
+        snapshot_id: SnapshotId,
+        min_repeat_count: typing.Optional[int] = None,
+        min_duration: typing.Optional[float] = None,
+        clip_rect: typing.Optional[dom.Rect] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['PaintProfile']]:
     '''
     
     
@@ -102,37 +113,47 @@ def profile_snapshot(snapshot_id: SnapshotId, min_repeat_count: int, min_duratio
     :param clip_rect: The clip rectangle to apply when replaying the snapshot.
     :returns: The array of paint profiles, one per run.
     '''
-
-    cmd_dict = {
-        'method': 'LayerTree.profileSnapshot',
-        'params': {
-            'snapshotId': snapshot_id,
-            'minRepeatCount': min_repeat_count,
-            'minDuration': min_duration,
-            'clipRect': clip_rect,
-        }
+    params: T_JSON_DICT = {
+        'snapshotId': snapshot_id.to_json(),
     }
-    response = yield cmd_dict
-    return [PaintProfile.from_response(i) for i in response['timings']]
+    if min_repeat_count is not None:
+        params['minRepeatCount'] = min_repeat_count
+    if min_duration is not None:
+        params['minDuration'] = min_duration
+    if clip_rect is not None:
+        params['clipRect'] = clip_rect.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'LayerTree.profileSnapshot',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return [PaintProfile.from_json(i) for i in json['timings']]
 
 
-def release_snapshot(snapshot_id: SnapshotId) -> typing.Generator[dict,dict,None]:
+def release_snapshot(
+        snapshot_id: SnapshotId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Releases layer snapshot captured by the back-end.
     
     :param snapshot_id: The id of the layer snapshot.
     '''
-
-    cmd_dict = {
-        'method': 'LayerTree.releaseSnapshot',
-        'params': {
-            'snapshotId': snapshot_id,
-        }
+    params: T_JSON_DICT = {
+        'snapshotId': snapshot_id.to_json(),
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'LayerTree.releaseSnapshot',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def replay_snapshot(snapshot_id: SnapshotId, from_step: int, to_step: int, scale: float) -> typing.Generator[dict,dict,str]:
+def replay_snapshot(
+        snapshot_id: SnapshotId,
+        from_step: typing.Optional[int] = None,
+        to_step: typing.Optional[int] = None,
+        scale: typing.Optional[float] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,str]:
     '''
     Replays the layer snapshot and returns the resulting bitmap.
     
@@ -142,35 +163,40 @@ def replay_snapshot(snapshot_id: SnapshotId, from_step: int, to_step: int, scale
     :param scale: The scale to apply while replaying (defaults to 1).
     :returns: A data: URL for resulting image.
     '''
-
-    cmd_dict = {
-        'method': 'LayerTree.replaySnapshot',
-        'params': {
-            'snapshotId': snapshot_id,
-            'fromStep': from_step,
-            'toStep': to_step,
-            'scale': scale,
-        }
+    params: T_JSON_DICT = {
+        'snapshotId': snapshot_id.to_json(),
     }
-    response = yield cmd_dict
-    return str(response['dataURL'])
+    if from_step is not None:
+        params['fromStep'] = from_step
+    if to_step is not None:
+        params['toStep'] = to_step
+    if scale is not None:
+        params['scale'] = scale
+    cmd_dict: T_JSON_DICT = {
+        'method': 'LayerTree.replaySnapshot',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return str(json['dataURL'])
 
 
-def snapshot_command_log(snapshot_id: SnapshotId) -> typing.Generator[dict,dict,typing.List]:
+def snapshot_command_log(
+        snapshot_id: SnapshotId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['dict']]:
     '''
     Replays the layer snapshot and returns canvas log.
     
     :param snapshot_id: The id of the layer snapshot.
     :returns: The array of canvas function calls.
     '''
-
-    cmd_dict = {
-        'method': 'LayerTree.snapshotCommandLog',
-        'params': {
-            'snapshotId': snapshot_id,
-        }
+    params: T_JSON_DICT = {
+        'snapshotId': snapshot_id.to_json(),
     }
-    response = yield cmd_dict
-    return [dict(i) for i in response['commandLog']]
+    cmd_dict: T_JSON_DICT = {
+        'method': 'LayerTree.snapshotCommandLog',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return [dict(i) for i in json['commandLog']]
 
 

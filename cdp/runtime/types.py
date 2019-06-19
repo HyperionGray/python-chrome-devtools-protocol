@@ -8,7 +8,9 @@ Domain: runtime
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 
@@ -16,9 +18,12 @@ class ScriptId(str):
     '''
     Unique script identifier.
     '''
+    def to_json(self) -> str:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: str) -> 'ScriptId':
+        return cls(json)
 
     def __repr__(self):
         return 'ScriptId({})'.format(str.__repr__(self))
@@ -28,9 +33,12 @@ class RemoteObjectId(str):
     '''
     Unique object identifier.
     '''
+    def to_json(self) -> str:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: str) -> 'RemoteObjectId':
+        return cls(json)
 
     def __repr__(self):
         return 'RemoteObjectId({})'.format(str.__repr__(self))
@@ -41,9 +49,12 @@ class UnserializableValue(str):
     Primitive value which cannot be JSON-stringified. Includes values `-0`, `NaN`, `Infinity`,
     `-Infinity`, and bigint literals.
     '''
+    def to_json(self) -> str:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: str) -> 'UnserializableValue':
+        return cls(json)
 
     def __repr__(self):
         return 'UnserializableValue({})'.format(str.__repr__(self))
@@ -53,9 +64,12 @@ class ExecutionContextId(int):
     '''
     Id of an execution context.
     '''
+    def to_json(self) -> int:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: int) -> 'ExecutionContextId':
+        return cls(json)
 
     def __repr__(self):
         return 'ExecutionContextId({})'.format(int.__repr__(self))
@@ -65,9 +79,12 @@ class Timestamp(float):
     '''
     Number of milliseconds since epoch.
     '''
+    def to_json(self) -> float:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: float) -> 'Timestamp':
+        return cls(json)
 
     def __repr__(self):
         return 'Timestamp({})'.format(float.__repr__(self))
@@ -77,9 +94,12 @@ class TimeDelta(float):
     '''
     Number of milliseconds.
     '''
+    def to_json(self) -> float:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: float) -> 'TimeDelta':
+        return cls(json)
 
     def __repr__(self):
         return 'TimeDelta({})'.format(float.__repr__(self))
@@ -89,13 +109,15 @@ class UniqueDebuggerId(str):
     '''
     Unique identifier of current debugger.
     '''
+    def to_json(self) -> str:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: str) -> 'UniqueDebuggerId':
+        return cls(json)
 
     def __repr__(self):
         return 'UniqueDebuggerId({})'.format(str.__repr__(self))
-
 
 
 @dataclass
@@ -107,15 +129,23 @@ class CustomPreview:
     #: If formatter returns true as a result of formatter.hasBody call then bodyGetterId will
     #: contain RemoteObjectId for the function that returns result of formatter.body(object, config) call.
     #: The result value is json ML array.
-    body_getter_id: RemoteObjectId
+    body_getter_id: typing.Optional[RemoteObjectId] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'header': self.header,
+        }
+        if self.body_getter_id is not None:
+            json['bodyGetterId'] = self.body_getter_id.to_json()
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'CustomPreview':
+        body_getter_id = RemoteObjectId.from_json(json['bodyGetterId']) if 'bodyGetterId' in json else None
         return cls(
-            header=str(response.get('header')),
-            body_getter_id=RemoteObjectId.from_response(response.get('bodyGetterId')),
+            header=json['header'],
+            body_getter_id=body_getter_id,
         )
-
 
 @dataclass
 class ObjectPreview:
@@ -123,13 +153,7 @@ class ObjectPreview:
     Object containing abbreviated remote object value.
     '''
     #: Object type.
-    type_: str
-
-    #: Object subtype hint. Specified for `object` type values only.
-    subtype: str
-
-    #: String representation of the object.
-    description: str
+    type: str
 
     #: True iff some of the properties or entries of the original object did not fit.
     overflow: bool
@@ -137,20 +161,42 @@ class ObjectPreview:
     #: List of the properties.
     properties: typing.List['PropertyPreview']
 
+    #: Object subtype hint. Specified for `object` type values only.
+    subtype: typing.Optional[str] = None
+
+    #: String representation of the object.
+    description: typing.Optional[str] = None
+
     #: List of the entries. Specified for `map` and `set` subtype values only.
-    entries: typing.List['EntryPreview']
+    entries: typing.Optional[typing.List['EntryPreview']] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'type': self.type,
+            'overflow': self.overflow,
+            'properties': [i.to_json() for i in self.properties],
+        }
+        if self.subtype is not None:
+            json['subtype'] = self.subtype
+        if self.description is not None:
+            json['description'] = self.description
+        if self.entries is not None:
+            json['entries'] = [i.to_json() for i in self.entries]
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'ObjectPreview':
+        subtype = json['subtype'] if 'subtype' in json else None
+        description = json['description'] if 'description' in json else None
+        entries = [EntryPreview.from_json(i) for i in json['entries']] if 'entries' in json else None
         return cls(
-            type_=str(response.get('type')),
-            subtype=str(response.get('subtype')),
-            description=str(response.get('description')),
-            overflow=bool(response.get('overflow')),
-            properties=[PropertyPreview.from_response(i) for i in response.get('properties')],
-            entries=[EntryPreview.from_response(i) for i in response.get('entries')],
+            type=json['type'],
+            subtype=subtype,
+            description=description,
+            overflow=json['overflow'],
+            properties=[PropertyPreview.from_json(i) for i in json['properties']],
+            entries=entries,
         )
-
 
 @dataclass
 class PropertyPreview:
@@ -158,43 +204,66 @@ class PropertyPreview:
     name: str
 
     #: Object type. Accessor means that the property itself is an accessor property.
-    type_: str
+    type: str
 
     #: User-friendly property value string.
-    value: str
+    value: typing.Optional[str] = None
 
     #: Nested value preview.
-    value_preview: ObjectPreview
+    value_preview: typing.Optional[ObjectPreview] = None
 
     #: Object subtype hint. Specified for `object` type values only.
-    subtype: str
+    subtype: typing.Optional[str] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'name': self.name,
+            'type': self.type,
+        }
+        if self.value is not None:
+            json['value'] = self.value
+        if self.value_preview is not None:
+            json['valuePreview'] = self.value_preview.to_json()
+        if self.subtype is not None:
+            json['subtype'] = self.subtype
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'PropertyPreview':
+        value = json['value'] if 'value' in json else None
+        value_preview = ObjectPreview.from_json(json['valuePreview']) if 'valuePreview' in json else None
+        subtype = json['subtype'] if 'subtype' in json else None
         return cls(
-            name=str(response.get('name')),
-            type_=str(response.get('type')),
-            value=str(response.get('value')),
-            value_preview=ObjectPreview.from_response(response.get('valuePreview')),
-            subtype=str(response.get('subtype')),
+            name=json['name'],
+            type=json['type'],
+            value=value,
+            value_preview=value_preview,
+            subtype=subtype,
         )
-
 
 @dataclass
 class EntryPreview:
-    #: Preview of the key. Specified for map-like collection entries.
-    key: ObjectPreview
-
     #: Preview of the value.
     value: ObjectPreview
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            key=ObjectPreview.from_response(response.get('key')),
-            value=ObjectPreview.from_response(response.get('value')),
-        )
+    #: Preview of the key. Specified for map-like collection entries.
+    key: typing.Optional[ObjectPreview] = None
 
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'value': self.value.to_json(),
+        }
+        if self.key is not None:
+            json['key'] = self.key.to_json()
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'EntryPreview':
+        key = ObjectPreview.from_json(json['key']) if 'key' in json else None
+        return cls(
+            key=key,
+            value=ObjectPreview.from_json(json['value']),
+        )
 
 @dataclass
 class CallArgument:
@@ -203,22 +272,35 @@ class CallArgument:
     unserializable primitive value or neither of (for undefined) them should be specified.
     '''
     #: Primitive value or serializable javascript object.
-    value: typing.Any
+    value: typing.Optional[typing.Any] = None
 
     #: Primitive value which can not be JSON-stringified.
-    unserializable_value: UnserializableValue
+    unserializable_value: typing.Optional[UnserializableValue] = None
 
     #: Remote object handle.
-    object_id: RemoteObjectId
+    object_id: typing.Optional[RemoteObjectId] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+        }
+        if self.value is not None:
+            json['value'] = self.value
+        if self.unserializable_value is not None:
+            json['unserializableValue'] = self.unserializable_value.to_json()
+        if self.object_id is not None:
+            json['objectId'] = self.object_id.to_json()
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'CallArgument':
+        value = json['value'] if 'value' in json else None
+        unserializable_value = UnserializableValue.from_json(json['unserializableValue']) if 'unserializableValue' in json else None
+        object_id = RemoteObjectId.from_json(json['objectId']) if 'objectId' in json else None
         return cls(
-            value=typing.Any(response.get('value')),
-            unserializable_value=UnserializableValue.from_response(response.get('unserializableValue')),
-            object_id=RemoteObjectId.from_response(response.get('objectId')),
+            value=value,
+            unserializable_value=unserializable_value,
+            object_id=object_id,
         )
-
 
 @dataclass
 class ExecutionContextDescription:
@@ -236,17 +318,27 @@ class ExecutionContextDescription:
     name: str
 
     #: Embedder-specific auxiliary data.
-    aux_data: dict
+    aux_data: typing.Optional[dict] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'id': self.id.to_json(),
+            'origin': self.origin,
+            'name': self.name,
+        }
+        if self.aux_data is not None:
+            json['auxData'] = self.aux_data
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'ExecutionContextDescription':
+        aux_data = json['auxData'] if 'auxData' in json else None
         return cls(
-            id=ExecutionContextId.from_response(response.get('id')),
-            origin=str(response.get('origin')),
-            name=str(response.get('name')),
-            aux_data=dict(response.get('auxData')),
+            id=ExecutionContextId.from_json(json['id']),
+            origin=json['origin'],
+            name=json['name'],
+            aux_data=aux_data,
         )
-
 
 @dataclass
 class CallFrame:
@@ -268,16 +360,25 @@ class CallFrame:
     #: JavaScript script column number (0-based).
     column_number: int
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            function_name=str(response.get('functionName')),
-            script_id=ScriptId.from_response(response.get('scriptId')),
-            url=str(response.get('url')),
-            line_number=int(response.get('lineNumber')),
-            column_number=int(response.get('columnNumber')),
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'functionName': self.function_name,
+            'scriptId': self.script_id.to_json(),
+            'url': self.url,
+            'lineNumber': self.line_number,
+            'columnNumber': self.column_number,
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'CallFrame':
+        return cls(
+            function_name=json['functionName'],
+            script_id=ScriptId.from_json(json['scriptId']),
+            url=json['url'],
+            line_number=json['lineNumber'],
+            column_number=json['columnNumber'],
+        )
 
 @dataclass
 class StackTraceId:
@@ -287,15 +388,23 @@ class StackTraceId:
     '''
     id: str
 
-    debugger_id: UniqueDebuggerId
+    debugger_id: typing.Optional[UniqueDebuggerId] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'id': self.id,
+        }
+        if self.debugger_id is not None:
+            json['debuggerId'] = self.debugger_id.to_json()
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'StackTraceId':
+        debugger_id = UniqueDebuggerId.from_json(json['debuggerId']) if 'debuggerId' in json else None
         return cls(
-            id=str(response.get('id')),
-            debugger_id=UniqueDebuggerId.from_response(response.get('debuggerId')),
+            id=json['id'],
+            debugger_id=debugger_id,
         )
-
 
 @dataclass
 class RemoteObject:
@@ -303,46 +412,75 @@ class RemoteObject:
     Mirror object referencing original JavaScript object.
     '''
     #: Object type.
-    type_: str
+    type: str
 
     #: Object subtype hint. Specified for `object` type values only.
-    subtype: str
+    subtype: typing.Optional[str] = None
 
     #: Object class (constructor) name. Specified for `object` type values only.
-    class_name: str
+    class_name: typing.Optional[str] = None
 
     #: Remote object value in case of primitive values or JSON values (if it was requested).
-    value: typing.Any
+    value: typing.Optional[typing.Any] = None
 
     #: Primitive value which can not be JSON-stringified does not have `value`, but gets this
     #: property.
-    unserializable_value: UnserializableValue
+    unserializable_value: typing.Optional[UnserializableValue] = None
 
     #: String representation of the object.
-    description: str
+    description: typing.Optional[str] = None
 
     #: Unique object identifier (for non-primitive values).
-    object_id: RemoteObjectId
+    object_id: typing.Optional[RemoteObjectId] = None
 
     #: Preview containing abbreviated property values. Specified for `object` type values only.
-    preview: ObjectPreview
+    preview: typing.Optional[ObjectPreview] = None
 
-    custom_preview: CustomPreview
+    custom_preview: typing.Optional[CustomPreview] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'type': self.type,
+        }
+        if self.subtype is not None:
+            json['subtype'] = self.subtype
+        if self.class_name is not None:
+            json['className'] = self.class_name
+        if self.value is not None:
+            json['value'] = self.value
+        if self.unserializable_value is not None:
+            json['unserializableValue'] = self.unserializable_value.to_json()
+        if self.description is not None:
+            json['description'] = self.description
+        if self.object_id is not None:
+            json['objectId'] = self.object_id.to_json()
+        if self.preview is not None:
+            json['preview'] = self.preview.to_json()
+        if self.custom_preview is not None:
+            json['customPreview'] = self.custom_preview.to_json()
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'RemoteObject':
+        subtype = json['subtype'] if 'subtype' in json else None
+        class_name = json['className'] if 'className' in json else None
+        value = json['value'] if 'value' in json else None
+        unserializable_value = UnserializableValue.from_json(json['unserializableValue']) if 'unserializableValue' in json else None
+        description = json['description'] if 'description' in json else None
+        object_id = RemoteObjectId.from_json(json['objectId']) if 'objectId' in json else None
+        preview = ObjectPreview.from_json(json['preview']) if 'preview' in json else None
+        custom_preview = CustomPreview.from_json(json['customPreview']) if 'customPreview' in json else None
         return cls(
-            type_=str(response.get('type')),
-            subtype=str(response.get('subtype')),
-            class_name=str(response.get('className')),
-            value=typing.Any(response.get('value')),
-            unserializable_value=UnserializableValue.from_response(response.get('unserializableValue')),
-            description=str(response.get('description')),
-            object_id=RemoteObjectId.from_response(response.get('objectId')),
-            preview=ObjectPreview.from_response(response.get('preview')),
-            custom_preview=CustomPreview.from_response(response.get('customPreview')),
+            type=json['type'],
+            subtype=subtype,
+            class_name=class_name,
+            value=value,
+            unserializable_value=unserializable_value,
+            description=description,
+            object_id=object_id,
+            preview=preview,
+            custom_preview=custom_preview,
         )
-
 
 @dataclass
 class PropertyDescriptor:
@@ -352,20 +490,6 @@ class PropertyDescriptor:
     #: Property name or symbol description.
     name: str
 
-    #: The value associated with the property.
-    value: RemoteObject
-
-    #: True if the value associated with the property may be changed (data descriptors only).
-    writable: bool
-
-    #: A function which serves as a getter for the property, or `undefined` if there is no getter
-    #: (accessor descriptors only).
-    get: RemoteObject
-
-    #: A function which serves as a setter for the property, or `undefined` if there is no setter
-    #: (accessor descriptors only).
-    set: RemoteObject
-
     #: True if the type of this property descriptor may be changed and if the property may be
     #: deleted from the corresponding object.
     configurable: bool
@@ -374,30 +498,72 @@ class PropertyDescriptor:
     #: object.
     enumerable: bool
 
+    #: The value associated with the property.
+    value: typing.Optional[RemoteObject] = None
+
+    #: True if the value associated with the property may be changed (data descriptors only).
+    writable: typing.Optional[bool] = None
+
+    #: A function which serves as a getter for the property, or `undefined` if there is no getter
+    #: (accessor descriptors only).
+    get: typing.Optional[RemoteObject] = None
+
+    #: A function which serves as a setter for the property, or `undefined` if there is no setter
+    #: (accessor descriptors only).
+    set: typing.Optional[RemoteObject] = None
+
     #: True if the result was thrown during the evaluation.
-    was_thrown: bool
+    was_thrown: typing.Optional[bool] = None
 
     #: True if the property is owned for the object.
-    is_own: bool
+    is_own: typing.Optional[bool] = None
 
     #: Property symbol object, if the property is of the `symbol` type.
-    symbol: RemoteObject
+    symbol: typing.Optional[RemoteObject] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'name': self.name,
+            'configurable': self.configurable,
+            'enumerable': self.enumerable,
+        }
+        if self.value is not None:
+            json['value'] = self.value.to_json()
+        if self.writable is not None:
+            json['writable'] = self.writable
+        if self.get is not None:
+            json['get'] = self.get.to_json()
+        if self.set is not None:
+            json['set'] = self.set.to_json()
+        if self.was_thrown is not None:
+            json['wasThrown'] = self.was_thrown
+        if self.is_own is not None:
+            json['isOwn'] = self.is_own
+        if self.symbol is not None:
+            json['symbol'] = self.symbol.to_json()
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'PropertyDescriptor':
+        value = RemoteObject.from_json(json['value']) if 'value' in json else None
+        writable = json['writable'] if 'writable' in json else None
+        get = RemoteObject.from_json(json['get']) if 'get' in json else None
+        set = RemoteObject.from_json(json['set']) if 'set' in json else None
+        was_thrown = json['wasThrown'] if 'wasThrown' in json else None
+        is_own = json['isOwn'] if 'isOwn' in json else None
+        symbol = RemoteObject.from_json(json['symbol']) if 'symbol' in json else None
         return cls(
-            name=str(response.get('name')),
-            value=RemoteObject.from_response(response.get('value')),
-            writable=bool(response.get('writable')),
-            get=RemoteObject.from_response(response.get('get')),
-            set=RemoteObject.from_response(response.get('set')),
-            configurable=bool(response.get('configurable')),
-            enumerable=bool(response.get('enumerable')),
-            was_thrown=bool(response.get('wasThrown')),
-            is_own=bool(response.get('isOwn')),
-            symbol=RemoteObject.from_response(response.get('symbol')),
+            name=json['name'],
+            value=value,
+            writable=writable,
+            get=get,
+            set=set,
+            configurable=json['configurable'],
+            enumerable=json['enumerable'],
+            was_thrown=was_thrown,
+            is_own=is_own,
+            symbol=symbol,
         )
-
 
 @dataclass
 class InternalPropertyDescriptor:
@@ -408,15 +574,23 @@ class InternalPropertyDescriptor:
     name: str
 
     #: The value associated with the property.
-    value: RemoteObject
+    value: typing.Optional[RemoteObject] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'name': self.name,
+        }
+        if self.value is not None:
+            json['value'] = self.value.to_json()
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'InternalPropertyDescriptor':
+        value = RemoteObject.from_json(json['value']) if 'value' in json else None
         return cls(
-            name=str(response.get('name')),
-            value=RemoteObject.from_response(response.get('value')),
+            name=json['name'],
+            value=value,
         )
-
 
 @dataclass
 class PrivatePropertyDescriptor:
@@ -429,41 +603,61 @@ class PrivatePropertyDescriptor:
     #: The value associated with the private property.
     value: RemoteObject
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            name=str(response.get('name')),
-            value=RemoteObject.from_response(response.get('value')),
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'name': self.name,
+            'value': self.value.to_json(),
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'PrivatePropertyDescriptor':
+        return cls(
+            name=json['name'],
+            value=RemoteObject.from_json(json['value']),
+        )
 
 @dataclass
 class StackTrace:
     '''
     Call frames for assertions or error messages.
     '''
-    #: String label of this stack trace. For async traces this may be a name of the function that
-    #: initiated the async call.
-    description: str
-
     #: JavaScript function name.
     call_frames: typing.List['CallFrame']
 
-    #: Asynchronous JavaScript stack trace that preceded this stack, if available.
-    parent: 'StackTrace'
+    #: String label of this stack trace. For async traces this may be a name of the function that
+    #: initiated the async call.
+    description: typing.Optional[str] = None
 
     #: Asynchronous JavaScript stack trace that preceded this stack, if available.
-    parent_id: StackTraceId
+    parent: typing.Optional['StackTrace'] = None
+
+    #: Asynchronous JavaScript stack trace that preceded this stack, if available.
+    parent_id: typing.Optional[StackTraceId] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'callFrames': [i.to_json() for i in self.call_frames],
+        }
+        if self.description is not None:
+            json['description'] = self.description
+        if self.parent is not None:
+            json['parent'] = self.parent.to_json()
+        if self.parent_id is not None:
+            json['parentId'] = self.parent_id.to_json()
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'StackTrace':
+        description = json['description'] if 'description' in json else None
+        parent = StackTrace.from_json(json['parent']) if 'parent' in json else None
+        parent_id = StackTraceId.from_json(json['parentId']) if 'parentId' in json else None
         return cls(
-            description=str(response.get('description')),
-            call_frames=[CallFrame.from_response(i) for i in response.get('callFrames')],
-            parent='StackTrace'.from_response(response.get('parent')),
-            parent_id=StackTraceId.from_response(response.get('parentId')),
+            description=description,
+            call_frames=[CallFrame.from_json(i) for i in json['callFrames']],
+            parent=parent,
+            parent_id=parent_id,
         )
-
 
 @dataclass
 class ExceptionDetails:
@@ -484,31 +678,55 @@ class ExceptionDetails:
     column_number: int
 
     #: Script ID of the exception location.
-    script_id: ScriptId
+    script_id: typing.Optional[ScriptId] = None
 
     #: URL of the exception location, to be used when the script was not reported.
-    url: str
+    url: typing.Optional[str] = None
 
     #: JavaScript stack trace if available.
-    stack_trace: StackTrace
+    stack_trace: typing.Optional[StackTrace] = None
 
     #: Exception object if available.
-    exception: RemoteObject
+    exception: typing.Optional[RemoteObject] = None
 
     #: Identifier of the context where exception happened.
-    execution_context_id: ExecutionContextId
+    execution_context_id: typing.Optional[ExecutionContextId] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'exceptionId': self.exception_id,
+            'text': self.text,
+            'lineNumber': self.line_number,
+            'columnNumber': self.column_number,
+        }
+        if self.script_id is not None:
+            json['scriptId'] = self.script_id.to_json()
+        if self.url is not None:
+            json['url'] = self.url
+        if self.stack_trace is not None:
+            json['stackTrace'] = self.stack_trace.to_json()
+        if self.exception is not None:
+            json['exception'] = self.exception.to_json()
+        if self.execution_context_id is not None:
+            json['executionContextId'] = self.execution_context_id.to_json()
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'ExceptionDetails':
+        script_id = ScriptId.from_json(json['scriptId']) if 'scriptId' in json else None
+        url = json['url'] if 'url' in json else None
+        stack_trace = StackTrace.from_json(json['stackTrace']) if 'stackTrace' in json else None
+        exception = RemoteObject.from_json(json['exception']) if 'exception' in json else None
+        execution_context_id = ExecutionContextId.from_json(json['executionContextId']) if 'executionContextId' in json else None
         return cls(
-            exception_id=int(response.get('exceptionId')),
-            text=str(response.get('text')),
-            line_number=int(response.get('lineNumber')),
-            column_number=int(response.get('columnNumber')),
-            script_id=ScriptId.from_response(response.get('scriptId')),
-            url=str(response.get('url')),
-            stack_trace=StackTrace.from_response(response.get('stackTrace')),
-            exception=RemoteObject.from_response(response.get('exception')),
-            execution_context_id=ExecutionContextId.from_response(response.get('executionContextId')),
+            exception_id=json['exceptionId'],
+            text=json['text'],
+            line_number=json['lineNumber'],
+            column_number=json['columnNumber'],
+            script_id=script_id,
+            url=url,
+            stack_trace=stack_trace,
+            exception=exception,
+            execution_context_id=execution_context_id,
         )
 

@@ -8,7 +8,9 @@ Domain: heap_profiler
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from ..runtime import types as runtime
@@ -18,13 +20,15 @@ class HeapSnapshotObjectId(str):
     '''
     Heap snapshot object id.
     '''
+    def to_json(self) -> str:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: str) -> 'HeapSnapshotObjectId':
+        return cls(json)
 
     def __repr__(self):
         return 'HeapSnapshotObjectId({})'.format(str.__repr__(self))
-
 
 
 @dataclass
@@ -44,15 +48,23 @@ class SamplingHeapProfileNode:
     #: Child nodes.
     children: typing.List['SamplingHeapProfileNode']
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            call_frame=runtime.CallFrame.from_response(response.get('callFrame')),
-            self_size=float(response.get('selfSize')),
-            id=int(response.get('id')),
-            children=[SamplingHeapProfileNode.from_response(i) for i in response.get('children')],
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'callFrame': self.call_frame.to_json(),
+            'selfSize': self.self_size,
+            'id': self.id,
+            'children': [i.to_json() for i in self.children],
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'SamplingHeapProfileNode':
+        return cls(
+            call_frame=runtime.CallFrame.from_json(json['callFrame']),
+            self_size=json['selfSize'],
+            id=json['id'],
+            children=[SamplingHeapProfileNode.from_json(i) for i in json['children']],
+        )
 
 @dataclass
 class SamplingHeapProfileSample:
@@ -69,14 +81,21 @@ class SamplingHeapProfileSample:
     #: between startSampling and stopSampling.
     ordinal: float
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            size=float(response.get('size')),
-            node_id=int(response.get('nodeId')),
-            ordinal=float(response.get('ordinal')),
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'size': self.size,
+            'nodeId': self.node_id,
+            'ordinal': self.ordinal,
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'SamplingHeapProfileSample':
+        return cls(
+            size=json['size'],
+            node_id=json['nodeId'],
+            ordinal=json['ordinal'],
+        )
 
 @dataclass
 class SamplingHeapProfile:
@@ -87,10 +106,17 @@ class SamplingHeapProfile:
 
     samples: typing.List['SamplingHeapProfileSample']
 
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'head': self.head.to_json(),
+            'samples': [i.to_json() for i in self.samples],
+        }
+        return json
+
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'SamplingHeapProfile':
         return cls(
-            head=SamplingHeapProfileNode.from_response(response.get('head')),
-            samples=[SamplingHeapProfileSample.from_response(i) for i in response.get('samples')],
+            head=SamplingHeapProfileNode.from_json(json['head']),
+            samples=[SamplingHeapProfileSample.from_json(i) for i in json['samples']],
         )
 

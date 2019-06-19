@@ -8,7 +8,9 @@ Domain: css
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -17,7 +19,11 @@ from ..page import types as page
 
 
 
-def add_rule(style_sheet_id: StyleSheetId, rule_text: str, location: SourceRange) -> typing.Generator[dict,dict,CSSRule]:
+def add_rule(
+        style_sheet_id: StyleSheetId,
+        rule_text: str,
+        location: SourceRange,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,CSSRule]:
     '''
     Inserts a new rule with the given `ruleText` in a stylesheet with given `styleSheetId`, at the
     position specified by `location`.
@@ -27,79 +33,84 @@ def add_rule(style_sheet_id: StyleSheetId, rule_text: str, location: SourceRange
     :param location: Text position of a new rule in the target style sheet.
     :returns: The newly created rule.
     '''
-
-    cmd_dict = {
-        'method': 'CSS.addRule',
-        'params': {
-            'styleSheetId': style_sheet_id,
-            'ruleText': rule_text,
-            'location': location,
-        }
+    params: T_JSON_DICT = {
+        'styleSheetId': style_sheet_id.to_json(),
+        'ruleText': rule_text,
+        'location': location.to_json(),
     }
-    response = yield cmd_dict
-    return CSSRule.from_response(response['rule'])
+    cmd_dict: T_JSON_DICT = {
+        'method': 'CSS.addRule',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return CSSRule.from_json(json['rule'])
 
 
-def collect_class_names(style_sheet_id: StyleSheetId) -> typing.Generator[dict,dict,typing.List]:
+def collect_class_names(
+        style_sheet_id: StyleSheetId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['str']]:
     '''
     Returns all class names from specified stylesheet.
     
     :param style_sheet_id: 
     :returns: Class name list.
     '''
-
-    cmd_dict = {
-        'method': 'CSS.collectClassNames',
-        'params': {
-            'styleSheetId': style_sheet_id,
-        }
+    params: T_JSON_DICT = {
+        'styleSheetId': style_sheet_id.to_json(),
     }
-    response = yield cmd_dict
-    return [str(i) for i in response['classNames']]
+    cmd_dict: T_JSON_DICT = {
+        'method': 'CSS.collectClassNames',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return [str(i) for i in json['classNames']]
 
 
-def create_style_sheet(frame_id: page.FrameId) -> typing.Generator[dict,dict,StyleSheetId]:
+def create_style_sheet(
+        frame_id: page.FrameId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,StyleSheetId]:
     '''
     Creates a new special "via-inspector" stylesheet in the frame with given `frameId`.
     
     :param frame_id: Identifier of the frame where "via-inspector" stylesheet should be created.
     :returns: Identifier of the created "via-inspector" stylesheet.
     '''
-
-    cmd_dict = {
-        'method': 'CSS.createStyleSheet',
-        'params': {
-            'frameId': frame_id,
-        }
+    params: T_JSON_DICT = {
+        'frameId': frame_id.to_json(),
     }
-    response = yield cmd_dict
-    return StyleSheetId.from_response(response['styleSheetId'])
+    cmd_dict: T_JSON_DICT = {
+        'method': 'CSS.createStyleSheet',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return StyleSheetId.from_json(json['styleSheetId'])
 
 
-def disable() -> typing.Generator[dict,dict,None]:
+def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Disables the CSS agent for the given page.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'CSS.disable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def enable() -> typing.Generator[dict,dict,None]:
+def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enables the CSS agent for the given page. Clients should not assume that the CSS agent has been
     enabled until the result of this command is received.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'CSS.enable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def force_pseudo_state(node_id: dom.NodeId, forced_pseudo_classes: typing.List) -> typing.Generator[dict,dict,None]:
+def force_pseudo_state(
+        node_id: dom.NodeId,
+        forced_pseudo_classes: typing.List['str'],
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Ensures that the given node will have specified pseudo-classes whenever its style is computed by
     the browser.
@@ -107,134 +118,157 @@ def force_pseudo_state(node_id: dom.NodeId, forced_pseudo_classes: typing.List) 
     :param node_id: The element id for which to force the pseudo state.
     :param forced_pseudo_classes: Element pseudo classes to force when computing the element's style.
     '''
-
-    cmd_dict = {
-        'method': 'CSS.forcePseudoState',
-        'params': {
-            'nodeId': node_id,
-            'forcedPseudoClasses': forced_pseudo_classes,
-        }
+    params: T_JSON_DICT = {
+        'nodeId': node_id.to_json(),
+        'forcedPseudoClasses': [i for i in forced_pseudo_classes],
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'CSS.forcePseudoState',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def get_background_colors(node_id: dom.NodeId) -> typing.Generator[dict,dict,dict]:
+def get_background_colors(
+        node_id: dom.NodeId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     
     
     :param node_id: Id of the node to get background colors for.
     :returns: a dict with the following keys:
-        * backgroundColors: The range of background colors behind this element, if it contains any visible text. If no
+        * backgroundColors: (Optional) The range of background colors behind this element, if it contains any visible text. If no
     visible text is present, this will be undefined. In the case of a flat background color,
     this will consist of simply that color. In the case of a gradient, this will consist of each
     of the color stops. For anything more complicated, this will be an empty array. Images will
     be ignored (as if the image had failed to load).
-        * computedFontSize: The computed font size for this node, as a CSS computed value string (e.g. '12px').
-        * computedFontWeight: The computed font weight for this node, as a CSS computed value string (e.g. 'normal' or
+        * computedFontSize: (Optional) The computed font size for this node, as a CSS computed value string (e.g. '12px').
+        * computedFontWeight: (Optional) The computed font weight for this node, as a CSS computed value string (e.g. 'normal' or
     '100').
     '''
-
-    cmd_dict = {
+    params: T_JSON_DICT = {
+        'nodeId': node_id.to_json(),
+    }
+    cmd_dict: T_JSON_DICT = {
         'method': 'CSS.getBackgroundColors',
-        'params': {
-            'nodeId': node_id,
-        }
+        'params': params,
     }
-    response = yield cmd_dict
-    return {
-        'backgroundColors': [str(i) for i in response['backgroundColors']],
-        'computedFontSize': str(response['computedFontSize']),
-        'computedFontWeight': str(response['computedFontWeight']),
+    json = yield cmd_dict
+    result: T_JSON_DICT = {
     }
+    if 'backgroundColors' in json:
+        result['backgroundColors'] = [str(i) for i in json['backgroundColors']]
+    if 'computedFontSize' in json:
+        result['computedFontSize'] = str(json['computedFontSize'])
+    if 'computedFontWeight' in json:
+        result['computedFontWeight'] = str(json['computedFontWeight'])
+    return result
 
 
-def get_computed_style_for_node(node_id: dom.NodeId) -> typing.Generator[dict,dict,typing.List['CSSComputedStyleProperty']]:
+def get_computed_style_for_node(
+        node_id: dom.NodeId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['CSSComputedStyleProperty']]:
     '''
     Returns the computed style for a DOM node identified by `nodeId`.
     
     :param node_id: 
     :returns: Computed style for the specified DOM node.
     '''
-
-    cmd_dict = {
-        'method': 'CSS.getComputedStyleForNode',
-        'params': {
-            'nodeId': node_id,
-        }
+    params: T_JSON_DICT = {
+        'nodeId': node_id.to_json(),
     }
-    response = yield cmd_dict
-    return [CSSComputedStyleProperty.from_response(i) for i in response['computedStyle']]
+    cmd_dict: T_JSON_DICT = {
+        'method': 'CSS.getComputedStyleForNode',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return [CSSComputedStyleProperty.from_json(i) for i in json['computedStyle']]
 
 
-def get_inline_styles_for_node(node_id: dom.NodeId) -> typing.Generator[dict,dict,dict]:
+def get_inline_styles_for_node(
+        node_id: dom.NodeId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     Returns the styles defined inline (explicitly in the "style" attribute and implicitly, using DOM
     attributes) for a DOM node identified by `nodeId`.
     
     :param node_id: 
     :returns: a dict with the following keys:
-        * inlineStyle: Inline style for the specified DOM node.
-        * attributesStyle: Attribute-defined element style (e.g. resulting from "width=20 height=100%").
+        * inlineStyle: (Optional) Inline style for the specified DOM node.
+        * attributesStyle: (Optional) Attribute-defined element style (e.g. resulting from "width=20 height=100%").
     '''
-
-    cmd_dict = {
+    params: T_JSON_DICT = {
+        'nodeId': node_id.to_json(),
+    }
+    cmd_dict: T_JSON_DICT = {
         'method': 'CSS.getInlineStylesForNode',
-        'params': {
-            'nodeId': node_id,
-        }
+        'params': params,
     }
-    response = yield cmd_dict
-    return {
-        'inlineStyle': CSSStyle.from_response(response['inlineStyle']),
-        'attributesStyle': CSSStyle.from_response(response['attributesStyle']),
+    json = yield cmd_dict
+    result: T_JSON_DICT = {
     }
+    if 'inlineStyle' in json:
+        result['inlineStyle'] = CSSStyle.from_json(json['inlineStyle'])
+    if 'attributesStyle' in json:
+        result['attributesStyle'] = CSSStyle.from_json(json['attributesStyle'])
+    return result
 
 
-def get_matched_styles_for_node(node_id: dom.NodeId) -> typing.Generator[dict,dict,dict]:
+def get_matched_styles_for_node(
+        node_id: dom.NodeId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     Returns requested styles for a DOM node identified by `nodeId`.
     
     :param node_id: 
     :returns: a dict with the following keys:
-        * inlineStyle: Inline style for the specified DOM node.
-        * attributesStyle: Attribute-defined element style (e.g. resulting from "width=20 height=100%").
-        * matchedCSSRules: CSS rules matching this node, from all applicable stylesheets.
-        * pseudoElements: Pseudo style matches for this node.
-        * inherited: A chain of inherited styles (from the immediate node parent up to the DOM tree root).
-        * cssKeyframesRules: A list of CSS keyframed animations matching this node.
+        * inlineStyle: (Optional) Inline style for the specified DOM node.
+        * attributesStyle: (Optional) Attribute-defined element style (e.g. resulting from "width=20 height=100%").
+        * matchedCSSRules: (Optional) CSS rules matching this node, from all applicable stylesheets.
+        * pseudoElements: (Optional) Pseudo style matches for this node.
+        * inherited: (Optional) A chain of inherited styles (from the immediate node parent up to the DOM tree root).
+        * cssKeyframesRules: (Optional) A list of CSS keyframed animations matching this node.
     '''
-
-    cmd_dict = {
+    params: T_JSON_DICT = {
+        'nodeId': node_id.to_json(),
+    }
+    cmd_dict: T_JSON_DICT = {
         'method': 'CSS.getMatchedStylesForNode',
-        'params': {
-            'nodeId': node_id,
-        }
+        'params': params,
     }
-    response = yield cmd_dict
-    return {
-        'inlineStyle': CSSStyle.from_response(response['inlineStyle']),
-        'attributesStyle': CSSStyle.from_response(response['attributesStyle']),
-        'matchedCSSRules': [RuleMatch.from_response(i) for i in response['matchedCSSRules']],
-        'pseudoElements': [PseudoElementMatches.from_response(i) for i in response['pseudoElements']],
-        'inherited': [InheritedStyleEntry.from_response(i) for i in response['inherited']],
-        'cssKeyframesRules': [CSSKeyframesRule.from_response(i) for i in response['cssKeyframesRules']],
+    json = yield cmd_dict
+    result: T_JSON_DICT = {
     }
+    if 'inlineStyle' in json:
+        result['inlineStyle'] = CSSStyle.from_json(json['inlineStyle'])
+    if 'attributesStyle' in json:
+        result['attributesStyle'] = CSSStyle.from_json(json['attributesStyle'])
+    if 'matchedCSSRules' in json:
+        result['matchedCSSRules'] = [RuleMatch.from_json(i) for i in json['matchedCSSRules']]
+    if 'pseudoElements' in json:
+        result['pseudoElements'] = [PseudoElementMatches.from_json(i) for i in json['pseudoElements']]
+    if 'inherited' in json:
+        result['inherited'] = [InheritedStyleEntry.from_json(i) for i in json['inherited']]
+    if 'cssKeyframesRules' in json:
+        result['cssKeyframesRules'] = [CSSKeyframesRule.from_json(i) for i in json['cssKeyframesRules']]
+    return result
 
 
-def get_media_queries() -> typing.Generator[dict,dict,typing.List['CSSMedia']]:
+def get_media_queries() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['CSSMedia']]:
     '''
     Returns all media queries parsed by the rendering engine.
     :returns: 
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'CSS.getMediaQueries',
     }
-    response = yield cmd_dict
-    return [CSSMedia.from_response(i) for i in response['medias']]
+    json = yield cmd_dict
+    return [CSSMedia.from_json(i) for i in json['medias']]
 
 
-def get_platform_fonts_for_node(node_id: dom.NodeId) -> typing.Generator[dict,dict,typing.List['PlatformFontUsage']]:
+def get_platform_fonts_for_node(
+        node_id: dom.NodeId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['PlatformFontUsage']]:
     '''
     Requests information about platform fonts which we used to render child TextNodes in the given
     node.
@@ -242,36 +276,42 @@ def get_platform_fonts_for_node(node_id: dom.NodeId) -> typing.Generator[dict,di
     :param node_id: 
     :returns: Usage statistics for every employed platform font.
     '''
-
-    cmd_dict = {
-        'method': 'CSS.getPlatformFontsForNode',
-        'params': {
-            'nodeId': node_id,
-        }
+    params: T_JSON_DICT = {
+        'nodeId': node_id.to_json(),
     }
-    response = yield cmd_dict
-    return [PlatformFontUsage.from_response(i) for i in response['fonts']]
+    cmd_dict: T_JSON_DICT = {
+        'method': 'CSS.getPlatformFontsForNode',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return [PlatformFontUsage.from_json(i) for i in json['fonts']]
 
 
-def get_style_sheet_text(style_sheet_id: StyleSheetId) -> typing.Generator[dict,dict,str]:
+def get_style_sheet_text(
+        style_sheet_id: StyleSheetId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,str]:
     '''
     Returns the current textual content for a stylesheet.
     
     :param style_sheet_id: 
     :returns: The stylesheet text.
     '''
-
-    cmd_dict = {
-        'method': 'CSS.getStyleSheetText',
-        'params': {
-            'styleSheetId': style_sheet_id,
-        }
+    params: T_JSON_DICT = {
+        'styleSheetId': style_sheet_id.to_json(),
     }
-    response = yield cmd_dict
-    return str(response['text'])
+    cmd_dict: T_JSON_DICT = {
+        'method': 'CSS.getStyleSheetText',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return str(json['text'])
 
 
-def set_effective_property_value_for_node(node_id: dom.NodeId, property_name: str, value: str) -> typing.Generator[dict,dict,None]:
+def set_effective_property_value_for_node(
+        node_id: dom.NodeId,
+        property_name: str,
+        value: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Find a rule with the given active property for the given node and set the new value for this
     property
@@ -280,19 +320,23 @@ def set_effective_property_value_for_node(node_id: dom.NodeId, property_name: st
     :param property_name: 
     :param value: 
     '''
-
-    cmd_dict = {
-        'method': 'CSS.setEffectivePropertyValueForNode',
-        'params': {
-            'nodeId': node_id,
-            'propertyName': property_name,
-            'value': value,
-        }
+    params: T_JSON_DICT = {
+        'nodeId': node_id.to_json(),
+        'propertyName': property_name,
+        'value': value,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'CSS.setEffectivePropertyValueForNode',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_keyframe_key(style_sheet_id: StyleSheetId, range: SourceRange, key_text: str) -> typing.Generator[dict,dict,Value]:
+def set_keyframe_key(
+        style_sheet_id: StyleSheetId,
+        range: SourceRange,
+        key_text: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,Value]:
     '''
     Modifies the keyframe rule key text.
     
@@ -301,20 +345,24 @@ def set_keyframe_key(style_sheet_id: StyleSheetId, range: SourceRange, key_text:
     :param key_text: 
     :returns: The resulting key text after modification.
     '''
-
-    cmd_dict = {
-        'method': 'CSS.setKeyframeKey',
-        'params': {
-            'styleSheetId': style_sheet_id,
-            'range': range,
-            'keyText': key_text,
-        }
+    params: T_JSON_DICT = {
+        'styleSheetId': style_sheet_id.to_json(),
+        'range': range.to_json(),
+        'keyText': key_text,
     }
-    response = yield cmd_dict
-    return Value.from_response(response['keyText'])
+    cmd_dict: T_JSON_DICT = {
+        'method': 'CSS.setKeyframeKey',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return Value.from_json(json['keyText'])
 
 
-def set_media_text(style_sheet_id: StyleSheetId, range: SourceRange, text: str) -> typing.Generator[dict,dict,CSSMedia]:
+def set_media_text(
+        style_sheet_id: StyleSheetId,
+        range: SourceRange,
+        text: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,CSSMedia]:
     '''
     Modifies the rule selector.
     
@@ -323,20 +371,24 @@ def set_media_text(style_sheet_id: StyleSheetId, range: SourceRange, text: str) 
     :param text: 
     :returns: The resulting CSS media rule after modification.
     '''
-
-    cmd_dict = {
-        'method': 'CSS.setMediaText',
-        'params': {
-            'styleSheetId': style_sheet_id,
-            'range': range,
-            'text': text,
-        }
+    params: T_JSON_DICT = {
+        'styleSheetId': style_sheet_id.to_json(),
+        'range': range.to_json(),
+        'text': text,
     }
-    response = yield cmd_dict
-    return CSSMedia.from_response(response['media'])
+    cmd_dict: T_JSON_DICT = {
+        'method': 'CSS.setMediaText',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return CSSMedia.from_json(json['media'])
 
 
-def set_rule_selector(style_sheet_id: StyleSheetId, range: SourceRange, selector: str) -> typing.Generator[dict,dict,SelectorList]:
+def set_rule_selector(
+        style_sheet_id: StyleSheetId,
+        range: SourceRange,
+        selector: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,SelectorList]:
     '''
     Modifies the rule selector.
     
@@ -345,20 +397,23 @@ def set_rule_selector(style_sheet_id: StyleSheetId, range: SourceRange, selector
     :param selector: 
     :returns: The resulting selector list after modification.
     '''
-
-    cmd_dict = {
-        'method': 'CSS.setRuleSelector',
-        'params': {
-            'styleSheetId': style_sheet_id,
-            'range': range,
-            'selector': selector,
-        }
+    params: T_JSON_DICT = {
+        'styleSheetId': style_sheet_id.to_json(),
+        'range': range.to_json(),
+        'selector': selector,
     }
-    response = yield cmd_dict
-    return SelectorList.from_response(response['selectorList'])
+    cmd_dict: T_JSON_DICT = {
+        'method': 'CSS.setRuleSelector',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return SelectorList.from_json(json['selectorList'])
 
 
-def set_style_sheet_text(style_sheet_id: StyleSheetId, text: str) -> typing.Generator[dict,dict,str]:
+def set_style_sheet_text(
+        style_sheet_id: StyleSheetId,
+        text: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,str]:
     '''
     Sets the new stylesheet text.
     
@@ -366,72 +421,71 @@ def set_style_sheet_text(style_sheet_id: StyleSheetId, text: str) -> typing.Gene
     :param text: 
     :returns: URL of source map associated with script (if any).
     '''
-
-    cmd_dict = {
-        'method': 'CSS.setStyleSheetText',
-        'params': {
-            'styleSheetId': style_sheet_id,
-            'text': text,
-        }
+    params: T_JSON_DICT = {
+        'styleSheetId': style_sheet_id.to_json(),
+        'text': text,
     }
-    response = yield cmd_dict
-    return str(response['sourceMapURL'])
+    cmd_dict: T_JSON_DICT = {
+        'method': 'CSS.setStyleSheetText',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return str(json['sourceMapURL'])
 
 
-def set_style_texts(edits: typing.List['StyleDeclarationEdit']) -> typing.Generator[dict,dict,typing.List['CSSStyle']]:
+def set_style_texts(
+        edits: typing.List['StyleDeclarationEdit'],
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['CSSStyle']]:
     '''
     Applies specified style edits one after another in the given order.
     
     :param edits: 
     :returns: The resulting styles after modification.
     '''
-
-    cmd_dict = {
-        'method': 'CSS.setStyleTexts',
-        'params': {
-            'edits': edits,
-        }
+    params: T_JSON_DICT = {
+        'edits': [i.to_json() for i in edits],
     }
-    response = yield cmd_dict
-    return [CSSStyle.from_response(i) for i in response['styles']]
+    cmd_dict: T_JSON_DICT = {
+        'method': 'CSS.setStyleTexts',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return [CSSStyle.from_json(i) for i in json['styles']]
 
 
-def start_rule_usage_tracking() -> typing.Generator[dict,dict,None]:
+def start_rule_usage_tracking() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enables the selector recording.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'CSS.startRuleUsageTracking',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def stop_rule_usage_tracking() -> typing.Generator[dict,dict,typing.List['RuleUsage']]:
+def stop_rule_usage_tracking() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['RuleUsage']]:
     '''
     Stop tracking rule usage and return the list of rules that were used since last call to
     `takeCoverageDelta` (or since start of coverage instrumentation)
     :returns: 
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'CSS.stopRuleUsageTracking',
     }
-    response = yield cmd_dict
-    return [RuleUsage.from_response(i) for i in response['ruleUsage']]
+    json = yield cmd_dict
+    return [RuleUsage.from_json(i) for i in json['ruleUsage']]
 
 
-def take_coverage_delta() -> typing.Generator[dict,dict,typing.List['RuleUsage']]:
+def take_coverage_delta() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['RuleUsage']]:
     '''
     Obtain list of rules that became used since last call to this method (or since start of coverage
     instrumentation)
     :returns: 
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'CSS.takeCoverageDelta',
     }
-    response = yield cmd_dict
-    return [RuleUsage.from_response(i) for i in response['coverage']]
+    json = yield cmd_dict
+    return [RuleUsage.from_json(i) for i in json['coverage']]
 
 

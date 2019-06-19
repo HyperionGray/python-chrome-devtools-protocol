@@ -8,7 +8,9 @@ Domain: overlay
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -27,6 +29,16 @@ class InspectNodeRequested:
     #: user manually inspects an element.
     backend_node_id: dom.BackendNodeId
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Overlay'
+    _method = 'inspectNodeRequested'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'InspectNodeRequested':
+        return cls(
+            backend_node_id=dom.BackendNodeId.from_json(json['backendNodeId']),
+        )
+
 
 @dataclass
 class NodeHighlightRequested:
@@ -35,6 +47,16 @@ class NodeHighlightRequested:
     '''
     #: Fired when the node should be highlighted. This happens after call to `setInspectMode`.
     node_id: dom.NodeId
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Overlay'
+    _method = 'nodeHighlightRequested'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'NodeHighlightRequested':
+        return cls(
+            node_id=dom.NodeId.from_json(json['nodeId']),
+        )
 
 
 @dataclass
@@ -45,11 +67,28 @@ class ScreenshotRequested:
     #: Fired when user asks to capture screenshot of some area on the page.
     viewport: page.Viewport
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Overlay'
+    _method = 'screenshotRequested'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'ScreenshotRequested':
+        return cls(
+            viewport=page.Viewport.from_json(json['viewport']),
+        )
+
 
 @dataclass
 class InspectModeCanceled:
     '''
     Fired when user cancels the inspect mode.
     '''
-    pass
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Overlay'
+    _method = 'inspectModeCanceled'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'InspectModeCanceled':
+        return cls(
+        )
 

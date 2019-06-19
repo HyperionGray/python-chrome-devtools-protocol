@@ -8,7 +8,9 @@ Domain: debugger
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -16,36 +18,41 @@ from ..runtime import types as runtime
 
 
 
-def continue_to_location(location: Location, target_call_frames: str) -> typing.Generator[dict,dict,None]:
+def continue_to_location(
+        location: Location,
+        target_call_frames: typing.Optional[str] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Continues execution until specific location is reached.
     
     :param location: Location to continue to.
     :param target_call_frames: 
     '''
-
-    cmd_dict = {
-        'method': 'Debugger.continueToLocation',
-        'params': {
-            'location': location,
-            'targetCallFrames': target_call_frames,
-        }
+    params: T_JSON_DICT = {
+        'location': location.to_json(),
     }
-    response = yield cmd_dict
+    if target_call_frames is not None:
+        params['targetCallFrames'] = target_call_frames
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Debugger.continueToLocation',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def disable() -> typing.Generator[dict,dict,None]:
+def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Disables debugger for given page.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Debugger.disable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def enable(max_scripts_cache_size: float) -> typing.Generator[dict,dict,runtime.UniqueDebuggerId]:
+def enable(
+        max_scripts_cache_size: typing.Optional[float] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,runtime.UniqueDebuggerId]:
     '''
     Enables debugger for the given page. Clients should not assume that the debugging has been
     enabled until the result for this command is received.
@@ -54,18 +61,29 @@ def enable(max_scripts_cache_size: float) -> typing.Generator[dict,dict,runtime.
     the debugger can hold. Puts no limit if paramter is omitted.
     :returns: Unique identifier of the debugger.
     '''
-
-    cmd_dict = {
-        'method': 'Debugger.enable',
-        'params': {
-            'maxScriptsCacheSize': max_scripts_cache_size,
-        }
+    params: T_JSON_DICT = {
     }
-    response = yield cmd_dict
-    return runtime.UniqueDebuggerId.from_response(response['debuggerId'])
+    if max_scripts_cache_size is not None:
+        params['maxScriptsCacheSize'] = max_scripts_cache_size
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Debugger.enable',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return runtime.UniqueDebuggerId.from_json(json['debuggerId'])
 
 
-def evaluate_on_call_frame(call_frame_id: CallFrameId, expression: str, object_group: str, include_command_line_api: bool, silent: bool, return_by_value: bool, generate_preview: bool, throw_on_side_effect: bool, timeout: runtime.TimeDelta) -> typing.Generator[dict,dict,dict]:
+def evaluate_on_call_frame(
+        call_frame_id: CallFrameId,
+        expression: str,
+        object_group: typing.Optional[str] = None,
+        include_command_line_api: typing.Optional[bool] = None,
+        silent: typing.Optional[bool] = None,
+        return_by_value: typing.Optional[bool] = None,
+        generate_preview: typing.Optional[bool] = None,
+        throw_on_side_effect: typing.Optional[bool] = None,
+        timeout: typing.Optional[runtime.TimeDelta] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     Evaluates expression on a given call frame.
     
@@ -83,31 +101,44 @@ def evaluate_on_call_frame(call_frame_id: CallFrameId, expression: str, object_g
     :param timeout: Terminate execution after timing out (number of milliseconds).
     :returns: a dict with the following keys:
         * result: Object wrapper for the evaluation result.
-        * exceptionDetails: Exception details.
+        * exceptionDetails: (Optional) Exception details.
     '''
-
-    cmd_dict = {
+    params: T_JSON_DICT = {
+        'callFrameId': call_frame_id.to_json(),
+        'expression': expression,
+    }
+    if object_group is not None:
+        params['objectGroup'] = object_group
+    if include_command_line_api is not None:
+        params['includeCommandLineAPI'] = include_command_line_api
+    if silent is not None:
+        params['silent'] = silent
+    if return_by_value is not None:
+        params['returnByValue'] = return_by_value
+    if generate_preview is not None:
+        params['generatePreview'] = generate_preview
+    if throw_on_side_effect is not None:
+        params['throwOnSideEffect'] = throw_on_side_effect
+    if timeout is not None:
+        params['timeout'] = timeout.to_json()
+    cmd_dict: T_JSON_DICT = {
         'method': 'Debugger.evaluateOnCallFrame',
-        'params': {
-            'callFrameId': call_frame_id,
-            'expression': expression,
-            'objectGroup': object_group,
-            'includeCommandLineAPI': include_command_line_api,
-            'silent': silent,
-            'returnByValue': return_by_value,
-            'generatePreview': generate_preview,
-            'throwOnSideEffect': throw_on_side_effect,
-            'timeout': timeout,
-        }
+        'params': params,
     }
-    response = yield cmd_dict
-    return {
-        'result': runtime.RemoteObject.from_response(response['result']),
-        'exceptionDetails': runtime.ExceptionDetails.from_response(response['exceptionDetails']),
+    json = yield cmd_dict
+    result: T_JSON_DICT = {
+        'result': runtime.RemoteObject.from_json(json['result']),
     }
+    if 'exceptionDetails' in json:
+        result['exceptionDetails'] = runtime.ExceptionDetails.from_json(json['exceptionDetails'])
+    return result
 
 
-def get_possible_breakpoints(start: Location, end: Location, restrict_to_function: bool) -> typing.Generator[dict,dict,typing.List['BreakLocation']]:
+def get_possible_breakpoints(
+        start: Location,
+        end: typing.Optional[Location] = None,
+        restrict_to_function: typing.Optional[bool] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['BreakLocation']]:
     '''
     Returns possible locations for breakpoint. scriptId in start and end range locations should be
     the same.
@@ -118,135 +149,153 @@ def get_possible_breakpoints(start: Location, end: Location, restrict_to_functio
     :param restrict_to_function: Only consider locations which are in the same (non-nested) function as start.
     :returns: List of the possible breakpoint locations.
     '''
-
-    cmd_dict = {
-        'method': 'Debugger.getPossibleBreakpoints',
-        'params': {
-            'start': start,
-            'end': end,
-            'restrictToFunction': restrict_to_function,
-        }
+    params: T_JSON_DICT = {
+        'start': start.to_json(),
     }
-    response = yield cmd_dict
-    return [BreakLocation.from_response(i) for i in response['locations']]
+    if end is not None:
+        params['end'] = end.to_json()
+    if restrict_to_function is not None:
+        params['restrictToFunction'] = restrict_to_function
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Debugger.getPossibleBreakpoints',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return [BreakLocation.from_json(i) for i in json['locations']]
 
 
-def get_script_source(script_id: runtime.ScriptId) -> typing.Generator[dict,dict,str]:
+def get_script_source(
+        script_id: runtime.ScriptId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,str]:
     '''
     Returns source for the script with given id.
     
     :param script_id: Id of the script to get source for.
     :returns: Script source.
     '''
-
-    cmd_dict = {
-        'method': 'Debugger.getScriptSource',
-        'params': {
-            'scriptId': script_id,
-        }
+    params: T_JSON_DICT = {
+        'scriptId': script_id.to_json(),
     }
-    response = yield cmd_dict
-    return str(response['scriptSource'])
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Debugger.getScriptSource',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return str(json['scriptSource'])
 
 
-def get_stack_trace(stack_trace_id: runtime.StackTraceId) -> typing.Generator[dict,dict,runtime.StackTrace]:
+def get_stack_trace(
+        stack_trace_id: runtime.StackTraceId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,runtime.StackTrace]:
     '''
     Returns stack trace with given `stackTraceId`.
     
     :param stack_trace_id: 
     :returns: 
     '''
-
-    cmd_dict = {
-        'method': 'Debugger.getStackTrace',
-        'params': {
-            'stackTraceId': stack_trace_id,
-        }
+    params: T_JSON_DICT = {
+        'stackTraceId': stack_trace_id.to_json(),
     }
-    response = yield cmd_dict
-    return runtime.StackTrace.from_response(response['stackTrace'])
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Debugger.getStackTrace',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return runtime.StackTrace.from_json(json['stackTrace'])
 
 
-def pause() -> typing.Generator[dict,dict,None]:
+def pause() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Stops on the next JavaScript statement.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Debugger.pause',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def pause_on_async_call(parent_stack_trace_id: runtime.StackTraceId) -> typing.Generator[dict,dict,None]:
+def pause_on_async_call(
+        parent_stack_trace_id: runtime.StackTraceId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     
     
     :param parent_stack_trace_id: Debugger will pause when async call with given stack trace is started.
     '''
-
-    cmd_dict = {
-        'method': 'Debugger.pauseOnAsyncCall',
-        'params': {
-            'parentStackTraceId': parent_stack_trace_id,
-        }
+    params: T_JSON_DICT = {
+        'parentStackTraceId': parent_stack_trace_id.to_json(),
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Debugger.pauseOnAsyncCall',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def remove_breakpoint(breakpoint_id: BreakpointId) -> typing.Generator[dict,dict,None]:
+def remove_breakpoint(
+        breakpoint_id: BreakpointId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Removes JavaScript breakpoint.
     
     :param breakpoint_id: 
     '''
-
-    cmd_dict = {
-        'method': 'Debugger.removeBreakpoint',
-        'params': {
-            'breakpointId': breakpoint_id,
-        }
+    params: T_JSON_DICT = {
+        'breakpointId': breakpoint_id.to_json(),
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Debugger.removeBreakpoint',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def restart_frame(call_frame_id: CallFrameId) -> typing.Generator[dict,dict,dict]:
+def restart_frame(
+        call_frame_id: CallFrameId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     Restarts particular call frame from the beginning.
     
     :param call_frame_id: Call frame identifier to evaluate on.
     :returns: a dict with the following keys:
         * callFrames: New stack trace.
-        * asyncStackTrace: Async stack trace, if any.
-        * asyncStackTraceId: Async stack trace, if any.
+        * asyncStackTrace: (Optional) Async stack trace, if any.
+        * asyncStackTraceId: (Optional) Async stack trace, if any.
     '''
-
-    cmd_dict = {
+    params: T_JSON_DICT = {
+        'callFrameId': call_frame_id.to_json(),
+    }
+    cmd_dict: T_JSON_DICT = {
         'method': 'Debugger.restartFrame',
-        'params': {
-            'callFrameId': call_frame_id,
-        }
+        'params': params,
     }
-    response = yield cmd_dict
-    return {
-        'callFrames': [CallFrame.from_response(i) for i in response['callFrames']],
-        'asyncStackTrace': runtime.StackTrace.from_response(response['asyncStackTrace']),
-        'asyncStackTraceId': runtime.StackTraceId.from_response(response['asyncStackTraceId']),
+    json = yield cmd_dict
+    result: T_JSON_DICT = {
+        'callFrames': [CallFrame.from_json(i) for i in json['callFrames']],
     }
+    if 'asyncStackTrace' in json:
+        result['asyncStackTrace'] = runtime.StackTrace.from_json(json['asyncStackTrace'])
+    if 'asyncStackTraceId' in json:
+        result['asyncStackTraceId'] = runtime.StackTraceId.from_json(json['asyncStackTraceId'])
+    return result
 
 
-def resume() -> typing.Generator[dict,dict,None]:
+def resume() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Resumes JavaScript execution.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Debugger.resume',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def search_in_content(script_id: runtime.ScriptId, query: str, case_sensitive: bool, is_regex: bool) -> typing.Generator[dict,dict,typing.List['SearchMatch']]:
+def search_in_content(
+        script_id: runtime.ScriptId,
+        query: str,
+        case_sensitive: typing.Optional[bool] = None,
+        is_regex: typing.Optional[bool] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['SearchMatch']]:
     '''
     Searches for given string in script content.
     
@@ -256,38 +305,44 @@ def search_in_content(script_id: runtime.ScriptId, query: str, case_sensitive: b
     :param is_regex: If true, treats string parameter as regex.
     :returns: List of search matches.
     '''
-
-    cmd_dict = {
-        'method': 'Debugger.searchInContent',
-        'params': {
-            'scriptId': script_id,
-            'query': query,
-            'caseSensitive': case_sensitive,
-            'isRegex': is_regex,
-        }
+    params: T_JSON_DICT = {
+        'scriptId': script_id.to_json(),
+        'query': query,
     }
-    response = yield cmd_dict
-    return [SearchMatch.from_response(i) for i in response['result']]
+    if case_sensitive is not None:
+        params['caseSensitive'] = case_sensitive
+    if is_regex is not None:
+        params['isRegex'] = is_regex
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Debugger.searchInContent',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return [SearchMatch.from_json(i) for i in json['result']]
 
 
-def set_async_call_stack_depth(max_depth: int) -> typing.Generator[dict,dict,None]:
+def set_async_call_stack_depth(
+        max_depth: int,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enables or disables async call stacks tracking.
     
     :param max_depth: Maximum depth of async call stacks. Setting to `0` will effectively disable collecting async
     call stacks (default).
     '''
-
-    cmd_dict = {
-        'method': 'Debugger.setAsyncCallStackDepth',
-        'params': {
-            'maxDepth': max_depth,
-        }
+    params: T_JSON_DICT = {
+        'maxDepth': max_depth,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Debugger.setAsyncCallStackDepth',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_blackbox_patterns(patterns: typing.List) -> typing.Generator[dict,dict,None]:
+def set_blackbox_patterns(
+        patterns: typing.List['str'],
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Replace previous blackbox patterns with passed ones. Forces backend to skip stepping/pausing in
     scripts with url matching one of the patterns. VM will try to leave blackboxed script by
@@ -295,17 +350,20 @@ def set_blackbox_patterns(patterns: typing.List) -> typing.Generator[dict,dict,N
     
     :param patterns: Array of regexps that will be used to check script url for blackbox state.
     '''
-
-    cmd_dict = {
-        'method': 'Debugger.setBlackboxPatterns',
-        'params': {
-            'patterns': patterns,
-        }
+    params: T_JSON_DICT = {
+        'patterns': [i for i in patterns],
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Debugger.setBlackboxPatterns',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_blackboxed_ranges(script_id: runtime.ScriptId, positions: typing.List['ScriptPosition']) -> typing.Generator[dict,dict,None]:
+def set_blackboxed_ranges(
+        script_id: runtime.ScriptId,
+        positions: typing.List['ScriptPosition'],
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Makes backend skip steps in the script in blackboxed ranges. VM will try leave blacklisted
     scripts by performing 'step in' several times, finally resorting to 'step out' if unsuccessful.
@@ -315,18 +373,21 @@ def set_blackboxed_ranges(script_id: runtime.ScriptId, positions: typing.List['S
     :param script_id: Id of the script.
     :param positions: 
     '''
-
-    cmd_dict = {
-        'method': 'Debugger.setBlackboxedRanges',
-        'params': {
-            'scriptId': script_id,
-            'positions': positions,
-        }
+    params: T_JSON_DICT = {
+        'scriptId': script_id.to_json(),
+        'positions': [i.to_json() for i in positions],
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Debugger.setBlackboxedRanges',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_breakpoint(location: Location, condition: str) -> typing.Generator[dict,dict,dict]:
+def set_breakpoint(
+        location: Location,
+        condition: typing.Optional[str] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     Sets JavaScript breakpoint at a given location.
     
@@ -337,40 +398,51 @@ def set_breakpoint(location: Location, condition: str) -> typing.Generator[dict,
         * breakpointId: Id of the created breakpoint for further reference.
         * actualLocation: Location this breakpoint resolved into.
     '''
-
-    cmd_dict = {
+    params: T_JSON_DICT = {
+        'location': location.to_json(),
+    }
+    if condition is not None:
+        params['condition'] = condition
+    cmd_dict: T_JSON_DICT = {
         'method': 'Debugger.setBreakpoint',
-        'params': {
-            'location': location,
-            'condition': condition,
-        }
+        'params': params,
     }
-    response = yield cmd_dict
-    return {
-        'breakpointId': BreakpointId.from_response(response['breakpointId']),
-        'actualLocation': Location.from_response(response['actualLocation']),
+    json = yield cmd_dict
+    result: T_JSON_DICT = {
+        'breakpointId': BreakpointId.from_json(json['breakpointId']),
+        'actualLocation': Location.from_json(json['actualLocation']),
     }
+    return result
 
 
-def set_instrumentation_breakpoint(instrumentation: str) -> typing.Generator[dict,dict,BreakpointId]:
+def set_instrumentation_breakpoint(
+        instrumentation: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,BreakpointId]:
     '''
     Sets instrumentation breakpoint.
     
     :param instrumentation: Instrumentation name.
     :returns: Id of the created breakpoint for further reference.
     '''
-
-    cmd_dict = {
-        'method': 'Debugger.setInstrumentationBreakpoint',
-        'params': {
-            'instrumentation': instrumentation,
-        }
+    params: T_JSON_DICT = {
+        'instrumentation': instrumentation,
     }
-    response = yield cmd_dict
-    return BreakpointId.from_response(response['breakpointId'])
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Debugger.setInstrumentationBreakpoint',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return BreakpointId.from_json(json['breakpointId'])
 
 
-def set_breakpoint_by_url(line_number: int, url: str, url_regex: str, script_hash: str, column_number: int, condition: str) -> typing.Generator[dict,dict,dict]:
+def set_breakpoint_by_url(
+        line_number: int,
+        url: typing.Optional[str] = None,
+        url_regex: typing.Optional[str] = None,
+        script_hash: typing.Optional[str] = None,
+        column_number: typing.Optional[int] = None,
+        condition: typing.Optional[str] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     Sets JavaScript breakpoint at given location specified either by URL or URL regex. Once this
     command is issued, all existing parsed scripts will have breakpoints resolved and returned in
@@ -389,26 +461,35 @@ def set_breakpoint_by_url(line_number: int, url: str, url_regex: str, script_has
         * breakpointId: Id of the created breakpoint for further reference.
         * locations: List of the locations this breakpoint resolved into upon addition.
     '''
-
-    cmd_dict = {
+    params: T_JSON_DICT = {
+        'lineNumber': line_number,
+    }
+    if url is not None:
+        params['url'] = url
+    if url_regex is not None:
+        params['urlRegex'] = url_regex
+    if script_hash is not None:
+        params['scriptHash'] = script_hash
+    if column_number is not None:
+        params['columnNumber'] = column_number
+    if condition is not None:
+        params['condition'] = condition
+    cmd_dict: T_JSON_DICT = {
         'method': 'Debugger.setBreakpointByUrl',
-        'params': {
-            'lineNumber': line_number,
-            'url': url,
-            'urlRegex': url_regex,
-            'scriptHash': script_hash,
-            'columnNumber': column_number,
-            'condition': condition,
-        }
+        'params': params,
     }
-    response = yield cmd_dict
-    return {
-        'breakpointId': BreakpointId.from_response(response['breakpointId']),
-        'locations': [Location.from_response(i) for i in response['locations']],
+    json = yield cmd_dict
+    result: T_JSON_DICT = {
+        'breakpointId': BreakpointId.from_json(json['breakpointId']),
+        'locations': [Location.from_json(i) for i in json['locations']],
     }
+    return result
 
 
-def set_breakpoint_on_function_call(object_id: runtime.RemoteObjectId, condition: str) -> typing.Generator[dict,dict,BreakpointId]:
+def set_breakpoint_on_function_call(
+        object_id: runtime.RemoteObjectId,
+        condition: typing.Optional[str] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,BreakpointId]:
     '''
     Sets JavaScript breakpoint before each call to the given function.
     If another function was created from the same source as a given one,
@@ -419,68 +500,79 @@ def set_breakpoint_on_function_call(object_id: runtime.RemoteObjectId, condition
     stop on the breakpoint if this expression evaluates to true.
     :returns: Id of the created breakpoint for further reference.
     '''
-
-    cmd_dict = {
-        'method': 'Debugger.setBreakpointOnFunctionCall',
-        'params': {
-            'objectId': object_id,
-            'condition': condition,
-        }
+    params: T_JSON_DICT = {
+        'objectId': object_id.to_json(),
     }
-    response = yield cmd_dict
-    return BreakpointId.from_response(response['breakpointId'])
+    if condition is not None:
+        params['condition'] = condition
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Debugger.setBreakpointOnFunctionCall',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return BreakpointId.from_json(json['breakpointId'])
 
 
-def set_breakpoints_active(active: bool) -> typing.Generator[dict,dict,None]:
+def set_breakpoints_active(
+        active: bool,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Activates / deactivates all breakpoints on the page.
     
     :param active: New value for breakpoints active state.
     '''
-
-    cmd_dict = {
-        'method': 'Debugger.setBreakpointsActive',
-        'params': {
-            'active': active,
-        }
+    params: T_JSON_DICT = {
+        'active': active,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Debugger.setBreakpointsActive',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_pause_on_exceptions(state: str) -> typing.Generator[dict,dict,None]:
+def set_pause_on_exceptions(
+        state: str,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Defines pause on exceptions state. Can be set to stop on all exceptions, uncaught exceptions or
     no exceptions. Initial pause on exceptions state is `none`.
     
     :param state: Pause on exceptions mode.
     '''
-
-    cmd_dict = {
-        'method': 'Debugger.setPauseOnExceptions',
-        'params': {
-            'state': state,
-        }
+    params: T_JSON_DICT = {
+        'state': state,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Debugger.setPauseOnExceptions',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_return_value(new_value: runtime.CallArgument) -> typing.Generator[dict,dict,None]:
+def set_return_value(
+        new_value: runtime.CallArgument,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Changes return value in top frame. Available only at return break position.
     
     :param new_value: New return value.
     '''
-
-    cmd_dict = {
-        'method': 'Debugger.setReturnValue',
-        'params': {
-            'newValue': new_value,
-        }
+    params: T_JSON_DICT = {
+        'newValue': new_value.to_json(),
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Debugger.setReturnValue',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_script_source(script_id: runtime.ScriptId, script_source: str, dry_run: bool) -> typing.Generator[dict,dict,dict]:
+def set_script_source(
+        script_id: runtime.ScriptId,
+        script_source: str,
+        dry_run: typing.Optional[bool] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     Edits JavaScript source live.
     
@@ -489,48 +581,62 @@ def set_script_source(script_id: runtime.ScriptId, script_source: str, dry_run: 
     :param dry_run: If true the change will not actually be applied. Dry run may be used to get result
     description without actually modifying the code.
     :returns: a dict with the following keys:
-        * callFrames: New stack trace in case editing has happened while VM was stopped.
-        * stackChanged: Whether current call stack  was modified after applying the changes.
-        * asyncStackTrace: Async stack trace, if any.
-        * asyncStackTraceId: Async stack trace, if any.
-        * exceptionDetails: Exception details if any.
+        * callFrames: (Optional) New stack trace in case editing has happened while VM was stopped.
+        * stackChanged: (Optional) Whether current call stack  was modified after applying the changes.
+        * asyncStackTrace: (Optional) Async stack trace, if any.
+        * asyncStackTraceId: (Optional) Async stack trace, if any.
+        * exceptionDetails: (Optional) Exception details if any.
     '''
-
-    cmd_dict = {
+    params: T_JSON_DICT = {
+        'scriptId': script_id.to_json(),
+        'scriptSource': script_source,
+    }
+    if dry_run is not None:
+        params['dryRun'] = dry_run
+    cmd_dict: T_JSON_DICT = {
         'method': 'Debugger.setScriptSource',
-        'params': {
-            'scriptId': script_id,
-            'scriptSource': script_source,
-            'dryRun': dry_run,
-        }
+        'params': params,
     }
-    response = yield cmd_dict
-    return {
-        'callFrames': [CallFrame.from_response(i) for i in response['callFrames']],
-        'stackChanged': bool(response['stackChanged']),
-        'asyncStackTrace': runtime.StackTrace.from_response(response['asyncStackTrace']),
-        'asyncStackTraceId': runtime.StackTraceId.from_response(response['asyncStackTraceId']),
-        'exceptionDetails': runtime.ExceptionDetails.from_response(response['exceptionDetails']),
+    json = yield cmd_dict
+    result: T_JSON_DICT = {
     }
+    if 'callFrames' in json:
+        result['callFrames'] = [CallFrame.from_json(i) for i in json['callFrames']]
+    if 'stackChanged' in json:
+        result['stackChanged'] = bool(json['stackChanged'])
+    if 'asyncStackTrace' in json:
+        result['asyncStackTrace'] = runtime.StackTrace.from_json(json['asyncStackTrace'])
+    if 'asyncStackTraceId' in json:
+        result['asyncStackTraceId'] = runtime.StackTraceId.from_json(json['asyncStackTraceId'])
+    if 'exceptionDetails' in json:
+        result['exceptionDetails'] = runtime.ExceptionDetails.from_json(json['exceptionDetails'])
+    return result
 
 
-def set_skip_all_pauses(skip: bool) -> typing.Generator[dict,dict,None]:
+def set_skip_all_pauses(
+        skip: bool,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Makes page not interrupt on any pauses (breakpoint, exception, dom exception etc).
     
     :param skip: New value for skip pauses state.
     '''
-
-    cmd_dict = {
-        'method': 'Debugger.setSkipAllPauses',
-        'params': {
-            'skip': skip,
-        }
+    params: T_JSON_DICT = {
+        'skip': skip,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Debugger.setSkipAllPauses',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def set_variable_value(scope_number: int, variable_name: str, new_value: runtime.CallArgument, call_frame_id: CallFrameId) -> typing.Generator[dict,dict,None]:
+def set_variable_value(
+        scope_number: int,
+        variable_name: str,
+        new_value: runtime.CallArgument,
+        call_frame_id: CallFrameId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Changes value of variable in a callframe. Object-based scopes are not supported and must be
     mutated manually.
@@ -541,55 +647,56 @@ def set_variable_value(scope_number: int, variable_name: str, new_value: runtime
     :param new_value: New variable value.
     :param call_frame_id: Id of callframe that holds variable.
     '''
-
-    cmd_dict = {
-        'method': 'Debugger.setVariableValue',
-        'params': {
-            'scopeNumber': scope_number,
-            'variableName': variable_name,
-            'newValue': new_value,
-            'callFrameId': call_frame_id,
-        }
+    params: T_JSON_DICT = {
+        'scopeNumber': scope_number,
+        'variableName': variable_name,
+        'newValue': new_value.to_json(),
+        'callFrameId': call_frame_id.to_json(),
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Debugger.setVariableValue',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def step_into(break_on_async_call: bool) -> typing.Generator[dict,dict,None]:
+def step_into(
+        break_on_async_call: typing.Optional[bool] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Steps into the function call.
     
     :param break_on_async_call: Debugger will issue additional Debugger.paused notification if any async task is scheduled
     before next pause.
     '''
-
-    cmd_dict = {
-        'method': 'Debugger.stepInto',
-        'params': {
-            'breakOnAsyncCall': break_on_async_call,
-        }
+    params: T_JSON_DICT = {
     }
-    response = yield cmd_dict
+    if break_on_async_call is not None:
+        params['breakOnAsyncCall'] = break_on_async_call
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Debugger.stepInto',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def step_out() -> typing.Generator[dict,dict,None]:
+def step_out() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Steps out of the function call.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Debugger.stepOut',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def step_over() -> typing.Generator[dict,dict,None]:
+def step_over() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Steps over the statement.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Debugger.stepOver',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 

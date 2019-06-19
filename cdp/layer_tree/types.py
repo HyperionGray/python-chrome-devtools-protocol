@@ -8,7 +8,9 @@ Domain: layer_tree
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from ..dom import types as dom
@@ -18,9 +20,12 @@ class LayerId(str):
     '''
     Unique Layer identifier.
     '''
+    def to_json(self) -> str:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: str) -> 'LayerId':
+        return cls(json)
 
     def __repr__(self):
         return 'LayerId({})'.format(str.__repr__(self))
@@ -30,25 +35,30 @@ class SnapshotId(str):
     '''
     Unique snapshot identifier.
     '''
+    def to_json(self) -> str:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: str) -> 'SnapshotId':
+        return cls(json)
 
     def __repr__(self):
         return 'SnapshotId({})'.format(str.__repr__(self))
 
 
-class PaintProfile(typing.List):
+class PaintProfile(typing.List['float']):
     '''
     Array of timings, one per paint step.
     '''
+    def to_json(self) -> typing.List['float']:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: typing.List['float']) -> 'PaintProfile':
+        return cls(json)
 
     def __repr__(self):
-        return 'PaintProfile({})'.format(typing.List.__repr__(self))
-
+        return 'PaintProfile({})'.format(typing.List['float'].__repr__(self))
 
 
 @dataclass
@@ -60,15 +70,21 @@ class ScrollRect:
     rect: dom.Rect
 
     #: Reason for rectangle to force scrolling on the main thread
-    type_: str
+    type: str
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'rect': self.rect.to_json(),
+            'type': self.type,
+        }
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'ScrollRect':
         return cls(
-            rect=dom.Rect.from_response(response.get('rect')),
-            type_=str(response.get('type')),
+            rect=dom.Rect.from_json(json['rect']),
+            type=json['type'],
         )
-
 
 @dataclass
 class StickyPositionConstraint:
@@ -82,20 +98,32 @@ class StickyPositionConstraint:
     containing_block_rect: dom.Rect
 
     #: The nearest sticky layer that shifts the sticky box
-    nearest_layer_shifting_sticky_box: LayerId
+    nearest_layer_shifting_sticky_box: typing.Optional[LayerId] = None
 
     #: The nearest sticky layer that shifts the containing block
-    nearest_layer_shifting_containing_block: LayerId
+    nearest_layer_shifting_containing_block: typing.Optional[LayerId] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'stickyBoxRect': self.sticky_box_rect.to_json(),
+            'containingBlockRect': self.containing_block_rect.to_json(),
+        }
+        if self.nearest_layer_shifting_sticky_box is not None:
+            json['nearestLayerShiftingStickyBox'] = self.nearest_layer_shifting_sticky_box.to_json()
+        if self.nearest_layer_shifting_containing_block is not None:
+            json['nearestLayerShiftingContainingBlock'] = self.nearest_layer_shifting_containing_block.to_json()
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'StickyPositionConstraint':
+        nearest_layer_shifting_sticky_box = LayerId.from_json(json['nearestLayerShiftingStickyBox']) if 'nearestLayerShiftingStickyBox' in json else None
+        nearest_layer_shifting_containing_block = LayerId.from_json(json['nearestLayerShiftingContainingBlock']) if 'nearestLayerShiftingContainingBlock' in json else None
         return cls(
-            sticky_box_rect=dom.Rect.from_response(response.get('stickyBoxRect')),
-            containing_block_rect=dom.Rect.from_response(response.get('containingBlockRect')),
-            nearest_layer_shifting_sticky_box=LayerId.from_response(response.get('nearestLayerShiftingStickyBox')),
-            nearest_layer_shifting_containing_block=LayerId.from_response(response.get('nearestLayerShiftingContainingBlock')),
+            sticky_box_rect=dom.Rect.from_json(json['stickyBoxRect']),
+            containing_block_rect=dom.Rect.from_json(json['containingBlockRect']),
+            nearest_layer_shifting_sticky_box=nearest_layer_shifting_sticky_box,
+            nearest_layer_shifting_containing_block=nearest_layer_shifting_containing_block,
         )
-
 
 @dataclass
 class PictureTile:
@@ -111,14 +139,21 @@ class PictureTile:
     #: Base64-encoded snapshot data.
     picture: str
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            x=float(response.get('x')),
-            y=float(response.get('y')),
-            picture=str(response.get('picture')),
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'x': self.x,
+            'y': self.y,
+            'picture': self.picture,
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'PictureTile':
+        return cls(
+            x=json['x'],
+            y=json['y'],
+            picture=json['picture'],
+        )
 
 @dataclass
 class Layer:
@@ -127,12 +162,6 @@ class Layer:
     '''
     #: The unique id for this layer.
     layer_id: LayerId
-
-    #: The id of parent (not present for root).
-    parent_layer_id: LayerId
-
-    #: The backend id for the node associated with this layer.
-    backend_node_id: dom.BackendNodeId
 
     #: Offset from parent layer, X coordinate.
     offset_x: float
@@ -146,18 +175,6 @@ class Layer:
     #: Layer height.
     height: float
 
-    #: Transformation matrix for layer, default is identity matrix
-    transform: typing.List
-
-    #: Transform anchor point X, absent if no transform specified
-    anchor_x: float
-
-    #: Transform anchor point Y, absent if no transform specified
-    anchor_y: float
-
-    #: Transform anchor point Z, absent if no transform specified
-    anchor_z: float
-
     #: Indicates how many time this layer has painted.
     paint_count: int
 
@@ -165,33 +182,90 @@ class Layer:
     #: transform/scrolling purposes only.
     draws_content: bool
 
+    #: The id of parent (not present for root).
+    parent_layer_id: typing.Optional[LayerId] = None
+
+    #: The backend id for the node associated with this layer.
+    backend_node_id: typing.Optional[dom.BackendNodeId] = None
+
+    #: Transformation matrix for layer, default is identity matrix
+    transform: typing.Optional[typing.List['float']] = None
+
+    #: Transform anchor point X, absent if no transform specified
+    anchor_x: typing.Optional[float] = None
+
+    #: Transform anchor point Y, absent if no transform specified
+    anchor_y: typing.Optional[float] = None
+
+    #: Transform anchor point Z, absent if no transform specified
+    anchor_z: typing.Optional[float] = None
+
     #: Set if layer is not visible.
-    invisible: bool
+    invisible: typing.Optional[bool] = None
 
     #: Rectangles scrolling on main thread only.
-    scroll_rects: typing.List['ScrollRect']
+    scroll_rects: typing.Optional[typing.List['ScrollRect']] = None
 
     #: Sticky position constraint information
-    sticky_position_constraint: StickyPositionConstraint
+    sticky_position_constraint: typing.Optional[StickyPositionConstraint] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'layerId': self.layer_id.to_json(),
+            'offsetX': self.offset_x,
+            'offsetY': self.offset_y,
+            'width': self.width,
+            'height': self.height,
+            'paintCount': self.paint_count,
+            'drawsContent': self.draws_content,
+        }
+        if self.parent_layer_id is not None:
+            json['parentLayerId'] = self.parent_layer_id.to_json()
+        if self.backend_node_id is not None:
+            json['backendNodeId'] = self.backend_node_id.to_json()
+        if self.transform is not None:
+            json['transform'] = [i for i in self.transform]
+        if self.anchor_x is not None:
+            json['anchorX'] = self.anchor_x
+        if self.anchor_y is not None:
+            json['anchorY'] = self.anchor_y
+        if self.anchor_z is not None:
+            json['anchorZ'] = self.anchor_z
+        if self.invisible is not None:
+            json['invisible'] = self.invisible
+        if self.scroll_rects is not None:
+            json['scrollRects'] = [i.to_json() for i in self.scroll_rects]
+        if self.sticky_position_constraint is not None:
+            json['stickyPositionConstraint'] = self.sticky_position_constraint.to_json()
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'Layer':
+        parent_layer_id = LayerId.from_json(json['parentLayerId']) if 'parentLayerId' in json else None
+        backend_node_id = dom.BackendNodeId.from_json(json['backendNodeId']) if 'backendNodeId' in json else None
+        transform = [i for i in json['transform']] if 'transform' in json else None
+        anchor_x = json['anchorX'] if 'anchorX' in json else None
+        anchor_y = json['anchorY'] if 'anchorY' in json else None
+        anchor_z = json['anchorZ'] if 'anchorZ' in json else None
+        invisible = json['invisible'] if 'invisible' in json else None
+        scroll_rects = [ScrollRect.from_json(i) for i in json['scrollRects']] if 'scrollRects' in json else None
+        sticky_position_constraint = StickyPositionConstraint.from_json(json['stickyPositionConstraint']) if 'stickyPositionConstraint' in json else None
         return cls(
-            layer_id=LayerId.from_response(response.get('layerId')),
-            parent_layer_id=LayerId.from_response(response.get('parentLayerId')),
-            backend_node_id=dom.BackendNodeId.from_response(response.get('backendNodeId')),
-            offset_x=float(response.get('offsetX')),
-            offset_y=float(response.get('offsetY')),
-            width=float(response.get('width')),
-            height=float(response.get('height')),
-            transform=[float(i) for i in response.get('transform')],
-            anchor_x=float(response.get('anchorX')),
-            anchor_y=float(response.get('anchorY')),
-            anchor_z=float(response.get('anchorZ')),
-            paint_count=int(response.get('paintCount')),
-            draws_content=bool(response.get('drawsContent')),
-            invisible=bool(response.get('invisible')),
-            scroll_rects=[ScrollRect.from_response(i) for i in response.get('scrollRects')],
-            sticky_position_constraint=StickyPositionConstraint.from_response(response.get('stickyPositionConstraint')),
+            layer_id=LayerId.from_json(json['layerId']),
+            parent_layer_id=parent_layer_id,
+            backend_node_id=backend_node_id,
+            offset_x=json['offsetX'],
+            offset_y=json['offsetY'],
+            width=json['width'],
+            height=json['height'],
+            transform=transform,
+            anchor_x=anchor_x,
+            anchor_y=anchor_y,
+            anchor_z=anchor_z,
+            paint_count=json['paintCount'],
+            draws_content=json['drawsContent'],
+            invisible=invisible,
+            scroll_rects=scroll_rects,
+            sticky_position_constraint=sticky_position_constraint,
         )
 

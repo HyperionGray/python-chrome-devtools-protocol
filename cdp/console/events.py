@@ -8,7 +8,9 @@ Domain: console
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -21,4 +23,14 @@ class MessageAdded:
     '''
     #: Issued when new console message is added.
     message: ConsoleMessage
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Console'
+    _method = 'messageAdded'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'MessageAdded':
+        return cls(
+            message=ConsoleMessage.from_json(json['message']),
+        )
 

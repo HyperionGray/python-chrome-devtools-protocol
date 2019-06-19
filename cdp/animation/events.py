@@ -8,7 +8,9 @@ Domain: animation
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -22,6 +24,16 @@ class AnimationCanceled:
     #: Event for when an animation has been cancelled.
     id: str
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Animation'
+    _method = 'animationCanceled'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'AnimationCanceled':
+        return cls(
+            id=str(json['id']),
+        )
+
 
 @dataclass
 class AnimationCreated:
@@ -31,6 +43,16 @@ class AnimationCreated:
     #: Event for each animation that has been created.
     id: str
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Animation'
+    _method = 'animationCreated'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'AnimationCreated':
+        return cls(
+            id=str(json['id']),
+        )
+
 
 @dataclass
 class AnimationStarted:
@@ -39,4 +61,14 @@ class AnimationStarted:
     '''
     #: Event for animation that has been started.
     animation: Animation
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Animation'
+    _method = 'animationStarted'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'AnimationStarted':
+        return cls(
+            animation=Animation.from_json(json['animation']),
+        )
 

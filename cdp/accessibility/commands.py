@@ -8,7 +8,9 @@ Domain: accessibility
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -17,30 +19,33 @@ from ..runtime import types as runtime
 
 
 
-def disable() -> typing.Generator[dict,dict,None]:
+def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Disables the accessibility domain.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Accessibility.disable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def enable() -> typing.Generator[dict,dict,None]:
+def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enables the accessibility domain which causes `AXNodeId`s to remain consistent between method calls.
     This turns on accessibility for the page, which can impact performance until accessibility is disabled.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Accessibility.enable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def get_partial_ax_tree(node_id: dom.NodeId, backend_node_id: dom.BackendNodeId, object_id: runtime.RemoteObjectId, fetch_relatives: bool) -> typing.Generator[dict,dict,typing.List['AXNode']]:
+def get_partial_ax_tree(
+        node_id: typing.Optional[dom.NodeId] = None,
+        backend_node_id: typing.Optional[dom.BackendNodeId] = None,
+        object_id: typing.Optional[runtime.RemoteObjectId] = None,
+        fetch_relatives: typing.Optional[bool] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['AXNode']]:
     '''
     Fetches the accessibility node and partial accessibility tree for this DOM node, if it exists.
     
@@ -51,30 +56,33 @@ def get_partial_ax_tree(node_id: dom.NodeId, backend_node_id: dom.BackendNodeId,
     :returns: The `Accessibility.AXNode` for this DOM node, if it exists, plus its ancestors, siblings and
     children, if requested.
     '''
-
-    cmd_dict = {
-        'method': 'Accessibility.getPartialAXTree',
-        'params': {
-            'nodeId': node_id,
-            'backendNodeId': backend_node_id,
-            'objectId': object_id,
-            'fetchRelatives': fetch_relatives,
-        }
+    params: T_JSON_DICT = {
     }
-    response = yield cmd_dict
-    return [AXNode.from_response(i) for i in response['nodes']]
+    if node_id is not None:
+        params['nodeId'] = node_id.to_json()
+    if backend_node_id is not None:
+        params['backendNodeId'] = backend_node_id.to_json()
+    if object_id is not None:
+        params['objectId'] = object_id.to_json()
+    if fetch_relatives is not None:
+        params['fetchRelatives'] = fetch_relatives
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Accessibility.getPartialAXTree',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return [AXNode.from_json(i) for i in json['nodes']]
 
 
-def get_full_ax_tree() -> typing.Generator[dict,dict,typing.List['AXNode']]:
+def get_full_ax_tree() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['AXNode']]:
     '''
     Fetches the entire accessibility tree
     :returns: 
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Accessibility.getFullAXTree',
     }
-    response = yield cmd_dict
-    return [AXNode.from_response(i) for i in response['nodes']]
+    json = yield cmd_dict
+    return [AXNode.from_json(i) for i in json['nodes']]
 
 

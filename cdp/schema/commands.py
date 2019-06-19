@@ -8,22 +8,23 @@ Domain: schema
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
 
 
-def get_domains() -> typing.Generator[dict,dict,typing.List['Domain']]:
+def get_domains() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['Domain']]:
     '''
     Returns supported domains.
     :returns: List of supported domains.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Schema.getDomains',
     }
-    response = yield cmd_dict
-    return [Domain.from_response(i) for i in response['domains']]
+    json = yield cmd_dict
+    return [Domain.from_json(i) for i in json['domains']]
 
 

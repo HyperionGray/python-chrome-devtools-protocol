@@ -8,36 +8,54 @@ Domain: service_worker
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from ..target import types as target
 
 
 class RegistrationID(str):
+    def to_json(self) -> str:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: str) -> 'RegistrationID':
+        return cls(json)
 
     def __repr__(self):
         return 'RegistrationID({})'.format(str.__repr__(self))
 
 
-
-class ServiceWorkerVersionRunningStatus:
+class ServiceWorkerVersionRunningStatus(enum.Enum):
     STOPPED = "stopped"
     STARTING = "starting"
     RUNNING = "running"
     STOPPING = "stopping"
 
+    def to_json(self) -> str:
+        return self.value
 
-class ServiceWorkerVersionStatus:
+    @classmethod
+    def from_json(cls, json: str) -> 'ServiceWorkerVersionRunningStatus':
+        return cls(json)
+
+
+class ServiceWorkerVersionStatus(enum.Enum):
     NEW = "new"
     INSTALLING = "installing"
     INSTALLED = "installed"
     ACTIVATING = "activating"
     ACTIVATED = "activated"
     REDUNDANT = "redundant"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> 'ServiceWorkerVersionStatus':
+        return cls(json)
 
 
 @dataclass
@@ -51,14 +69,21 @@ class ServiceWorkerRegistration:
 
     is_deleted: bool
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            registration_id=RegistrationID.from_response(response.get('registrationId')),
-            scope_url=str(response.get('scopeURL')),
-            is_deleted=bool(response.get('isDeleted')),
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'registrationId': self.registration_id.to_json(),
+            'scopeURL': self.scope_url,
+            'isDeleted': self.is_deleted,
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'ServiceWorkerRegistration':
+        return cls(
+            registration_id=RegistrationID.from_json(json['registrationId']),
+            scope_url=json['scopeURL'],
+            is_deleted=json['isDeleted'],
+        )
 
 @dataclass
 class ServiceWorkerVersion:
@@ -76,30 +101,51 @@ class ServiceWorkerVersion:
     status: ServiceWorkerVersionStatus
 
     #: The Last-Modified header value of the main script.
-    script_last_modified: float
+    script_last_modified: typing.Optional[float] = None
 
     #: The time at which the response headers of the main script were received from the server.
     #: For cached script it is the last time the cache entry was validated.
-    script_response_time: float
+    script_response_time: typing.Optional[float] = None
 
-    controlled_clients: typing.List['target.TargetID']
+    controlled_clients: typing.Optional[typing.List['target.TargetID']] = None
 
-    target_id: target.TargetID
+    target_id: typing.Optional[target.TargetID] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'versionId': self.version_id,
+            'registrationId': self.registration_id.to_json(),
+            'scriptURL': self.script_url,
+            'runningStatus': self.running_status.to_json(),
+            'status': self.status.to_json(),
+        }
+        if self.script_last_modified is not None:
+            json['scriptLastModified'] = self.script_last_modified
+        if self.script_response_time is not None:
+            json['scriptResponseTime'] = self.script_response_time
+        if self.controlled_clients is not None:
+            json['controlledClients'] = [i.to_json() for i in self.controlled_clients]
+        if self.target_id is not None:
+            json['targetId'] = self.target_id.to_json()
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'ServiceWorkerVersion':
+        script_last_modified = json['scriptLastModified'] if 'scriptLastModified' in json else None
+        script_response_time = json['scriptResponseTime'] if 'scriptResponseTime' in json else None
+        controlled_clients = [target.TargetID.from_json(i) for i in json['controlledClients']] if 'controlledClients' in json else None
+        target_id = target.TargetID.from_json(json['targetId']) if 'targetId' in json else None
         return cls(
-            version_id=str(response.get('versionId')),
-            registration_id=RegistrationID.from_response(response.get('registrationId')),
-            script_url=str(response.get('scriptURL')),
-            running_status=ServiceWorkerVersionRunningStatus.from_response(response.get('runningStatus')),
-            status=ServiceWorkerVersionStatus.from_response(response.get('status')),
-            script_last_modified=float(response.get('scriptLastModified')),
-            script_response_time=float(response.get('scriptResponseTime')),
-            controlled_clients=[target.TargetID.from_response(i) for i in response.get('controlledClients')],
-            target_id=target.TargetID.from_response(response.get('targetId')),
+            version_id=json['versionId'],
+            registration_id=RegistrationID.from_json(json['registrationId']),
+            script_url=json['scriptURL'],
+            running_status=ServiceWorkerVersionRunningStatus.from_json(json['runningStatus']),
+            status=ServiceWorkerVersionStatus.from_json(json['status']),
+            script_last_modified=script_last_modified,
+            script_response_time=script_response_time,
+            controlled_clients=controlled_clients,
+            target_id=target_id,
         )
-
 
 @dataclass
 class ServiceWorkerErrorMessage:
@@ -118,14 +164,25 @@ class ServiceWorkerErrorMessage:
 
     column_number: int
 
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'errorMessage': self.error_message,
+            'registrationId': self.registration_id.to_json(),
+            'versionId': self.version_id,
+            'sourceURL': self.source_url,
+            'lineNumber': self.line_number,
+            'columnNumber': self.column_number,
+        }
+        return json
+
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'ServiceWorkerErrorMessage':
         return cls(
-            error_message=str(response.get('errorMessage')),
-            registration_id=RegistrationID.from_response(response.get('registrationId')),
-            version_id=str(response.get('versionId')),
-            source_url=str(response.get('sourceURL')),
-            line_number=int(response.get('lineNumber')),
-            column_number=int(response.get('columnNumber')),
+            error_message=json['errorMessage'],
+            registration_id=RegistrationID.from_json(json['registrationId']),
+            version_id=json['versionId'],
+            source_url=json['sourceURL'],
+            line_number=json['lineNumber'],
+            column_number=json['columnNumber'],
         )
 

@@ -8,35 +8,40 @@ Domain: dom_snapshot
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
 
 
-def disable() -> typing.Generator[dict,dict,None]:
+def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Disables DOM snapshot agent for the given page.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'DOMSnapshot.disable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def enable() -> typing.Generator[dict,dict,None]:
+def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enables DOM snapshot agent for the given page.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'DOMSnapshot.enable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def get_snapshot(computed_style_whitelist: typing.List, include_event_listeners: bool, include_paint_order: bool, include_user_agent_shadow_tree: bool) -> typing.Generator[dict,dict,dict]:
+def get_snapshot(
+        computed_style_whitelist: typing.List['str'],
+        include_event_listeners: typing.Optional[bool] = None,
+        include_paint_order: typing.Optional[bool] = None,
+        include_user_agent_shadow_tree: typing.Optional[bool] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     Returns a document snapshot, including the full DOM tree of the root node (including iframes,
     template contents, and imported documents) in a flattened array, as well as layout and
@@ -52,25 +57,31 @@ def get_snapshot(computed_style_whitelist: typing.List, include_event_listeners:
         * layoutTreeNodes: The nodes in the layout tree.
         * computedStyles: Whitelisted ComputedStyle properties for each node in the layout tree.
     '''
-
-    cmd_dict = {
+    params: T_JSON_DICT = {
+        'computedStyleWhitelist': [i for i in computed_style_whitelist],
+    }
+    if include_event_listeners is not None:
+        params['includeEventListeners'] = include_event_listeners
+    if include_paint_order is not None:
+        params['includePaintOrder'] = include_paint_order
+    if include_user_agent_shadow_tree is not None:
+        params['includeUserAgentShadowTree'] = include_user_agent_shadow_tree
+    cmd_dict: T_JSON_DICT = {
         'method': 'DOMSnapshot.getSnapshot',
-        'params': {
-            'computedStyleWhitelist': computed_style_whitelist,
-            'includeEventListeners': include_event_listeners,
-            'includePaintOrder': include_paint_order,
-            'includeUserAgentShadowTree': include_user_agent_shadow_tree,
-        }
+        'params': params,
     }
-    response = yield cmd_dict
-    return {
-        'domNodes': [DOMNode.from_response(i) for i in response['domNodes']],
-        'layoutTreeNodes': [LayoutTreeNode.from_response(i) for i in response['layoutTreeNodes']],
-        'computedStyles': [ComputedStyle.from_response(i) for i in response['computedStyles']],
+    json = yield cmd_dict
+    result: T_JSON_DICT = {
+        'domNodes': [DOMNode.from_json(i) for i in json['domNodes']],
+        'layoutTreeNodes': [LayoutTreeNode.from_json(i) for i in json['layoutTreeNodes']],
+        'computedStyles': [ComputedStyle.from_json(i) for i in json['computedStyles']],
     }
+    return result
 
 
-def capture_snapshot(computed_styles: typing.List) -> typing.Generator[dict,dict,dict]:
+def capture_snapshot(
+        computed_styles: typing.List['str'],
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     Returns a document snapshot, including the full DOM tree of the root node (including iframes,
     template contents, and imported documents) in a flattened array, as well as layout and
@@ -82,17 +93,18 @@ def capture_snapshot(computed_styles: typing.List) -> typing.Generator[dict,dict
         * documents: The nodes in the DOM tree. The DOMNode at index 0 corresponds to the root document.
         * strings: Shared string table that all string properties refer to with indexes.
     '''
-
-    cmd_dict = {
+    params: T_JSON_DICT = {
+        'computedStyles': [i for i in computed_styles],
+    }
+    cmd_dict: T_JSON_DICT = {
         'method': 'DOMSnapshot.captureSnapshot',
-        'params': {
-            'computedStyles': computed_styles,
-        }
+        'params': params,
     }
-    response = yield cmd_dict
-    return {
-        'documents': [DocumentSnapshot.from_response(i) for i in response['documents']],
-        'strings': [str(i) for i in response['strings']],
+    json = yield cmd_dict
+    result: T_JSON_DICT = {
+        'documents': [DocumentSnapshot.from_json(i) for i in json['documents']],
+        'strings': [str(i) for i in json['strings']],
     }
+    return result
 
 

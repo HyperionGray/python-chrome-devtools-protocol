@@ -8,7 +8,9 @@ Domain: debugger
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from ..runtime import types as runtime
@@ -18,9 +20,12 @@ class BreakpointId(str):
     '''
     Breakpoint identifier.
     '''
+    def to_json(self) -> str:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: str) -> 'BreakpointId':
+        return cls(json)
 
     def __repr__(self):
         return 'BreakpointId({})'.format(str.__repr__(self))
@@ -30,13 +35,15 @@ class CallFrameId(str):
     '''
     Call frame identifier.
     '''
+    def to_json(self) -> str:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: str) -> 'CallFrameId':
+        return cls(json)
 
     def __repr__(self):
         return 'CallFrameId({})'.format(str.__repr__(self))
-
 
 
 @dataclass
@@ -51,16 +58,25 @@ class Location:
     line_number: int
 
     #: Column number in the script (0-based).
-    column_number: int
+    column_number: typing.Optional[int] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'scriptId': self.script_id.to_json(),
+            'lineNumber': self.line_number,
+        }
+        if self.column_number is not None:
+            json['columnNumber'] = self.column_number
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'Location':
+        column_number = json['columnNumber'] if 'columnNumber' in json else None
         return cls(
-            script_id=runtime.ScriptId.from_response(response.get('scriptId')),
-            line_number=int(response.get('lineNumber')),
-            column_number=int(response.get('columnNumber')),
+            script_id=runtime.ScriptId.from_json(json['scriptId']),
+            line_number=json['lineNumber'],
+            column_number=column_number,
         )
-
 
 @dataclass
 class ScriptPosition:
@@ -71,13 +87,19 @@ class ScriptPosition:
 
     column_number: int
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            line_number=int(response.get('lineNumber')),
-            column_number=int(response.get('columnNumber')),
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'lineNumber': self.line_number,
+            'columnNumber': self.column_number,
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'ScriptPosition':
+        return cls(
+            line_number=json['lineNumber'],
+            column_number=json['columnNumber'],
+        )
 
 @dataclass
 class CallFrame:
@@ -91,9 +113,6 @@ class CallFrame:
     function_name: str
 
     #: Location in the source code.
-    function_location: Location
-
-    #: Location in the source code.
     location: Location
 
     #: JavaScript script name or url.
@@ -105,22 +124,41 @@ class CallFrame:
     #: `this` object for this call frame.
     this: runtime.RemoteObject
 
+    #: Location in the source code.
+    function_location: typing.Optional[Location] = None
+
     #: The value being returned, if the function is at return point.
-    return_value: runtime.RemoteObject
+    return_value: typing.Optional[runtime.RemoteObject] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'callFrameId': self.call_frame_id.to_json(),
+            'functionName': self.function_name,
+            'location': self.location.to_json(),
+            'url': self.url,
+            'scopeChain': [i.to_json() for i in self.scope_chain],
+            'this': self.this.to_json(),
+        }
+        if self.function_location is not None:
+            json['functionLocation'] = self.function_location.to_json()
+        if self.return_value is not None:
+            json['returnValue'] = self.return_value.to_json()
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'CallFrame':
+        function_location = Location.from_json(json['functionLocation']) if 'functionLocation' in json else None
+        return_value = runtime.RemoteObject.from_json(json['returnValue']) if 'returnValue' in json else None
         return cls(
-            call_frame_id=CallFrameId.from_response(response.get('callFrameId')),
-            function_name=str(response.get('functionName')),
-            function_location=Location.from_response(response.get('functionLocation')),
-            location=Location.from_response(response.get('location')),
-            url=str(response.get('url')),
-            scope_chain=[Scope.from_response(i) for i in response.get('scopeChain')],
-            this=runtime.RemoteObject.from_response(response.get('this')),
-            return_value=runtime.RemoteObject.from_response(response.get('returnValue')),
+            call_frame_id=CallFrameId.from_json(json['callFrameId']),
+            function_name=json['functionName'],
+            function_location=function_location,
+            location=Location.from_json(json['location']),
+            url=json['url'],
+            scope_chain=[Scope.from_json(i) for i in json['scopeChain']],
+            this=runtime.RemoteObject.from_json(json['this']),
+            return_value=return_value,
         )
-
 
 @dataclass
 class Scope:
@@ -128,31 +166,46 @@ class Scope:
     Scope description.
     '''
     #: Scope type.
-    type_: str
+    type: str
 
     #: Object representing the scope. For `global` and `with` scopes it represents the actual
     #: object; for the rest of the scopes, it is artificial transient object enumerating scope
     #: variables as its properties.
     object: runtime.RemoteObject
 
-    name: str
+    name: typing.Optional[str] = None
 
     #: Location in the source code where scope starts
-    start_location: Location
+    start_location: typing.Optional[Location] = None
 
     #: Location in the source code where scope ends
-    end_location: Location
+    end_location: typing.Optional[Location] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'type': self.type,
+            'object': self.object.to_json(),
+        }
+        if self.name is not None:
+            json['name'] = self.name
+        if self.start_location is not None:
+            json['startLocation'] = self.start_location.to_json()
+        if self.end_location is not None:
+            json['endLocation'] = self.end_location.to_json()
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'Scope':
+        name = json['name'] if 'name' in json else None
+        start_location = Location.from_json(json['startLocation']) if 'startLocation' in json else None
+        end_location = Location.from_json(json['endLocation']) if 'endLocation' in json else None
         return cls(
-            type_=str(response.get('type')),
-            object=runtime.RemoteObject.from_response(response.get('object')),
-            name=str(response.get('name')),
-            start_location=Location.from_response(response.get('startLocation')),
-            end_location=Location.from_response(response.get('endLocation')),
+            type=json['type'],
+            object=runtime.RemoteObject.from_json(json['object']),
+            name=name,
+            start_location=start_location,
+            end_location=end_location,
         )
-
 
 @dataclass
 class SearchMatch:
@@ -165,13 +218,19 @@ class SearchMatch:
     #: Line with match content.
     line_content: str
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            line_number=float(response.get('lineNumber')),
-            line_content=str(response.get('lineContent')),
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'lineNumber': self.line_number,
+            'lineContent': self.line_content,
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'SearchMatch':
+        return cls(
+            line_number=json['lineNumber'],
+            line_content=json['lineContent'],
+        )
 
 @dataclass
 class BreakLocation:
@@ -182,16 +241,29 @@ class BreakLocation:
     line_number: int
 
     #: Column number in the script (0-based).
-    column_number: int
+    column_number: typing.Optional[int] = None
 
-    type_: str
+    type: typing.Optional[str] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'scriptId': self.script_id.to_json(),
+            'lineNumber': self.line_number,
+        }
+        if self.column_number is not None:
+            json['columnNumber'] = self.column_number
+        if self.type is not None:
+            json['type'] = self.type
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'BreakLocation':
+        column_number = json['columnNumber'] if 'columnNumber' in json else None
+        type = json['type'] if 'type' in json else None
         return cls(
-            script_id=runtime.ScriptId.from_response(response.get('scriptId')),
-            line_number=int(response.get('lineNumber')),
-            column_number=int(response.get('columnNumber')),
-            type_=str(response.get('type')),
+            script_id=runtime.ScriptId.from_json(json['scriptId']),
+            line_number=json['lineNumber'],
+            column_number=column_number,
+            type=type,
         )
 

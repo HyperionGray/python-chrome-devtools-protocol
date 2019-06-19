@@ -8,7 +8,9 @@ Domain: dom
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from ..page import types as page
@@ -18,9 +20,12 @@ class NodeId(int):
     '''
     Unique DOM node identifier.
     '''
+    def to_json(self) -> int:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: int) -> 'NodeId':
+        return cls(json)
 
     def __repr__(self):
         return 'NodeId({})'.format(int.__repr__(self))
@@ -31,16 +36,18 @@ class BackendNodeId(int):
     Unique DOM node identifier used to reference a node that may not have been pushed to the
     front-end.
     '''
+    def to_json(self) -> int:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: int) -> 'BackendNodeId':
+        return cls(json)
 
     def __repr__(self):
         return 'BackendNodeId({})'.format(int.__repr__(self))
 
 
-
-class PseudoType:
+class PseudoType(enum.Enum):
     '''
     Pseudo element type.
     '''
@@ -60,8 +67,15 @@ class PseudoType:
     RESIZER = "resizer"
     INPUT_LIST_BUTTON = "input-list-button"
 
+    def to_json(self) -> str:
+        return self.value
 
-class ShadowRootType:
+    @classmethod
+    def from_json(cls, json: str) -> 'PseudoType':
+        return cls(json)
+
+
+class ShadowRootType(enum.Enum):
     '''
     Shadow root type.
     '''
@@ -69,17 +83,27 @@ class ShadowRootType:
     OPEN = "open"
     CLOSED = "closed"
 
-class Quad(typing.List):
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> 'ShadowRootType':
+        return cls(json)
+
+
+class Quad(typing.List['float']):
     '''
     An array of quad vertices, x immediately followed by y for each point, points clock-wise.
     '''
+    def to_json(self) -> typing.List['float']:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: typing.List['float']) -> 'Quad':
+        return cls(json)
 
     def __repr__(self):
-        return 'Quad({})'.format(typing.List.__repr__(self))
-
+        return 'Quad({})'.format(typing.List['float'].__repr__(self))
 
 
 @dataclass
@@ -95,14 +119,21 @@ class BackendNode:
 
     backend_node_id: BackendNodeId
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            node_type=int(response.get('nodeType')),
-            node_name=str(response.get('nodeName')),
-            backend_node_id=BackendNodeId.from_response(response.get('backendNodeId')),
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'nodeType': self.node_type,
+            'nodeName': self.node_name,
+            'backendNodeId': self.backend_node_id.to_json(),
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'BackendNode':
+        return cls(
+            node_type=json['nodeType'],
+            node_name=json['nodeName'],
+            backend_node_id=BackendNodeId.from_json(json['backendNodeId']),
+        )
 
 @dataclass
 class Node:
@@ -114,9 +145,6 @@ class Node:
     #: will only push node with given `id` once. It is aware of all requested nodes and will only
     #: fire DOM events for nodes known to the client.
     node_id: NodeId
-
-    #: The id of the parent node if any.
-    parent_id: NodeId
 
     #: The BackendNodeId for this node.
     backend_node_id: BackendNodeId
@@ -133,102 +161,181 @@ class Node:
     #: `Node`'s nodeValue.
     node_value: str
 
+    #: The id of the parent node if any.
+    parent_id: typing.Optional[NodeId] = None
+
     #: Child count for `Container` nodes.
-    child_node_count: int
+    child_node_count: typing.Optional[int] = None
 
     #: Child nodes of this node when requested with children.
-    children: typing.List['Node']
+    children: typing.Optional[typing.List['Node']] = None
 
     #: Attributes of the `Element` node in the form of flat array `[name1, value1, name2, value2]`.
-    attributes: typing.List
+    attributes: typing.Optional[typing.List['str']] = None
 
     #: Document URL that `Document` or `FrameOwner` node points to.
-    document_url: str
+    document_url: typing.Optional[str] = None
 
     #: Base URL that `Document` or `FrameOwner` node uses for URL completion.
-    base_url: str
+    base_url: typing.Optional[str] = None
 
     #: `DocumentType`'s publicId.
-    public_id: str
+    public_id: typing.Optional[str] = None
 
     #: `DocumentType`'s systemId.
-    system_id: str
+    system_id: typing.Optional[str] = None
 
     #: `DocumentType`'s internalSubset.
-    internal_subset: str
+    internal_subset: typing.Optional[str] = None
 
     #: `Document`'s XML version in case of XML documents.
-    xml_version: str
+    xml_version: typing.Optional[str] = None
 
     #: `Attr`'s name.
-    name: str
+    name: typing.Optional[str] = None
 
     #: `Attr`'s value.
-    value: str
+    value: typing.Optional[str] = None
 
     #: Pseudo element type for this node.
-    pseudo_type: PseudoType
+    pseudo_type: typing.Optional[PseudoType] = None
 
     #: Shadow root type.
-    shadow_root_type: ShadowRootType
+    shadow_root_type: typing.Optional[ShadowRootType] = None
 
     #: Frame ID for frame owner elements.
-    frame_id: page.FrameId
+    frame_id: typing.Optional[page.FrameId] = None
 
     #: Content document for frame owner elements.
-    content_document: 'Node'
+    content_document: typing.Optional['Node'] = None
 
     #: Shadow root list for given element host.
-    shadow_roots: typing.List['Node']
+    shadow_roots: typing.Optional[typing.List['Node']] = None
 
     #: Content document fragment for template elements.
-    template_content: 'Node'
+    template_content: typing.Optional['Node'] = None
 
     #: Pseudo elements associated with this node.
-    pseudo_elements: typing.List['Node']
+    pseudo_elements: typing.Optional[typing.List['Node']] = None
 
     #: Import document for the HTMLImport links.
-    imported_document: 'Node'
+    imported_document: typing.Optional['Node'] = None
 
     #: Distributed nodes for given insertion point.
-    distributed_nodes: typing.List['BackendNode']
+    distributed_nodes: typing.Optional[typing.List['BackendNode']] = None
 
     #: Whether the node is SVG.
-    is_svg: bool
+    is_svg: typing.Optional[bool] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'nodeId': self.node_id.to_json(),
+            'backendNodeId': self.backend_node_id.to_json(),
+            'nodeType': self.node_type,
+            'nodeName': self.node_name,
+            'localName': self.local_name,
+            'nodeValue': self.node_value,
+        }
+        if self.parent_id is not None:
+            json['parentId'] = self.parent_id.to_json()
+        if self.child_node_count is not None:
+            json['childNodeCount'] = self.child_node_count
+        if self.children is not None:
+            json['children'] = [i.to_json() for i in self.children]
+        if self.attributes is not None:
+            json['attributes'] = [i for i in self.attributes]
+        if self.document_url is not None:
+            json['documentURL'] = self.document_url
+        if self.base_url is not None:
+            json['baseURL'] = self.base_url
+        if self.public_id is not None:
+            json['publicId'] = self.public_id
+        if self.system_id is not None:
+            json['systemId'] = self.system_id
+        if self.internal_subset is not None:
+            json['internalSubset'] = self.internal_subset
+        if self.xml_version is not None:
+            json['xmlVersion'] = self.xml_version
+        if self.name is not None:
+            json['name'] = self.name
+        if self.value is not None:
+            json['value'] = self.value
+        if self.pseudo_type is not None:
+            json['pseudoType'] = self.pseudo_type.to_json()
+        if self.shadow_root_type is not None:
+            json['shadowRootType'] = self.shadow_root_type.to_json()
+        if self.frame_id is not None:
+            json['frameId'] = self.frame_id.to_json()
+        if self.content_document is not None:
+            json['contentDocument'] = self.content_document.to_json()
+        if self.shadow_roots is not None:
+            json['shadowRoots'] = [i.to_json() for i in self.shadow_roots]
+        if self.template_content is not None:
+            json['templateContent'] = self.template_content.to_json()
+        if self.pseudo_elements is not None:
+            json['pseudoElements'] = [i.to_json() for i in self.pseudo_elements]
+        if self.imported_document is not None:
+            json['importedDocument'] = self.imported_document.to_json()
+        if self.distributed_nodes is not None:
+            json['distributedNodes'] = [i.to_json() for i in self.distributed_nodes]
+        if self.is_svg is not None:
+            json['isSVG'] = self.is_svg
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'Node':
+        parent_id = NodeId.from_json(json['parentId']) if 'parentId' in json else None
+        child_node_count = json['childNodeCount'] if 'childNodeCount' in json else None
+        children = [Node.from_json(i) for i in json['children']] if 'children' in json else None
+        attributes = [i for i in json['attributes']] if 'attributes' in json else None
+        document_url = json['documentURL'] if 'documentURL' in json else None
+        base_url = json['baseURL'] if 'baseURL' in json else None
+        public_id = json['publicId'] if 'publicId' in json else None
+        system_id = json['systemId'] if 'systemId' in json else None
+        internal_subset = json['internalSubset'] if 'internalSubset' in json else None
+        xml_version = json['xmlVersion'] if 'xmlVersion' in json else None
+        name = json['name'] if 'name' in json else None
+        value = json['value'] if 'value' in json else None
+        pseudo_type = PseudoType.from_json(json['pseudoType']) if 'pseudoType' in json else None
+        shadow_root_type = ShadowRootType.from_json(json['shadowRootType']) if 'shadowRootType' in json else None
+        frame_id = page.FrameId.from_json(json['frameId']) if 'frameId' in json else None
+        content_document = Node.from_json(json['contentDocument']) if 'contentDocument' in json else None
+        shadow_roots = [Node.from_json(i) for i in json['shadowRoots']] if 'shadowRoots' in json else None
+        template_content = Node.from_json(json['templateContent']) if 'templateContent' in json else None
+        pseudo_elements = [Node.from_json(i) for i in json['pseudoElements']] if 'pseudoElements' in json else None
+        imported_document = Node.from_json(json['importedDocument']) if 'importedDocument' in json else None
+        distributed_nodes = [BackendNode.from_json(i) for i in json['distributedNodes']] if 'distributedNodes' in json else None
+        is_svg = json['isSVG'] if 'isSVG' in json else None
         return cls(
-            node_id=NodeId.from_response(response.get('nodeId')),
-            parent_id=NodeId.from_response(response.get('parentId')),
-            backend_node_id=BackendNodeId.from_response(response.get('backendNodeId')),
-            node_type=int(response.get('nodeType')),
-            node_name=str(response.get('nodeName')),
-            local_name=str(response.get('localName')),
-            node_value=str(response.get('nodeValue')),
-            child_node_count=int(response.get('childNodeCount')),
-            children=[Node.from_response(i) for i in response.get('children')],
-            attributes=[str(i) for i in response.get('attributes')],
-            document_url=str(response.get('documentURL')),
-            base_url=str(response.get('baseURL')),
-            public_id=str(response.get('publicId')),
-            system_id=str(response.get('systemId')),
-            internal_subset=str(response.get('internalSubset')),
-            xml_version=str(response.get('xmlVersion')),
-            name=str(response.get('name')),
-            value=str(response.get('value')),
-            pseudo_type=PseudoType.from_response(response.get('pseudoType')),
-            shadow_root_type=ShadowRootType.from_response(response.get('shadowRootType')),
-            frame_id=page.FrameId.from_response(response.get('frameId')),
-            content_document='Node'.from_response(response.get('contentDocument')),
-            shadow_roots=[Node.from_response(i) for i in response.get('shadowRoots')],
-            template_content='Node'.from_response(response.get('templateContent')),
-            pseudo_elements=[Node.from_response(i) for i in response.get('pseudoElements')],
-            imported_document='Node'.from_response(response.get('importedDocument')),
-            distributed_nodes=[BackendNode.from_response(i) for i in response.get('distributedNodes')],
-            is_svg=bool(response.get('isSVG')),
+            node_id=NodeId.from_json(json['nodeId']),
+            parent_id=parent_id,
+            backend_node_id=BackendNodeId.from_json(json['backendNodeId']),
+            node_type=json['nodeType'],
+            node_name=json['nodeName'],
+            local_name=json['localName'],
+            node_value=json['nodeValue'],
+            child_node_count=child_node_count,
+            children=children,
+            attributes=attributes,
+            document_url=document_url,
+            base_url=base_url,
+            public_id=public_id,
+            system_id=system_id,
+            internal_subset=internal_subset,
+            xml_version=xml_version,
+            name=name,
+            value=value,
+            pseudo_type=pseudo_type,
+            shadow_root_type=shadow_root_type,
+            frame_id=frame_id,
+            content_document=content_document,
+            shadow_roots=shadow_roots,
+            template_content=template_content,
+            pseudo_elements=pseudo_elements,
+            imported_document=imported_document,
+            distributed_nodes=distributed_nodes,
+            is_svg=is_svg,
         )
-
 
 @dataclass
 class RGBA:
@@ -245,17 +352,27 @@ class RGBA:
     b: int
 
     #: The alpha component, in the [0-1] range (default: 1).
-    a: float
+    a: typing.Optional[float] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'r': self.r,
+            'g': self.g,
+            'b': self.b,
+        }
+        if self.a is not None:
+            json['a'] = self.a
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'RGBA':
+        a = json['a'] if 'a' in json else None
         return cls(
-            r=int(response.get('r')),
-            g=int(response.get('g')),
-            b=int(response.get('b')),
-            a=float(response.get('a')),
+            r=json['r'],
+            g=json['g'],
+            b=json['b'],
+            a=a,
         )
-
 
 @dataclass
 class ShapeOutsideInfo:
@@ -266,19 +383,26 @@ class ShapeOutsideInfo:
     bounds: Quad
 
     #: Shape coordinate details
-    shape: typing.List
+    shape: typing.List['typing.Any']
 
     #: Margin shape bounds
-    margin_shape: typing.List
+    margin_shape: typing.List['typing.Any']
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'bounds': self.bounds.to_json(),
+            'shape': [i for i in self.shape],
+            'marginShape': [i for i in self.margin_shape],
+        }
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'ShapeOutsideInfo':
         return cls(
-            bounds=Quad.from_response(response.get('bounds')),
-            shape=[typing.Any(i) for i in response.get('shape')],
-            margin_shape=[typing.Any(i) for i in response.get('marginShape')],
+            bounds=Quad.from_json(json['bounds']),
+            shape=[i for i in json['shape']],
+            margin_shape=[i for i in json['marginShape']],
         )
-
 
 @dataclass
 class Rect:
@@ -297,15 +421,23 @@ class Rect:
     #: Rectangle height
     height: float
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            x=float(response.get('x')),
-            y=float(response.get('y')),
-            width=float(response.get('width')),
-            height=float(response.get('height')),
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'x': self.x,
+            'y': self.y,
+            'width': self.width,
+            'height': self.height,
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'Rect':
+        return cls(
+            x=json['x'],
+            y=json['y'],
+            width=json['width'],
+            height=json['height'],
+        )
 
 @dataclass
 class BoxModel:
@@ -331,17 +463,31 @@ class BoxModel:
     height: int
 
     #: Shape outside coordinates
-    shape_outside: ShapeOutsideInfo
+    shape_outside: typing.Optional[ShapeOutsideInfo] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'content': self.content.to_json(),
+            'padding': self.padding.to_json(),
+            'border': self.border.to_json(),
+            'margin': self.margin.to_json(),
+            'width': self.width,
+            'height': self.height,
+        }
+        if self.shape_outside is not None:
+            json['shapeOutside'] = self.shape_outside.to_json()
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'BoxModel':
+        shape_outside = ShapeOutsideInfo.from_json(json['shapeOutside']) if 'shapeOutside' in json else None
         return cls(
-            content=Quad.from_response(response.get('content')),
-            padding=Quad.from_response(response.get('padding')),
-            border=Quad.from_response(response.get('border')),
-            margin=Quad.from_response(response.get('margin')),
-            width=int(response.get('width')),
-            height=int(response.get('height')),
-            shape_outside=ShapeOutsideInfo.from_response(response.get('shapeOutside')),
+            content=Quad.from_json(json['content']),
+            padding=Quad.from_json(json['padding']),
+            border=Quad.from_json(json['border']),
+            margin=Quad.from_json(json['margin']),
+            width=json['width'],
+            height=json['height'],
+            shape_outside=shape_outside,
         )
 

@@ -8,9 +8,10 @@ Domain: schema
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
-
 
 
 @dataclass
@@ -24,10 +25,17 @@ class Domain:
     #: Domain version.
     version: str
 
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'name': self.name,
+            'version': self.version,
+        }
+        return json
+
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'Domain':
         return cls(
-            name=str(response.get('name')),
-            version=str(response.get('version')),
+            name=json['name'],
+            version=json['version'],
         )
 

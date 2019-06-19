@@ -8,7 +8,9 @@ Domain: application_cache
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -24,8 +26,30 @@ class ApplicationCacheStatusUpdated:
 
     status: int
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'ApplicationCache'
+    _method = 'applicationCacheStatusUpdated'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'ApplicationCacheStatusUpdated':
+        return cls(
+            frame_id=page.FrameId.from_json(json['frameId']),
+            manifest_url=str(json['manifestURL']),
+            status=int(json['status']),
+        )
+
 
 @dataclass
 class NetworkStateUpdated:
     is_now_online: bool
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'ApplicationCache'
+    _method = 'networkStateUpdated'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'NetworkStateUpdated':
+        return cls(
+            is_now_online=bool(json['isNowOnline']),
+        )
 

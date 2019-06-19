@@ -139,3 +139,4 @@ import cdp.tracing.commands
 import cdp.web_audio.commands
 import cdp.web_authn.commands
 
+import cdp.util

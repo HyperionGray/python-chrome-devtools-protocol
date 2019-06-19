@@ -8,7 +8,9 @@ Domain: audits
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -16,7 +18,12 @@ from ..network import types as network
 
 
 
-def get_encoded_response(request_id: network.RequestId, encoding: str, quality: float, size_only: bool) -> typing.Generator[dict,dict,dict]:
+def get_encoded_response(
+        request_id: network.RequestId,
+        encoding: str,
+        quality: typing.Optional[float] = None,
+        size_only: typing.Optional[bool] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     Returns the response body and size if it were re-encoded with the specified settings. Only
     applies to images.
@@ -26,25 +33,29 @@ def get_encoded_response(request_id: network.RequestId, encoding: str, quality: 
     :param quality: The quality of the encoding (0-1). (defaults to 1)
     :param size_only: Whether to only return the size information (defaults to false).
     :returns: a dict with the following keys:
-        * body: The encoded body as a base64 string. Omitted if sizeOnly is true.
+        * body: (Optional) The encoded body as a base64 string. Omitted if sizeOnly is true.
         * originalSize: Size before re-encoding.
         * encodedSize: Size after re-encoding.
     '''
-
-    cmd_dict = {
+    params: T_JSON_DICT = {
+        'requestId': request_id.to_json(),
+        'encoding': encoding,
+    }
+    if quality is not None:
+        params['quality'] = quality
+    if size_only is not None:
+        params['sizeOnly'] = size_only
+    cmd_dict: T_JSON_DICT = {
         'method': 'Audits.getEncodedResponse',
-        'params': {
-            'requestId': request_id,
-            'encoding': encoding,
-            'quality': quality,
-            'sizeOnly': size_only,
-        }
+        'params': params,
     }
-    response = yield cmd_dict
-    return {
-        'body': str(response['body']),
-        'originalSize': int(response['originalSize']),
-        'encodedSize': int(response['encodedSize']),
+    json = yield cmd_dict
+    result: T_JSON_DICT = {
+        'originalSize': int(json['originalSize']),
+        'encodedSize': int(json['encodedSize']),
     }
+    if 'body' in json:
+        result['body'] = str(json['body'])
+    return result
 
 

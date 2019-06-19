@@ -8,15 +8,16 @@ Domain: background_service
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from ..network import types as network
 from ..service_worker import types as service_worker
 
 
-
-class ServiceName:
+class ServiceName(enum.Enum):
     '''
     The Background Service that will be associated with the commands/events.
     Every Background Service operates independently, but they share the same
@@ -26,6 +27,13 @@ class ServiceName:
     BACKGROUND_SYNC = "backgroundSync"
     PUSH_MESSAGING = "pushMessaging"
     NOTIFICATIONS = "notifications"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> 'ServiceName':
+        return cls(json)
 
 
 @dataclass
@@ -37,13 +45,19 @@ class EventMetadata:
 
     value: str
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            key=str(response.get('key')),
-            value=str(response.get('value')),
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'key': self.key,
+            'value': self.value,
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'EventMetadata':
+        return cls(
+            key=json['key'],
+            value=json['value'],
+        )
 
 @dataclass
 class BackgroundServiceEvent:
@@ -68,15 +82,27 @@ class BackgroundServiceEvent:
     #: A list of event-specific information.
     event_metadata: typing.List['EventMetadata']
 
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'timestamp': self.timestamp.to_json(),
+            'origin': self.origin,
+            'serviceWorkerRegistrationId': self.service_worker_registration_id.to_json(),
+            'service': self.service.to_json(),
+            'eventName': self.event_name,
+            'instanceId': self.instance_id,
+            'eventMetadata': [i.to_json() for i in self.event_metadata],
+        }
+        return json
+
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'BackgroundServiceEvent':
         return cls(
-            timestamp=network.TimeSinceEpoch.from_response(response.get('timestamp')),
-            origin=str(response.get('origin')),
-            service_worker_registration_id=service_worker.RegistrationID.from_response(response.get('serviceWorkerRegistrationId')),
-            service=ServiceName.from_response(response.get('service')),
-            event_name=str(response.get('eventName')),
-            instance_id=str(response.get('instanceId')),
-            event_metadata=[EventMetadata.from_response(i) for i in response.get('eventMetadata')],
+            timestamp=network.TimeSinceEpoch.from_json(json['timestamp']),
+            origin=json['origin'],
+            service_worker_registration_id=service_worker.RegistrationID.from_json(json['serviceWorkerRegistrationId']),
+            service=ServiceName.from_json(json['service']),
+            event_name=json['eventName'],
+            instance_id=json['instanceId'],
+            event_metadata=[EventMetadata.from_json(i) for i in json['eventMetadata']],
         )
 

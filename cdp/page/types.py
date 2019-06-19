@@ -8,7 +8,9 @@ Domain: page
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from ..network import types as network
@@ -18,9 +20,12 @@ class FrameId(str):
     '''
     Unique frame identifier.
     '''
+    def to_json(self) -> str:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: str) -> 'FrameId':
+        return cls(json)
 
     def __repr__(self):
         return 'FrameId({})'.format(str.__repr__(self))
@@ -30,16 +35,18 @@ class ScriptIdentifier(str):
     '''
     Unique script identifier.
     '''
+    def to_json(self) -> str:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: str) -> 'ScriptIdentifier':
+        return cls(json)
 
     def __repr__(self):
         return 'ScriptIdentifier({})'.format(str.__repr__(self))
 
 
-
-class TransitionType:
+class TransitionType(enum.Enum):
     '''
     Transition type.
     '''
@@ -57,8 +64,15 @@ class TransitionType:
     KEYWORD_GENERATED = "keyword_generated"
     OTHER = "other"
 
+    def to_json(self) -> str:
+        return self.value
 
-class DialogType:
+    @classmethod
+    def from_json(cls, json: str) -> 'TransitionType':
+        return cls(json)
+
+
+class DialogType(enum.Enum):
     '''
     Javascript dialog type.
     '''
@@ -67,8 +81,15 @@ class DialogType:
     PROMPT = "prompt"
     BEFOREUNLOAD = "beforeunload"
 
+    def to_json(self) -> str:
+        return self.value
 
-class ClientNavigationReason:
+    @classmethod
+    def from_json(cls, json: str) -> 'DialogType':
+        return cls(json)
+
+
+class ClientNavigationReason(enum.Enum):
     FORM_SUBMISSION_GET = "formSubmissionGet"
     FORM_SUBMISSION_POST = "formSubmissionPost"
     HTTP_HEADER_REFRESH = "httpHeaderRefresh"
@@ -76,6 +97,13 @@ class ClientNavigationReason:
     META_TAG_REFRESH = "metaTagRefresh"
     PAGE_BLOCK_INTERSTITIAL = "pageBlockInterstitial"
     RELOAD = "reload"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> 'ClientNavigationReason':
+        return cls(json)
 
 
 @dataclass
@@ -86,14 +114,8 @@ class Frame:
     #: Frame unique identifier.
     id: str
 
-    #: Parent frame identifier.
-    parent_id: str
-
     #: Identifier of the loader associated with this frame.
     loader_id: network.LoaderId
-
-    #: Frame's name as specified in the tag.
-    name: str
 
     #: Frame document's URL.
     url: str
@@ -104,22 +126,46 @@ class Frame:
     #: Frame document's mimeType as determined by the browser.
     mime_type: str
 
+    #: Parent frame identifier.
+    parent_id: typing.Optional[str] = None
+
+    #: Frame's name as specified in the tag.
+    name: typing.Optional[str] = None
+
     #: If the frame failed to load, this contains the URL that could not be loaded.
-    unreachable_url: str
+    unreachable_url: typing.Optional[str] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'id': self.id,
+            'loaderId': self.loader_id.to_json(),
+            'url': self.url,
+            'securityOrigin': self.security_origin,
+            'mimeType': self.mime_type,
+        }
+        if self.parent_id is not None:
+            json['parentId'] = self.parent_id
+        if self.name is not None:
+            json['name'] = self.name
+        if self.unreachable_url is not None:
+            json['unreachableUrl'] = self.unreachable_url
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'Frame':
+        parent_id = json['parentId'] if 'parentId' in json else None
+        name = json['name'] if 'name' in json else None
+        unreachable_url = json['unreachableUrl'] if 'unreachableUrl' in json else None
         return cls(
-            id=str(response.get('id')),
-            parent_id=str(response.get('parentId')),
-            loader_id=network.LoaderId.from_response(response.get('loaderId')),
-            name=str(response.get('name')),
-            url=str(response.get('url')),
-            security_origin=str(response.get('securityOrigin')),
-            mime_type=str(response.get('mimeType')),
-            unreachable_url=str(response.get('unreachableUrl')),
+            id=json['id'],
+            parent_id=parent_id,
+            loader_id=network.LoaderId.from_json(json['loaderId']),
+            name=name,
+            url=json['url'],
+            security_origin=json['securityOrigin'],
+            mime_type=json['mimeType'],
+            unreachable_url=unreachable_url,
         )
-
 
 @dataclass
 class FrameResource:
@@ -130,35 +176,54 @@ class FrameResource:
     url: str
 
     #: Type of this resource.
-    type_: network.ResourceType
+    type: network.ResourceType
 
     #: Resource mimeType as determined by the browser.
     mime_type: str
 
     #: last-modified timestamp as reported by server.
-    last_modified: network.TimeSinceEpoch
+    last_modified: typing.Optional[network.TimeSinceEpoch] = None
 
     #: Resource content size.
-    content_size: float
+    content_size: typing.Optional[float] = None
 
     #: True if the resource failed to load.
-    failed: bool
+    failed: typing.Optional[bool] = None
 
     #: True if the resource was canceled during loading.
-    canceled: bool
+    canceled: typing.Optional[bool] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'url': self.url,
+            'type': self.type.to_json(),
+            'mimeType': self.mime_type,
+        }
+        if self.last_modified is not None:
+            json['lastModified'] = self.last_modified.to_json()
+        if self.content_size is not None:
+            json['contentSize'] = self.content_size
+        if self.failed is not None:
+            json['failed'] = self.failed
+        if self.canceled is not None:
+            json['canceled'] = self.canceled
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'FrameResource':
+        last_modified = network.TimeSinceEpoch.from_json(json['lastModified']) if 'lastModified' in json else None
+        content_size = json['contentSize'] if 'contentSize' in json else None
+        failed = json['failed'] if 'failed' in json else None
+        canceled = json['canceled'] if 'canceled' in json else None
         return cls(
-            url=str(response.get('url')),
-            type_=network.ResourceType.from_response(response.get('type')),
-            mime_type=str(response.get('mimeType')),
-            last_modified=network.TimeSinceEpoch.from_response(response.get('lastModified')),
-            content_size=float(response.get('contentSize')),
-            failed=bool(response.get('failed')),
-            canceled=bool(response.get('canceled')),
+            url=json['url'],
+            type=network.ResourceType.from_json(json['type']),
+            mime_type=json['mimeType'],
+            last_modified=last_modified,
+            content_size=content_size,
+            failed=failed,
+            canceled=canceled,
         )
-
 
 @dataclass
 class FrameResourceTree:
@@ -168,20 +233,29 @@ class FrameResourceTree:
     #: Frame information for this tree item.
     frame: Frame
 
-    #: Child frames.
-    child_frames: typing.List['FrameResourceTree']
-
     #: Information about frame resources.
     resources: typing.List['FrameResource']
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            frame=Frame.from_response(response.get('frame')),
-            child_frames=[FrameResourceTree.from_response(i) for i in response.get('childFrames')],
-            resources=[FrameResource.from_response(i) for i in response.get('resources')],
-        )
+    #: Child frames.
+    child_frames: typing.Optional[typing.List['FrameResourceTree']] = None
 
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'frame': self.frame.to_json(),
+            'resources': [i.to_json() for i in self.resources],
+        }
+        if self.child_frames is not None:
+            json['childFrames'] = [i.to_json() for i in self.child_frames]
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'FrameResourceTree':
+        child_frames = [FrameResourceTree.from_json(i) for i in json['childFrames']] if 'childFrames' in json else None
+        return cls(
+            frame=Frame.from_json(json['frame']),
+            child_frames=child_frames,
+            resources=[FrameResource.from_json(i) for i in json['resources']],
+        )
 
 @dataclass
 class FrameTree:
@@ -192,15 +266,23 @@ class FrameTree:
     frame: Frame
 
     #: Child frames.
-    child_frames: typing.List['FrameTree']
+    child_frames: typing.Optional[typing.List['FrameTree']] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'frame': self.frame.to_json(),
+        }
+        if self.child_frames is not None:
+            json['childFrames'] = [i.to_json() for i in self.child_frames]
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'FrameTree':
+        child_frames = [FrameTree.from_json(i) for i in json['childFrames']] if 'childFrames' in json else None
         return cls(
-            frame=Frame.from_response(response.get('frame')),
-            child_frames=[FrameTree.from_response(i) for i in response.get('childFrames')],
+            frame=Frame.from_json(json['frame']),
+            child_frames=child_frames,
         )
-
 
 @dataclass
 class NavigationEntry:
@@ -222,16 +304,25 @@ class NavigationEntry:
     #: Transition type.
     transition_type: TransitionType
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            id=int(response.get('id')),
-            url=str(response.get('url')),
-            user_typed_url=str(response.get('userTypedURL')),
-            title=str(response.get('title')),
-            transition_type=TransitionType.from_response(response.get('transitionType')),
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'id': self.id,
+            'url': self.url,
+            'userTypedURL': self.user_typed_url,
+            'title': self.title,
+            'transitionType': self.transition_type.to_json(),
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'NavigationEntry':
+        return cls(
+            id=json['id'],
+            url=json['url'],
+            user_typed_url=json['userTypedURL'],
+            title=json['title'],
+            transition_type=TransitionType.from_json(json['transitionType']),
+        )
 
 @dataclass
 class ScreencastFrameMetadata:
@@ -257,20 +348,33 @@ class ScreencastFrameMetadata:
     scroll_offset_y: float
 
     #: Frame swap timestamp.
-    timestamp: network.TimeSinceEpoch
+    timestamp: typing.Optional[network.TimeSinceEpoch] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'offsetTop': self.offset_top,
+            'pageScaleFactor': self.page_scale_factor,
+            'deviceWidth': self.device_width,
+            'deviceHeight': self.device_height,
+            'scrollOffsetX': self.scroll_offset_x,
+            'scrollOffsetY': self.scroll_offset_y,
+        }
+        if self.timestamp is not None:
+            json['timestamp'] = self.timestamp.to_json()
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'ScreencastFrameMetadata':
+        timestamp = network.TimeSinceEpoch.from_json(json['timestamp']) if 'timestamp' in json else None
         return cls(
-            offset_top=float(response.get('offsetTop')),
-            page_scale_factor=float(response.get('pageScaleFactor')),
-            device_width=float(response.get('deviceWidth')),
-            device_height=float(response.get('deviceHeight')),
-            scroll_offset_x=float(response.get('scrollOffsetX')),
-            scroll_offset_y=float(response.get('scrollOffsetY')),
-            timestamp=network.TimeSinceEpoch.from_response(response.get('timestamp')),
+            offset_top=json['offsetTop'],
+            page_scale_factor=json['pageScaleFactor'],
+            device_width=json['deviceWidth'],
+            device_height=json['deviceHeight'],
+            scroll_offset_x=json['scrollOffsetX'],
+            scroll_offset_y=json['scrollOffsetY'],
+            timestamp=timestamp,
         )
-
 
 @dataclass
 class AppManifestError:
@@ -289,15 +393,23 @@ class AppManifestError:
     #: Error column.
     column: int
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            message=str(response.get('message')),
-            critical=int(response.get('critical')),
-            line=int(response.get('line')),
-            column=int(response.get('column')),
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'message': self.message,
+            'critical': self.critical,
+            'line': self.line,
+            'column': self.column,
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'AppManifestError':
+        return cls(
+            message=json['message'],
+            critical=json['critical'],
+            line=json['line'],
+            column=json['column'],
+        )
 
 @dataclass
 class LayoutViewport:
@@ -316,15 +428,23 @@ class LayoutViewport:
     #: Height (CSS pixels), excludes scrollbar if present.
     client_height: int
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            page_x=int(response.get('pageX')),
-            page_y=int(response.get('pageY')),
-            client_width=int(response.get('clientWidth')),
-            client_height=int(response.get('clientHeight')),
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'pageX': self.page_x,
+            'pageY': self.page_y,
+            'clientWidth': self.client_width,
+            'clientHeight': self.client_height,
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'LayoutViewport':
+        return cls(
+            page_x=json['pageX'],
+            page_y=json['pageY'],
+            client_width=json['clientWidth'],
+            client_height=json['clientHeight'],
+        )
 
 @dataclass
 class VisualViewport:
@@ -353,21 +473,35 @@ class VisualViewport:
     scale: float
 
     #: Page zoom factor (CSS to device independent pixels ratio).
-    zoom: float
+    zoom: typing.Optional[float] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'offsetX': self.offset_x,
+            'offsetY': self.offset_y,
+            'pageX': self.page_x,
+            'pageY': self.page_y,
+            'clientWidth': self.client_width,
+            'clientHeight': self.client_height,
+            'scale': self.scale,
+        }
+        if self.zoom is not None:
+            json['zoom'] = self.zoom
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'VisualViewport':
+        zoom = json['zoom'] if 'zoom' in json else None
         return cls(
-            offset_x=float(response.get('offsetX')),
-            offset_y=float(response.get('offsetY')),
-            page_x=float(response.get('pageX')),
-            page_y=float(response.get('pageY')),
-            client_width=float(response.get('clientWidth')),
-            client_height=float(response.get('clientHeight')),
-            scale=float(response.get('scale')),
-            zoom=float(response.get('zoom')),
+            offset_x=json['offsetX'],
+            offset_y=json['offsetY'],
+            page_x=json['pageX'],
+            page_y=json['pageY'],
+            client_width=json['clientWidth'],
+            client_height=json['clientHeight'],
+            scale=json['scale'],
+            zoom=zoom,
         )
-
 
 @dataclass
 class Viewport:
@@ -389,16 +523,25 @@ class Viewport:
     #: Page scale factor.
     scale: float
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            x=float(response.get('x')),
-            y=float(response.get('y')),
-            width=float(response.get('width')),
-            height=float(response.get('height')),
-            scale=float(response.get('scale')),
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'x': self.x,
+            'y': self.y,
+            'width': self.width,
+            'height': self.height,
+            'scale': self.scale,
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'Viewport':
+        return cls(
+            x=json['x'],
+            y=json['y'],
+            width=json['width'],
+            height=json['height'],
+            scale=json['scale'],
+        )
 
 @dataclass
 class FontFamilies:
@@ -406,38 +549,63 @@ class FontFamilies:
     Generic font families collection.
     '''
     #: The standard font-family.
-    standard: str
+    standard: typing.Optional[str] = None
 
     #: The fixed font-family.
-    fixed: str
+    fixed: typing.Optional[str] = None
 
     #: The serif font-family.
-    serif: str
+    serif: typing.Optional[str] = None
 
     #: The sansSerif font-family.
-    sans_serif: str
+    sans_serif: typing.Optional[str] = None
 
     #: The cursive font-family.
-    cursive: str
+    cursive: typing.Optional[str] = None
 
     #: The fantasy font-family.
-    fantasy: str
+    fantasy: typing.Optional[str] = None
 
     #: The pictograph font-family.
-    pictograph: str
+    pictograph: typing.Optional[str] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+        }
+        if self.standard is not None:
+            json['standard'] = self.standard
+        if self.fixed is not None:
+            json['fixed'] = self.fixed
+        if self.serif is not None:
+            json['serif'] = self.serif
+        if self.sans_serif is not None:
+            json['sansSerif'] = self.sans_serif
+        if self.cursive is not None:
+            json['cursive'] = self.cursive
+        if self.fantasy is not None:
+            json['fantasy'] = self.fantasy
+        if self.pictograph is not None:
+            json['pictograph'] = self.pictograph
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'FontFamilies':
+        standard = json['standard'] if 'standard' in json else None
+        fixed = json['fixed'] if 'fixed' in json else None
+        serif = json['serif'] if 'serif' in json else None
+        sans_serif = json['sansSerif'] if 'sansSerif' in json else None
+        cursive = json['cursive'] if 'cursive' in json else None
+        fantasy = json['fantasy'] if 'fantasy' in json else None
+        pictograph = json['pictograph'] if 'pictograph' in json else None
         return cls(
-            standard=str(response.get('standard')),
-            fixed=str(response.get('fixed')),
-            serif=str(response.get('serif')),
-            sans_serif=str(response.get('sansSerif')),
-            cursive=str(response.get('cursive')),
-            fantasy=str(response.get('fantasy')),
-            pictograph=str(response.get('pictograph')),
+            standard=standard,
+            fixed=fixed,
+            serif=serif,
+            sans_serif=sans_serif,
+            cursive=cursive,
+            fantasy=fantasy,
+            pictograph=pictograph,
         )
-
 
 @dataclass
 class FontSizes:
@@ -445,15 +613,26 @@ class FontSizes:
     Default font sizes.
     '''
     #: Default standard font size.
-    standard: int
+    standard: typing.Optional[int] = None
 
     #: Default fixed font size.
-    fixed: int
+    fixed: typing.Optional[int] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+        }
+        if self.standard is not None:
+            json['standard'] = self.standard
+        if self.fixed is not None:
+            json['fixed'] = self.fixed
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'FontSizes':
+        standard = json['standard'] if 'standard' in json else None
+        fixed = json['fixed'] if 'fixed' in json else None
         return cls(
-            standard=int(response.get('standard')),
-            fixed=int(response.get('fixed')),
+            standard=standard,
+            fixed=fixed,
         )
 

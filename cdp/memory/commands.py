@@ -8,13 +8,15 @@ Domain: memory
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
 
 
-def get_dom_counters() -> typing.Generator[dict,dict,dict]:
+def get_dom_counters() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     
     :returns: a dict with the following keys:
@@ -22,137 +24,140 @@ def get_dom_counters() -> typing.Generator[dict,dict,dict]:
         * nodes: 
         * jsEventListeners: 
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Memory.getDOMCounters',
     }
-    response = yield cmd_dict
-    return {
-        'documents': int(response['documents']),
-        'nodes': int(response['nodes']),
-        'jsEventListeners': int(response['jsEventListeners']),
+    json = yield cmd_dict
+    result: T_JSON_DICT = {
+        'documents': int(json['documents']),
+        'nodes': int(json['nodes']),
+        'jsEventListeners': int(json['jsEventListeners']),
     }
+    return result
 
 
-def prepare_for_leak_detection() -> typing.Generator[dict,dict,None]:
-
-    cmd_dict = {
+def prepare_for_leak_detection() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    cmd_dict: T_JSON_DICT = {
         'method': 'Memory.prepareForLeakDetection',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def forcibly_purge_java_script_memory() -> typing.Generator[dict,dict,None]:
+def forcibly_purge_java_script_memory() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Simulate OomIntervention by purging V8 memory.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Memory.forciblyPurgeJavaScriptMemory',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def set_pressure_notifications_suppressed(suppressed: bool) -> typing.Generator[dict,dict,None]:
+def set_pressure_notifications_suppressed(
+        suppressed: bool,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enable/disable suppressing memory pressure notifications in all processes.
     
     :param suppressed: If true, memory pressure notifications will be suppressed.
     '''
-
-    cmd_dict = {
-        'method': 'Memory.setPressureNotificationsSuppressed',
-        'params': {
-            'suppressed': suppressed,
-        }
+    params: T_JSON_DICT = {
+        'suppressed': suppressed,
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Memory.setPressureNotificationsSuppressed',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def simulate_pressure_notification(level: PressureLevel) -> typing.Generator[dict,dict,None]:
+def simulate_pressure_notification(
+        level: PressureLevel,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Simulate a memory pressure notification in all processes.
     
     :param level: Memory pressure level of the notification.
     '''
-
-    cmd_dict = {
-        'method': 'Memory.simulatePressureNotification',
-        'params': {
-            'level': level,
-        }
+    params: T_JSON_DICT = {
+        'level': level.to_json(),
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Memory.simulatePressureNotification',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def start_sampling(sampling_interval: int, suppress_randomness: bool) -> typing.Generator[dict,dict,None]:
+def start_sampling(
+        sampling_interval: typing.Optional[int] = None,
+        suppress_randomness: typing.Optional[bool] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Start collecting native memory profile.
     
     :param sampling_interval: Average number of bytes between samples.
     :param suppress_randomness: Do not randomize intervals between samples.
     '''
-
-    cmd_dict = {
-        'method': 'Memory.startSampling',
-        'params': {
-            'samplingInterval': sampling_interval,
-            'suppressRandomness': suppress_randomness,
-        }
+    params: T_JSON_DICT = {
     }
-    response = yield cmd_dict
+    if sampling_interval is not None:
+        params['samplingInterval'] = sampling_interval
+    if suppress_randomness is not None:
+        params['suppressRandomness'] = suppress_randomness
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Memory.startSampling',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def stop_sampling() -> typing.Generator[dict,dict,None]:
+def stop_sampling() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Stop collecting native memory profile.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Memory.stopSampling',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def get_all_time_sampling_profile() -> typing.Generator[dict,dict,SamplingProfile]:
+def get_all_time_sampling_profile() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,SamplingProfile]:
     '''
     Retrieve native memory allocations profile
     collected since renderer process startup.
     :returns: 
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Memory.getAllTimeSamplingProfile',
     }
-    response = yield cmd_dict
-    return SamplingProfile.from_response(response['profile'])
+    json = yield cmd_dict
+    return SamplingProfile.from_json(json['profile'])
 
 
-def get_browser_sampling_profile() -> typing.Generator[dict,dict,SamplingProfile]:
+def get_browser_sampling_profile() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,SamplingProfile]:
     '''
     Retrieve native memory allocations profile
     collected since browser process startup.
     :returns: 
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Memory.getBrowserSamplingProfile',
     }
-    response = yield cmd_dict
-    return SamplingProfile.from_response(response['profile'])
+    json = yield cmd_dict
+    return SamplingProfile.from_json(json['profile'])
 
 
-def get_sampling_profile() -> typing.Generator[dict,dict,SamplingProfile]:
+def get_sampling_profile() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,SamplingProfile]:
     '''
     Retrieve native memory allocations profile collected since last
     `startSampling` call.
     :returns: 
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Memory.getSamplingProfile',
     }
-    response = yield cmd_dict
-    return SamplingProfile.from_response(response['profile'])
+    json = yield cmd_dict
+    return SamplingProfile.from_json(json['profile'])
 
 

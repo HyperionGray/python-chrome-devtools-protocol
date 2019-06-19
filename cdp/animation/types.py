@@ -8,11 +8,12 @@ Domain: animation
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from ..dom import types as dom
-
 
 
 @dataclass
@@ -20,19 +21,27 @@ class KeyframesRule:
     '''
     Keyframes Rule
     '''
-    #: CSS keyframed animation's name.
-    name: str
-
     #: List of animation keyframes.
     keyframes: typing.List['KeyframeStyle']
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            name=str(response.get('name')),
-            keyframes=[KeyframeStyle.from_response(i) for i in response.get('keyframes')],
-        )
+    #: CSS keyframed animation's name.
+    name: typing.Optional[str] = None
 
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'keyframes': [i.to_json() for i in self.keyframes],
+        }
+        if self.name is not None:
+            json['name'] = self.name
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'KeyframesRule':
+        name = json['name'] if 'name' in json else None
+        return cls(
+            name=name,
+            keyframes=[KeyframeStyle.from_json(i) for i in json['keyframes']],
+        )
 
 @dataclass
 class KeyframeStyle:
@@ -45,13 +54,19 @@ class KeyframeStyle:
     #: `AnimationEffect`'s timing function.
     easing: str
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            offset=str(response.get('offset')),
-            easing=str(response.get('easing')),
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'offset': self.offset,
+            'easing': self.easing,
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'KeyframeStyle':
+        return cls(
+            offset=json['offset'],
+            easing=json['easing'],
+        )
 
 @dataclass
 class AnimationEffect:
@@ -79,30 +94,48 @@ class AnimationEffect:
     #: `AnimationEffect`'s fill mode.
     fill: str
 
-    #: `AnimationEffect`'s target node.
-    backend_node_id: dom.BackendNodeId
-
-    #: `AnimationEffect`'s keyframes.
-    keyframes_rule: KeyframesRule
-
     #: `AnimationEffect`'s timing function.
     easing: str
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            delay=float(response.get('delay')),
-            end_delay=float(response.get('endDelay')),
-            iteration_start=float(response.get('iterationStart')),
-            iterations=float(response.get('iterations')),
-            duration=float(response.get('duration')),
-            direction=str(response.get('direction')),
-            fill=str(response.get('fill')),
-            backend_node_id=dom.BackendNodeId.from_response(response.get('backendNodeId')),
-            keyframes_rule=KeyframesRule.from_response(response.get('keyframesRule')),
-            easing=str(response.get('easing')),
-        )
+    #: `AnimationEffect`'s target node.
+    backend_node_id: typing.Optional[dom.BackendNodeId] = None
 
+    #: `AnimationEffect`'s keyframes.
+    keyframes_rule: typing.Optional[KeyframesRule] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'delay': self.delay,
+            'endDelay': self.end_delay,
+            'iterationStart': self.iteration_start,
+            'iterations': self.iterations,
+            'duration': self.duration,
+            'direction': self.direction,
+            'fill': self.fill,
+            'easing': self.easing,
+        }
+        if self.backend_node_id is not None:
+            json['backendNodeId'] = self.backend_node_id.to_json()
+        if self.keyframes_rule is not None:
+            json['keyframesRule'] = self.keyframes_rule.to_json()
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'AnimationEffect':
+        backend_node_id = dom.BackendNodeId.from_json(json['backendNodeId']) if 'backendNodeId' in json else None
+        keyframes_rule = KeyframesRule.from_json(json['keyframesRule']) if 'keyframesRule' in json else None
+        return cls(
+            delay=json['delay'],
+            end_delay=json['endDelay'],
+            iteration_start=json['iterationStart'],
+            iterations=json['iterations'],
+            duration=json['duration'],
+            direction=json['direction'],
+            fill=json['fill'],
+            backend_node_id=backend_node_id,
+            keyframes_rule=keyframes_rule,
+            easing=json['easing'],
+        )
 
 @dataclass
 class Animation:
@@ -131,27 +164,46 @@ class Animation:
     current_time: float
 
     #: Animation type of `Animation`.
-    type_: str
+    type: str
 
     #: `Animation`'s source animation node.
-    source: AnimationEffect
+    source: typing.Optional[AnimationEffect] = None
 
     #: A unique ID for `Animation` representing the sources that triggered this CSS
     #: animation/transition.
-    css_id: str
+    css_id: typing.Optional[str] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'id': self.id,
+            'name': self.name,
+            'pausedState': self.paused_state,
+            'playState': self.play_state,
+            'playbackRate': self.playback_rate,
+            'startTime': self.start_time,
+            'currentTime': self.current_time,
+            'type': self.type,
+        }
+        if self.source is not None:
+            json['source'] = self.source.to_json()
+        if self.css_id is not None:
+            json['cssId'] = self.css_id
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'Animation':
+        source = AnimationEffect.from_json(json['source']) if 'source' in json else None
+        css_id = json['cssId'] if 'cssId' in json else None
         return cls(
-            id=str(response.get('id')),
-            name=str(response.get('name')),
-            paused_state=bool(response.get('pausedState')),
-            play_state=str(response.get('playState')),
-            playback_rate=float(response.get('playbackRate')),
-            start_time=float(response.get('startTime')),
-            current_time=float(response.get('currentTime')),
-            type_=str(response.get('type')),
-            source=AnimationEffect.from_response(response.get('source')),
-            css_id=str(response.get('cssId')),
+            id=json['id'],
+            name=json['name'],
+            paused_state=json['pausedState'],
+            play_state=json['playState'],
+            playback_rate=json['playbackRate'],
+            start_time=json['startTime'],
+            current_time=json['currentTime'],
+            type=json['type'],
+            source=source,
+            css_id=css_id,
         )
 

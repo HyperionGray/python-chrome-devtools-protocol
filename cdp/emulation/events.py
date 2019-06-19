@@ -8,7 +8,9 @@ Domain: emulation
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -19,5 +21,12 @@ class VirtualTimeBudgetExpired:
     '''
     Notification sent after the virtual time budget for the current VirtualTimePolicy has run out.
     '''
-    pass
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Emulation'
+    _method = 'virtualTimeBudgetExpired'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'VirtualTimeBudgetExpired':
+        return cls(
+        )
 

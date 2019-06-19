@@ -8,7 +8,9 @@ Domain: io
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -16,23 +18,29 @@ from ..runtime import types as runtime
 
 
 
-def close(handle: StreamHandle) -> typing.Generator[dict,dict,None]:
+def close(
+        handle: StreamHandle,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Close the stream, discard any temporary backing storage.
     
     :param handle: Handle of the stream to close.
     '''
-
-    cmd_dict = {
-        'method': 'IO.close',
-        'params': {
-            'handle': handle,
-        }
+    params: T_JSON_DICT = {
+        'handle': handle.to_json(),
     }
-    response = yield cmd_dict
+    cmd_dict: T_JSON_DICT = {
+        'method': 'IO.close',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
-def read(handle: StreamHandle, offset: int, size: int) -> typing.Generator[dict,dict,dict]:
+def read(
+        handle: StreamHandle,
+        offset: typing.Optional[int] = None,
+        size: typing.Optional[int] = None,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     Read a chunk of the stream
     
@@ -41,42 +49,48 @@ def read(handle: StreamHandle, offset: int, size: int) -> typing.Generator[dict,
     following the last read). Some types of streams may only support sequential reads.
     :param size: Maximum number of bytes to read (left upon the agent discretion if not specified).
     :returns: a dict with the following keys:
-        * base64Encoded: Set if the data is base64-encoded
+        * base64Encoded: (Optional) Set if the data is base64-encoded
         * data: Data that were read.
         * eof: Set if the end-of-file condition occured while reading.
     '''
-
-    cmd_dict = {
+    params: T_JSON_DICT = {
+        'handle': handle.to_json(),
+    }
+    if offset is not None:
+        params['offset'] = offset
+    if size is not None:
+        params['size'] = size
+    cmd_dict: T_JSON_DICT = {
         'method': 'IO.read',
-        'params': {
-            'handle': handle,
-            'offset': offset,
-            'size': size,
-        }
+        'params': params,
     }
-    response = yield cmd_dict
-    return {
-        'base64Encoded': bool(response['base64Encoded']),
-        'data': str(response['data']),
-        'eof': bool(response['eof']),
+    json = yield cmd_dict
+    result: T_JSON_DICT = {
+        'data': str(json['data']),
+        'eof': bool(json['eof']),
     }
+    if 'base64Encoded' in json:
+        result['base64Encoded'] = bool(json['base64Encoded'])
+    return result
 
 
-def resolve_blob(object_id: runtime.RemoteObjectId) -> typing.Generator[dict,dict,str]:
+def resolve_blob(
+        object_id: runtime.RemoteObjectId,
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,str]:
     '''
     Return UUID of Blob object specified by a remote object id.
     
     :param object_id: Object id of a Blob object wrapper.
     :returns: UUID of the specified Blob.
     '''
-
-    cmd_dict = {
-        'method': 'IO.resolveBlob',
-        'params': {
-            'objectId': object_id,
-        }
+    params: T_JSON_DICT = {
+        'objectId': object_id.to_json(),
     }
-    response = yield cmd_dict
-    return str(response['uuid'])
+    cmd_dict: T_JSON_DICT = {
+        'method': 'IO.resolveBlob',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return str(json['uuid'])
 
 

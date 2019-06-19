@@ -8,7 +8,9 @@ Domain: web_audio
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -22,6 +24,16 @@ class ContextCreated:
     #: Notifies that a new BaseAudioContext has been created.
     context: BaseAudioContext
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'WebAudio'
+    _method = 'contextCreated'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'ContextCreated':
+        return cls(
+            context=BaseAudioContext.from_json(json['context']),
+        )
+
 
 @dataclass
 class ContextDestroyed:
@@ -31,6 +43,16 @@ class ContextDestroyed:
     #: Notifies that existing BaseAudioContext has been destroyed.
     context_id: ContextId
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'WebAudio'
+    _method = 'contextDestroyed'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'ContextDestroyed':
+        return cls(
+            context_id=ContextId.from_json(json['contextId']),
+        )
+
 
 @dataclass
 class ContextChanged:
@@ -39,4 +61,14 @@ class ContextChanged:
     '''
     #: Notifies that existing BaseAudioContext has changed some properties (id stays the same)..
     context: BaseAudioContext
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'WebAudio'
+    _method = 'contextChanged'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'ContextChanged':
+        return cls(
+            context=BaseAudioContext.from_json(json['context']),
+        )
 

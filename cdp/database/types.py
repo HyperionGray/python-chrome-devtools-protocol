@@ -8,7 +8,9 @@ Domain: database
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 
@@ -16,13 +18,15 @@ class DatabaseId(str):
     '''
     Unique identifier of Database object.
     '''
+    def to_json(self) -> str:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: str) -> 'DatabaseId':
+        return cls(json)
 
     def __repr__(self):
         return 'DatabaseId({})'.format(str.__repr__(self))
-
 
 
 @dataclass
@@ -42,15 +46,23 @@ class Database:
     #: Database version.
     version: str
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            id=DatabaseId.from_response(response.get('id')),
-            domain=str(response.get('domain')),
-            name=str(response.get('name')),
-            version=str(response.get('version')),
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'id': self.id.to_json(),
+            'domain': self.domain,
+            'name': self.name,
+            'version': self.version,
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'Database':
+        return cls(
+            id=DatabaseId.from_json(json['id']),
+            domain=json['domain'],
+            name=json['name'],
+            version=json['version'],
+        )
 
 @dataclass
 class Error:
@@ -63,10 +75,17 @@ class Error:
     #: Error code.
     code: int
 
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'message': self.message,
+            'code': self.code,
+        }
+        return json
+
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'Error':
         return cls(
-            message=str(response.get('message')),
-            code=int(response.get('code')),
+            message=json['message'],
+            code=json['code'],
         )
 

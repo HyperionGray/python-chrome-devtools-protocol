@@ -8,43 +8,42 @@ Domain: console
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
 
 
-def clear_messages() -> typing.Generator[dict,dict,None]:
+def clear_messages() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Does nothing.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Console.clearMessages',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def disable() -> typing.Generator[dict,dict,None]:
+def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Disables console domain, prevents further console messages from being reported to the client.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Console.disable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 
-def enable() -> typing.Generator[dict,dict,None]:
+def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enables console domain, sends the messages collected so far to the client by means of the
     `messageAdded` notification.
     '''
-
-    cmd_dict = {
+    cmd_dict: T_JSON_DICT = {
         'method': 'Console.enable',
     }
-    response = yield cmd_dict
+    json = yield cmd_dict
 
 

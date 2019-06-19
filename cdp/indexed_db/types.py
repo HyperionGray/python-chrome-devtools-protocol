@@ -8,11 +8,12 @@ Domain: indexed_db
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from ..runtime import types as runtime
-
 
 
 @dataclass
@@ -30,14 +31,21 @@ class DatabaseWithObjectStores:
     #: Object stores in this database.
     object_stores: typing.List['ObjectStore']
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            name=str(response.get('name')),
-            version=float(response.get('version')),
-            object_stores=[ObjectStore.from_response(i) for i in response.get('objectStores')],
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'name': self.name,
+            'version': self.version,
+            'objectStores': [i.to_json() for i in self.object_stores],
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'DatabaseWithObjectStores':
+        return cls(
+            name=json['name'],
+            version=json['version'],
+            object_stores=[ObjectStore.from_json(i) for i in json['objectStores']],
+        )
 
 @dataclass
 class Key:
@@ -45,57 +53,86 @@ class Key:
     Key.
     '''
     #: Key type.
-    type_: str
+    type: str
 
     #: Number value.
-    number: float
+    number: typing.Optional[float] = None
 
     #: String value.
-    string: str
+    string: typing.Optional[str] = None
 
     #: Date value.
-    date: float
+    date: typing.Optional[float] = None
 
     #: Array value.
-    array: typing.List['Key']
+    array: typing.Optional[typing.List['Key']] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'type': self.type,
+        }
+        if self.number is not None:
+            json['number'] = self.number
+        if self.string is not None:
+            json['string'] = self.string
+        if self.date is not None:
+            json['date'] = self.date
+        if self.array is not None:
+            json['array'] = [i.to_json() for i in self.array]
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'Key':
+        number = json['number'] if 'number' in json else None
+        string = json['string'] if 'string' in json else None
+        date = json['date'] if 'date' in json else None
+        array = [Key.from_json(i) for i in json['array']] if 'array' in json else None
         return cls(
-            type_=str(response.get('type')),
-            number=float(response.get('number')),
-            string=str(response.get('string')),
-            date=float(response.get('date')),
-            array=[Key.from_response(i) for i in response.get('array')],
+            type=json['type'],
+            number=number,
+            string=string,
+            date=date,
+            array=array,
         )
-
 
 @dataclass
 class KeyRange:
     '''
     Key range.
     '''
-    #: Lower bound.
-    lower: Key
-
-    #: Upper bound.
-    upper: Key
-
     #: If true lower bound is open.
     lower_open: bool
 
     #: If true upper bound is open.
     upper_open: bool
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            lower=Key.from_response(response.get('lower')),
-            upper=Key.from_response(response.get('upper')),
-            lower_open=bool(response.get('lowerOpen')),
-            upper_open=bool(response.get('upperOpen')),
-        )
+    #: Lower bound.
+    lower: typing.Optional[Key] = None
 
+    #: Upper bound.
+    upper: typing.Optional[Key] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'lowerOpen': self.lower_open,
+            'upperOpen': self.upper_open,
+        }
+        if self.lower is not None:
+            json['lower'] = self.lower.to_json()
+        if self.upper is not None:
+            json['upper'] = self.upper.to_json()
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'KeyRange':
+        lower = Key.from_json(json['lower']) if 'lower' in json else None
+        upper = Key.from_json(json['upper']) if 'upper' in json else None
+        return cls(
+            lower=lower,
+            upper=upper,
+            lower_open=json['lowerOpen'],
+            upper_open=json['upperOpen'],
+        )
 
 @dataclass
 class DataEntry:
@@ -111,14 +148,21 @@ class DataEntry:
     #: Value object.
     value: runtime.RemoteObject
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            key=runtime.RemoteObject.from_response(response.get('key')),
-            primary_key=runtime.RemoteObject.from_response(response.get('primaryKey')),
-            value=runtime.RemoteObject.from_response(response.get('value')),
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'key': self.key.to_json(),
+            'primaryKey': self.primary_key.to_json(),
+            'value': self.value.to_json(),
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'DataEntry':
+        return cls(
+            key=runtime.RemoteObject.from_json(json['key']),
+            primary_key=runtime.RemoteObject.from_json(json['primaryKey']),
+            value=runtime.RemoteObject.from_json(json['value']),
+        )
 
 @dataclass
 class KeyPath:
@@ -126,22 +170,33 @@ class KeyPath:
     Key path.
     '''
     #: Key path type.
-    type_: str
+    type: str
 
     #: String value.
-    string: str
+    string: typing.Optional[str] = None
 
     #: Array value.
-    array: typing.List
+    array: typing.Optional[typing.List['str']] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'type': self.type,
+        }
+        if self.string is not None:
+            json['string'] = self.string
+        if self.array is not None:
+            json['array'] = [i for i in self.array]
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'KeyPath':
+        string = json['string'] if 'string' in json else None
+        array = [i for i in json['array']] if 'array' in json else None
         return cls(
-            type_=str(response.get('type')),
-            string=str(response.get('string')),
-            array=[str(i) for i in response.get('array')],
+            type=json['type'],
+            string=string,
+            array=array,
         )
-
 
 @dataclass
 class ObjectStore:
@@ -160,15 +215,23 @@ class ObjectStore:
     #: Indexes in this object store.
     indexes: typing.List['ObjectStoreIndex']
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            name=str(response.get('name')),
-            key_path=KeyPath.from_response(response.get('keyPath')),
-            auto_increment=bool(response.get('autoIncrement')),
-            indexes=[ObjectStoreIndex.from_response(i) for i in response.get('indexes')],
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'name': self.name,
+            'keyPath': self.key_path.to_json(),
+            'autoIncrement': self.auto_increment,
+            'indexes': [i.to_json() for i in self.indexes],
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'ObjectStore':
+        return cls(
+            name=json['name'],
+            key_path=KeyPath.from_json(json['keyPath']),
+            auto_increment=json['autoIncrement'],
+            indexes=[ObjectStoreIndex.from_json(i) for i in json['indexes']],
+        )
 
 @dataclass
 class ObjectStoreIndex:
@@ -187,12 +250,21 @@ class ObjectStoreIndex:
     #: If true, index allows multiple entries for a key.
     multi_entry: bool
 
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'name': self.name,
+            'keyPath': self.key_path.to_json(),
+            'unique': self.unique,
+            'multiEntry': self.multi_entry,
+        }
+        return json
+
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'ObjectStoreIndex':
         return cls(
-            name=str(response.get('name')),
-            key_path=KeyPath.from_response(response.get('keyPath')),
-            unique=bool(response.get('unique')),
-            multi_entry=bool(response.get('multiEntry')),
+            name=json['name'],
+            key_path=KeyPath.from_json(json['keyPath']),
+            unique=json['unique'],
+            multi_entry=json['multiEntry'],
         )
 

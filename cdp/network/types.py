@@ -8,15 +8,16 @@ Domain: network
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from ..runtime import types as runtime
 from ..security import types as security
 
 
-
-class ResourceType:
+class ResourceType(enum.Enum):
     '''
     Resource type as it was perceived by the rendering engine.
     '''
@@ -37,13 +38,24 @@ class ResourceType:
     CSP_VIOLATION_REPORT = "CSPViolationReport"
     OTHER = "Other"
 
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> 'ResourceType':
+        return cls(json)
+
+
 class LoaderId(str):
     '''
     Unique loader identifier.
     '''
+    def to_json(self) -> str:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: str) -> 'LoaderId':
+        return cls(json)
 
     def __repr__(self):
         return 'LoaderId({})'.format(str.__repr__(self))
@@ -53,9 +65,12 @@ class RequestId(str):
     '''
     Unique request identifier.
     '''
+    def to_json(self) -> str:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: str) -> 'RequestId':
+        return cls(json)
 
     def __repr__(self):
         return 'RequestId({})'.format(str.__repr__(self))
@@ -65,16 +80,18 @@ class InterceptionId(str):
     '''
     Unique intercepted request identifier.
     '''
+    def to_json(self) -> str:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: str) -> 'InterceptionId':
+        return cls(json)
 
     def __repr__(self):
         return 'InterceptionId({})'.format(str.__repr__(self))
 
 
-
-class ErrorReason:
+class ErrorReason(enum.Enum):
     '''
     Network level fetch failure reason.
     '''
@@ -93,13 +110,24 @@ class ErrorReason:
     BLOCKED_BY_CLIENT = "BlockedByClient"
     BLOCKED_BY_RESPONSE = "BlockedByResponse"
 
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> 'ErrorReason':
+        return cls(json)
+
+
 class TimeSinceEpoch(float):
     '''
     UTC time in seconds, counted from January 1, 1970.
     '''
+    def to_json(self) -> float:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: float) -> 'TimeSinceEpoch':
+        return cls(json)
 
     def __repr__(self):
         return 'TimeSinceEpoch({})'.format(float.__repr__(self))
@@ -109,16 +137,18 @@ class MonotonicTime(float):
     '''
     Monotonically increasing time in seconds since an arbitrary point in the past.
     '''
+    def to_json(self) -> float:
+        return self
+
     @classmethod
-    def from_response(cls, response):
-        return cls(response)
+    def from_json(cls, json: float) -> 'MonotonicTime':
+        return cls(json)
 
     def __repr__(self):
         return 'MonotonicTime({})'.format(float.__repr__(self))
 
 
-
-class ConnectionType:
+class ConnectionType(enum.Enum):
     '''
     The underlying connection technology that the browser is supposedly using.
     '''
@@ -132,8 +162,15 @@ class ConnectionType:
     WIMAX = "wimax"
     OTHER = "other"
 
+    def to_json(self) -> str:
+        return self.value
 
-class CookieSameSite:
+    @classmethod
+    def from_json(cls, json: str) -> 'ConnectionType':
+        return cls(json)
+
+
+class CookieSameSite(enum.Enum):
     '''
     Represents the cookie's 'SameSite' status:
     https://tools.ietf.org/html/draft-west-first-party-cookies
@@ -143,8 +180,15 @@ class CookieSameSite:
     EXTENDED = "Extended"
     NONE = "None"
 
+    def to_json(self) -> str:
+        return self.value
 
-class ResourcePriority:
+    @classmethod
+    def from_json(cls, json: str) -> 'CookieSameSite':
+        return cls(json)
+
+
+class ResourcePriority(enum.Enum):
     '''
     Loading priority of a resource request.
     '''
@@ -154,8 +198,15 @@ class ResourcePriority:
     HIGH = "High"
     VERY_HIGH = "VeryHigh"
 
+    def to_json(self) -> str:
+        return self.value
 
-class CertificateTransparencyCompliance:
+    @classmethod
+    def from_json(cls, json: str) -> 'ResourcePriority':
+        return cls(json)
+
+
+class CertificateTransparencyCompliance(enum.Enum):
     '''
     Whether the request complied with Certificate Transparency policy.
     '''
@@ -163,8 +214,15 @@ class CertificateTransparencyCompliance:
     NOT_COMPLIANT = "not-compliant"
     COMPLIANT = "compliant"
 
+    def to_json(self) -> str:
+        return self.value
 
-class BlockedReason:
+    @classmethod
+    def from_json(cls, json: str) -> 'CertificateTransparencyCompliance':
+        return cls(json)
+
+
+class BlockedReason(enum.Enum):
     '''
     The reason why request was blocked.
     '''
@@ -177,8 +235,15 @@ class BlockedReason:
     CONTENT_TYPE = "content-type"
     COLLAPSED_BY_CLIENT = "collapsed-by-client"
 
+    def to_json(self) -> str:
+        return self.value
 
-class InterceptionStage:
+    @classmethod
+    def from_json(cls, json: str) -> 'BlockedReason':
+        return cls(json)
+
+
+class InterceptionStage(enum.Enum):
     '''
     Stages of the interception to begin intercepting. Request will intercept before the request is
     sent. Response will intercept after the response is received.
@@ -186,8 +251,15 @@ class InterceptionStage:
     REQUEST = "Request"
     HEADERS_RECEIVED = "HeadersReceived"
 
+    def to_json(self) -> str:
+        return self.value
 
-class SignedExchangeErrorField:
+    @classmethod
+    def from_json(cls, json: str) -> 'InterceptionStage':
+        return cls(json)
+
+
+class SignedExchangeErrorField(enum.Enum):
     '''
     Field type for a signed exchange related error.
     '''
@@ -198,17 +270,28 @@ class SignedExchangeErrorField:
     SIGNATURE_VALIDITY_URL = "signatureValidityUrl"
     SIGNATURE_TIMESTAMPS = "signatureTimestamps"
 
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> 'SignedExchangeErrorField':
+        return cls(json)
+
 
 @dataclass
 class Headers:
     '''
     Request / response headers as keys / values of JSON object.
     '''
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+        }
+        return json
+
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'Headers':
         return cls(
         )
-
 
 @dataclass
 class ResourceTiming:
@@ -264,27 +347,47 @@ class ResourceTiming:
     #: Finished receiving response headers.
     receive_headers_end: float
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            request_time=float(response.get('requestTime')),
-            proxy_start=float(response.get('proxyStart')),
-            proxy_end=float(response.get('proxyEnd')),
-            dns_start=float(response.get('dnsStart')),
-            dns_end=float(response.get('dnsEnd')),
-            connect_start=float(response.get('connectStart')),
-            connect_end=float(response.get('connectEnd')),
-            ssl_start=float(response.get('sslStart')),
-            ssl_end=float(response.get('sslEnd')),
-            worker_start=float(response.get('workerStart')),
-            worker_ready=float(response.get('workerReady')),
-            send_start=float(response.get('sendStart')),
-            send_end=float(response.get('sendEnd')),
-            push_start=float(response.get('pushStart')),
-            push_end=float(response.get('pushEnd')),
-            receive_headers_end=float(response.get('receiveHeadersEnd')),
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'requestTime': self.request_time,
+            'proxyStart': self.proxy_start,
+            'proxyEnd': self.proxy_end,
+            'dnsStart': self.dns_start,
+            'dnsEnd': self.dns_end,
+            'connectStart': self.connect_start,
+            'connectEnd': self.connect_end,
+            'sslStart': self.ssl_start,
+            'sslEnd': self.ssl_end,
+            'workerStart': self.worker_start,
+            'workerReady': self.worker_ready,
+            'sendStart': self.send_start,
+            'sendEnd': self.send_end,
+            'pushStart': self.push_start,
+            'pushEnd': self.push_end,
+            'receiveHeadersEnd': self.receive_headers_end,
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'ResourceTiming':
+        return cls(
+            request_time=json['requestTime'],
+            proxy_start=json['proxyStart'],
+            proxy_end=json['proxyEnd'],
+            dns_start=json['dnsStart'],
+            dns_end=json['dnsEnd'],
+            connect_start=json['connectStart'],
+            connect_end=json['connectEnd'],
+            ssl_start=json['sslStart'],
+            ssl_end=json['sslEnd'],
+            worker_start=json['workerStart'],
+            worker_ready=json['workerReady'],
+            send_start=json['sendStart'],
+            send_end=json['sendEnd'],
+            push_start=json['pushStart'],
+            push_end=json['pushEnd'],
+            receive_headers_end=json['receiveHeadersEnd'],
+        )
 
 @dataclass
 class Request:
@@ -294,23 +397,11 @@ class Request:
     #: Request URL (without fragment).
     url: str
 
-    #: Fragment of the requested URL starting with hash, if present.
-    url_fragment: str
-
     #: HTTP request method.
     method: str
 
     #: HTTP request headers.
     headers: Headers
-
-    #: HTTP POST request data.
-    post_data: str
-
-    #: True when the request has POST data. Note that postData might still be omitted when this flag is true when the data is too long.
-    has_post_data: bool
-
-    #: The mixed content type of the request.
-    mixed_content_type: security.MixedContentType
 
     #: Priority of the resource request at the time request is sent.
     initial_priority: ResourcePriority
@@ -318,24 +409,60 @@ class Request:
     #: The referrer policy of the request, as defined in https://www.w3.org/TR/referrer-policy/
     referrer_policy: str
 
+    #: Fragment of the requested URL starting with hash, if present.
+    url_fragment: typing.Optional[str] = None
+
+    #: HTTP POST request data.
+    post_data: typing.Optional[str] = None
+
+    #: True when the request has POST data. Note that postData might still be omitted when this flag is true when the data is too long.
+    has_post_data: typing.Optional[bool] = None
+
+    #: The mixed content type of the request.
+    mixed_content_type: typing.Optional[security.MixedContentType] = None
+
     #: Whether is loaded via link preload.
-    is_link_preload: bool
+    is_link_preload: typing.Optional[bool] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'url': self.url,
+            'method': self.method,
+            'headers': self.headers.to_json(),
+            'initialPriority': self.initial_priority.to_json(),
+            'referrerPolicy': self.referrer_policy,
+        }
+        if self.url_fragment is not None:
+            json['urlFragment'] = self.url_fragment
+        if self.post_data is not None:
+            json['postData'] = self.post_data
+        if self.has_post_data is not None:
+            json['hasPostData'] = self.has_post_data
+        if self.mixed_content_type is not None:
+            json['mixedContentType'] = self.mixed_content_type.to_json()
+        if self.is_link_preload is not None:
+            json['isLinkPreload'] = self.is_link_preload
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'Request':
+        url_fragment = json['urlFragment'] if 'urlFragment' in json else None
+        post_data = json['postData'] if 'postData' in json else None
+        has_post_data = json['hasPostData'] if 'hasPostData' in json else None
+        mixed_content_type = security.MixedContentType.from_json(json['mixedContentType']) if 'mixedContentType' in json else None
+        is_link_preload = json['isLinkPreload'] if 'isLinkPreload' in json else None
         return cls(
-            url=str(response.get('url')),
-            url_fragment=str(response.get('urlFragment')),
-            method=str(response.get('method')),
-            headers=Headers.from_response(response.get('headers')),
-            post_data=str(response.get('postData')),
-            has_post_data=bool(response.get('hasPostData')),
-            mixed_content_type=security.MixedContentType.from_response(response.get('mixedContentType')),
-            initial_priority=ResourcePriority.from_response(response.get('initialPriority')),
-            referrer_policy=str(response.get('referrerPolicy')),
-            is_link_preload=bool(response.get('isLinkPreload')),
+            url=json['url'],
+            url_fragment=url_fragment,
+            method=json['method'],
+            headers=Headers.from_json(json['headers']),
+            post_data=post_data,
+            has_post_data=has_post_data,
+            mixed_content_type=mixed_content_type,
+            initial_priority=ResourcePriority.from_json(json['initialPriority']),
+            referrer_policy=json['referrerPolicy'],
+            is_link_preload=is_link_preload,
         )
-
 
 @dataclass
 class SignedCertificateTimestamp:
@@ -366,19 +493,31 @@ class SignedCertificateTimestamp:
     #: Signature data.
     signature_data: str
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            status=str(response.get('status')),
-            origin=str(response.get('origin')),
-            log_description=str(response.get('logDescription')),
-            log_id=str(response.get('logId')),
-            timestamp=TimeSinceEpoch.from_response(response.get('timestamp')),
-            hash_algorithm=str(response.get('hashAlgorithm')),
-            signature_algorithm=str(response.get('signatureAlgorithm')),
-            signature_data=str(response.get('signatureData')),
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'status': self.status,
+            'origin': self.origin,
+            'logDescription': self.log_description,
+            'logId': self.log_id,
+            'timestamp': self.timestamp.to_json(),
+            'hashAlgorithm': self.hash_algorithm,
+            'signatureAlgorithm': self.signature_algorithm,
+            'signatureData': self.signature_data,
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'SignedCertificateTimestamp':
+        return cls(
+            status=json['status'],
+            origin=json['origin'],
+            log_description=json['logDescription'],
+            log_id=json['logId'],
+            timestamp=TimeSinceEpoch.from_json(json['timestamp']),
+            hash_algorithm=json['hashAlgorithm'],
+            signature_algorithm=json['signatureAlgorithm'],
+            signature_data=json['signatureData'],
+        )
 
 @dataclass
 class SecurityDetails:
@@ -391,14 +530,8 @@ class SecurityDetails:
     #: Key Exchange used by the connection, or the empty string if not applicable.
     key_exchange: str
 
-    #: (EC)DH group used by the connection, if applicable.
-    key_exchange_group: str
-
     #: Cipher name.
     cipher: str
-
-    #: TLS MAC. Note that AEAD ciphers do not have separate MACs.
-    mac: str
 
     #: Certificate ID value.
     certificate_id: security.CertificateId
@@ -407,7 +540,7 @@ class SecurityDetails:
     subject_name: str
 
     #: Subject Alternative Name (SAN) DNS names and IP addresses.
-    san_list: typing.List
+    san_list: typing.List['str']
 
     #: Name of the issuing CA.
     issuer: str
@@ -424,24 +557,51 @@ class SecurityDetails:
     #: Whether the request complied with Certificate Transparency policy
     certificate_transparency_compliance: CertificateTransparencyCompliance
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            protocol=str(response.get('protocol')),
-            key_exchange=str(response.get('keyExchange')),
-            key_exchange_group=str(response.get('keyExchangeGroup')),
-            cipher=str(response.get('cipher')),
-            mac=str(response.get('mac')),
-            certificate_id=security.CertificateId.from_response(response.get('certificateId')),
-            subject_name=str(response.get('subjectName')),
-            san_list=[str(i) for i in response.get('sanList')],
-            issuer=str(response.get('issuer')),
-            valid_from=TimeSinceEpoch.from_response(response.get('validFrom')),
-            valid_to=TimeSinceEpoch.from_response(response.get('validTo')),
-            signed_certificate_timestamp_list=[SignedCertificateTimestamp.from_response(i) for i in response.get('signedCertificateTimestampList')],
-            certificate_transparency_compliance=CertificateTransparencyCompliance.from_response(response.get('certificateTransparencyCompliance')),
-        )
+    #: (EC)DH group used by the connection, if applicable.
+    key_exchange_group: typing.Optional[str] = None
 
+    #: TLS MAC. Note that AEAD ciphers do not have separate MACs.
+    mac: typing.Optional[str] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'protocol': self.protocol,
+            'keyExchange': self.key_exchange,
+            'cipher': self.cipher,
+            'certificateId': self.certificate_id.to_json(),
+            'subjectName': self.subject_name,
+            'sanList': [i for i in self.san_list],
+            'issuer': self.issuer,
+            'validFrom': self.valid_from.to_json(),
+            'validTo': self.valid_to.to_json(),
+            'signedCertificateTimestampList': [i.to_json() for i in self.signed_certificate_timestamp_list],
+            'certificateTransparencyCompliance': self.certificate_transparency_compliance.to_json(),
+        }
+        if self.key_exchange_group is not None:
+            json['keyExchangeGroup'] = self.key_exchange_group
+        if self.mac is not None:
+            json['mac'] = self.mac
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'SecurityDetails':
+        key_exchange_group = json['keyExchangeGroup'] if 'keyExchangeGroup' in json else None
+        mac = json['mac'] if 'mac' in json else None
+        return cls(
+            protocol=json['protocol'],
+            key_exchange=json['keyExchange'],
+            key_exchange_group=key_exchange_group,
+            cipher=json['cipher'],
+            mac=mac,
+            certificate_id=security.CertificateId.from_json(json['certificateId']),
+            subject_name=json['subjectName'],
+            san_list=[i for i in json['sanList']],
+            issuer=json['issuer'],
+            valid_from=TimeSinceEpoch.from_json(json['validFrom']),
+            valid_to=TimeSinceEpoch.from_json(json['validTo']),
+            signed_certificate_timestamp_list=[SignedCertificateTimestamp.from_json(i) for i in json['signedCertificateTimestampList']],
+            certificate_transparency_compliance=CertificateTransparencyCompliance.from_json(json['certificateTransparencyCompliance']),
+        )
 
 @dataclass
 class Response:
@@ -460,17 +620,8 @@ class Response:
     #: HTTP response headers.
     headers: Headers
 
-    #: HTTP response headers text.
-    headers_text: str
-
     #: Resource mimeType as determined by the browser.
     mime_type: str
-
-    #: Refined HTTP request headers that were actually transmitted over the network.
-    request_headers: Headers
-
-    #: HTTP request headers text.
-    request_headers_text: str
 
     #: Specifies whether physical connection was actually reused for this request.
     connection_reused: bool
@@ -478,61 +629,116 @@ class Response:
     #: Physical connection id that was actually used for this request.
     connection_id: float
 
-    #: Remote IP address.
-    remote_ip_address: str
-
-    #: Remote port.
-    remote_port: int
-
-    #: Specifies that the request was served from the disk cache.
-    from_disk_cache: bool
-
-    #: Specifies that the request was served from the ServiceWorker.
-    from_service_worker: bool
-
-    #: Specifies that the request was served from the prefetch cache.
-    from_prefetch_cache: bool
-
     #: Total number of bytes received for this request so far.
     encoded_data_length: float
-
-    #: Timing information for the given request.
-    timing: ResourceTiming
-
-    #: Protocol used to fetch this request.
-    protocol: str
 
     #: Security state of the request resource.
     security_state: security.SecurityState
 
+    #: HTTP response headers text.
+    headers_text: typing.Optional[str] = None
+
+    #: Refined HTTP request headers that were actually transmitted over the network.
+    request_headers: typing.Optional[Headers] = None
+
+    #: HTTP request headers text.
+    request_headers_text: typing.Optional[str] = None
+
+    #: Remote IP address.
+    remote_ip_address: typing.Optional[str] = None
+
+    #: Remote port.
+    remote_port: typing.Optional[int] = None
+
+    #: Specifies that the request was served from the disk cache.
+    from_disk_cache: typing.Optional[bool] = None
+
+    #: Specifies that the request was served from the ServiceWorker.
+    from_service_worker: typing.Optional[bool] = None
+
+    #: Specifies that the request was served from the prefetch cache.
+    from_prefetch_cache: typing.Optional[bool] = None
+
+    #: Timing information for the given request.
+    timing: typing.Optional[ResourceTiming] = None
+
+    #: Protocol used to fetch this request.
+    protocol: typing.Optional[str] = None
+
     #: Security details for the request.
-    security_details: SecurityDetails
+    security_details: typing.Optional[SecurityDetails] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'url': self.url,
+            'status': self.status,
+            'statusText': self.status_text,
+            'headers': self.headers.to_json(),
+            'mimeType': self.mime_type,
+            'connectionReused': self.connection_reused,
+            'connectionId': self.connection_id,
+            'encodedDataLength': self.encoded_data_length,
+            'securityState': self.security_state.to_json(),
+        }
+        if self.headers_text is not None:
+            json['headersText'] = self.headers_text
+        if self.request_headers is not None:
+            json['requestHeaders'] = self.request_headers.to_json()
+        if self.request_headers_text is not None:
+            json['requestHeadersText'] = self.request_headers_text
+        if self.remote_ip_address is not None:
+            json['remoteIPAddress'] = self.remote_ip_address
+        if self.remote_port is not None:
+            json['remotePort'] = self.remote_port
+        if self.from_disk_cache is not None:
+            json['fromDiskCache'] = self.from_disk_cache
+        if self.from_service_worker is not None:
+            json['fromServiceWorker'] = self.from_service_worker
+        if self.from_prefetch_cache is not None:
+            json['fromPrefetchCache'] = self.from_prefetch_cache
+        if self.timing is not None:
+            json['timing'] = self.timing.to_json()
+        if self.protocol is not None:
+            json['protocol'] = self.protocol
+        if self.security_details is not None:
+            json['securityDetails'] = self.security_details.to_json()
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'Response':
+        headers_text = json['headersText'] if 'headersText' in json else None
+        request_headers = Headers.from_json(json['requestHeaders']) if 'requestHeaders' in json else None
+        request_headers_text = json['requestHeadersText'] if 'requestHeadersText' in json else None
+        remote_ip_address = json['remoteIPAddress'] if 'remoteIPAddress' in json else None
+        remote_port = json['remotePort'] if 'remotePort' in json else None
+        from_disk_cache = json['fromDiskCache'] if 'fromDiskCache' in json else None
+        from_service_worker = json['fromServiceWorker'] if 'fromServiceWorker' in json else None
+        from_prefetch_cache = json['fromPrefetchCache'] if 'fromPrefetchCache' in json else None
+        timing = ResourceTiming.from_json(json['timing']) if 'timing' in json else None
+        protocol = json['protocol'] if 'protocol' in json else None
+        security_details = SecurityDetails.from_json(json['securityDetails']) if 'securityDetails' in json else None
         return cls(
-            url=str(response.get('url')),
-            status=int(response.get('status')),
-            status_text=str(response.get('statusText')),
-            headers=Headers.from_response(response.get('headers')),
-            headers_text=str(response.get('headersText')),
-            mime_type=str(response.get('mimeType')),
-            request_headers=Headers.from_response(response.get('requestHeaders')),
-            request_headers_text=str(response.get('requestHeadersText')),
-            connection_reused=bool(response.get('connectionReused')),
-            connection_id=float(response.get('connectionId')),
-            remote_ip_address=str(response.get('remoteIPAddress')),
-            remote_port=int(response.get('remotePort')),
-            from_disk_cache=bool(response.get('fromDiskCache')),
-            from_service_worker=bool(response.get('fromServiceWorker')),
-            from_prefetch_cache=bool(response.get('fromPrefetchCache')),
-            encoded_data_length=float(response.get('encodedDataLength')),
-            timing=ResourceTiming.from_response(response.get('timing')),
-            protocol=str(response.get('protocol')),
-            security_state=security.SecurityState.from_response(response.get('securityState')),
-            security_details=SecurityDetails.from_response(response.get('securityDetails')),
+            url=json['url'],
+            status=json['status'],
+            status_text=json['statusText'],
+            headers=Headers.from_json(json['headers']),
+            headers_text=headers_text,
+            mime_type=json['mimeType'],
+            request_headers=request_headers,
+            request_headers_text=request_headers_text,
+            connection_reused=json['connectionReused'],
+            connection_id=json['connectionId'],
+            remote_ip_address=remote_ip_address,
+            remote_port=remote_port,
+            from_disk_cache=from_disk_cache,
+            from_service_worker=from_service_worker,
+            from_prefetch_cache=from_prefetch_cache,
+            encoded_data_length=json['encodedDataLength'],
+            timing=timing,
+            protocol=protocol,
+            security_state=security.SecurityState.from_json(json['securityState']),
+            security_details=security_details,
         )
-
 
 @dataclass
 class WebSocketRequest:
@@ -542,12 +748,17 @@ class WebSocketRequest:
     #: HTTP request headers.
     headers: Headers
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            headers=Headers.from_response(response.get('headers')),
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'headers': self.headers.to_json(),
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'WebSocketRequest':
+        return cls(
+            headers=Headers.from_json(json['headers']),
+        )
 
 @dataclass
 class WebSocketResponse:
@@ -564,25 +775,41 @@ class WebSocketResponse:
     headers: Headers
 
     #: HTTP response headers text.
-    headers_text: str
+    headers_text: typing.Optional[str] = None
 
     #: HTTP request headers.
-    request_headers: Headers
+    request_headers: typing.Optional[Headers] = None
 
     #: HTTP request headers text.
-    request_headers_text: str
+    request_headers_text: typing.Optional[str] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'status': self.status,
+            'statusText': self.status_text,
+            'headers': self.headers.to_json(),
+        }
+        if self.headers_text is not None:
+            json['headersText'] = self.headers_text
+        if self.request_headers is not None:
+            json['requestHeaders'] = self.request_headers.to_json()
+        if self.request_headers_text is not None:
+            json['requestHeadersText'] = self.request_headers_text
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'WebSocketResponse':
+        headers_text = json['headersText'] if 'headersText' in json else None
+        request_headers = Headers.from_json(json['requestHeaders']) if 'requestHeaders' in json else None
+        request_headers_text = json['requestHeadersText'] if 'requestHeadersText' in json else None
         return cls(
-            status=int(response.get('status')),
-            status_text=str(response.get('statusText')),
-            headers=Headers.from_response(response.get('headers')),
-            headers_text=str(response.get('headersText')),
-            request_headers=Headers.from_response(response.get('requestHeaders')),
-            request_headers_text=str(response.get('requestHeadersText')),
+            status=json['status'],
+            status_text=json['statusText'],
+            headers=Headers.from_json(json['headers']),
+            headers_text=headers_text,
+            request_headers=request_headers,
+            request_headers_text=request_headers_text,
         )
-
 
 @dataclass
 class WebSocketFrame:
@@ -600,14 +827,21 @@ class WebSocketFrame:
     #: If the opcode isn't 1, then payloadData is a base64 encoded string representing binary data.
     payload_data: str
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            opcode=float(response.get('opcode')),
-            mask=bool(response.get('mask')),
-            payload_data=str(response.get('payloadData')),
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'opcode': self.opcode,
+            'mask': self.mask,
+            'payloadData': self.payload_data,
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'WebSocketFrame':
+        return cls(
+            opcode=json['opcode'],
+            mask=json['mask'],
+            payload_data=json['payloadData'],
+        )
 
 @dataclass
 class CachedResource:
@@ -618,23 +852,33 @@ class CachedResource:
     url: str
 
     #: Type of this resource.
-    type_: ResourceType
-
-    #: Cached response data.
-    response: Response
+    type: ResourceType
 
     #: Cached response body size.
     body_size: float
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            url=str(response.get('url')),
-            type_=ResourceType.from_response(response.get('type')),
-            response=Response.from_response(response.get('response')),
-            body_size=float(response.get('bodySize')),
-        )
+    #: Cached response data.
+    response: typing.Optional[Response] = None
 
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'url': self.url,
+            'type': self.type.to_json(),
+            'bodySize': self.body_size,
+        }
+        if self.response is not None:
+            json['response'] = self.response.to_json()
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'CachedResource':
+        response = Response.from_json(json['response']) if 'response' in json else None
+        return cls(
+            url=json['url'],
+            type=ResourceType.from_json(json['type']),
+            response=response,
+            body_size=json['bodySize'],
+        )
 
 @dataclass
 class Initiator:
@@ -642,27 +886,41 @@ class Initiator:
     Information about the request initiator.
     '''
     #: Type of this initiator.
-    type_: str
+    type: str
 
     #: Initiator JavaScript stack trace, set for Script only.
-    stack: runtime.StackTrace
+    stack: typing.Optional[runtime.StackTrace] = None
 
     #: Initiator URL, set for Parser type or for Script type (when script is importing module) or for SignedExchange type.
-    url: str
+    url: typing.Optional[str] = None
 
     #: Initiator line number, set for Parser type or for Script type (when script is importing
     #: module) (0-based).
-    line_number: float
+    line_number: typing.Optional[float] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'type': self.type,
+        }
+        if self.stack is not None:
+            json['stack'] = self.stack.to_json()
+        if self.url is not None:
+            json['url'] = self.url
+        if self.line_number is not None:
+            json['lineNumber'] = self.line_number
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'Initiator':
+        stack = runtime.StackTrace.from_json(json['stack']) if 'stack' in json else None
+        url = json['url'] if 'url' in json else None
+        line_number = json['lineNumber'] if 'lineNumber' in json else None
         return cls(
-            type_=str(response.get('type')),
-            stack=runtime.StackTrace.from_response(response.get('stack')),
-            url=str(response.get('url')),
-            line_number=float(response.get('lineNumber')),
+            type=json['type'],
+            stack=stack,
+            url=url,
+            line_number=line_number,
         )
-
 
 @dataclass
 class Cookie:
@@ -697,23 +955,39 @@ class Cookie:
     session: bool
 
     #: Cookie SameSite type.
-    same_site: CookieSameSite
+    same_site: typing.Optional[CookieSameSite] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'name': self.name,
+            'value': self.value,
+            'domain': self.domain,
+            'path': self.path,
+            'expires': self.expires,
+            'size': self.size,
+            'httpOnly': self.http_only,
+            'secure': self.secure,
+            'session': self.session,
+        }
+        if self.same_site is not None:
+            json['sameSite'] = self.same_site.to_json()
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'Cookie':
+        same_site = CookieSameSite.from_json(json['sameSite']) if 'sameSite' in json else None
         return cls(
-            name=str(response.get('name')),
-            value=str(response.get('value')),
-            domain=str(response.get('domain')),
-            path=str(response.get('path')),
-            expires=float(response.get('expires')),
-            size=int(response.get('size')),
-            http_only=bool(response.get('httpOnly')),
-            secure=bool(response.get('secure')),
-            session=bool(response.get('session')),
-            same_site=CookieSameSite.from_response(response.get('sameSite')),
+            name=json['name'],
+            value=json['value'],
+            domain=json['domain'],
+            path=json['path'],
+            expires=json['expires'],
+            size=json['size'],
+            http_only=json['httpOnly'],
+            secure=json['secure'],
+            session=json['session'],
+            same_site=same_site,
         )
-
 
 @dataclass
 class CookieParam:
@@ -728,49 +1002,73 @@ class CookieParam:
 
     #: The request-URI to associate with the setting of the cookie. This value can affect the
     #: default domain and path values of the created cookie.
-    url: str
+    url: typing.Optional[str] = None
 
     #: Cookie domain.
-    domain: str
+    domain: typing.Optional[str] = None
 
     #: Cookie path.
-    path: str
+    path: typing.Optional[str] = None
 
     #: True if cookie is secure.
-    secure: bool
+    secure: typing.Optional[bool] = None
 
     #: True if cookie is http-only.
-    http_only: bool
+    http_only: typing.Optional[bool] = None
 
     #: Cookie SameSite type.
-    same_site: CookieSameSite
+    same_site: typing.Optional[CookieSameSite] = None
 
     #: Cookie expiration date, session cookie if not set
-    expires: TimeSinceEpoch
+    expires: typing.Optional[TimeSinceEpoch] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'name': self.name,
+            'value': self.value,
+        }
+        if self.url is not None:
+            json['url'] = self.url
+        if self.domain is not None:
+            json['domain'] = self.domain
+        if self.path is not None:
+            json['path'] = self.path
+        if self.secure is not None:
+            json['secure'] = self.secure
+        if self.http_only is not None:
+            json['httpOnly'] = self.http_only
+        if self.same_site is not None:
+            json['sameSite'] = self.same_site.to_json()
+        if self.expires is not None:
+            json['expires'] = self.expires.to_json()
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'CookieParam':
+        url = json['url'] if 'url' in json else None
+        domain = json['domain'] if 'domain' in json else None
+        path = json['path'] if 'path' in json else None
+        secure = json['secure'] if 'secure' in json else None
+        http_only = json['httpOnly'] if 'httpOnly' in json else None
+        same_site = CookieSameSite.from_json(json['sameSite']) if 'sameSite' in json else None
+        expires = TimeSinceEpoch.from_json(json['expires']) if 'expires' in json else None
         return cls(
-            name=str(response.get('name')),
-            value=str(response.get('value')),
-            url=str(response.get('url')),
-            domain=str(response.get('domain')),
-            path=str(response.get('path')),
-            secure=bool(response.get('secure')),
-            http_only=bool(response.get('httpOnly')),
-            same_site=CookieSameSite.from_response(response.get('sameSite')),
-            expires=TimeSinceEpoch.from_response(response.get('expires')),
+            name=json['name'],
+            value=json['value'],
+            url=url,
+            domain=domain,
+            path=path,
+            secure=secure,
+            http_only=http_only,
+            same_site=same_site,
+            expires=expires,
         )
-
 
 @dataclass
 class AuthChallenge:
     '''
     Authorization challenge for HTTP status code 401 or 407.
     '''
-    #: Source of the authentication challenge.
-    source: str
-
     #: Origin of the challenger.
     origin: str
 
@@ -780,15 +1078,28 @@ class AuthChallenge:
     #: The realm of the challenge. May be empty.
     realm: str
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            source=str(response.get('source')),
-            origin=str(response.get('origin')),
-            scheme=str(response.get('scheme')),
-            realm=str(response.get('realm')),
-        )
+    #: Source of the authentication challenge.
+    source: typing.Optional[str] = None
 
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'origin': self.origin,
+            'scheme': self.scheme,
+            'realm': self.realm,
+        }
+        if self.source is not None:
+            json['source'] = self.source
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'AuthChallenge':
+        source = json['source'] if 'source' in json else None
+        return cls(
+            source=source,
+            origin=json['origin'],
+            scheme=json['scheme'],
+            realm=json['realm'],
+        )
 
 @dataclass
 class AuthChallengeResponse:
@@ -802,20 +1113,31 @@ class AuthChallengeResponse:
 
     #: The username to provide, possibly empty. Should only be set if response is
     #: ProvideCredentials.
-    username: str
+    username: typing.Optional[str] = None
 
     #: The password to provide, possibly empty. Should only be set if response is
     #: ProvideCredentials.
-    password: str
+    password: typing.Optional[str] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'response': self.response,
+        }
+        if self.username is not None:
+            json['username'] = self.username
+        if self.password is not None:
+            json['password'] = self.password
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'AuthChallengeResponse':
+        username = json['username'] if 'username' in json else None
+        password = json['password'] if 'password' in json else None
         return cls(
-            response=str(response.get('response')),
-            username=str(response.get('username')),
-            password=str(response.get('password')),
+            response=json['response'],
+            username=username,
+            password=password,
         )
-
 
 @dataclass
 class RequestPattern:
@@ -824,22 +1146,35 @@ class RequestPattern:
     '''
     #: Wildcards ('*' -> zero or more, '?' -> exactly one) are allowed. Escape character is
     #: backslash. Omitting is equivalent to "*".
-    url_pattern: str
+    url_pattern: typing.Optional[str] = None
 
     #: If set, only requests for matching resource types will be intercepted.
-    resource_type: ResourceType
+    resource_type: typing.Optional[ResourceType] = None
 
     #: Stage at wich to begin intercepting requests. Default is Request.
-    interception_stage: InterceptionStage
+    interception_stage: typing.Optional[InterceptionStage] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+        }
+        if self.url_pattern is not None:
+            json['urlPattern'] = self.url_pattern
+        if self.resource_type is not None:
+            json['resourceType'] = self.resource_type.to_json()
+        if self.interception_stage is not None:
+            json['interceptionStage'] = self.interception_stage.to_json()
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'RequestPattern':
+        url_pattern = json['urlPattern'] if 'urlPattern' in json else None
+        resource_type = ResourceType.from_json(json['resourceType']) if 'resourceType' in json else None
+        interception_stage = InterceptionStage.from_json(json['interceptionStage']) if 'interceptionStage' in json else None
         return cls(
-            url_pattern=str(response.get('urlPattern')),
-            resource_type=ResourceType.from_response(response.get('resourceType')),
-            interception_stage=InterceptionStage.from_response(response.get('interceptionStage')),
+            url_pattern=url_pattern,
+            resource_type=resource_type,
+            interception_stage=interception_stage,
         )
-
 
 @dataclass
 class SignedExchangeSignature:
@@ -856,12 +1191,6 @@ class SignedExchangeSignature:
     #: Signed exchange signature integrity.
     integrity: str
 
-    #: Signed exchange signature cert Url.
-    cert_url: str
-
-    #: The hex string of signed exchange signature cert sha256.
-    cert_sha256: str
-
     #: Signed exchange signature validity Url.
     validity_url: str
 
@@ -871,23 +1200,48 @@ class SignedExchangeSignature:
     #: Signed exchange signature expires.
     expires: int
 
+    #: Signed exchange signature cert Url.
+    cert_url: typing.Optional[str] = None
+
+    #: The hex string of signed exchange signature cert sha256.
+    cert_sha256: typing.Optional[str] = None
+
     #: The encoded certificates.
-    certificates: typing.List
+    certificates: typing.Optional[typing.List['str']] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'label': self.label,
+            'signature': self.signature,
+            'integrity': self.integrity,
+            'validityUrl': self.validity_url,
+            'date': self.date,
+            'expires': self.expires,
+        }
+        if self.cert_url is not None:
+            json['certUrl'] = self.cert_url
+        if self.cert_sha256 is not None:
+            json['certSha256'] = self.cert_sha256
+        if self.certificates is not None:
+            json['certificates'] = [i for i in self.certificates]
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'SignedExchangeSignature':
+        cert_url = json['certUrl'] if 'certUrl' in json else None
+        cert_sha256 = json['certSha256'] if 'certSha256' in json else None
+        certificates = [i for i in json['certificates']] if 'certificates' in json else None
         return cls(
-            label=str(response.get('label')),
-            signature=str(response.get('signature')),
-            integrity=str(response.get('integrity')),
-            cert_url=str(response.get('certUrl')),
-            cert_sha256=str(response.get('certSha256')),
-            validity_url=str(response.get('validityUrl')),
-            date=int(response.get('date')),
-            expires=int(response.get('expires')),
-            certificates=[str(i) for i in response.get('certificates')],
+            label=json['label'],
+            signature=json['signature'],
+            integrity=json['integrity'],
+            cert_url=cert_url,
+            cert_sha256=cert_sha256,
+            validity_url=json['validityUrl'],
+            date=json['date'],
+            expires=json['expires'],
+            certificates=certificates,
         )
-
 
 @dataclass
 class SignedExchangeHeader:
@@ -907,15 +1261,23 @@ class SignedExchangeHeader:
     #: Signed exchange response signature.
     signatures: typing.List['SignedExchangeSignature']
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(
-            request_url=str(response.get('requestUrl')),
-            response_code=int(response.get('responseCode')),
-            response_headers=Headers.from_response(response.get('responseHeaders')),
-            signatures=[SignedExchangeSignature.from_response(i) for i in response.get('signatures')],
-        )
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'requestUrl': self.request_url,
+            'responseCode': self.response_code,
+            'responseHeaders': self.response_headers.to_json(),
+            'signatures': [i.to_json() for i in self.signatures],
+        }
+        return json
 
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'SignedExchangeHeader':
+        return cls(
+            request_url=json['requestUrl'],
+            response_code=json['responseCode'],
+            response_headers=Headers.from_json(json['responseHeaders']),
+            signatures=[SignedExchangeSignature.from_json(i) for i in json['signatures']],
+        )
 
 @dataclass
 class SignedExchangeError:
@@ -926,19 +1288,30 @@ class SignedExchangeError:
     message: str
 
     #: The index of the signature which caused the error.
-    signature_index: int
+    signature_index: typing.Optional[int] = None
 
     #: The field which caused the error.
-    error_field: SignedExchangeErrorField
+    error_field: typing.Optional[SignedExchangeErrorField] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'message': self.message,
+        }
+        if self.signature_index is not None:
+            json['signatureIndex'] = self.signature_index
+        if self.error_field is not None:
+            json['errorField'] = self.error_field.to_json()
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'SignedExchangeError':
+        signature_index = json['signatureIndex'] if 'signatureIndex' in json else None
+        error_field = SignedExchangeErrorField.from_json(json['errorField']) if 'errorField' in json else None
         return cls(
-            message=str(response.get('message')),
-            signature_index=int(response.get('signatureIndex')),
-            error_field=SignedExchangeErrorField.from_response(response.get('errorField')),
+            message=json['message'],
+            signature_index=signature_index,
+            error_field=error_field,
         )
-
 
 @dataclass
 class SignedExchangeInfo:
@@ -949,20 +1322,35 @@ class SignedExchangeInfo:
     outer_response: Response
 
     #: Information about the signed exchange header.
-    header: SignedExchangeHeader
+    header: typing.Optional[SignedExchangeHeader] = None
 
     #: Security details for the signed exchange header.
-    security_details: SecurityDetails
+    security_details: typing.Optional[SecurityDetails] = None
 
     #: Errors occurred while handling the signed exchagne.
-    errors: typing.List['SignedExchangeError']
+    errors: typing.Optional[typing.List['SignedExchangeError']] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = {
+            'outerResponse': self.outer_response.to_json(),
+        }
+        if self.header is not None:
+            json['header'] = self.header.to_json()
+        if self.security_details is not None:
+            json['securityDetails'] = self.security_details.to_json()
+        if self.errors is not None:
+            json['errors'] = [i.to_json() for i in self.errors]
+        return json
 
     @classmethod
-    def from_response(cls, response):
+    def from_json(cls, json: T_JSON_DICT) -> 'SignedExchangeInfo':
+        header = SignedExchangeHeader.from_json(json['header']) if 'header' in json else None
+        security_details = SecurityDetails.from_json(json['securityDetails']) if 'securityDetails' in json else None
+        errors = [SignedExchangeError.from_json(i) for i in json['errors']] if 'errors' in json else None
         return cls(
-            outer_response=Response.from_response(response.get('outerResponse')),
-            header=SignedExchangeHeader.from_response(response.get('header')),
-            security_details=SecurityDetails.from_response(response.get('securityDetails')),
-            errors=[SignedExchangeError.from_response(i) for i in response.get('errors')],
+            outer_response=Response.from_json(json['outerResponse']),
+            header=header,
+            security_details=security_details,
+            errors=errors,
         )
 

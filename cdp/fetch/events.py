@@ -8,7 +8,9 @@ Domain: fetch
 Experimental: True
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -91,6 +93,23 @@ class RequestPaused:
     #: of these fields is present and in the request stage otherwise.
     network_id: RequestId
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Fetch'
+    _method = 'requestPaused'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'RequestPaused':
+        return cls(
+            request_id=RequestId.from_json(json['requestId']),
+            request=network.Request.from_json(json['request']),
+            frame_id=page.FrameId.from_json(json['frameId']),
+            resource_type=network.ResourceType.from_json(json['resourceType']),
+            response_error_reason=network.ErrorReason.from_json(json['responseErrorReason']),
+            response_status_code=int(json['responseStatusCode']),
+            response_headers=[HeaderEntry.from_json(i) for i in json['responseHeaders']],
+            network_id=RequestId.from_json(json['networkId']),
+        )
+
 
 @dataclass
 class AuthRequired:
@@ -117,4 +136,18 @@ class AuthRequired:
     #: Issued when the domain is enabled with handleAuthRequests set to true.
     #: The request is paused until client responds with continueWithAuth.
     auth_challenge: AuthChallenge
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Fetch'
+    _method = 'authRequired'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'AuthRequired':
+        return cls(
+            request_id=RequestId.from_json(json['requestId']),
+            request=network.Request.from_json(json['request']),
+            frame_id=page.FrameId.from_json(json['frameId']),
+            resource_type=network.ResourceType.from_json(json['resourceType']),
+            auth_challenge=AuthChallenge.from_json(json['authChallenge']),
+        )
 

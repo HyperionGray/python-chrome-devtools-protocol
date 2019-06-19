@@ -8,7 +8,9 @@ Domain: page
 Experimental: False
 '''
 
-from dataclasses import dataclass, field
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
+import enum
 import typing
 
 from .types import *
@@ -20,6 +22,16 @@ from ..runtime import types as runtime
 @dataclass
 class DomContentEventFired:
     timestamp: network.MonotonicTime
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Page'
+    _method = 'domContentEventFired'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'DomContentEventFired':
+        return cls(
+            timestamp=network.MonotonicTime.from_json(json['timestamp']),
+        )
 
 
 @dataclass
@@ -36,6 +48,18 @@ class FrameAttached:
     #: Fired when frame has been attached to its parent.
     stack: runtime.StackTrace
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Page'
+    _method = 'frameAttached'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'FrameAttached':
+        return cls(
+            frame_id=FrameId.from_json(json['frameId']),
+            parent_frame_id=FrameId.from_json(json['parentFrameId']),
+            stack=runtime.StackTrace.from_json(json['stack']),
+        )
+
 
 @dataclass
 class FrameClearedScheduledNavigation:
@@ -44,6 +68,16 @@ class FrameClearedScheduledNavigation:
     '''
     #: Fired when frame no longer has a scheduled navigation.
     frame_id: FrameId
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Page'
+    _method = 'frameClearedScheduledNavigation'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'FrameClearedScheduledNavigation':
+        return cls(
+            frame_id=FrameId.from_json(json['frameId']),
+        )
 
 
 @dataclass
@@ -54,6 +88,16 @@ class FrameDetached:
     #: Fired when frame has been detached from its parent.
     frame_id: FrameId
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Page'
+    _method = 'frameDetached'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'FrameDetached':
+        return cls(
+            frame_id=FrameId.from_json(json['frameId']),
+        )
+
 
 @dataclass
 class FrameNavigated:
@@ -63,10 +107,27 @@ class FrameNavigated:
     #: Fired once navigation of the frame has completed. Frame is now associated with the new loader.
     frame: Frame
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Page'
+    _method = 'frameNavigated'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'FrameNavigated':
+        return cls(
+            frame=Frame.from_json(json['frame']),
+        )
+
 
 @dataclass
 class FrameResized:
-    pass
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Page'
+    _method = 'frameResized'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'FrameResized':
+        return cls(
+        )
 
 
 @dataclass
@@ -87,6 +148,18 @@ class FrameRequestedNavigation:
     #: Navigation may still be cancelled after the event is issued.
     url: str
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Page'
+    _method = 'frameRequestedNavigation'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'FrameRequestedNavigation':
+        return cls(
+            frame_id=FrameId.from_json(json['frameId']),
+            reason=ClientNavigationReason.from_json(json['reason']),
+            url=str(json['url']),
+        )
+
 
 @dataclass
 class FrameScheduledNavigation:
@@ -105,6 +178,19 @@ class FrameScheduledNavigation:
     #: Fired when frame schedules a potential navigation.
     url: str
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Page'
+    _method = 'frameScheduledNavigation'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'FrameScheduledNavigation':
+        return cls(
+            frame_id=FrameId.from_json(json['frameId']),
+            delay=float(json['delay']),
+            reason=str(json['reason']),
+            url=str(json['url']),
+        )
+
 
 @dataclass
 class FrameStartedLoading:
@@ -114,6 +200,16 @@ class FrameStartedLoading:
     #: Fired when frame has started loading.
     frame_id: FrameId
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Page'
+    _method = 'frameStartedLoading'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'FrameStartedLoading':
+        return cls(
+            frame_id=FrameId.from_json(json['frameId']),
+        )
+
 
 @dataclass
 class FrameStoppedLoading:
@@ -122,6 +218,16 @@ class FrameStoppedLoading:
     '''
     #: Fired when frame has stopped loading.
     frame_id: FrameId
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Page'
+    _method = 'frameStoppedLoading'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'FrameStoppedLoading':
+        return cls(
+            frame_id=FrameId.from_json(json['frameId']),
+        )
 
 
 @dataclass
@@ -135,13 +241,31 @@ class DownloadWillBegin:
     #: Fired when page is about to start a download.
     url: str
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Page'
+    _method = 'downloadWillBegin'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'DownloadWillBegin':
+        return cls(
+            frame_id=FrameId.from_json(json['frameId']),
+            url=str(json['url']),
+        )
+
 
 @dataclass
 class InterstitialHidden:
     '''
     Fired when interstitial page was hidden
     '''
-    pass
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Page'
+    _method = 'interstitialHidden'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'InterstitialHidden':
+        return cls(
+        )
 
 
 @dataclass
@@ -149,7 +273,14 @@ class InterstitialShown:
     '''
     Fired when interstitial page was shown
     '''
-    pass
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Page'
+    _method = 'interstitialShown'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'InterstitialShown':
+        return cls(
+        )
 
 
 @dataclass
@@ -165,6 +296,17 @@ class JavascriptDialogClosed:
     #: Fired when a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload) has been
     #: closed.
     user_input: str
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Page'
+    _method = 'javascriptDialogClosed'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'JavascriptDialogClosed':
+        return cls(
+            result=bool(json['result']),
+            user_input=str(json['userInput']),
+        )
 
 
 @dataclass
@@ -193,6 +335,20 @@ class JavascriptDialogOpening:
     #: open.
     default_prompt: str
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Page'
+    _method = 'javascriptDialogOpening'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'JavascriptDialogOpening':
+        return cls(
+            url=str(json['url']),
+            message=str(json['message']),
+            type=DialogType.from_json(json['type']),
+            has_browser_handler=bool(json['hasBrowserHandler']),
+            default_prompt=str(json['defaultPrompt']),
+        )
+
 
 @dataclass
 class LifecycleEvent:
@@ -211,10 +367,33 @@ class LifecycleEvent:
     #: Fired for top level page lifecycle events such as navigation, load, paint, etc.
     timestamp: network.MonotonicTime
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Page'
+    _method = 'lifecycleEvent'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'LifecycleEvent':
+        return cls(
+            frame_id=FrameId.from_json(json['frameId']),
+            loader_id=network.LoaderId.from_json(json['loaderId']),
+            name=str(json['name']),
+            timestamp=network.MonotonicTime.from_json(json['timestamp']),
+        )
+
 
 @dataclass
 class LoadEventFired:
     timestamp: network.MonotonicTime
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Page'
+    _method = 'loadEventFired'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'LoadEventFired':
+        return cls(
+            timestamp=network.MonotonicTime.from_json(json['timestamp']),
+        )
 
 
 @dataclass
@@ -227,6 +406,17 @@ class NavigatedWithinDocument:
 
     #: Fired when same-document navigation happens, e.g. due to history API usage or anchor navigation.
     url: str
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Page'
+    _method = 'navigatedWithinDocument'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'NavigatedWithinDocument':
+        return cls(
+            frame_id=FrameId.from_json(json['frameId']),
+            url=str(json['url']),
+        )
 
 
 @dataclass
@@ -243,6 +433,18 @@ class ScreencastFrame:
     #: Compressed image data requested by the `startScreencast`.
     session_id: int
 
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Page'
+    _method = 'screencastFrame'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'ScreencastFrame':
+        return cls(
+            data=str(json['data']),
+            metadata=ScreencastFrameMetadata.from_json(json['metadata']),
+            session_id=int(json['sessionId']),
+        )
+
 
 @dataclass
 class ScreencastVisibilityChanged:
@@ -251,6 +453,16 @@ class ScreencastVisibilityChanged:
     '''
     #: Fired when the page with currently enabled screencast was shown or hidden `.
     visible: bool
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Page'
+    _method = 'screencastVisibilityChanged'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'ScreencastVisibilityChanged':
+        return cls(
+            visible=bool(json['visible']),
+        )
 
 
 @dataclass
@@ -269,11 +481,24 @@ class WindowOpen:
 
     #: Fired when a new window is going to be opened, via window.open(), link click, form submission,
     #: etc.
-    window_features: typing.List
+    window_features: typing.List['str']
 
     #: Fired when a new window is going to be opened, via window.open(), link click, form submission,
     #: etc.
     user_gesture: bool
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Page'
+    _method = 'windowOpen'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'WindowOpen':
+        return cls(
+            url=str(json['url']),
+            window_name=str(json['windowName']),
+            window_features=[str(i) for i in json['windowFeatures']],
+            user_gesture=bool(json['userGesture']),
+        )
 
 
 @dataclass
@@ -289,4 +514,15 @@ class CompilationCacheProduced:
     #: Issued for every compilation cache generated. Is only available
     #: if Page.setGenerateCompilationCache is enabled.
     data: str
+
+    # These fields are used for internal purposes and are not part of CDP
+    _domain = 'Page'
+    _method = 'compilationCacheProduced'
+
+    @classmethod
+    def from_json(cls, json: dict) -> 'CompilationCacheProduced':
+        return cls(
+            url=str(json['url']),
+            data=str(json['data']),
+        )
 
