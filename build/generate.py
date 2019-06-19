@@ -30,7 +30,7 @@ Domain: {}
 Experimental: {}
 \'\'\'
 
-from dataclasses import asdict, dataclass, field, is_dataclass
+from dataclasses import dataclass
 import enum
 import typing
 
@@ -363,6 +363,7 @@ def generate_class_type(type_):
     class_code += docstring(description)
     constructor = list()
     properties = list()
+    to_json = list()
     for prop in type_.get('properties', []):
         prop_name = prop['name']
         optional = prop.get('optional', False)
@@ -392,22 +393,44 @@ def generate_class_type(type_):
             if prop['type'] != 'array':
                 constructor.append((snake_name, "{}(json['{}'])".format(
                     prop_type, prop_name), prop_name, optional))
+                to_json.append((snake_name, prop_name, optional,
+                    'self.{}'.format(snake_name)))
             elif '$ref' in prop['items']:
                 subtype = get_python_type(prop['items'])
                 constructor.append((snake_name, "[{}.from_json(i) for i in json['{}']]".format(
                     subtype, prop_name), prop_name, optional))
+                to_json.append((snake_name, prop_name, optional,
+                    '[i.to_json() for i in self.{}]'.format(snake_name)))
             elif 'type' in prop['items']:
                 subtype = get_python_type(prop['items'])
                 constructor.append((snake_name, "[{}(i) for i in json['{}']]".format(
                     subtype, prop_name), prop_name, optional))
+                to_json.append((snake_name, prop_name, optional,
+                    '[i for i in self.{}]'.format(snake_name)))
         else:
             constructor.append((snake_name, "{}.from_json(json['{}'])".format(
                 prop_type, prop_name), prop_name, optional))
+            to_json.append((snake_name, prop_name, optional,
+                'self.{}.to_json()'.format(snake_name)))
     # Sort properties so that optional properties come after required
     # properties, otherwise the dataclass will raise an error.
     properties.sort(key=operator.itemgetter(1))
     for prop_code, _ in properties:
         class_code += prop_code
+    class_code += '    def to_json(self) -> dict:\n'
+    class_code += '        json = {\n'
+    for snake_name, prop_name, optional, code in to_json:
+        if optional:
+            continue
+        class_code += "            '{}': {},\n".format(prop_name, code)
+    class_code += '        }\n'
+    for snake_name, prop_name, optional, code in to_json:
+        if not optional:
+            continue
+        class_code += "        if self.{} is not None:\n".format(snake_name)
+        class_code += "            json['{}'] = {}\n".format(prop_name, code)
+    class_code += '        return json\n'
+    class_code += '\n'
     class_code += '    @classmethod\n'
     class_code += "    def from_json(cls, json: dict) -> '{}':\n".format(type_name)
     class_code += '        kwargs = {\n'
@@ -570,7 +593,9 @@ def generate_commands(domain_name, commands):
                 if not optional:
                     continue
                 code += '    if {} is not None:\n'.format(snake_name)
-                code += "        params['{}'] = {}\n".format(param_name, snake_name)
+                convert = '' if is_builtin_type(param_type) else '.to_json()'
+                code += "        params['{}'] = {}{}\n".format(param_name,
+                    snake_name, convert)
         code += '    cmd_dict = {\n'
         code += "        'method': '{}.{}',\n".format(domain_name,
             command_name)
