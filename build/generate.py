@@ -503,10 +503,14 @@ def generate_commands(domain_name, commands):
             param_name = param['name']
             snake_name = inflection.underscore(param_name)
             param_type = get_python_type(param)
-            arg_list.append('{}: {}'.format(snake_name, param_type))
+            param_decl = param_type
+            if param.get('optional', False):
+                param_decl = 'typing.Optional[{}] = None'.format(param_decl)
+            arg_list.append('{}: {}'.format(snake_name, param_decl))
             description += '\n:param {}: {}'.format(snake_name,
                 param.get('description', ''))
-            dict_items.append((snake_name, param_name))
+            dict_items.append((snake_name, param_name, param_type,
+                param.get('optional', False)))
         returns = command.get('returns', list())
         if len(returns) == 0:
             return_type = 'None'
@@ -518,21 +522,36 @@ def generate_commands(domain_name, commands):
             return_type = 'dict'
             description += '\n:returns: a dict with the following keys:'
             for return_ in returns:
-                description += '\n    * {}: {}'.format(return_['name'],
-                    return_.get('description', ''))
-        code += 'def {}({}) -> typing.Generator[dict,dict,{}]:\n'.format(method_name,
-            ', '.join(arg_list), return_type)
+                optstr = '(Optional) ' if return_.get('optional', False) else ''
+                description += '\n    * {}: {}{}'.format(return_['name'],
+                    optstr, return_.get('description', ''))
+        code += 'def {}('.format(method_name)
+        if arg_list:
+            code += '\n'
+            for arg in arg_list:
+                code += '        {},\n'.format(arg)
+            code += '    '
+        code += ') -> typing.Generator[dict,dict,{}]:\n'.format(return_type)
         code += docstring(description, indent=4)
-        code += '\n'
+        if dict_items:
+            code += '    params = {\n'
+            for snake_name, param_name, param_type, optional in dict_items:
+                if optional:
+                    continue
+                convert = '' if is_builtin_type(param_type) else '.to_json()'
+                code += "        '{}': {}{},\n".format( param_name, snake_name,
+                    convert)
+            code += '    }\n'
+            for snake_name, param_name, param_type, optional in dict_items:
+                if not optional:
+                    continue
+                code += '    if {} is not None:\n'.format(snake_name)
+                code += "        params['{}'] = {}\n".format(param_name, snake_name)
         code += '    cmd_dict = {\n'
         code += "        'method': '{}.{}',\n".format(domain_name,
             command_name)
         if dict_items:
-            code += "        'params': {\n"
-            for snake_name, param_name in dict_items:
-                code += "            '{}': asdict({}) if is_dataclass({}) else {},\n".format(
-                    param_name, snake_name, snake_name, snake_name)
-            code += '        }\n'
+            code += "        'params': params,\n"
         code += '    }\n'
         code += '    json = yield cmd_dict\n'
         if len(returns) == 1:
@@ -543,13 +562,22 @@ def generate_commands(domain_name, commands):
             # we should be able to refactor the first part of this if block to have something
             # reusable, then we call that new thing inside of a loop in this elif block
             # the only difference here is printing key names and dict syntax
-            code += '    return {\n'
+            code += '    result = {\n'
+            # code += '    return {\n'
             for return_ in returns:
+                if return_.get('optional', False):
+                    continue
                 return_type = get_python_type(return_)
-                return_name = return_['name']
-                code += "        '{}': {},\n".format(return_name,
+                code += "        '{}': {},\n".format(return_['name'],
                     make_return_code(return_))
             code += '    }\n'
+            for return_ in returns:
+                if not return_.get('optional', False):
+                    continue
+                code += "    if '{}' in json:\n".format(return_['name'])
+                code += "        result['{}'] = {}\n".format(return_['name'],
+                    make_return_code(return_))
+            code += '    return result\n'
         code += '\n\n'
     return [domain_name], code
 
@@ -567,17 +595,17 @@ def make_return_code(return_):
     if 'typing.List' in return_type:
         subtype = get_python_type(return_['items'])
         if subtype.startswith('typing.Any'):
-            code = "[i for i in json.get('{}')]".format(return_name)
+            code = "[i for i in json['{}']]".format(return_name)
         elif 'type' in return_['items'] or is_builtin_type(subtype):
-            code = "[{}(i) for i in json.get('{}')]".format(subtype, return_name)
+            code = "[{}(i) for i in json['{}']]".format(subtype, return_name)
         else:
-            code = "[{}.from_json(i) for i in json.get('{}')]".format(subtype, return_name)
+            code = "[{}.from_json(i) for i in json['{}']]".format(subtype, return_name)
     elif is_builtin_type(return_type):
-        code = "{}(json.get('{}'))".format(return_type, return_name)
+        code = "{}(json['{}'])".format(return_type, return_name)
     elif return_type.startswith('typing.Any'):
-        code = "json.get('{}')".format(return_name)
+        code = "json['{}']".format(return_name)
     else:
-        code = "{}.from_json(json.get('{}'))".format(return_type, return_name)
+        code = "{}.from_json(json['{}'])".format(return_type, return_name)
     return code
 
 
