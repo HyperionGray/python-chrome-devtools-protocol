@@ -281,7 +281,7 @@ def generate_enum_type(type_):
     code = ''
     if type_['type'] != 'string':
         raise Exception('Unexpected enum type: {!r}'.format(type_))
-    code += '\nclass {}(enum.Enum):\n'.format(type_['id'])
+    code += 'class {}(enum.Enum):\n'.format(type_['id'])
     description = type_.get('description')
     code += docstring(description)
     for enum_member in type_['enum']:
@@ -291,6 +291,10 @@ def generate_enum_type(type_):
     code += '    def to_json(self) -> str:\n'
     code += '        return self.value\n'
     code += '\n'
+    code += '    @classmethod\n'
+    code += "    def from_json(cls, json: str) -> '{}':\n".format(type_['id'])
+    code += '        return cls(json)\n'
+    code += '\n\n'
     return code
 
 
@@ -358,10 +362,10 @@ def generate_class_type(type_):
     description = type_.get('description')
     type_name = type_['id']
     children = set()
-    class_code = '\n@dataclass\n'
+    class_code = '@dataclass\n'
     class_code += 'class {}:\n'.format(type_name)
     class_code += docstring(description)
-    constructor = list()
+    from_json = list()
     properties = list()
     to_json = list()
     for prop in type_.get('properties', []):
@@ -389,27 +393,31 @@ def generate_class_type(type_):
             prop_decl = 'typing.Optional[{}] = None'.format(prop_decl)
         prop_code += '    {}: {}\n\n'.format(snake_name, prop_decl)
         properties.append((prop_code, optional))
+        if optional:
+            getter = "json.get('{}')".format(prop_name)
+        else:
+            getter = "json['{}']".format(prop_name)
         if 'type' in prop:
             if prop['type'] != 'array':
-                constructor.append((snake_name, "{}(json['{}'])".format(
-                    prop_type, prop_name), prop_name, optional))
+                from_json.append((snake_name, "{}".format(getter), prop_name,
+                    optional))
                 to_json.append((snake_name, prop_name, optional,
                     'self.{}'.format(snake_name)))
             elif '$ref' in prop['items']:
                 subtype = get_python_type(prop['items'])
-                constructor.append((snake_name, "[{}.from_json(i) for i in json['{}']]".format(
-                    subtype, prop_name), prop_name, optional))
+                from_json.append((snake_name, "[{}.from_json(i) for i in {}]".format(
+                    subtype, getter), prop_name, optional))
                 to_json.append((snake_name, prop_name, optional,
                     '[i.to_json() for i in self.{}]'.format(snake_name)))
             elif 'type' in prop['items']:
                 subtype = get_python_type(prop['items'])
-                constructor.append((snake_name, "[{}(i) for i in json['{}']]".format(
-                    subtype, prop_name), prop_name, optional))
+                from_json.append((snake_name, "[i for i in {}]".format(getter),
+                    prop_name, optional))
                 to_json.append((snake_name, prop_name, optional,
                     '[i for i in self.{}]'.format(snake_name)))
         else:
-            constructor.append((snake_name, "{}.from_json(json['{}'])".format(
-                prop_type, prop_name), prop_name, optional))
+            from_json.append((snake_name, "{}.from_json({})".format(
+                prop_type, getter), prop_name, optional))
             to_json.append((snake_name, prop_name, optional,
                 'self.{}.to_json()'.format(snake_name)))
     # Sort properties so that optional properties come after required
@@ -433,18 +441,18 @@ def generate_class_type(type_):
     class_code += '\n'
     class_code += '    @classmethod\n'
     class_code += "    def from_json(cls, json: dict) -> '{}':\n".format(type_name)
-    class_code += '        kwargs = {\n'
-    for snake_name, code, prop_name, optional in constructor:
-        if optional:
-            continue
-        class_code += "            '{}': {},\n".format(snake_name, code)
-    class_code += '        }\n'
-    for snake_name, code, prop_name, optional in constructor:
+    for snake_name, code, prop_name, optional in from_json:
         if not optional:
             continue
-        class_code += "        if '{}' in json:\n".format(prop_name)
-        class_code += "            kwargs['{}'] = {},\n".format(snake_name, code)
-    class_code += '        return cls(**kwargs)\n'
+        class_code += "        {} = {} if '{}' in json else None\n".format(
+            snake_name, code, prop_name)
+    class_code += '        return cls(\n'
+    for snake_name, code, prop_name, optional in from_json:
+        if optional:
+            class_code += "            {}={},\n".format(snake_name, snake_name)
+        else:
+            class_code += "            {}={},\n".format(snake_name, code)
+    class_code += '        )\n'
     class_code += '\n'
 
     return {
@@ -472,7 +480,8 @@ def generate_basic_type(type_):
     code += '        return self\n'
     code += '\n'
     code += '    @classmethod\n'
-    code += "    def from_json(cls, json: dict) -> '{}':\n".format(cdp_type)
+    code += "    def from_json(cls, json: {}) -> '{}':\n".format(
+        py_type, cdp_type)
     code += '        return cls(json)\n'
     code += '\n'
     code += '    def __repr__(self):\n'
