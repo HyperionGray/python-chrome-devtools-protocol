@@ -424,6 +424,9 @@ def generate_basic_type(type_):
     description = type_.get('description')
     code += 'class {}({}):\n'.format(cdp_type, py_type)
     code += docstring(description)
+    code += '    def to_json(self) -> {}:\n'.format(py_type)
+    code += '        return self\n'
+    code += '\n'
     code += '    @classmethod\n'
     code += "    def from_json(cls, json: dict) -> '{}':\n".format(cdp_type)
     code += '        return cls(json)\n'
