@@ -1,5 +1,6 @@
 import json
 import logging
+import operator
 import os
 from pathlib import Path
 import typing
@@ -29,7 +30,8 @@ Domain: {}
 Experimental: {}
 \'\'\'
 
-from dataclasses import asdict, dataclass, field, is_dataclass
+from cdp.util import T_JSON_DICT
+from dataclasses import dataclass
 import enum
 import typing
 
@@ -280,7 +282,7 @@ def generate_enum_type(type_):
     code = ''
     if type_['type'] != 'string':
         raise Exception('Unexpected enum type: {!r}'.format(type_))
-    code += '\nclass {}(enum.Enum):\n'.format(type_['id'])
+    code += 'class {}(enum.Enum):\n'.format(type_['id'])
     description = type_.get('description')
     code += docstring(description)
     for enum_member in type_['enum']:
@@ -290,6 +292,10 @@ def generate_enum_type(type_):
     code += '    def to_json(self) -> str:\n'
     code += '        return self.value\n'
     code += '\n'
+    code += '    @classmethod\n'
+    code += "    def from_json(cls, json: str) -> '{}':\n".format(type_['id'])
+    code += '        return cls(json)\n'
+    code += '\n\n'
     return code
 
 
@@ -306,7 +312,7 @@ def get_python_type(cdp_meta):
         if cdp_type == 'array':
             py_type = 'typing.List'
             try:
-                cdp_nested_type = cdp_meta['items']['$ref']
+                cdp_nested_type = get_python_type(cdp_meta['items'])
                 if '.' in cdp_nested_type:
                     domain, subtype = cdp_nested_type.split('.')
                     cdp_nested_type = '{}.{}'.format(
@@ -357,49 +363,93 @@ def generate_class_type(type_):
     description = type_.get('description')
     type_name = type_['id']
     children = set()
-    class_code = '\n@dataclass\n'
+    class_code = '@dataclass\n'
     class_code += 'class {}:\n'.format(type_name)
     class_code += docstring(description)
-    constructor = list()
+    from_json = list()
+    properties = list()
+    to_json = list()
     for prop in type_.get('properties', []):
         prop_name = prop['name']
+        optional = prop.get('optional', False)
         snake_name = inflection.underscore(prop_name)
+        prop_code = ''
         prop_description = prop.get('description')
         if prop_description:
-            class_code += inline_doc(prop_description, indent=4)
+            prop_code += inline_doc(prop_description, indent=4)
         prop_type = get_python_type(prop)
+        prop_decl = prop_type
         if prop_type == type_name:
             # If a type refers to itself, e.g. StackTrace has a member
             # called ``parent`` that is itself a StackTrace, then the type
             # name must be quoted or else Python will not be able to compile
             # the module.
-            prop_type = "'{}'".format(prop_type)
+            prop_decl = "'{}'".format(prop_decl)
         elif '$ref' in prop and '.' not in prop_type:
             # If the type lives in this module and is not a type that refers
             # to itself, then add it to the set of children so that
             # inter-class dependencies can be resolved later on.
             children.add(prop_type)
-        class_code += '    {}: {}\n\n'.format(snake_name, prop_type)
+        if optional:
+            prop_decl = 'typing.Optional[{}] = None'.format(prop_decl)
+        prop_code += '    {}: {}\n\n'.format(snake_name, prop_decl)
+        properties.append((prop_code, optional))
+        getter = "json['{}']".format(prop_name)
         if 'type' in prop:
             if prop['type'] != 'array':
-                constructor.append("{}={}(json.get('{}'))".format(snake_name,
-                    prop_type, prop_name))
+                from_json.append((snake_name, "{}".format(getter), prop_name,
+                    optional))
+                to_json.append((snake_name, prop_name, optional,
+                    'self.{}'.format(snake_name)))
             elif '$ref' in prop['items']:
                 subtype = get_python_type(prop['items'])
-                constructor.append("{}=[{}.from_json(i) for i in json.get('{}')]".format(
-                    snake_name, subtype, prop_name))
+                from_json.append((snake_name, "[{}.from_json(i) for i in {}]".format(
+                    subtype, getter), prop_name, optional))
+                to_json.append((snake_name, prop_name, optional,
+                    '[i.to_json() for i in self.{}]'.format(snake_name)))
             elif 'type' in prop['items']:
                 subtype = get_python_type(prop['items'])
-                constructor.append("{}=[{}(i) for i in json.get('{}')]".format(
-                    snake_name, subtype, prop_name))
+                from_json.append((snake_name, "[i for i in {}]".format(getter),
+                    prop_name, optional))
+                to_json.append((snake_name, prop_name, optional,
+                    '[i for i in self.{}]'.format(snake_name)))
         else:
-            constructor.append("{}={}.from_json(json.get('{}'))".format(
-                snake_name, prop_type, prop_name))
-
+            from_json.append((snake_name, "{}.from_json({})".format(
+                prop_type, getter), prop_name, optional))
+            to_json.append((snake_name, prop_name, optional,
+                'self.{}.to_json()'.format(snake_name)))
+    # Sort properties so that optional properties come after required
+    # properties, otherwise the dataclass will raise an error.
+    properties.sort(key=operator.itemgetter(1))
+    for prop_code, _ in properties:
+        class_code += prop_code
+    class_code += '    def to_json(self) -> T_JSON_DICT:\n'
+    class_code += '        json: T_JSON_DICT = {\n'
+    for snake_name, prop_name, optional, code in to_json:
+        if optional:
+            continue
+        class_code += "            '{}': {},\n".format(prop_name, code)
+    class_code += '        }\n'
+    for snake_name, prop_name, optional, code in to_json:
+        if not optional:
+            continue
+        class_code += "        if self.{} is not None:\n".format(snake_name)
+        class_code += "            json['{}'] = {}\n".format(prop_name, code)
+    class_code += '        return json\n'
+    class_code += '\n'
     class_code += '    @classmethod\n'
-    class_code += "    def from_json(cls, json: dict) -> '{}':\n".format(type_name)
+    class_code += "    def from_json(cls, json: T_JSON_DICT) -> '{}':\n".format(type_name)
+    for snake_name, code, prop_name, optional in from_json:
+        if not optional:
+            continue
+        class_code += "        {} = {} if '{}' in json else None\n".format(
+            snake_name, code, prop_name)
     class_code += '        return cls(\n'
-    class_code += ''.join('            {},\n'.format(l) for l in constructor)
+    for snake_name, code, prop_name, optional in from_json:
+        if optional:
+            class_code += "            {}={},\n".format(snake_name, snake_name)
+        else:
+            class_code += "            {}={},\n".format(snake_name, code)
     class_code += '        )\n'
     class_code += '\n'
 
@@ -424,8 +474,12 @@ def generate_basic_type(type_):
     description = type_.get('description')
     code += 'class {}({}):\n'.format(cdp_type, py_type)
     code += docstring(description)
+    code += '    def to_json(self) -> {}:\n'.format(py_type)
+    code += '        return self\n'
+    code += '\n'
     code += '    @classmethod\n'
-    code += "    def from_json(cls, json: dict) -> '{}':\n".format(cdp_type)
+    code += "    def from_json(cls, json: {}) -> '{}':\n".format(
+        py_type, cdp_type)
     code += '        return cls(json)\n'
     code += '\n'
     code += '    def __repr__(self):\n'
@@ -495,7 +549,7 @@ def generate_commands(domain_name, commands):
         method_name = inflection.underscore(command_name)
         description = command.get('description', '')
         arg_list = list()
-        dict_items = list()
+        to_json = list()
         params = command.get('parameters', list())
         if params:
             description += '\n'
@@ -503,10 +557,26 @@ def generate_commands(domain_name, commands):
             param_name = param['name']
             snake_name = inflection.underscore(param_name)
             param_type = get_python_type(param)
-            arg_list.append('{}: {}'.format(snake_name, param_type))
+            param_decl = param_type
+            if param.get('optional', False):
+                param_decl = 'typing.Optional[{}] = None'.format(param_decl)
+            arg_list.append('{}: {}'.format(snake_name, param_decl))
             description += '\n:param {}: {}'.format(snake_name,
                 param.get('description', ''))
-            dict_items.append((snake_name, param_name))
+            if 'type' in param:
+                if param['type'] != 'array':
+                    json_code = '{}'.format(snake_name)
+                elif '$ref' in param['items']:
+                    subtype = get_python_type(param['items'])
+                    json_code = '[i.to_json() for i in {}]'.format(snake_name)
+                elif 'type' in param['items']:
+                    subtype = get_python_type(param['items'])
+                    json_code = '[i for i in {}]'.format(snake_name)
+            else:
+                json_code = '{}.to_json()'.format(snake_name)
+            # convert = '' if is_builtin_type(param_type) else '.to_json()'
+            to_json.append((param_name, snake_name, json_code,
+                param.get('optional', False)))
         returns = command.get('returns', list())
         if len(returns) == 0:
             return_type = 'None'
@@ -518,21 +588,35 @@ def generate_commands(domain_name, commands):
             return_type = 'dict'
             description += '\n:returns: a dict with the following keys:'
             for return_ in returns:
-                description += '\n    * {}: {}'.format(return_['name'],
-                    return_.get('description', ''))
-        code += 'def {}({}) -> typing.Generator[dict,dict,{}]:\n'.format(method_name,
-            ', '.join(arg_list), return_type)
+                optstr = '(Optional) ' if return_.get('optional', False) else ''
+                description += '\n    * {}: {}{}'.format(return_['name'],
+                    optstr, return_.get('description', ''))
+        code += 'def {}('.format(method_name)
+        if arg_list:
+            code += '\n'
+            for arg in arg_list:
+                code += '        {},\n'.format(arg)
+            code += '    '
+        code += ') -> typing.Generator[T_JSON_DICT,T_JSON_DICT,{}]:\n'.format(return_type)
         code += docstring(description, indent=4)
-        code += '\n'
-        code += '    cmd_dict = {\n'
+        if to_json:
+            code += '    params: T_JSON_DICT = {\n'
+            for param_name, snake_name, json_code, optional in to_json:
+                if optional:
+                    continue
+                code += "        '{}': {},\n".format(param_name, json_code)
+            code += '    }\n'
+            for param_name, snake_name, json_code, optional in to_json:
+                if not optional:
+                    continue
+                code += '    if {} is not None:\n'.format(snake_name)
+                code += "        params['{}'] = {}\n".format(param_name,
+                    json_code)
+        code += '    cmd_dict: T_JSON_DICT = {\n'
         code += "        'method': '{}.{}',\n".format(domain_name,
             command_name)
-        if dict_items:
-            code += "        'params': {\n"
-            for snake_name, param_name in dict_items:
-                code += "            '{}': asdict({}) if is_dataclass({}) else {},\n".format(
-                    param_name, snake_name, snake_name, snake_name)
-            code += '        }\n'
+        if to_json:
+            code += "        'params': params,\n"
         code += '    }\n'
         code += '    json = yield cmd_dict\n'
         if len(returns) == 1:
@@ -543,13 +627,22 @@ def generate_commands(domain_name, commands):
             # we should be able to refactor the first part of this if block to have something
             # reusable, then we call that new thing inside of a loop in this elif block
             # the only difference here is printing key names and dict syntax
-            code += '    return {\n'
+            code += '    result: T_JSON_DICT = {\n'
+            # code += '    return {\n'
             for return_ in returns:
+                if return_.get('optional', False):
+                    continue
                 return_type = get_python_type(return_)
-                return_name = return_['name']
-                code += "        '{}': {},\n".format(return_name,
+                code += "        '{}': {},\n".format(return_['name'],
                     make_return_code(return_))
             code += '    }\n'
+            for return_ in returns:
+                if not return_.get('optional', False):
+                    continue
+                code += "    if '{}' in json:\n".format(return_['name'])
+                code += "        result['{}'] = {}\n".format(return_['name'],
+                    make_return_code(return_))
+            code += '    return result\n'
         code += '\n\n'
     return [domain_name], code
 
@@ -567,30 +660,28 @@ def make_return_code(return_):
     if 'typing.List' in return_type:
         subtype = get_python_type(return_['items'])
         if subtype.startswith('typing.Any'):
-            code = "[i for i in json.get('{}')]".format(return_name)
+            code = "[i for i in json['{}']]".format(return_name)
         elif 'type' in return_['items'] or is_builtin_type(subtype):
-            code = "[{}(i) for i in json.get('{}')]".format(subtype, return_name)
+            code = "[{}(i) for i in json['{}']]".format(subtype, return_name)
         else:
-            code = "[{}.from_json(i) for i in json.get('{}')]".format(subtype, return_name)
+            code = "[{}.from_json(i) for i in json['{}']]".format(subtype, return_name)
     elif is_builtin_type(return_type):
-        code = "{}(json.get('{}'))".format(return_type, return_name)
+        code = "{}(json['{}'])".format(return_type, return_name)
     elif return_type.startswith('typing.Any'):
-        code = "json.get('{}')".format(return_name)
+        code = "json['{}']".format(return_name)
     else:
-        code = "{}.from_json(json.get('{}'))".format(return_type, return_name)
+        code = "{}.from_json(json['{}'])".format(return_type, return_name)
     return code
 
 
-def generate_init(here, init_path, modules):
+def generate_init(init_path, modules):
     '''
     Generate an ``__init__.py`` that exports the specified modules.
 
-    :param Path here: a directory path to the build directory
     :param Path init_path: a file path to create the init file in
     :param list[tuple] modules: a list of modules each represented as tuples
         of (name, list_of_exported_symbols)
     '''
-    init_extra_path = here / 'init_extra.py'
     modules = [module[0] for module in modules]
     modules.sort()
     with init_path.open('w') as init_file:
@@ -599,10 +690,7 @@ def generate_init(here, init_path, modules):
             for module in modules:
                 init_file.write('import cdp.{}.{}\n'.format(module, submodule))
             init_file.write('\n')
-        init_file.write('\n')
-        with init_extra_path.open() as init_extra_file:
-            init_extra = init_extra_file.read()
-        init_file.write(init_extra)
+        init_file.write('import cdp.util\n')
 
 
 def main():
@@ -620,7 +708,7 @@ def main():
         modules.extend(parse(json_path, output_path))
 
     init_path = output_path / '__init__.py'
-    generate_init(here, init_path, modules)
+    generate_init(init_path, modules)
 
     py_typed_path = output_path / 'py.typed'
     py_typed_path.touch()
