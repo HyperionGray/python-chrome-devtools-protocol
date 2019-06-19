@@ -1,5 +1,6 @@
 import json
 import logging
+import operator
 import os
 from pathlib import Path
 import typing
@@ -361,12 +362,15 @@ def generate_class_type(type_):
     class_code += 'class {}:\n'.format(type_name)
     class_code += docstring(description)
     constructor = list()
+    properties = list()
     for prop in type_.get('properties', []):
         prop_name = prop['name']
+        optional = prop.get('optional', False)
         snake_name = inflection.underscore(prop_name)
+        prop_code = ''
         prop_description = prop.get('description')
         if prop_description:
-            class_code += inline_doc(prop_description, indent=4)
+            prop_code += inline_doc(prop_description, indent=4)
         prop_type = get_python_type(prop)
         if prop_type == type_name:
             # If a type refers to itself, e.g. StackTrace has a member
@@ -379,28 +383,45 @@ def generate_class_type(type_):
             # to itself, then add it to the set of children so that
             # inter-class dependencies can be resolved later on.
             children.add(prop_type)
-        class_code += '    {}: {}\n\n'.format(snake_name, prop_type)
+        prop_decl = prop_type
+        if optional:
+            prop_decl = 'typing.Optional[{}] = None'.format(prop_decl)
+        prop_code += '    {}: {}\n\n'.format(snake_name, prop_decl)
+        properties.append((prop_code, optional))
         if 'type' in prop:
             if prop['type'] != 'array':
-                constructor.append("{}={}(json.get('{}'))".format(snake_name,
-                    prop_type, prop_name))
+                constructor.append((snake_name, "{}(json['{}'])".format(
+                    prop_type, prop_name), prop_name, optional))
             elif '$ref' in prop['items']:
                 subtype = get_python_type(prop['items'])
-                constructor.append("{}=[{}.from_json(i) for i in json.get('{}')]".format(
-                    snake_name, subtype, prop_name))
+                constructor.append((snake_name, "[{}.from_json(i) for i in json['{}']]".format(
+                    subtype, prop_name), prop_name, optional))
             elif 'type' in prop['items']:
                 subtype = get_python_type(prop['items'])
-                constructor.append("{}=[{}(i) for i in json.get('{}')]".format(
-                    snake_name, subtype, prop_name))
+                constructor.append((snake_name, "[{}(i) for i in json['{}']]".format(
+                    subtype, prop_name), prop_name, optional))
         else:
-            constructor.append("{}={}.from_json(json.get('{}'))".format(
-                snake_name, prop_type, prop_name))
-
+            constructor.append((snake_name, "{}.from_json(json['{}'])".format(
+                prop_type, prop_name), prop_name, optional))
+    # Sort properties so that optional properties come after required
+    # properties, otherwise the dataclass will raise an error.
+    properties.sort(key=operator.itemgetter(1))
+    for prop_code, _ in properties:
+        class_code += prop_code
     class_code += '    @classmethod\n'
     class_code += "    def from_json(cls, json: dict) -> '{}':\n".format(type_name)
-    class_code += '        return cls(\n'
-    class_code += ''.join('            {},\n'.format(l) for l in constructor)
-    class_code += '        )\n'
+    class_code += '        kwargs = {\n'
+    for snake_name, code, prop_name, optional in constructor:
+        if optional:
+            continue
+        class_code += "            '{}': {},\n".format(snake_name, code)
+    class_code += '        }\n'
+    for snake_name, code, prop_name, optional in constructor:
+        if not optional:
+            continue
+        class_code += "        if '{}' in json:\n".format(prop_name)
+        class_code += "            kwargs['{}'] = {},\n".format(snake_name, code)
+    class_code += '        return cls(**kwargs)\n'
     class_code += '\n'
 
     return {
