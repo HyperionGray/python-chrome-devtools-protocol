@@ -1,7 +1,10 @@
-# The following code comes from build/init_extra.py and is placed at the bottom
-# of cdp/__init__.py.
+import cdp
 import inflection
 import typing
+
+
+T_JSON_DICT = typing.Dict[str, typing.Any]
+
 
 def parse_json_event(json: dict) -> typing.Tuple[str, str, typing.Any]:
     ''' Parse a JSON dictionary into a CDP event. '''
