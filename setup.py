@@ -24,4 +24,7 @@ setup(
     keywords='chrome devtools protocol cdp',
     package_data={'cdp': ['py.typed']},
     packages=find_packages(exclude=['build', 'docs', 'examples', 'tests']),
+    install_requires=[
+        'inflection',
+    ]
 )

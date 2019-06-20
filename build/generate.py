@@ -38,6 +38,26 @@ import typing
 '''
 
 
+def clear_dirs(package_path):
+    ''' Remove generated code. '''
+    def rmdir(path):
+        for subpath in path.iterdir():
+            if subpath.is_file():
+                subpath.unlink()
+            elif subpath.is_dir():
+                rmdir(subpath)
+        path.rmdir()
+
+    try:
+        (package_path / '__init__.py').unlink()
+    except FileNotFoundError:
+        pass
+
+    for subpath in package_path.iterdir():
+        if subpath.is_dir():
+            rmdir(subpath)
+
+
 def parse(json_path, output_path):
     '''
     Parse JSON protocol description and generate module files.
@@ -502,34 +522,47 @@ def generate_events(domain, events):
         code += docstring(description)
         from_json = list()
         for parameter in parameters:
-            param_name = inflection.underscore(parameter['name'])
+            name = parameter['name']
+            snake_name = inflection.underscore(name)
             param_description = parameter.get('description')
             code += inline_doc(description, indent=4)
             if 'type' in parameter:
-                param_type = get_python_type(parameter)
+                param_decl = get_python_type(parameter)
             elif '$ref' in parameter:
-                param_type = parameter['$ref']
-                if '.' in param_type:
+                param_decl = parameter['$ref']
+                if '.' in param_decl:
                     # If the type lives in another module, then we need to
                     # snake_case the module name and it should *not* be
                     # added to the list of child classes that is used for
                     # dependency resolution.
-                    other_module, other_type = param_type.split('.')
-                    param_type = '{}.{}'.format(
+                    other_module, other_type = param_decl.split('.')
+                    param_decl = '{}.{}'.format(
                         inflection.underscore(other_module), other_type)
             else:
                 raise Exception('Cannot determing event parameter type:'
                     ' {!r}'.format(parameter))
-            code += '    {}: {}\n\n'.format(param_name, param_type)
-            from_json.append('{}={}'.format(param_name, make_return_code(parameter)))
+            optional = parameter.get('optional', False)
+            if optional:
+                param_decl = 'typing.Optional[{}] = None'.format(param_decl)
+            code += '    {}: {}\n\n'.format(snake_name, param_decl)
+            from_json.append((name, snake_name, optional, make_return_code(parameter)))
         code += '    # These fields are used for internal purposes and are not part of CDP\n'
         code += "    _domain = '{}'\n".format(domain)
         code += "    _method = '{}'\n".format(event['name'])
         code += '\n'
         code += '    @classmethod\n'
         code += "    def from_json(cls, json: dict) -> '{}':\n".format(event_name)
+        for name, snake_name, optional, snippet in from_json:
+            if not optional:
+                continue
+            code += "        {} = {} if '{}' in json else None\n".format(
+                snake_name, snippet, name)
         code += '        return cls(\n'
-        code += ''.join('            {},\n'.format(j) for j in from_json)
+        for name, snake_name, optional, snippet in from_json:
+            if optional:
+                code += '            {}={},\n'.format(snake_name, snake_name)
+            else:
+                code += '            {}={},\n'.format(snake_name, snippet)
         code += '        )\n\n'
         exports.append(event_name)
     return exports, code
@@ -701,6 +734,7 @@ def main():
         here / 'js_protocol.json',
     ]
     output_path = here.parent / 'cdp'
+    clear_dirs(output_path)
 
     modules = list()
     for json_path in json_paths:
