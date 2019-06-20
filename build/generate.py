@@ -503,7 +503,7 @@ def generate_basic_type(type_):
     code += '        return cls(json)\n'
     code += '\n'
     code += '    def __repr__(self):\n'
-    code += "        return '{}({{}})'.format({}.__repr__(self))\n".format(
+    code += "        return '{}({{}})'.format(super().__repr__())\n".format(
         cdp_type, py_type)
     code += '\n\n'
     return code
