@@ -26,7 +26,7 @@ class DatabaseId(str):
         return cls(json)
 
     def __repr__(self):
-        return 'DatabaseId({})'.format(str.__repr__(self))
+        return 'DatabaseId({})'.format(super().__repr__())
 
 
 @dataclass

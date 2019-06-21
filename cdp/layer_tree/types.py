@@ -28,7 +28,7 @@ class LayerId(str):
         return cls(json)
 
     def __repr__(self):
-        return 'LayerId({})'.format(str.__repr__(self))
+        return 'LayerId({})'.format(super().__repr__())
 
 
 class SnapshotId(str):
@@ -43,7 +43,7 @@ class SnapshotId(str):
         return cls(json)
 
     def __repr__(self):
-        return 'SnapshotId({})'.format(str.__repr__(self))
+        return 'SnapshotId({})'.format(super().__repr__())
 
 
 class PaintProfile(typing.List['float']):
@@ -58,7 +58,7 @@ class PaintProfile(typing.List['float']):
         return cls(json)
 
     def __repr__(self):
-        return 'PaintProfile({})'.format(typing.List['float'].__repr__(self))
+        return 'PaintProfile({})'.format(super().__repr__())
 
 
 @dataclass

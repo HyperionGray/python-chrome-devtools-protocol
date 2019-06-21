@@ -58,7 +58,7 @@ class LoaderId(str):
         return cls(json)
 
     def __repr__(self):
-        return 'LoaderId({})'.format(str.__repr__(self))
+        return 'LoaderId({})'.format(super().__repr__())
 
 
 class RequestId(str):
@@ -73,7 +73,7 @@ class RequestId(str):
         return cls(json)
 
     def __repr__(self):
-        return 'RequestId({})'.format(str.__repr__(self))
+        return 'RequestId({})'.format(super().__repr__())
 
 
 class InterceptionId(str):
@@ -88,7 +88,7 @@ class InterceptionId(str):
         return cls(json)
 
     def __repr__(self):
-        return 'InterceptionId({})'.format(str.__repr__(self))
+        return 'InterceptionId({})'.format(super().__repr__())
 
 
 class ErrorReason(enum.Enum):
@@ -130,7 +130,7 @@ class TimeSinceEpoch(float):
         return cls(json)
 
     def __repr__(self):
-        return 'TimeSinceEpoch({})'.format(float.__repr__(self))
+        return 'TimeSinceEpoch({})'.format(super().__repr__())
 
 
 class MonotonicTime(float):
@@ -145,7 +145,7 @@ class MonotonicTime(float):
         return cls(json)
 
     def __repr__(self):
-        return 'MonotonicTime({})'.format(float.__repr__(self))
+        return 'MonotonicTime({})'.format(super().__repr__())
 
 
 class ConnectionType(enum.Enum):

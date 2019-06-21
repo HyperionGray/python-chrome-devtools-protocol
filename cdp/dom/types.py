@@ -28,7 +28,7 @@ class NodeId(int):
         return cls(json)
 
     def __repr__(self):
-        return 'NodeId({})'.format(int.__repr__(self))
+        return 'NodeId({})'.format(super().__repr__())
 
 
 class BackendNodeId(int):
@@ -44,7 +44,7 @@ class BackendNodeId(int):
         return cls(json)
 
     def __repr__(self):
-        return 'BackendNodeId({})'.format(int.__repr__(self))
+        return 'BackendNodeId({})'.format(super().__repr__())
 
 
 class PseudoType(enum.Enum):
@@ -103,7 +103,7 @@ class Quad(typing.List['float']):
         return cls(json)
 
     def __repr__(self):
-        return 'Quad({})'.format(typing.List['float'].__repr__(self))
+        return 'Quad({})'.format(super().__repr__())
 
 
 @dataclass

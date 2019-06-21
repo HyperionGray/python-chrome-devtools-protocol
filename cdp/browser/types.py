@@ -23,7 +23,7 @@ class WindowID(int):
         return cls(json)
 
     def __repr__(self):
-        return 'WindowID({})'.format(int.__repr__(self))
+        return 'WindowID({})'.format(super().__repr__())
 
 
 class WindowState(enum.Enum):

@@ -55,7 +55,7 @@ class DetachedFromTarget:
 
     #: Issued when detached from target for any reason (including `detachFromTarget` command). Can be
     #: issued multiple times per target if multiple sessions have been attached to it.
-    target_id: TargetID
+    target_id: typing.Optional[TargetID] = None
 
     # These fields are used for internal purposes and are not part of CDP
     _domain = 'Target'
@@ -63,9 +63,10 @@ class DetachedFromTarget:
 
     @classmethod
     def from_json(cls, json: dict) -> 'DetachedFromTarget':
+        target_id = TargetID.from_json(json['targetId']) if 'targetId' in json else None
         return cls(
             session_id=SessionID.from_json(json['sessionId']),
-            target_id=TargetID.from_json(json['targetId']),
+            target_id=target_id,
         )
 
 
@@ -85,7 +86,7 @@ class ReceivedMessageFromTarget:
 
     #: Notifies about a new protocol message received from the session (as reported in
     #: `attachedToTarget` event).
-    target_id: TargetID
+    target_id: typing.Optional[TargetID] = None
 
     # These fields are used for internal purposes and are not part of CDP
     _domain = 'Target'
@@ -93,10 +94,11 @@ class ReceivedMessageFromTarget:
 
     @classmethod
     def from_json(cls, json: dict) -> 'ReceivedMessageFromTarget':
+        target_id = TargetID.from_json(json['targetId']) if 'targetId' in json else None
         return cls(
             session_id=SessionID.from_json(json['sessionId']),
             message=str(json['message']),
-            target_id=TargetID.from_json(json['targetId']),
+            target_id=target_id,
         )
 
 

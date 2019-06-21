@@ -26,7 +26,7 @@ class CacheId(str):
         return cls(json)
 
     def __repr__(self):
-        return 'CacheId({})'.format(str.__repr__(self))
+        return 'CacheId({})'.format(super().__repr__())
 
 
 class CachedResponseType(enum.Enum):

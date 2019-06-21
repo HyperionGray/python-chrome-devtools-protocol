@@ -46,7 +46,7 @@ class FrameAttached:
     parent_frame_id: FrameId
 
     #: Fired when frame has been attached to its parent.
-    stack: runtime.StackTrace
+    stack: typing.Optional[runtime.StackTrace] = None
 
     # These fields are used for internal purposes and are not part of CDP
     _domain = 'Page'
@@ -54,10 +54,11 @@ class FrameAttached:
 
     @classmethod
     def from_json(cls, json: dict) -> 'FrameAttached':
+        stack = runtime.StackTrace.from_json(json['stack']) if 'stack' in json else None
         return cls(
             frame_id=FrameId.from_json(json['frameId']),
             parent_frame_id=FrameId.from_json(json['parentFrameId']),
-            stack=runtime.StackTrace.from_json(json['stack']),
+            stack=stack,
         )
 
 
@@ -333,7 +334,7 @@ class JavascriptDialogOpening:
 
     #: Fired when a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload) is about to
     #: open.
-    default_prompt: str
+    default_prompt: typing.Optional[str] = None
 
     # These fields are used for internal purposes and are not part of CDP
     _domain = 'Page'
@@ -341,12 +342,13 @@ class JavascriptDialogOpening:
 
     @classmethod
     def from_json(cls, json: dict) -> 'JavascriptDialogOpening':
+        default_prompt = str(json['defaultPrompt']) if 'defaultPrompt' in json else None
         return cls(
             url=str(json['url']),
             message=str(json['message']),
             type=DialogType.from_json(json['type']),
             has_browser_handler=bool(json['hasBrowserHandler']),
-            default_prompt=str(json['defaultPrompt']),
+            default_prompt=default_prompt,
         )
 
 

@@ -28,7 +28,7 @@ class AXNodeId(str):
         return cls(json)
 
     def __repr__(self):
-        return 'AXNodeId({})'.format(str.__repr__(self))
+        return 'AXNodeId({})'.format(super().__repr__())
 
 
 class AXValueType(enum.Enum):

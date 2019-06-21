@@ -30,7 +30,7 @@ class StringIndex(int):
         return cls(json)
 
     def __repr__(self):
-        return 'StringIndex({})'.format(int.__repr__(self))
+        return 'StringIndex({})'.format(super().__repr__())
 
 
 class ArrayOfStrings(typing.List['StringIndex']):
@@ -45,7 +45,7 @@ class ArrayOfStrings(typing.List['StringIndex']):
         return cls(json)
 
     def __repr__(self):
-        return 'ArrayOfStrings({})'.format(typing.List['StringIndex'].__repr__(self))
+        return 'ArrayOfStrings({})'.format(super().__repr__())
 
 
 class Rectangle(typing.List['float']):
@@ -57,7 +57,7 @@ class Rectangle(typing.List['float']):
         return cls(json)
 
     def __repr__(self):
-        return 'Rectangle({})'.format(typing.List['float'].__repr__(self))
+        return 'Rectangle({})'.format(super().__repr__())
 
 
 @dataclass

@@ -23,7 +23,7 @@ class TargetID(str):
         return cls(json)
 
     def __repr__(self):
-        return 'TargetID({})'.format(str.__repr__(self))
+        return 'TargetID({})'.format(super().__repr__())
 
 
 class SessionID(str):
@@ -38,7 +38,7 @@ class SessionID(str):
         return cls(json)
 
     def __repr__(self):
-        return 'SessionID({})'.format(str.__repr__(self))
+        return 'SessionID({})'.format(super().__repr__())
 
 
 class BrowserContextID(str):
@@ -50,7 +50,7 @@ class BrowserContextID(str):
         return cls(json)
 
     def __repr__(self):
-        return 'BrowserContextID({})'.format(str.__repr__(self))
+        return 'BrowserContextID({})'.format(super().__repr__())
 
 
 @dataclass

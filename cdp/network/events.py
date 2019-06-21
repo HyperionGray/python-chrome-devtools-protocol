@@ -102,10 +102,10 @@ class LoadingFailed:
     error_text: str
 
     #: Fired when HTTP request has failed to load.
-    canceled: bool
+    canceled: typing.Optional[bool] = None
 
     #: Fired when HTTP request has failed to load.
-    blocked_reason: BlockedReason
+    blocked_reason: typing.Optional[BlockedReason] = None
 
     # These fields are used for internal purposes and are not part of CDP
     _domain = 'Network'
@@ -113,13 +113,15 @@ class LoadingFailed:
 
     @classmethod
     def from_json(cls, json: dict) -> 'LoadingFailed':
+        canceled = bool(json['canceled']) if 'canceled' in json else None
+        blocked_reason = BlockedReason.from_json(json['blockedReason']) if 'blockedReason' in json else None
         return cls(
             request_id=RequestId.from_json(json['requestId']),
             timestamp=MonotonicTime.from_json(json['timestamp']),
             type=ResourceType.from_json(json['type']),
             error_text=str(json['errorText']),
-            canceled=bool(json['canceled']),
-            blocked_reason=BlockedReason.from_json(json['blockedReason']),
+            canceled=canceled,
+            blocked_reason=blocked_reason,
         )
 
 
@@ -138,7 +140,7 @@ class LoadingFinished:
     encoded_data_length: float
 
     #: Fired when HTTP request has finished loading.
-    should_report_corb_blocking: bool
+    should_report_corb_blocking: typing.Optional[bool] = None
 
     # These fields are used for internal purposes and are not part of CDP
     _domain = 'Network'
@@ -146,11 +148,12 @@ class LoadingFinished:
 
     @classmethod
     def from_json(cls, json: dict) -> 'LoadingFinished':
+        should_report_corb_blocking = bool(json['shouldReportCorbBlocking']) if 'shouldReportCorbBlocking' in json else None
         return cls(
             request_id=RequestId.from_json(json['requestId']),
             timestamp=MonotonicTime.from_json(json['timestamp']),
             encoded_data_length=float(json['encodedDataLength']),
-            should_report_corb_blocking=bool(json['shouldReportCorbBlocking']),
+            should_report_corb_blocking=should_report_corb_blocking,
         )
 
 
@@ -182,31 +185,31 @@ class RequestIntercepted:
 
     #: Details of an intercepted HTTP request, which must be either allowed, blocked, modified or
     #: mocked.
-    is_download: bool
+    is_download: typing.Optional[bool] = None
 
     #: Details of an intercepted HTTP request, which must be either allowed, blocked, modified or
     #: mocked.
-    redirect_url: str
+    redirect_url: typing.Optional[str] = None
 
     #: Details of an intercepted HTTP request, which must be either allowed, blocked, modified or
     #: mocked.
-    auth_challenge: AuthChallenge
+    auth_challenge: typing.Optional[AuthChallenge] = None
 
     #: Details of an intercepted HTTP request, which must be either allowed, blocked, modified or
     #: mocked.
-    response_error_reason: ErrorReason
+    response_error_reason: typing.Optional[ErrorReason] = None
 
     #: Details of an intercepted HTTP request, which must be either allowed, blocked, modified or
     #: mocked.
-    response_status_code: int
+    response_status_code: typing.Optional[int] = None
 
     #: Details of an intercepted HTTP request, which must be either allowed, blocked, modified or
     #: mocked.
-    response_headers: Headers
+    response_headers: typing.Optional[Headers] = None
 
     #: Details of an intercepted HTTP request, which must be either allowed, blocked, modified or
     #: mocked.
-    request_id: RequestId
+    request_id: typing.Optional[RequestId] = None
 
     # These fields are used for internal purposes and are not part of CDP
     _domain = 'Network'
@@ -214,19 +217,26 @@ class RequestIntercepted:
 
     @classmethod
     def from_json(cls, json: dict) -> 'RequestIntercepted':
+        is_download = bool(json['isDownload']) if 'isDownload' in json else None
+        redirect_url = str(json['redirectUrl']) if 'redirectUrl' in json else None
+        auth_challenge = AuthChallenge.from_json(json['authChallenge']) if 'authChallenge' in json else None
+        response_error_reason = ErrorReason.from_json(json['responseErrorReason']) if 'responseErrorReason' in json else None
+        response_status_code = int(json['responseStatusCode']) if 'responseStatusCode' in json else None
+        response_headers = Headers.from_json(json['responseHeaders']) if 'responseHeaders' in json else None
+        request_id = RequestId.from_json(json['requestId']) if 'requestId' in json else None
         return cls(
             interception_id=InterceptionId.from_json(json['interceptionId']),
             request=Request.from_json(json['request']),
             frame_id=page.FrameId.from_json(json['frameId']),
             resource_type=ResourceType.from_json(json['resourceType']),
             is_navigation_request=bool(json['isNavigationRequest']),
-            is_download=bool(json['isDownload']),
-            redirect_url=str(json['redirectUrl']),
-            auth_challenge=AuthChallenge.from_json(json['authChallenge']),
-            response_error_reason=ErrorReason.from_json(json['responseErrorReason']),
-            response_status_code=int(json['responseStatusCode']),
-            response_headers=Headers.from_json(json['responseHeaders']),
-            request_id=RequestId.from_json(json['requestId']),
+            is_download=is_download,
+            redirect_url=redirect_url,
+            auth_challenge=auth_challenge,
+            response_error_reason=response_error_reason,
+            response_status_code=response_status_code,
+            response_headers=response_headers,
+            request_id=request_id,
         )
 
 
@@ -276,16 +286,16 @@ class RequestWillBeSent:
     initiator: Initiator
 
     #: Fired when page is about to send HTTP request.
-    redirect_response: Response
+    redirect_response: typing.Optional[Response] = None
 
     #: Fired when page is about to send HTTP request.
-    type: ResourceType
+    type: typing.Optional[ResourceType] = None
 
     #: Fired when page is about to send HTTP request.
-    frame_id: page.FrameId
+    frame_id: typing.Optional[page.FrameId] = None
 
     #: Fired when page is about to send HTTP request.
-    has_user_gesture: bool
+    has_user_gesture: typing.Optional[bool] = None
 
     # These fields are used for internal purposes and are not part of CDP
     _domain = 'Network'
@@ -293,6 +303,10 @@ class RequestWillBeSent:
 
     @classmethod
     def from_json(cls, json: dict) -> 'RequestWillBeSent':
+        redirect_response = Response.from_json(json['redirectResponse']) if 'redirectResponse' in json else None
+        type = ResourceType.from_json(json['type']) if 'type' in json else None
+        frame_id = page.FrameId.from_json(json['frameId']) if 'frameId' in json else None
+        has_user_gesture = bool(json['hasUserGesture']) if 'hasUserGesture' in json else None
         return cls(
             request_id=RequestId.from_json(json['requestId']),
             loader_id=LoaderId.from_json(json['loaderId']),
@@ -301,10 +315,10 @@ class RequestWillBeSent:
             timestamp=MonotonicTime.from_json(json['timestamp']),
             wall_time=TimeSinceEpoch.from_json(json['wallTime']),
             initiator=Initiator.from_json(json['initiator']),
-            redirect_response=Response.from_json(json['redirectResponse']),
-            type=ResourceType.from_json(json['type']),
-            frame_id=page.FrameId.from_json(json['frameId']),
-            has_user_gesture=bool(json['hasUserGesture']),
+            redirect_response=redirect_response,
+            type=type,
+            frame_id=frame_id,
+            has_user_gesture=has_user_gesture,
         )
 
 
@@ -379,7 +393,7 @@ class ResponseReceived:
     response: Response
 
     #: Fired when HTTP response is available.
-    frame_id: page.FrameId
+    frame_id: typing.Optional[page.FrameId] = None
 
     # These fields are used for internal purposes and are not part of CDP
     _domain = 'Network'
@@ -387,13 +401,14 @@ class ResponseReceived:
 
     @classmethod
     def from_json(cls, json: dict) -> 'ResponseReceived':
+        frame_id = page.FrameId.from_json(json['frameId']) if 'frameId' in json else None
         return cls(
             request_id=RequestId.from_json(json['requestId']),
             loader_id=LoaderId.from_json(json['loaderId']),
             timestamp=MonotonicTime.from_json(json['timestamp']),
             type=ResourceType.from_json(json['type']),
             response=Response.from_json(json['response']),
-            frame_id=page.FrameId.from_json(json['frameId']),
+            frame_id=frame_id,
         )
 
 
@@ -432,7 +447,7 @@ class WebSocketCreated:
     url: str
 
     #: Fired upon WebSocket creation.
-    initiator: Initiator
+    initiator: typing.Optional[Initiator] = None
 
     # These fields are used for internal purposes and are not part of CDP
     _domain = 'Network'
@@ -440,10 +455,11 @@ class WebSocketCreated:
 
     @classmethod
     def from_json(cls, json: dict) -> 'WebSocketCreated':
+        initiator = Initiator.from_json(json['initiator']) if 'initiator' in json else None
         return cls(
             request_id=RequestId.from_json(json['requestId']),
             url=str(json['url']),
-            initiator=Initiator.from_json(json['initiator']),
+            initiator=initiator,
         )
 
 

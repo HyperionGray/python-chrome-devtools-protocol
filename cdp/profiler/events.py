@@ -26,7 +26,7 @@ class ConsoleProfileFinished:
 
     profile: Profile
 
-    title: str
+    title: typing.Optional[str] = None
 
     # These fields are used for internal purposes and are not part of CDP
     _domain = 'Profiler'
@@ -34,11 +34,12 @@ class ConsoleProfileFinished:
 
     @classmethod
     def from_json(cls, json: dict) -> 'ConsoleProfileFinished':
+        title = str(json['title']) if 'title' in json else None
         return cls(
             id=str(json['id']),
             location=debugger.Location.from_json(json['location']),
             profile=Profile.from_json(json['profile']),
-            title=str(json['title']),
+            title=title,
         )
 
 
@@ -54,7 +55,7 @@ class ConsoleProfileStarted:
     location: debugger.Location
 
     #: Sent when new profile recording is started using console.profile() call.
-    title: str
+    title: typing.Optional[str] = None
 
     # These fields are used for internal purposes and are not part of CDP
     _domain = 'Profiler'
@@ -62,9 +63,10 @@ class ConsoleProfileStarted:
 
     @classmethod
     def from_json(cls, json: dict) -> 'ConsoleProfileStarted':
+        title = str(json['title']) if 'title' in json else None
         return cls(
             id=str(json['id']),
             location=debugger.Location.from_json(json['location']),
-            title=str(json['title']),
+            title=title,
         )
 

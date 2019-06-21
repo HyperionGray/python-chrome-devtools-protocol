@@ -26,7 +26,7 @@ class StyleSheetId(str):
         return cls(json)
 
     def __repr__(self):
-        return 'StyleSheetId({})'.format(str.__repr__(self))
+        return 'StyleSheetId({})'.format(super().__repr__())
 
 
 class StyleSheetOrigin(enum.Enum):

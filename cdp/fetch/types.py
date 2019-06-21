@@ -28,7 +28,7 @@ class RequestId(str):
         return cls(json)
 
     def __repr__(self):
-        return 'RequestId({})'.format(str.__repr__(self))
+        return 'RequestId({})'.format(super().__repr__())
 
 
 class RequestStage(enum.Enum):

@@ -53,19 +53,19 @@ class Paused:
     reason: str
 
     #: Fired when the virtual machine stopped on breakpoint or exception or any other stop criteria.
-    data: dict
+    data: typing.Optional[dict] = None
 
     #: Fired when the virtual machine stopped on breakpoint or exception or any other stop criteria.
-    hit_breakpoints: typing.List['str']
+    hit_breakpoints: typing.Optional[typing.List['str']] = None
 
     #: Fired when the virtual machine stopped on breakpoint or exception or any other stop criteria.
-    async_stack_trace: runtime.StackTrace
+    async_stack_trace: typing.Optional[runtime.StackTrace] = None
 
     #: Fired when the virtual machine stopped on breakpoint or exception or any other stop criteria.
-    async_stack_trace_id: runtime.StackTraceId
+    async_stack_trace_id: typing.Optional[runtime.StackTraceId] = None
 
     #: Fired when the virtual machine stopped on breakpoint or exception or any other stop criteria.
-    async_call_stack_trace_id: runtime.StackTraceId
+    async_call_stack_trace_id: typing.Optional[runtime.StackTraceId] = None
 
     # These fields are used for internal purposes and are not part of CDP
     _domain = 'Debugger'
@@ -73,14 +73,19 @@ class Paused:
 
     @classmethod
     def from_json(cls, json: dict) -> 'Paused':
+        data = dict(json['data']) if 'data' in json else None
+        hit_breakpoints = [str(i) for i in json['hitBreakpoints']] if 'hitBreakpoints' in json else None
+        async_stack_trace = runtime.StackTrace.from_json(json['asyncStackTrace']) if 'asyncStackTrace' in json else None
+        async_stack_trace_id = runtime.StackTraceId.from_json(json['asyncStackTraceId']) if 'asyncStackTraceId' in json else None
+        async_call_stack_trace_id = runtime.StackTraceId.from_json(json['asyncCallStackTraceId']) if 'asyncCallStackTraceId' in json else None
         return cls(
             call_frames=[CallFrame.from_json(i) for i in json['callFrames']],
             reason=str(json['reason']),
-            data=dict(json['data']),
-            hit_breakpoints=[str(i) for i in json['hitBreakpoints']],
-            async_stack_trace=runtime.StackTrace.from_json(json['asyncStackTrace']),
-            async_stack_trace_id=runtime.StackTraceId.from_json(json['asyncStackTraceId']),
-            async_call_stack_trace_id=runtime.StackTraceId.from_json(json['asyncCallStackTraceId']),
+            data=data,
+            hit_breakpoints=hit_breakpoints,
+            async_stack_trace=async_stack_trace,
+            async_stack_trace_id=async_stack_trace_id,
+            async_call_stack_trace_id=async_call_stack_trace_id,
         )
 
 
@@ -129,22 +134,22 @@ class ScriptFailedToParse:
     hash: str
 
     #: Fired when virtual machine fails to parse the script.
-    execution_context_aux_data: dict
+    execution_context_aux_data: typing.Optional[dict] = None
 
     #: Fired when virtual machine fails to parse the script.
-    source_map_url: str
+    source_map_url: typing.Optional[str] = None
 
     #: Fired when virtual machine fails to parse the script.
-    has_source_url: bool
+    has_source_url: typing.Optional[bool] = None
 
     #: Fired when virtual machine fails to parse the script.
-    is_module: bool
+    is_module: typing.Optional[bool] = None
 
     #: Fired when virtual machine fails to parse the script.
-    length: int
+    length: typing.Optional[int] = None
 
     #: Fired when virtual machine fails to parse the script.
-    stack_trace: runtime.StackTrace
+    stack_trace: typing.Optional[runtime.StackTrace] = None
 
     # These fields are used for internal purposes and are not part of CDP
     _domain = 'Debugger'
@@ -152,6 +157,12 @@ class ScriptFailedToParse:
 
     @classmethod
     def from_json(cls, json: dict) -> 'ScriptFailedToParse':
+        execution_context_aux_data = dict(json['executionContextAuxData']) if 'executionContextAuxData' in json else None
+        source_map_url = str(json['sourceMapURL']) if 'sourceMapURL' in json else None
+        has_source_url = bool(json['hasSourceURL']) if 'hasSourceURL' in json else None
+        is_module = bool(json['isModule']) if 'isModule' in json else None
+        length = int(json['length']) if 'length' in json else None
+        stack_trace = runtime.StackTrace.from_json(json['stackTrace']) if 'stackTrace' in json else None
         return cls(
             script_id=runtime.ScriptId.from_json(json['scriptId']),
             url=str(json['url']),
@@ -161,12 +172,12 @@ class ScriptFailedToParse:
             end_column=int(json['endColumn']),
             execution_context_id=runtime.ExecutionContextId.from_json(json['executionContextId']),
             hash=str(json['hash']),
-            execution_context_aux_data=dict(json['executionContextAuxData']),
-            source_map_url=str(json['sourceMapURL']),
-            has_source_url=bool(json['hasSourceURL']),
-            is_module=bool(json['isModule']),
-            length=int(json['length']),
-            stack_trace=runtime.StackTrace.from_json(json['stackTrace']),
+            execution_context_aux_data=execution_context_aux_data,
+            source_map_url=source_map_url,
+            has_source_url=has_source_url,
+            is_module=is_module,
+            length=length,
+            stack_trace=stack_trace,
         )
 
 
@@ -210,31 +221,31 @@ class ScriptParsed:
 
     #: Fired when virtual machine parses script. This event is also fired for all known and uncollected
     #: scripts upon enabling debugger.
-    execution_context_aux_data: dict
+    execution_context_aux_data: typing.Optional[dict] = None
 
     #: Fired when virtual machine parses script. This event is also fired for all known and uncollected
     #: scripts upon enabling debugger.
-    is_live_edit: bool
+    is_live_edit: typing.Optional[bool] = None
 
     #: Fired when virtual machine parses script. This event is also fired for all known and uncollected
     #: scripts upon enabling debugger.
-    source_map_url: str
+    source_map_url: typing.Optional[str] = None
 
     #: Fired when virtual machine parses script. This event is also fired for all known and uncollected
     #: scripts upon enabling debugger.
-    has_source_url: bool
+    has_source_url: typing.Optional[bool] = None
 
     #: Fired when virtual machine parses script. This event is also fired for all known and uncollected
     #: scripts upon enabling debugger.
-    is_module: bool
+    is_module: typing.Optional[bool] = None
 
     #: Fired when virtual machine parses script. This event is also fired for all known and uncollected
     #: scripts upon enabling debugger.
-    length: int
+    length: typing.Optional[int] = None
 
     #: Fired when virtual machine parses script. This event is also fired for all known and uncollected
     #: scripts upon enabling debugger.
-    stack_trace: runtime.StackTrace
+    stack_trace: typing.Optional[runtime.StackTrace] = None
 
     # These fields are used for internal purposes and are not part of CDP
     _domain = 'Debugger'
@@ -242,6 +253,13 @@ class ScriptParsed:
 
     @classmethod
     def from_json(cls, json: dict) -> 'ScriptParsed':
+        execution_context_aux_data = dict(json['executionContextAuxData']) if 'executionContextAuxData' in json else None
+        is_live_edit = bool(json['isLiveEdit']) if 'isLiveEdit' in json else None
+        source_map_url = str(json['sourceMapURL']) if 'sourceMapURL' in json else None
+        has_source_url = bool(json['hasSourceURL']) if 'hasSourceURL' in json else None
+        is_module = bool(json['isModule']) if 'isModule' in json else None
+        length = int(json['length']) if 'length' in json else None
+        stack_trace = runtime.StackTrace.from_json(json['stackTrace']) if 'stackTrace' in json else None
         return cls(
             script_id=runtime.ScriptId.from_json(json['scriptId']),
             url=str(json['url']),
@@ -251,12 +269,12 @@ class ScriptParsed:
             end_column=int(json['endColumn']),
             execution_context_id=runtime.ExecutionContextId.from_json(json['executionContextId']),
             hash=str(json['hash']),
-            execution_context_aux_data=dict(json['executionContextAuxData']),
-            is_live_edit=bool(json['isLiveEdit']),
-            source_map_url=str(json['sourceMapURL']),
-            has_source_url=bool(json['hasSourceURL']),
-            is_module=bool(json['isModule']),
-            length=int(json['length']),
-            stack_trace=runtime.StackTrace.from_json(json['stackTrace']),
+            execution_context_aux_data=execution_context_aux_data,
+            is_live_edit=is_live_edit,
+            source_map_url=source_map_url,
+            has_source_url=has_source_url,
+            is_module=is_module,
+            length=length,
+            stack_trace=stack_trace,
         )
 

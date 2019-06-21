@@ -67,7 +67,7 @@ class RequestPaused:
     #: The stage of the request can be determined by presence of responseErrorReason
     #: and responseStatusCode -- the request is at the response stage if either
     #: of these fields is present and in the request stage otherwise.
-    response_error_reason: network.ErrorReason
+    response_error_reason: typing.Optional[network.ErrorReason] = None
 
     #: Issued when the domain is enabled and the request URL matches the
     #: specified filter. The request is paused until the client responds
@@ -75,7 +75,7 @@ class RequestPaused:
     #: The stage of the request can be determined by presence of responseErrorReason
     #: and responseStatusCode -- the request is at the response stage if either
     #: of these fields is present and in the request stage otherwise.
-    response_status_code: int
+    response_status_code: typing.Optional[int] = None
 
     #: Issued when the domain is enabled and the request URL matches the
     #: specified filter. The request is paused until the client responds
@@ -83,7 +83,7 @@ class RequestPaused:
     #: The stage of the request can be determined by presence of responseErrorReason
     #: and responseStatusCode -- the request is at the response stage if either
     #: of these fields is present and in the request stage otherwise.
-    response_headers: typing.List['HeaderEntry']
+    response_headers: typing.Optional[typing.List['HeaderEntry']] = None
 
     #: Issued when the domain is enabled and the request URL matches the
     #: specified filter. The request is paused until the client responds
@@ -91,7 +91,7 @@ class RequestPaused:
     #: The stage of the request can be determined by presence of responseErrorReason
     #: and responseStatusCode -- the request is at the response stage if either
     #: of these fields is present and in the request stage otherwise.
-    network_id: RequestId
+    network_id: typing.Optional[RequestId] = None
 
     # These fields are used for internal purposes and are not part of CDP
     _domain = 'Fetch'
@@ -99,15 +99,19 @@ class RequestPaused:
 
     @classmethod
     def from_json(cls, json: dict) -> 'RequestPaused':
+        response_error_reason = network.ErrorReason.from_json(json['responseErrorReason']) if 'responseErrorReason' in json else None
+        response_status_code = int(json['responseStatusCode']) if 'responseStatusCode' in json else None
+        response_headers = [HeaderEntry.from_json(i) for i in json['responseHeaders']] if 'responseHeaders' in json else None
+        network_id = RequestId.from_json(json['networkId']) if 'networkId' in json else None
         return cls(
             request_id=RequestId.from_json(json['requestId']),
             request=network.Request.from_json(json['request']),
             frame_id=page.FrameId.from_json(json['frameId']),
             resource_type=network.ResourceType.from_json(json['resourceType']),
-            response_error_reason=network.ErrorReason.from_json(json['responseErrorReason']),
-            response_status_code=int(json['responseStatusCode']),
-            response_headers=[HeaderEntry.from_json(i) for i in json['responseHeaders']],
-            network_id=RequestId.from_json(json['networkId']),
+            response_error_reason=response_error_reason,
+            response_status_code=response_status_code,
+            response_headers=response_headers,
+            network_id=network_id,
         )
 
 

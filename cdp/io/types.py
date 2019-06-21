@@ -27,6 +27,6 @@ class StreamHandle(str):
         return cls(json)
 
     def __repr__(self):
-        return 'StreamHandle({})'.format(str.__repr__(self))
+        return 'StreamHandle({})'.format(super().__repr__())
 
 

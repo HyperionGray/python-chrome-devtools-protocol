@@ -26,7 +26,7 @@ class ContextId(str):
         return cls(json)
 
     def __repr__(self):
-        return 'ContextId({})'.format(str.__repr__(self))
+        return 'ContextId({})'.format(super().__repr__())
 
 
 class ContextType(enum.Enum):

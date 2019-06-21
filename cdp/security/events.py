@@ -73,7 +73,7 @@ class SecurityStateChanged:
     insecure_content_status: InsecureContentStatus
 
     #: The security state of the page changed.
-    summary: str
+    summary: typing.Optional[str] = None
 
     # These fields are used for internal purposes and are not part of CDP
     _domain = 'Security'
@@ -81,11 +81,12 @@ class SecurityStateChanged:
 
     @classmethod
     def from_json(cls, json: dict) -> 'SecurityStateChanged':
+        summary = str(json['summary']) if 'summary' in json else None
         return cls(
             security_state=SecurityState.from_json(json['securityState']),
             scheme_is_cryptographic=bool(json['schemeIsCryptographic']),
             explanations=[SecurityStateExplanation.from_json(i) for i in json['explanations']],
             insecure_content_status=InsecureContentStatus.from_json(json['insecureContentStatus']),
-            summary=str(json['summary']),
+            summary=summary,
         )
 

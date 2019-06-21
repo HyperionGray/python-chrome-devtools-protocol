@@ -39,7 +39,7 @@ class TimeSinceEpoch(float):
         return cls(json)
 
     def __repr__(self):
-        return 'TimeSinceEpoch({})'.format(float.__repr__(self))
+        return 'TimeSinceEpoch({})'.format(super().__repr__())
 
 
 @dataclass

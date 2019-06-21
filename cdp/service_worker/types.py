@@ -25,7 +25,7 @@ class RegistrationID(str):
         return cls(json)
 
     def __repr__(self):
-        return 'RegistrationID({})'.format(str.__repr__(self))
+        return 'RegistrationID({})'.format(super().__repr__())
 
 
 class ServiceWorkerVersionRunningStatus(enum.Enum):

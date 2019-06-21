@@ -28,7 +28,7 @@ class HeapSnapshotObjectId(str):
         return cls(json)
 
     def __repr__(self):
-        return 'HeapSnapshotObjectId({})'.format(str.__repr__(self))
+        return 'HeapSnapshotObjectId({})'.format(super().__repr__())
 
 
 @dataclass

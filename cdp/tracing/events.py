@@ -20,11 +20,11 @@ from ..io import types as io
 
 @dataclass
 class BufferUsage:
-    percent_full: float
+    percent_full: typing.Optional[float] = None
 
-    event_count: float
+    event_count: typing.Optional[float] = None
 
-    value: float
+    value: typing.Optional[float] = None
 
     # These fields are used for internal purposes and are not part of CDP
     _domain = 'Tracing'
@@ -32,10 +32,13 @@ class BufferUsage:
 
     @classmethod
     def from_json(cls, json: dict) -> 'BufferUsage':
+        percent_full = float(json['percentFull']) if 'percentFull' in json else None
+        event_count = float(json['eventCount']) if 'eventCount' in json else None
+        value = float(json['value']) if 'value' in json else None
         return cls(
-            percent_full=float(json['percentFull']),
-            event_count=float(json['eventCount']),
-            value=float(json['value']),
+            percent_full=percent_full,
+            event_count=event_count,
+            value=value,
         )
 
 
@@ -68,15 +71,15 @@ class TracingComplete:
     '''
     #: Signals that tracing is stopped and there is no trace buffers pending flush, all data were
     #: delivered via dataCollected events.
-    stream: io.StreamHandle
+    stream: typing.Optional[io.StreamHandle] = None
 
     #: Signals that tracing is stopped and there is no trace buffers pending flush, all data were
     #: delivered via dataCollected events.
-    trace_format: StreamFormat
+    trace_format: typing.Optional[StreamFormat] = None
 
     #: Signals that tracing is stopped and there is no trace buffers pending flush, all data were
     #: delivered via dataCollected events.
-    stream_compression: StreamCompression
+    stream_compression: typing.Optional[StreamCompression] = None
 
     # These fields are used for internal purposes and are not part of CDP
     _domain = 'Tracing'
@@ -84,9 +87,12 @@ class TracingComplete:
 
     @classmethod
     def from_json(cls, json: dict) -> 'TracingComplete':
+        stream = io.StreamHandle.from_json(json['stream']) if 'stream' in json else None
+        trace_format = StreamFormat.from_json(json['traceFormat']) if 'traceFormat' in json else None
+        stream_compression = StreamCompression.from_json(json['streamCompression']) if 'streamCompression' in json else None
         return cls(
-            stream=io.StreamHandle.from_json(json['stream']),
-            trace_format=StreamFormat.from_json(json['traceFormat']),
-            stream_compression=StreamCompression.from_json(json['streamCompression']),
+            stream=stream,
+            trace_format=trace_format,
+            stream_compression=stream_compression,
         )
 

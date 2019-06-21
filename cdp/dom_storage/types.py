@@ -26,7 +26,7 @@ class Item(typing.List['str']):
         return cls(json)
 
     def __repr__(self):
-        return 'Item({})'.format(typing.List['str'].__repr__(self))
+        return 'Item({})'.format(super().__repr__())
 
 
 @dataclass

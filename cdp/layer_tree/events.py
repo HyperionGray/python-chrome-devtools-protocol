@@ -38,7 +38,7 @@ class LayerPainted:
 
 @dataclass
 class LayerTreeDidChange:
-    layers: typing.List['Layer']
+    layers: typing.Optional[typing.List['Layer']] = None
 
     # These fields are used for internal purposes and are not part of CDP
     _domain = 'LayerTree'
@@ -46,7 +46,8 @@ class LayerTreeDidChange:
 
     @classmethod
     def from_json(cls, json: dict) -> 'LayerTreeDidChange':
+        layers = [Layer.from_json(i) for i in json['layers']] if 'layers' in json else None
         return cls(
-            layers=[Layer.from_json(i) for i in json['layers']],
+            layers=layers,
         )
 

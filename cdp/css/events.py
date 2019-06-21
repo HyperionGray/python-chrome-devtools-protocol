@@ -24,7 +24,7 @@ class FontsUpdated:
     '''
     #: Fires whenever a web font is updated.  A non-empty font parameter indicates a successfully loaded
     #: web font
-    font: FontFace
+    font: typing.Optional[FontFace] = None
 
     # These fields are used for internal purposes and are not part of CDP
     _domain = 'CSS'
@@ -32,8 +32,9 @@ class FontsUpdated:
 
     @classmethod
     def from_json(cls, json: dict) -> 'FontsUpdated':
+        font = FontFace.from_json(json['font']) if 'font' in json else None
         return cls(
-            font=FontFace.from_json(json['font']),
+            font=font,
         )
 
 

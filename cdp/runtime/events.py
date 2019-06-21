@@ -61,10 +61,10 @@ class ConsoleAPICalled:
     timestamp: Timestamp
 
     #: Issued when console API was called.
-    stack_trace: StackTrace
+    stack_trace: typing.Optional[StackTrace] = None
 
     #: Issued when console API was called.
-    context: str
+    context: typing.Optional[str] = None
 
     # These fields are used for internal purposes and are not part of CDP
     _domain = 'Runtime'
@@ -72,13 +72,15 @@ class ConsoleAPICalled:
 
     @classmethod
     def from_json(cls, json: dict) -> 'ConsoleAPICalled':
+        stack_trace = StackTrace.from_json(json['stackTrace']) if 'stackTrace' in json else None
+        context = str(json['context']) if 'context' in json else None
         return cls(
             type=str(json['type']),
             args=[RemoteObject.from_json(i) for i in json['args']],
             execution_context_id=ExecutionContextId.from_json(json['executionContextId']),
             timestamp=Timestamp.from_json(json['timestamp']),
-            stack_trace=StackTrace.from_json(json['stackTrace']),
-            context=str(json['context']),
+            stack_trace=stack_trace,
+            context=context,
         )
 
 

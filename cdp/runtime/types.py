@@ -26,7 +26,7 @@ class ScriptId(str):
         return cls(json)
 
     def __repr__(self):
-        return 'ScriptId({})'.format(str.__repr__(self))
+        return 'ScriptId({})'.format(super().__repr__())
 
 
 class RemoteObjectId(str):
@@ -41,7 +41,7 @@ class RemoteObjectId(str):
         return cls(json)
 
     def __repr__(self):
-        return 'RemoteObjectId({})'.format(str.__repr__(self))
+        return 'RemoteObjectId({})'.format(super().__repr__())
 
 
 class UnserializableValue(str):
@@ -57,7 +57,7 @@ class UnserializableValue(str):
         return cls(json)
 
     def __repr__(self):
-        return 'UnserializableValue({})'.format(str.__repr__(self))
+        return 'UnserializableValue({})'.format(super().__repr__())
 
 
 class ExecutionContextId(int):
@@ -72,7 +72,7 @@ class ExecutionContextId(int):
         return cls(json)
 
     def __repr__(self):
-        return 'ExecutionContextId({})'.format(int.__repr__(self))
+        return 'ExecutionContextId({})'.format(super().__repr__())
 
 
 class Timestamp(float):
@@ -87,7 +87,7 @@ class Timestamp(float):
         return cls(json)
 
     def __repr__(self):
-        return 'Timestamp({})'.format(float.__repr__(self))
+        return 'Timestamp({})'.format(super().__repr__())
 
 
 class TimeDelta(float):
@@ -102,7 +102,7 @@ class TimeDelta(float):
         return cls(json)
 
     def __repr__(self):
-        return 'TimeDelta({})'.format(float.__repr__(self))
+        return 'TimeDelta({})'.format(super().__repr__())
 
 
 class UniqueDebuggerId(str):
@@ -117,7 +117,7 @@ class UniqueDebuggerId(str):
         return cls(json)
 
     def __repr__(self):
-        return 'UniqueDebuggerId({})'.format(str.__repr__(self))
+        return 'UniqueDebuggerId({})'.format(super().__repr__())
 
 
 @dataclass

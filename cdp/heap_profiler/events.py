@@ -85,7 +85,7 @@ class ReportHeapSnapshotProgress:
 
     total: int
 
-    finished: bool
+    finished: typing.Optional[bool] = None
 
     # These fields are used for internal purposes and are not part of CDP
     _domain = 'HeapProfiler'
@@ -93,10 +93,11 @@ class ReportHeapSnapshotProgress:
 
     @classmethod
     def from_json(cls, json: dict) -> 'ReportHeapSnapshotProgress':
+        finished = bool(json['finished']) if 'finished' in json else None
         return cls(
             done=int(json['done']),
             total=int(json['total']),
-            finished=bool(json['finished']),
+            finished=finished,
         )
 
 

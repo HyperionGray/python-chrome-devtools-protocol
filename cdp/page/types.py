@@ -28,7 +28,7 @@ class FrameId(str):
         return cls(json)
 
     def __repr__(self):
-        return 'FrameId({})'.format(str.__repr__(self))
+        return 'FrameId({})'.format(super().__repr__())
 
 
 class ScriptIdentifier(str):
@@ -43,7 +43,7 @@ class ScriptIdentifier(str):
         return cls(json)
 
     def __repr__(self):
-        return 'ScriptIdentifier({})'.format(str.__repr__(self))
+        return 'ScriptIdentifier({})'.format(super().__repr__())
 
 
 class TransitionType(enum.Enum):

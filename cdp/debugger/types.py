@@ -28,7 +28,7 @@ class BreakpointId(str):
         return cls(json)
 
     def __repr__(self):
-        return 'BreakpointId({})'.format(str.__repr__(self))
+        return 'BreakpointId({})'.format(super().__repr__())
 
 
 class CallFrameId(str):
@@ -43,7 +43,7 @@ class CallFrameId(str):
         return cls(json)
 
     def __repr__(self):
-        return 'CallFrameId({})'.format(str.__repr__(self))
+        return 'CallFrameId({})'.format(super().__repr__())
 
 
 @dataclass

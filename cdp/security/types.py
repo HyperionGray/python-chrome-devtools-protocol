@@ -26,7 +26,7 @@ class CertificateId(int):
         return cls(json)
 
     def __repr__(self):
-        return 'CertificateId({})'.format(int.__repr__(self))
+        return 'CertificateId({})'.format(super().__repr__())
 
 
 class MixedContentType(enum.Enum):
