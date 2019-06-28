@@ -7,7 +7,7 @@ with (here / 'README.md').open(encoding='utf8') as f:
     long_description = f.read()
 
 setup(
-    name='python-chrome-devtools-protocol',
+    name='chrome-devtools-protocol',
     version='0.1.0-dev',
     description='Python type wrappers for Chrome DevTools Protocol (CDP)',
     long_description=long_description,
