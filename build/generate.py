@@ -5,6 +5,7 @@ import logging
 import operator
 import os
 from pathlib import Path
+from textwrap import dedent, indent
 import typing
 
 import inflection
@@ -62,12 +63,11 @@ def clear_dirs(package_path):
 
 class CdpPrimitiveType(Enum):
     ''' All of the CDP types that map directly to Python types. '''
-    any: typing.Any
-    boolean = bool
-    integer = int
-    number = float
-    object = dict
-    string = str
+    boolean = 'bool'
+    integer = 'int'
+    number = 'float'
+    object = 'dict'
+    string = 'str'
 
 
 @dataclass
@@ -82,6 +82,7 @@ class CdpProperty:
 
     @classmethod
     def from_json(cls, property):
+        ''' Instantiate a CDP property from a JSON object. '''
         return cls(
             property['name'],
             property.get('description'),
@@ -103,6 +104,7 @@ class CdpType:
 
     @classmethod
     def from_json(cls, type):
+        ''' Instantiate a CDP type from a JSON object. '''
         return cls(
             type['id'],
             type.get('description'),
@@ -110,6 +112,88 @@ class CdpType:
             type.get('enum'),
             type.get('properties'),
         )
+
+    def generate_code(self):
+        '''
+        Generate Python code for this type.
+
+        :returns: code as a string
+        '''
+        # todo handle exports and emitted types somewhere else?
+        # exports = list()
+        # exports.append(type_name)
+        # emitted_types = set()
+        logger.debug('Generating type %s: %s', self.id, self.type)
+        if self.enum:
+            return self.generate_enum_code()
+        elif self.properties:
+            return self.generate_object_code()
+        else:
+            return self.generate_primitive_code()
+
+    def generate_primitive_code(self):
+        '''
+        Generate code for a primitive type.
+
+        :returns: code as a string
+        '''
+        py_type = CdpPrimitiveType[self.type].value
+
+        def_to_json = dedent(f'''\
+            def to_json(self) -> {py_type}:
+                return self''')
+
+        def_from_json = dedent(f'''\
+            @classmethod
+            def from_json(cls, json: {py_type}) -> '{self.id}':
+                return cls(json)''')
+
+        def_repr = dedent(f'''\
+            def __repr__(self):
+                return '{self.id}({{}})'.format(super().__repr__())''')
+
+        code = f'class {self.id}({py_type}):'
+        doc = docstring(self.description)
+        if doc:
+            code += '\n' + indent(doc, 4 * ' ')
+        code += '\n' + indent(def_to_json, 4 * ' ')
+        code += '\n\n' + indent(def_from_json, 4 * ' ')
+        code += '\n\n' + indent(def_repr, 4 * ' ')
+
+        return code
+
+    def generate_enum_code(self):
+        return ''
+
+    def generate_object_code(self):
+        return ''
+
+
+    # Todo how to resolve dependencies?
+    # The classes have dependencies on each other, so we have to emit them in
+    # a specific order. If we can't resolve these dependencies after a certain
+    # number of iterations, it suggests a cyclical dependency that this code
+    # cannot handle.
+    # tries_remaining = 1000
+    # while classes:
+    #     class_ = classes.pop(0)
+    #     if not class_['children']:
+    #         code += class_['code']
+    #         emitted_types.add(class_['name'])
+    #         continue
+    #     if all(child in emitted_types for child in class_['children']):
+    #         code += class_['code']
+    #         emitted_types.add(class_['name'])
+    #         continue
+    #     classes.append(class_)
+    #     tries_remaining -= 1
+    #     if not tries_remaining:
+    #         logger.error('Class resolution failed. Emitted these types: %s',
+    #             emitted_types)
+    #         logger.error('Class resolution failed. Cannot emit these types: %s',
+    #             json.dumps(classes, indent=2))
+    #         raise Exception('Failed to resolve class dependencies.'
+    #             ' See output above.')
 
 
 class CdpParameter(CdpProperty):
@@ -143,6 +227,7 @@ class CdpCommand:
 
     @classmethod
     def from_json(cls, command):
+        ''' Instantiate a CDP command from a JSON object. '''
         parameters = command.get('parameters', list())
         returns = command.get('returns', list())
 
@@ -172,8 +257,14 @@ class CdpDomain:
     commands: typing.List[CdpCommand]
     events: typing.List[CdpEvent]
 
+    @property
+    def module(self):
+        ''' The name of the Python module for this CDP domain. '''
+        return inflection.underscore(self.domain)
+
     @classmethod
     def from_json(cls, domain):
+        ''' Instantiate a CDP domain from a JSON object. '''
         types = domain.get('types', list())
         commands = domain.get('commands', list())
         events = domain.get('events', list())
@@ -187,123 +278,118 @@ class CdpDomain:
             list(),
         )
 
+    def generate_code(self):
+        '''
+        Generate a Python module for a given CDP domain.
+
+        :param dict domain: domain schema
+        :param Path output_path: a directory path to create the module in
+        :returns: module name and a list of exported names
+        '''
+        logger.info('Generating module: %s → %s.py', self.domain, self.module)
+        return 'foobar'
+        name = domain['domain']
+        experimental = domain.get('experimental', False)
+
+        # The dependencies listed in the JSON don't match the actual dependencies
+        # encountered when building the types. So we ignore the declared
+        # dependencies and compute it ourself.
+        type_dependencies = set()
+        domain_types = domain.get('types', list())
+        for type_ in domain_types:
+            for prop in type_.get('properties', list()):
+                dependency = get_dependency(prop)
+                if dependency:
+                    type_dependencies.add(dependency)
+        if type_dependencies:
+            logger.debug('Computed type_dependencies: %s', ','.join(
+                type_dependencies))
+
+        event_dependencies = set()
+        domain_events = domain.get('events', list())
+        for event in domain_events:
+            for param in event.get('parameters', list()):
+                dependency = get_dependency(param)
+                if dependency:
+                    event_dependencies.add(dependency)
+        if event_dependencies:
+            logger.debug('Computed event_dependencies: %s', ','.join(
+                event_dependencies))
+
+        command_dependencies = set()
+        domain_commands = domain.get('commands', list())
+        for command in domain_commands:
+            for param in command.get('parameters', list()):
+                dependency = get_dependency(param)
+                if dependency:
+                    command_dependencies.add(dependency)
+            for return_ in command.get('returns', list()):
+                dependency = get_dependency(return_)
+                if dependency:
+                    command_dependencies.add(dependency)
+        if command_dependencies:
+            logger.debug('Computed command_dependencies: %s', ','.join(
+                command_dependencies))
+
+        # Generate code for this module.
+        module_path = output_path / module_name
+        module_path.mkdir(parents=True, exist_ok=True)
+        init_path = module_path / '__init__.py'
+        with init_path.open('w'):
+            # Zero out this file
+            pass
+
+        types_path = module_path / 'types.py'
+        with types_path.open('w') as types_file:
+            types_file.write(module_header.format(module_name, experimental))
+            for dependency in sorted(type_dependencies):
+                types_file.write(import_dependency(dependency))
+            if type_dependencies:
+                types_file.write('\n')
+            type_exports, type_code = generate_types(domain_types)
+            types_file.write(type_code)
+
+        events_path = module_path / 'events.py'
+        with events_path.open('w') as events_file:
+            events_file.write(module_header.format(module_name, experimental))
+            events_file.write('from .types import *\n')
+            for dependency in sorted(event_dependencies):
+                events_file.write(import_dependency(dependency))
+            if event_dependencies:
+                events_file.write('\n')
+            event_exports, event_code = generate_events(name, domain_events)
+            events_file.write(event_code)
+
+        commands_path = module_path / 'commands.py'
+        with commands_path.open('w') as commands_file:
+            commands_file.write(module_header.format(module_name, experimental))
+            commands_file.write('from .types import *\n')
+            for dependency in sorted(command_dependencies):
+                commands_file.write(import_dependency(dependency))
+            if command_dependencies:
+                commands_file.write('\n')
+            command_exports, command_code = generate_commands(name, domain_commands)
+            commands_file.write(command_code)
+
+        return module_name, type_exports, event_exports, command_exports
+
 
 def parse(json_path, output_path):
     '''
-    Parse JSON protocol description and generate module files.
+    Parse JSON protocol description and return domain objects.
 
     :param Path json_path: path to a JSON CDP schema
     :param Path output_path: a directory path to create the modules in
-    :returns: a list of 2-tuples containing (module name, list of exported
-        symbols)
+    :returns: a list of CDP domain objects
     '''
     with json_path.open() as json_file:
         schema = json.load(json_file)
     version = schema['version']
     assert (version['major'], version['minor']) == ('1', '3')
-    modules = list()
     domains = list()
     for domain in schema['domains']:
         domains.append(CdpDomain.from_json(domain))
-        modules.append(
-            generate_domain_module(domain, output_path))
-    return modules
-
-
-def generate_domain_module(domain, output_path):
-    '''
-    Generate a Python module for a given CDP domain.
-
-    :param dict domain: domain schema
-    :param Path output_path: a directory path to create the module in
-    :returns: module name and a list of exported names
-    '''
-    name = domain['domain']
-    module_name = inflection.underscore(name)
-    logger.info('Generating module: %s → %s.py', name, module_name)
-    experimental = domain.get('experimental', False)
-
-    # The dependencies listed in the JSON don't match the actual dependencies
-    # encountered when building the types. So we ignore the declared
-    # dependencies and compute it ourself.
-    type_dependencies = set()
-    domain_types = domain.get('types', list())
-    for type_ in domain_types:
-        for prop in type_.get('properties', list()):
-            dependency = get_dependency(prop)
-            if dependency:
-                type_dependencies.add(dependency)
-    if type_dependencies:
-        logger.debug('Computed type_dependencies: %s', ','.join(
-            type_dependencies))
-
-    event_dependencies = set()
-    domain_events = domain.get('events', list())
-    for event in domain_events:
-        for param in event.get('parameters', list()):
-            dependency = get_dependency(param)
-            if dependency:
-                event_dependencies.add(dependency)
-    if event_dependencies:
-        logger.debug('Computed event_dependencies: %s', ','.join(
-            event_dependencies))
-
-    command_dependencies = set()
-    domain_commands = domain.get('commands', list())
-    for command in domain_commands:
-        for param in command.get('parameters', list()):
-            dependency = get_dependency(param)
-            if dependency:
-                command_dependencies.add(dependency)
-        for return_ in command.get('returns', list()):
-            dependency = get_dependency(return_)
-            if dependency:
-                command_dependencies.add(dependency)
-    if command_dependencies:
-        logger.debug('Computed command_dependencies: %s', ','.join(
-            command_dependencies))
-
-    # Generate code for this module.
-    module_path = output_path / module_name
-    module_path.mkdir(parents=True, exist_ok=True)
-    init_path = module_path / '__init__.py'
-    with init_path.open('w'):
-        # Zero out this file
-        pass
-
-    types_path = module_path / 'types.py'
-    with types_path.open('w') as types_file:
-        types_file.write(module_header.format(module_name, experimental))
-        for dependency in sorted(type_dependencies):
-            types_file.write(import_dependency(dependency))
-        if type_dependencies:
-            types_file.write('\n')
-        type_exports, type_code = generate_types(domain_types)
-        types_file.write(type_code)
-
-    events_path = module_path / 'events.py'
-    with events_path.open('w') as events_file:
-        events_file.write(module_header.format(module_name, experimental))
-        events_file.write('from .types import *\n')
-        for dependency in sorted(event_dependencies):
-            events_file.write(import_dependency(dependency))
-        if event_dependencies:
-            events_file.write('\n')
-        event_exports, event_code = generate_events(name, domain_events)
-        events_file.write(event_code)
-
-    commands_path = module_path / 'commands.py'
-    with commands_path.open('w') as commands_file:
-        commands_file.write(module_header.format(module_name, experimental))
-        commands_file.write('from .types import *\n')
-        for dependency in sorted(command_dependencies):
-            commands_file.write(import_dependency(dependency))
-        if command_dependencies:
-            commands_file.write('\n')
-        command_exports, command_code = generate_commands(name, domain_commands)
-        commands_file.write(command_code)
-
-    return module_name, type_exports, event_exports, command_exports
+    return domains
 
 
 def get_dependency(cdp_meta):
@@ -333,60 +419,6 @@ def import_dependency(dependency):
     return 'from ..{} import types as {}\n'.format(module_name, module_name)
 
 
-def generate_types(types):
-    '''
-    Generate type definitions as Python code.
-
-    :param list types: a list of CDP type definitions
-    :returns: a tuple (list of types, code as string)
-    '''
-    code = '\n'
-    exports = list()
-    classes = list()
-    emitted_types = set()
-    for type_ in types:
-        cdp_type = type_['type']
-        type_name = type_['id']
-        exports.append(type_name)
-        description = type_.get('description')
-        logger.debug('Generating type %s: %s', type_name, cdp_type)
-        if 'enum' in type_:
-            code += generate_enum_type(type_)
-            emitted_types.add(type_name)
-        elif cdp_type == 'object':
-            classes.append(generate_class_type(type_))
-        else:
-            code += generate_basic_type(type_)
-            emitted_types.add(type_name)
-
-    # The classes have dependencies on each other, so we have to emit them in
-    # a specific order. If we can't resolve these dependencies after a certain
-    # number of iterations, it suggests a cyclical dependency that this code
-    # cannot handle.
-    tries_remaining = 1000
-    while classes:
-        class_ = classes.pop(0)
-        if not class_['children']:
-            code += class_['code']
-            emitted_types.add(class_['name'])
-            continue
-        if all(child in emitted_types for child in class_['children']):
-            code += class_['code']
-            emitted_types.add(class_['name'])
-            continue
-        classes.append(class_)
-        tries_remaining -= 1
-        if not tries_remaining:
-            logger.error('Class resolution failed. Emitted these types: %s',
-                emitted_types)
-            logger.error('Class resolution failed. Cannot emit these types: %s',
-                json.dumps(classes, indent=2))
-            raise Exception('Failed to resolve class dependencies.'
-                ' See output above.')
-
-    return exports, code
-
-
 def inline_doc(description, indent=0):
     '''
     Generate an inline doc, e.g. ``#: This type is a ...``
@@ -402,23 +434,16 @@ def inline_doc(description, indent=0):
     return ''.join(lines)
 
 
-def docstring(description, indent=4):
+def docstring(description):
     '''
     Generate a docstring from a description.
 
     :param str description:
-    :param int indent: the number of spaces to indent the docstring
     '''
     if not description:
         return ''
 
-    i = ' ' * indent
-    start_stop = "{}'''".format(i)
-    lines = [start_stop]
-    for line in description.split('\n'):
-        lines.append('{}{}'.format(i, line))
-    lines.append(start_stop)
-    return '\n'.join(lines) + '\n'
+    return dedent("'''\n{}\n'''").format(description)
 
 
 def generate_enum_type(type_):
@@ -451,7 +476,7 @@ def generate_enum_type(type_):
     return code
 
 
-def get_python_type(cdp_meta):
+def get_python_type(cdp_type):
     '''
     Generate a name for the Python type that corresponds to the the given CDP
     type.
@@ -612,33 +637,6 @@ def generate_class_type(type_):
         # modules do not have cyclical dependencies on each other.
         'children': [c for c in children if '.' not in c],
     }
-
-
-def generate_basic_type(type_):
-    '''
-    Generate one of the "basic" types, i.e. type aliases for Python built-ins.
-
-    :param dict type_: CDP type metadata
-    '''
-    code = ''
-    cdp_type = type_['id']
-    py_type = get_python_type(type_)
-    description = type_.get('description')
-    code += 'class {}({}):\n'.format(cdp_type, py_type)
-    code += docstring(description)
-    code += '    def to_json(self) -> {}:\n'.format(py_type)
-    code += '        return self\n'
-    code += '\n'
-    code += '    @classmethod\n'
-    code += "    def from_json(cls, json: {}) -> '{}':\n".format(
-        py_type, cdp_type)
-    code += '        return cls(json)\n'
-    code += '\n'
-    code += '    def __repr__(self):\n'
-    code += "        return '{}({{}})'.format(super().__repr__())\n".format(
-        cdp_type, py_type)
-    code += '\n\n'
-    return code
 
 
 def generate_events(domain, events):
@@ -866,15 +864,21 @@ def main():
         here / 'js_protocol.json',
     ]
     output_path = here.parent / 'cdp'
+    output_path.mkdir(exist_ok=True)
     clear_dirs(output_path)
 
-    modules = list()
+    domains = list()
     for json_path in json_paths:
         logger.info('Parsing JSON file %s', json_path)
-        modules.extend(parse(json_path, output_path))
+        domains.extend(parse(json_path, output_path))
+
+    for domain in domains:
+        module_path = output_path / f'{domain.module}.py'
+        with module_path.open('w') as module_file:
+            module_file.write(domain.generate_code())
 
     init_path = output_path / '__init__.py'
-    generate_init(init_path, modules)
+    # generate_init(init_path, domains)
 
     py_typed_path = output_path / 'py.typed'
     py_typed_path.touch()
