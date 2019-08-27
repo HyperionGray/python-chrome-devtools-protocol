@@ -5,7 +5,7 @@ import logging
 import operator
 import os
 from pathlib import Path
-from textwrap import dedent, indent
+from textwrap import dedent, indent as tw_indent
 import typing
 
 import inflection
@@ -41,7 +41,11 @@ import typing
 '''.format(shared_header)
 
 
-def clear_dirs(package_path):
+def indent(s: str, n: int):
+    ''' A shortcut for ``textwrap.indent`` that always uses spaces. '''
+    return tw_indent(s, n * ' ')
+
+def clear_dirs(package_path: Path):
     ''' Remove generated code. '''
     def rmdir(path):
         for subpath in path.iterdir():
@@ -61,13 +65,64 @@ def clear_dirs(package_path):
             rmdir(subpath)
 
 
+def inline_doc(description) -> str:
+    ''' Generate an inline doc, e.g. ``#: This type is a ...`` '''
+    if not description:
+        return ''
+
+    lines = ['#: {}\n'.format(l) for l in description.split('\n')]
+    return ''.join(lines)
+
+
+def docstring(description: typing.Optional[str]) -> str:
+    ''' Generate a docstring from a description. '''
+    if not description:
+        return ''
+
+    return dedent("'''\n{}\n'''").format(description)
+
+
+def ref_to_python(ref: str) -> str:
+    '''
+    Convert a CDP ``$ref`` to the name of a Python type.
+
+    For a dotted ref, the part before the dot is snake cased.
+    '''
+    if '.' in ref:
+        domain, subtype = ref.split('.')
+        ref = '{}.{}'.format(inflection.underscore(domain), subtype)
+    return f"{ref}"
+
+
 class CdpPrimitiveType(Enum):
-    ''' All of the CDP types that map directly to Python types. '''
+    ''' All of the CDP types that map directly to a Python type annotation. '''
+    any = 'typing.Any'
     boolean = 'bool'
     integer = 'int'
     number = 'float'
     object = 'dict'
     string = 'str'
+
+
+@dataclass
+class CdpItemType:
+    ''' The type of a repeated item. '''
+    type: str
+    ref: str
+
+    @property
+    def py_annotation(self) -> str:
+        if self.type:
+            annotation = CdpPrimitiveType[self.type].value
+        else:
+            py_ref = ref_to_python(self.ref)
+            annotation = f"'{py_ref}'"
+
+        return annotation
+
+    @classmethod
+    def from_json(cls, type) -> 'CdpItemType':
+        return cls(type.get('type'), type.get('$ref'))
 
 
 @dataclass
@@ -78,10 +133,30 @@ class CdpProperty:
     type: str
     ref: str
     enum: typing.List[str]
+    items: CdpItemType
     optional: bool
 
+    @property
+    def py_name(self) -> str:
+        ''' Get this property's Python name. '''
+        return inflection.underscore(self.name)
+
+    @property
+    def py_annotation(self) -> str:
+        ''' This property's Python type annotation. '''
+        if self.type == 'array':
+            ann = f'typing.List[{self.items.py_annotation}]'
+        elif self.ref:
+            py_ref = ref_to_python(self.ref)
+            ann = f"'{py_ref}'"
+        else:
+            ann = CdpPrimitiveType[self.type].value
+        if self.optional:
+            ann = f'typing.Optional[{ann}]'
+        return ann
+
     @classmethod
-    def from_json(cls, property):
+    def from_json(cls, property) -> 'CdpProperty':
         ''' Instantiate a CDP property from a JSON object. '''
         return cls(
             property['name'],
@@ -89,8 +164,67 @@ class CdpProperty:
             property.get('type'),
             property.get('$ref'),
             property.get('enum'),
+            CdpItemType.from_json(property['items']) if 'items' in property else None,
             property.get('optional', False),
         )
+
+    def generate_decl(self) -> str:
+        ''' Generate the code that declares this property. '''
+        code = inline_doc(self.description)
+        # todo handle dependencies later
+        # elif '$ref' in prop and '.' not in prop_ann:
+        #     # If the type lives in this module and is not a type that refers
+        #     # to itself, then add it to the set of children so that
+        #     # inter-class dependencies can be resolved later on.
+        #     children.add(prop_ann)
+        code += f'{self.py_name}: {self.py_annotation}'
+        if self.optional:
+            code += ' = None'
+        return code
+
+    def generate_to_json(self) -> str:
+        ''' Generate the code that exports this property to a JSON dict named
+        ``json``. '''
+        if self.items:
+            if self.items.ref:
+                assign = f"json['{self.name}'] = " \
+                         f"[i.to_json() for i in self.{self.py_name}]"
+            else:
+                raise NotImplemented()
+        else:
+            if self.ref:
+                assign = f"json['{self.name}'] = self.{self.py_name}.to_json()"
+            else:
+                assign = f"json['{self.name}'] = self.{self.py_name}"
+        if self.optional:
+            code = dedent(f'''\
+                if self.{self.py_name} is not None:
+                    {assign}''')
+        else:
+            code = assign
+        return code
+
+    def generate_from_json(self) -> str:
+        ''' Generate the code that creates an instance from a JSON dict named
+        ``json``. '''
+        # todo this is one of the few places where a real dependency is created
+        # (most of the deps are type annotations and can be avoided by quoting
+        # the annotation)
+        if self.items:
+            if self.items.ref:
+                py_ref = ref_to_python(self.items.ref)
+                expr = f"[{py_ref}.from_json(i) for i in json['{self.name}']]"
+            else:
+                raise NotImplemented()
+        else:
+            if self.ref:
+                py_ref = ref_to_python(self.ref)
+                expr = f"{py_ref}.from_json(json['{self.name}'])"
+            else:
+                expr = f"json['{self.name}']"
+        if self.optional:
+            expr = f"{expr} if '{self.name}' in json else None"
+        return f'{self.name}={expr},'
 
 
 @dataclass
@@ -103,22 +237,18 @@ class CdpType:
     properties: typing.List[CdpProperty]
 
     @classmethod
-    def from_json(cls, type):
+    def from_json(cls, type) -> 'CdpType':
         ''' Instantiate a CDP type from a JSON object. '''
         return cls(
             type['id'],
             type.get('description'),
             type['type'],
             type.get('enum'),
-            type.get('properties'),
+            [CdpProperty.from_json(p) for p in type.get('properties', list())],
         )
 
-    def generate_code(self):
-        '''
-        Generate Python code for this type.
-
-        :returns: code as a string
-        '''
+    def generate_code(self) -> str:
+        ''' Generate Python code for this type. '''
         # todo handle exports and emitted types somewhere else?
         # exports = list()
         # exports.append(type_name)
@@ -127,16 +257,12 @@ class CdpType:
         if self.enum:
             return self.generate_enum_code()
         elif self.properties:
-            return self.generate_object_code()
+            return self.generate_class_code()
         else:
             return self.generate_primitive_code()
 
-    def generate_primitive_code(self):
-        '''
-        Generate code for a primitive type.
-
-        :returns: code as a string
-        '''
+    def generate_primitive_code(self) -> str:
+        ''' Generate code for a primitive type. '''
         py_type = CdpPrimitiveType[self.type].value
 
         def_to_json = dedent(f'''\
@@ -152,22 +278,103 @@ class CdpType:
             def __repr__(self):
                 return '{self.id}({{}})'.format(super().__repr__())''')
 
-        code = f'class {self.id}({py_type}):'
+        code = f'class {self.id}({py_type}):\n'
         doc = docstring(self.description)
         if doc:
-            code += '\n' + indent(doc, 4 * ' ')
-        code += '\n' + indent(def_to_json, 4 * ' ')
-        code += '\n\n' + indent(def_from_json, 4 * ' ')
-        code += '\n\n' + indent(def_repr, 4 * ' ')
+            code += indent(doc, 4) + '\n'
+        code += indent(def_to_json, 4)
+        code += '\n\n' + indent(def_from_json, 4)
+        code += '\n\n' + indent(def_repr, 4)
 
         return code
 
-    def generate_enum_code(self):
-        return ''
+    def generate_enum_code(self) -> str:
+        '''
+        Generate an "enum" type.
 
-    def generate_object_code(self):
-        return ''
+        Enums are handled by making a python class that contains only class
+        members. Each class member is upper snaked case, e.g.
+        ``MyTypeClass.MY_ENUM_VALUE`` and is assigned a string value from the
+        CDP metadata.
+        '''
+        def_to_json = dedent('''\
+            def to_json(self) -> str:
+                return self.value''')
 
+        def_from_json = dedent(f'''\
+            @classmethod
+            def from_json(cls, json: str) -> '{self.id}':
+                return cls(json)''')
+
+        code = f'class {self.id}(enum.Enum):\n'
+        doc = docstring(self.description)
+        if doc:
+            code += indent(doc, 4) + '\n'
+        for enum_member in self.enum:
+            snake_case = inflection.underscore(enum_member).upper()
+            enum_code = f'{snake_case} = "{enum_member}"\n'
+            code += indent(enum_code, 4)
+        code += '\n' + indent(def_to_json, 4)
+        code += '\n\n' + indent(def_from_json, 4)
+
+        return code
+
+    def generate_class_code(self) -> str:
+        '''
+        Generate a class type.
+
+        Top-level types that are defined as a CDP ``object`` are turned into Python
+        dataclasses.
+        '''
+        # children = set()
+        code = dedent(f'''\
+            @dataclass
+            class {self.id}:\n''')
+        doc = docstring(self.description)
+        if doc:
+            code += indent(doc, 4) + '\n'
+
+        # Emit property declarations. These are sorted so that optional
+        # properties come after required properties, which is required to make
+        # the dataclass constructor work.
+        props = list(self.properties)
+        props.sort(key=operator.attrgetter('optional'))
+        code += '\n\n'.join(indent(p.generate_decl(), 4) for p in props)
+        code += '\n\n'
+
+        # Emit to_json() method. The properties are sorted in the same order as
+        # above for readability.
+        def_to_json = dedent('''\
+            def to_json(self) -> T_JSON_DICT:
+                json: T_JSON_DICT = dict()
+        ''')
+        def_to_json += indent('\n'.join(p.generate_to_json() for p in props), 4)
+        def_to_json += '\n'
+        def_to_json += indent('return json', 4)
+        code += indent(def_to_json, 4) + '\n\n'
+
+        # Emit to_json() method. The properties are sorted in the same order as
+        # above for readability.
+        def_from_json = dedent(f'''\
+            @classmethod
+            def from_json(cls, json: T_JSON_DICT) -> '{self.id}':
+                return cls(
+        ''')
+        def_from_json += indent(
+            '\n'.join(p.generate_from_json() for p in props), 8)
+        def_from_json += '\n'
+        def_from_json += indent(')', 4)
+        code += indent(def_from_json, 4)
+
+        # todo we used to return a dict but i'm not sure if that's sitll needed?
+        # return {
+        #     'name': self.id,
+        #     'code': code,
+        #     Don't emit children that live in a different module. We assume that
+        #     modules do not have cyclical dependencies on each other.
+        #     'children': [c for c in children if '.' not in c],
+        # }
+        return code
 
     # Todo how to resolve dependencies?
     # The classes have dependencies on each other, so we have to emit them in
@@ -226,7 +433,7 @@ class CdpCommand:
     returns: typing.List[CdpReturn]
 
     @classmethod
-    def from_json(cls, command):
+    def from_json(cls, command) -> 'CdpCommand':
         ''' Instantiate a CDP command from a JSON object. '''
         parameters = command.get('parameters', list())
         returns = command.get('returns', list())
@@ -391,6 +598,9 @@ def parse(json_path, output_path):
         domains.append(CdpDomain.from_json(domain))
     return domains
 
+######################################################
+## All refactored code is above. Old code is below. ##
+######################################################
 
 def get_dependency(cdp_meta):
     if 'type' in cdp_meta and cdp_meta['type'] != 'array':
@@ -417,63 +627,6 @@ def get_dependency(cdp_meta):
 def import_dependency(dependency):
     module_name = inflection.underscore(dependency)
     return 'from ..{} import types as {}\n'.format(module_name, module_name)
-
-
-def inline_doc(description, indent=0):
-    '''
-    Generate an inline doc, e.g. ``#: This type is a ...``
-
-    :param str description:
-    :returns: a string
-    '''
-    if not description:
-        return ''
-
-    i = ' ' * indent
-    lines = ['{}#: {}\n'.format(i, l) for l in description.split('\n')]
-    return ''.join(lines)
-
-
-def docstring(description):
-    '''
-    Generate a docstring from a description.
-
-    :param str description:
-    '''
-    if not description:
-        return ''
-
-    return dedent("'''\n{}\n'''").format(description)
-
-
-def generate_enum_type(type_):
-    '''
-    Generate an "enum" type.
-
-    Enums are handled by making a python class that contains only class members.
-    Each class member is upper snaked case, e.g. ``MyTypeClass.MY_ENUM_VALUE``
-    and is assigned a string value from the CDP metadata.
-
-    :param dict type_: CDP type metadata
-    '''
-    code = ''
-    if type_['type'] != 'string':
-        raise Exception('Unexpected enum type: {!r}'.format(type_))
-    code += 'class {}(enum.Enum):\n'.format(type_['id'])
-    description = type_.get('description')
-    code += docstring(description)
-    for enum_member in type_['enum']:
-        snake_case = inflection.underscore(enum_member).upper()
-        code += '    {} = "{}"\n'.format(snake_case, enum_member)
-    code += '\n'
-    code += '    def to_json(self) -> str:\n'
-    code += '        return self.value\n'
-    code += '\n'
-    code += '    @classmethod\n'
-    code += "    def from_json(cls, json: str) -> '{}':\n".format(type_['id'])
-    code += '        return cls(json)\n'
-    code += '\n\n'
-    return code
 
 
 def get_python_type(cdp_type):
@@ -526,117 +679,6 @@ def get_python_type(cdp_type):
 
 def is_builtin_type(python_type):
     return python_type in ('bool', 'int', 'dict', 'float', 'str')
-
-
-def generate_class_type(type_):
-    '''
-    Generate a class type.
-
-    Top-level types that are defined as a CDP ``object`` are turned into Python
-    dataclasses.
-
-    :param dict type_: CDP type metadata
-    '''
-    description = type_.get('description')
-    type_name = type_['id']
-    children = set()
-    class_code = '@dataclass\n'
-    class_code += 'class {}:\n'.format(type_name)
-    class_code += docstring(description)
-    from_json = list()
-    properties = list()
-    to_json = list()
-    for prop in type_.get('properties', []):
-        prop_name = prop['name']
-        optional = prop.get('optional', False)
-        snake_name = inflection.underscore(prop_name)
-        prop_code = ''
-        prop_description = prop.get('description')
-        if prop_description:
-            prop_code += inline_doc(prop_description, indent=4)
-        prop_type = get_python_type(prop)
-        prop_decl = prop_type
-        if prop_type == type_name:
-            # If a type refers to itself, e.g. StackTrace has a member
-            # called ``parent`` that is itself a StackTrace, then the type
-            # name must be quoted or else Python will not be able to compile
-            # the module.
-            prop_decl = "'{}'".format(prop_decl)
-        elif '$ref' in prop and '.' not in prop_type:
-            # If the type lives in this module and is not a type that refers
-            # to itself, then add it to the set of children so that
-            # inter-class dependencies can be resolved later on.
-            children.add(prop_type)
-        if optional:
-            prop_decl = 'typing.Optional[{}] = None'.format(prop_decl)
-        prop_code += '    {}: {}\n\n'.format(snake_name, prop_decl)
-        properties.append((prop_code, optional))
-        getter = "json['{}']".format(prop_name)
-        if 'type' in prop:
-            if prop['type'] != 'array':
-                from_json.append((snake_name, "{}".format(getter), prop_name,
-                    optional))
-                to_json.append((snake_name, prop_name, optional,
-                    'self.{}'.format(snake_name)))
-            elif '$ref' in prop['items']:
-                subtype = get_python_type(prop['items'])
-                from_json.append((snake_name, "[{}.from_json(i) for i in {}]".format(
-                    subtype, getter), prop_name, optional))
-                to_json.append((snake_name, prop_name, optional,
-                    '[i.to_json() for i in self.{}]'.format(snake_name)))
-            elif 'type' in prop['items']:
-                subtype = get_python_type(prop['items'])
-                from_json.append((snake_name, "[i for i in {}]".format(getter),
-                    prop_name, optional))
-                to_json.append((snake_name, prop_name, optional,
-                    '[i for i in self.{}]'.format(snake_name)))
-        else:
-            from_json.append((snake_name, "{}.from_json({})".format(
-                prop_type, getter), prop_name, optional))
-            to_json.append((snake_name, prop_name, optional,
-                'self.{}.to_json()'.format(snake_name)))
-    # Sort properties so that optional properties come after required
-    # properties, otherwise the dataclass will raise an error.
-    properties.sort(key=operator.itemgetter(1))
-    for prop_code, _ in properties:
-        class_code += prop_code
-    class_code += '    def to_json(self) -> T_JSON_DICT:\n'
-    class_code += '        json: T_JSON_DICT = {\n'
-    for snake_name, prop_name, optional, code in to_json:
-        if optional:
-            continue
-        class_code += "            '{}': {},\n".format(prop_name, code)
-    class_code += '        }\n'
-    for snake_name, prop_name, optional, code in to_json:
-        if not optional:
-            continue
-        class_code += "        if self.{} is not None:\n".format(snake_name)
-        class_code += "            json['{}'] = {}\n".format(prop_name, code)
-    class_code += '        return json\n'
-    class_code += '\n'
-    class_code += '    @classmethod\n'
-    class_code += "    def from_json(cls, json: T_JSON_DICT) -> '{}':\n".format(type_name)
-    for snake_name, code, prop_name, optional in from_json:
-        if not optional:
-            continue
-        class_code += "        {} = {} if '{}' in json else None\n".format(
-            snake_name, code, prop_name)
-    class_code += '        return cls(\n'
-    for snake_name, code, prop_name, optional in from_json:
-        if optional:
-            class_code += "            {}={},\n".format(snake_name, snake_name)
-        else:
-            class_code += "            {}={},\n".format(snake_name, code)
-    class_code += '        )\n'
-    class_code += '\n'
-
-    return {
-        'name': type_name,
-        'code': class_code,
-        # Don't emit children that live in a different module. We assume that
-        # modules do not have cyclical dependencies on each other.
-        'children': [c for c in children if '.' not in c],
-    }
 
 
 def generate_events(domain, events):
