@@ -185,23 +185,25 @@ class CdpProperty:
             code += ' = None'
         return code
 
-    def generate_to_json(self) -> str:
-        ''' Generate the code that exports this property to a JSON dict named
-        ``json``. '''
+    def generate_to_json(self, dict_: str, use_self: bool=True) -> str:
+        ''' Generate the code that exports this property to the specified JSON
+        dict. '''
+        self_ref = 'self.' if use_self else ''
         if self.items:
             if self.items.ref:
-                assign = f"json['{self.name}'] = " \
-                         f"[i.to_json() for i in self.{self.py_name}]"
+                assign = f"{dict_}['{self.name}'] = " \
+                         f"[i.to_json() for i in {self_ref}{self.py_name}]"
             else:
                 raise NotImplementedError()
         else:
             if self.ref:
-                assign = f"json['{self.name}'] = self.{self.py_name}.to_json()"
+                assign = f"{dict_}['{self.name}'] = " \
+                         f"{self_ref}{self.py_name}.to_json()"
             else:
-                assign = f"json['{self.name}'] = self.{self.py_name}"
+                assign = f"{dict_}['{self.name}'] = {self_ref}{self.py_name}"
         if self.optional:
             code = dedent(f'''\
-                if self.{self.py_name} is not None:
+                if {self_ref}{self.py_name} is not None:
                     {assign}''')
         else:
             code = assign
@@ -227,7 +229,7 @@ class CdpProperty:
                 expr = f"json['{self.name}']"
         if self.optional:
             expr = f"{expr} if '{self.name}' in json else None"
-        return f'{self.name}={expr},'
+        return expr
 
 
 @dataclass
@@ -351,7 +353,8 @@ class CdpType:
             def to_json(self) -> T_JSON_DICT:
                 json: T_JSON_DICT = dict()
         ''')
-        def_to_json += indent('\n'.join(p.generate_to_json() for p in props), 4)
+        assigns = (p.generate_to_json(dict_='json') for p in props)
+        def_to_json += indent('\n'.join(assigns), 4)
         def_to_json += '\n'
         def_to_json += indent('return json', 4)
         code += indent(def_to_json, 4) + '\n\n'
@@ -363,13 +366,13 @@ class CdpType:
             def from_json(cls, json: T_JSON_DICT) -> '{self.id}':
                 return cls(
         ''')
-        def_from_json += indent(
-            '\n'.join(p.generate_from_json() for p in props), 8)
+        def_from_json += indent('\n'.join(f'{p.name}={p.generate_from_json()},'
+            for p in self.properties), 8)
         def_from_json += '\n'
         def_from_json += indent(')', 4)
         code += indent(def_from_json, 4)
 
-        # todo we used to return a dict but i'm not sure if that's sitll needed?
+        # todo we used to return a dict but i'm not sure if that's still needed?
         # return {
         #     'name': self.id,
         #     'code': code,
@@ -407,23 +410,48 @@ class CdpType:
 
 
 class CdpParameter(CdpProperty):
-    '''
-    A parameter to a CDP command.
+    ''' A parameter to a CDP command. '''
+    def generate_code(self) -> str:
+        ''' Generate the code for a parameter in a function call. '''
+        if self.ref:
+            py_type = "'{}'".format(ref_to_python(self.ref))
+        else:
+            py_type = CdpPrimitiveType[self.type].value
+        if self.optional:
+            py_type = f'typing.Optional[{py_type}]'
+        code = f"{self.py_name}: {py_type}"
+        if self.optional:
+            code += ' = None'
+        return code
 
-    This is an empty subclass of CdpProperty because they seem to share the same
-    behavior, but I want to allow the flexibility to change the behavior later
-    on.
-    '''
+    def generate_doc(self) -> str:
+        ''' Generate the docstring for this parameter. '''
+        desc = self.description.replace('`', '``')
+        return f':param {self.py_name}: {desc}'
 
 
 class CdpReturn(CdpProperty):
-    '''
-    A return value from a CDP command.
+    ''' A return value from a CDP command. '''
+    @property
+    def py_annotation(self):
+        if self.items:
+            if self.items.ref:
+                py_ref = ref_to_python(self.items.ref)
+                ann = f"typing.List['{py_ref}']"
+            else:
+                raise NotImplementedError()
+        else:
+            if self.ref:
+                raise NotImplementedError()
+            else:
+                raise NotImplementedError()
 
-    This is an empty subclass of CdpProperty because they seem to share the same
-    behavior, but I want to allow the flexibility to change the behavior later
-    on.
-    '''
+        return ann
+
+    def generate_doc(self):
+        ''' Generate the docstring for this return. '''
+        desc = self.description.replace('`', '``')
+        return f':returns: {desc}'
 
 
 @dataclass
@@ -434,9 +462,15 @@ class CdpCommand:
     experimental: bool
     parameters: typing.List[CdpParameter]
     returns: typing.List[CdpReturn]
+    domain: str
+
+    @property
+    def py_name(self):
+        ''' Get a Python name for this command. '''
+        return inflection.underscore(self.name)
 
     @classmethod
-    def from_json(cls, command) -> 'CdpCommand':
+    def from_json(cls, command, domain) -> 'CdpCommand':
         ''' Instantiate a CDP command from a JSON object. '''
         parameters = command.get('parameters', list())
         returns = command.get('returns', list())
@@ -447,11 +481,62 @@ class CdpCommand:
             command.get('experimental', False),
             [CdpParameter.from_json(p) for p in parameters],
             [CdpReturn.from_json(r) for r in returns],
+            domain,
         )
 
     def generate_code(self) -> str:
         ''' Generate code for a CDP command. '''
-        return 'TODO'
+        # Generate the function header
+        if len(self.returns) == 0:
+            raise NotImplementedError()
+        elif len(self.returns) == 1:
+            ret_type = self.returns[0].py_annotation
+        else:
+            raise NotImplementedError()
+        ret_type = f"typing.Generator[T_JSON_DICT,T_JSON_DICT,{ret_type}]"
+        code = f'def {self.py_name}(\n'
+        code += indent(
+            ',\n'.join(p.generate_code() for p in self.parameters), 8)
+        code += '\n'
+        code += indent(f') -> {ret_type}:\n', 4)
+
+        # Generate the docstring
+        if self.description:
+            doc = self.description + '\n\n'
+        else:
+            doc = ''
+        doc += '\n'.join(p.generate_doc() for p in self.parameters)
+        if len(self.returns) == 1:
+            doc += '\n'
+            doc += self.returns[0].generate_doc()
+        elif len(self.returns) > 1:
+            doc += '\n'
+            raise NotImplementedError()
+        if doc:
+            code += indent(docstring(doc), 4)
+            code += '\n'
+
+        # Generate the function body
+        code += indent('params: T_JSON_DICT = dict()', 4)
+        code += '\n'
+        assigns = (p.generate_to_json(dict_='params', use_self=False)
+            for p in self.parameters)
+        code += indent('\n'.join(assigns), 4)
+        code += '\n'
+        yield_code = dedent(f'''\
+            cmd_dict: T_JSON_DICT = {{
+                'method': '{self.domain}.{self.name}',
+                'params': params,
+            }}
+            json = yield cmd_dict''')
+        code += indent(yield_code, 4)
+        code += '\n'
+        if len(self.returns) == 0:
+            raise NotImplementedError()
+        else:
+            expr = ', '.join(r.generate_from_json() for r in self.returns)
+            code += indent(f'return {expr}', 4)
+        return code
 
 
 @dataclass
@@ -493,7 +578,8 @@ class CdpDomain:
             domain.get('experimental', False),
             domain.get('dependencies', list()),
             [CdpType.from_json(type) for type in types],
-            [CdpCommand.from_json(command) for command in commands],
+            [CdpCommand.from_json(command, domain['domain'])
+                for command in commands],
             list(),
         )
 

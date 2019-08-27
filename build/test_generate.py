@@ -12,7 +12,7 @@ codegen tests is almost always easier with the values displayed on stdout.
 
 from textwrap import dedent
 
-from generate import CdpType, docstring
+from generate import CdpCommand, CdpType, docstring
 
 
 def test_docstring():
@@ -184,6 +184,88 @@ def test_cdp_class_type():
 
     type = CdpType.from_json(json_type)
     actual = type.generate_code()
+    print('EXPECTED:', expected)
+    print('ACTUAL:', actual)
+    assert expected == actual
+
+
+def test_cdp_command():
+    json_cmd = {
+        "name": "getPartialAXTree",
+        "description": "Fetches the accessibility node and partial accessibility tree for this DOM node, if it exists.",
+        "experimental": True,
+        "parameters": [
+            {
+                "name": "nodeId",
+                "description": "Identifier of the node to get the partial accessibility tree for.",
+                "optional": True,
+                "$ref": "DOM.NodeId"
+            },
+            {
+                "name": "backendNodeId",
+                "description": "Identifier of the backend node to get the partial accessibility tree for.",
+                "optional": True,
+                "$ref": "DOM.BackendNodeId"
+            },
+            {
+                "name": "objectId",
+                "description": "JavaScript object id of the node wrapper to get the partial accessibility tree for.",
+                "optional": True,
+                "$ref": "Runtime.RemoteObjectId"
+            },
+            {
+                "name": "fetchRelatives",
+                "description": "Whether to fetch this nodes ancestors, siblings and children. Defaults to true.",
+                "optional": True,
+                "type": "boolean"
+            }
+        ],
+        "returns": [
+            {
+                "name": "nodes",
+                "description": "The `Accessibility.AXNode` for this DOM node, if it exists, plus its ancestors, siblings and\nchildren, if requested.",
+                "type": "array",
+                "items": {
+                    "$ref": "AXNode"
+                }
+            }
+        ]
+    }
+    expected = dedent("""\
+        def get_partial_ax_tree(
+                node_id: typing.Optional['dom.NodeId'] = None,
+                backend_node_id: typing.Optional['dom.BackendNodeId'] = None,
+                object_id: typing.Optional['runtime.RemoteObjectId'] = None,
+                fetch_relatives: typing.Optional[bool] = None
+            ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['AXNode']]:
+            '''
+            Fetches the accessibility node and partial accessibility tree for this DOM node, if it exists.
+
+            :param node_id: Identifier of the node to get the partial accessibility tree for.
+            :param backend_node_id: Identifier of the backend node to get the partial accessibility tree for.
+            :param object_id: JavaScript object id of the node wrapper to get the partial accessibility tree for.
+            :param fetch_relatives: Whether to fetch this nodes ancestors, siblings and children. Defaults to true.
+            :returns: The ``Accessibility.AXNode`` for this DOM node, if it exists, plus its ancestors, siblings and
+            children, if requested.
+            '''
+            params: T_JSON_DICT = dict()
+            if node_id is not None:
+                params['nodeId'] = node_id.to_json()
+            if backend_node_id is not None:
+                params['backendNodeId'] = backend_node_id.to_json()
+            if object_id is not None:
+                params['objectId'] = object_id.to_json()
+            if fetch_relatives is not None:
+                params['fetchRelatives'] = fetch_relatives
+            cmd_dict: T_JSON_DICT = {
+                'method': 'Accessibility.getPartialAXTree',
+                'params': params,
+            }
+            json = yield cmd_dict
+            return [AXNode.from_json(i) for i in json['nodes']]""")
+
+    cmd = CdpCommand.from_json(json_cmd, 'Accessibility')
+    actual = cmd.generate_code()
     print('EXPECTED:', expected)
     print('ACTUAL:', actual)
     assert expected == actual
