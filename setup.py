@@ -23,8 +23,6 @@ setup(
     python_requires='>=3.7',
     keywords='chrome devtools protocol cdp',
     package_data={'cdp': ['py.typed']},
-    packages=find_packages(exclude=['build', 'docs', 'examples', 'tests']),
-    install_requires=[
-        'inflection',
-    ]
+    packages=find_packages(exclude=['build', 'docs', 'examples', 'test']),
+    install_requires=[]
 )

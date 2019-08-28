@@ -655,6 +655,7 @@ def test_cdp_event():
         ]
     }
     expected = dedent("""\
+        @event_class('BackgroundService.recordingStateChanged')
         @dataclass
         class RecordingStateChanged:
             '''
@@ -662,10 +663,6 @@ def test_cdp_event():
             '''
             is_recording: bool
             service: 'ServiceName'
-
-            # These fields are used for internal purposes and are not part of CDP
-            _domain = 'BackgroundService'
-            _method = 'recordingStateChanged'
 
             @classmethod
             def from_json(cls, json: T_JSON_DICT) -> 'RecordingStateChanged':
