@@ -67,6 +67,37 @@ def test_cdp_primitive_type():
     assert expected == actual
 
 
+def test_cdp_array_of_primitive_type():
+    json_type = {
+        "id": "ArrayOfStrings",
+        "description": "Index of the string in the strings table.",
+        "type": "array",
+        "items": {
+            "$ref": "StringIndex"
+        }
+    }
+    expected = dedent("""\
+        class ArrayOfStrings(typing.List['StringIndex']):
+            '''
+            Index of the string in the strings table.
+            '''
+            def to_json(self) -> typing.List['StringIndex']:
+                return self
+
+            @classmethod
+            def from_json(cls, json: typing.List['StringIndex']) -> 'ArrayOfStrings':
+                return cls(json)
+
+            def __repr__(self):
+                return 'ArrayOfStrings({})'.format(super().__repr__())""")
+
+    type = CdpType.from_json(json_type)
+    actual = type.generate_code()
+    print('EXPECTED:', expected)
+    print('ACTUAL:', actual)
+    assert expected == actual
+
+
 def test_cdp_enum_type():
     json_type = {
         "id": "AXValueSourceType",
@@ -292,6 +323,7 @@ def test_cdp_command_no_params_or_returns():
     print('ACTUAL:', actual)
     assert expected == actual
 
+
 def test_cdp_command_return_primitive():
     json_cmd = {
         "name": "getCurrentTime",
@@ -337,7 +369,44 @@ def test_cdp_command_return_primitive():
     assert expected == actual
 
 
-def test_cdp_command_array_parameter():
+def test_cdp_command_return_array_of_primitive():
+    json_cmd = {
+        "name": "getBrowserCommandLine",
+        "description": "Returns the command line switches for the browser process if, and only if\n--enable-automation is on the commandline.",
+        "experimental": True,
+        "returns": [
+            {
+                "name": "arguments",
+                "description": "Commandline parameters",
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
+            }
+        ]
+    }
+    expected = dedent("""\
+        def get_browser_command_line() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[str]]:
+            '''
+            Returns the command line switches for the browser process if, and only if
+            --enable-automation is on the commandline.
+
+            :returns: Commandline parameters
+            '''
+            cmd_dict: T_JSON_DICT = {
+                'method': 'Browser.getBrowserCommandLine',
+            }
+            json = yield cmd_dict
+            return [str(i) for i in json['arguments']]""")
+
+    cmd = CdpCommand.from_json(json_cmd, 'Browser')
+    actual = cmd.generate_code()
+    print('EXPECTED:', expected)
+    print('ACTUAL:', actual)
+    assert expected == actual
+
+
+def test_cdp_command_array_of_primitive_parameter():
     json_cmd = {
         "name": "releaseAnimations",
         "description": "Releases a set of animations to no longer be manipulated.",
@@ -508,6 +577,62 @@ def test_cdp_command_multiple_return():
             return str(json['body'] if 'body' in json else None), int(json['originalSize']), int(json['encodedSize'])""")
 
     cmd = CdpCommand.from_json(json_cmd, 'Audits')
+    actual = cmd.generate_code()
+    print('EXPECTED:', expected)
+    print('ACTUAL:', actual)
+    assert expected == actual
+
+
+def test_cdp_command_array_of_ref_parameter():
+    json_cmd = {
+        "name": "grantPermissions",
+        "description": "Grant specific permissions to the given origin and reject all others.",
+        "experimental": True,
+        "parameters": [
+            {
+                "name": "origin",
+                "type": "string"
+            },
+            {
+                "name": "permissions",
+                "type": "array",
+                "items": {
+                    "$ref": "PermissionType"
+                }
+            },
+            {
+                "name": "browserContextId",
+                "description": "BrowserContext to override permissions. When omitted, default browser context is used.",
+                "optional": True,
+                "$ref": "Target.BrowserContextID"
+            }
+        ]
+    }
+    expected = dedent("""\
+        def grant_permissions(
+                origin: str,
+                permissions: typing.List['PermissionType'],
+                browser_context_id: typing.Optional['target.BrowserContextID'] = None
+            ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+            '''
+            Grant specific permissions to the given origin and reject all others.
+
+            :param origin:
+            :param permissions:
+            :param browser_context_id: BrowserContext to override permissions. When omitted, default browser context is used.
+            '''
+            params: T_JSON_DICT = dict()
+            params['origin'] = origin
+            params['permissions'] = [i.to_json() for i in permissions]
+            if browser_context_id is not None:
+                params['browserContextId'] = browser_context_id.to_json()
+            cmd_dict: T_JSON_DICT = {
+                'method': 'Browser.grantPermissions',
+                'params': params,
+            }
+            json = yield cmd_dict""")
+
+    cmd = CdpCommand.from_json(json_cmd, 'Browser')
     actual = cmd.generate_code()
     print('EXPECTED:', expected)
     print('ACTUAL:', actual)

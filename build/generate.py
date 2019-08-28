@@ -98,6 +98,7 @@ def ref_to_python(ref: str) -> str:
 
 class CdpPrimitiveType(Enum):
     ''' All of the CDP types that map directly to a Python type. '''
+    any = 'typing.Any'
     boolean = 'bool'
     integer = 'int'
     number = 'float'
@@ -106,13 +107,13 @@ class CdpPrimitiveType(Enum):
 
 
 @dataclass
-class CdpItemType:
-    ''' The type of a repeated item. '''
+class CdpItems:
+    ''' Represents the type of a repeated item. '''
     type: str
     ref: str
 
     @classmethod
-    def from_json(cls, type) -> 'CdpItemType':
+    def from_json(cls, type) -> 'CdpItems':
         return cls(type.get('type'), type.get('$ref'))
 
 
@@ -124,7 +125,7 @@ class CdpProperty:
     type: str
     ref: str
     enum: typing.List[str]
-    items: CdpItemType
+    items: CdpItems
     optional: bool
 
     @property
@@ -141,13 +142,11 @@ class CdpProperty:
                 ann = "typing.List['{}']".format(py_ref)
             else:
                 ann = 'typing.List[{}]'.format(
-                    CdpPrimitiveType[self.type].value)
+                    CdpPrimitiveType[self.items.type].value)
         else:
             if self.ref:
                 py_ref = ref_to_python(self.ref)
                 ann = f"'{py_ref}'"
-            elif self.type == 'any':
-                ann = 'typing.Any'
             else:
                 ann = CdpPrimitiveType[self.type].value
         if self.optional:
@@ -163,7 +162,7 @@ class CdpProperty:
             property.get('type'),
             property.get('$ref'),
             property.get('enum'),
-            CdpItemType.from_json(property['items']) if 'items' in property else None,
+            CdpItems.from_json(property['items']) if 'items' in property else None,
             property.get('optional', False),
         )
 
@@ -215,7 +214,8 @@ class CdpProperty:
                 py_ref = ref_to_python(self.items.ref)
                 expr = f"[{py_ref}.from_json(i) for i in {dict_}['{self.name}']]"
             else:
-                raise NotImplemented()
+                py_type = CdpPrimitiveType[self.items.type].value
+                expr = f"[{py_type}(i) for i in {dict_}['{self.name}']]"
         else:
             if self.ref:
                 py_ref = ref_to_python(self.ref)
@@ -233,18 +233,20 @@ class CdpType:
     id: str
     description: str
     type: str
+    items: CdpItems
     enum: typing.List[str]
     properties: typing.List[CdpProperty]
 
     @classmethod
-    def from_json(cls, type) -> 'CdpType':
+    def from_json(cls, type_) -> 'CdpType':
         ''' Instantiate a CDP type from a JSON object. '''
         return cls(
-            type['id'],
-            type.get('description'),
-            type['type'],
-            type.get('enum'),
-            [CdpProperty.from_json(p) for p in type.get('properties', list())],
+            type_['id'],
+            type_.get('description'),
+            type_['type'],
+            CdpItems.from_json(type_['items']) if 'items' in type_ else None,
+            type_.get('enum'),
+            [CdpProperty.from_json(p) for p in type_.get('properties', list())],
         )
 
     def generate_code(self) -> str:
@@ -263,7 +265,16 @@ class CdpType:
 
     def generate_primitive_code(self) -> str:
         ''' Generate code for a primitive type. '''
-        py_type = CdpPrimitiveType[self.type].value
+        if self.items:
+            if self.items.ref:
+                nested_type = ref_to_python(self.items.ref)
+                py_type = f"typing.List['{nested_type}']"
+            else:
+                nested_type = CdpPrimitiveType[self.items.type].value
+                py_type = f'typing.List[{nested_type}]'
+        else:
+            # A primitive type cannot have a ref, so there is no branch here.
+            py_type = CdpPrimitiveType[self.type].value
 
         def_to_json = dedent(f'''\
             def to_json(self) -> {py_type}:
@@ -409,8 +420,9 @@ class CdpParameter(CdpProperty):
     def generate_code(self) -> str:
         ''' Generate the code for a parameter in a function call. '''
         if self.items:
-            if self.ref:
-                raise NotImplementedError(self)
+            if self.items.ref:
+                nested_type = ref_to_python(self.items.ref)
+                py_type = f"typing.List['{nested_type}']"
             else:
                 nested_type = CdpPrimitiveType[self.items.type].value
                 py_type = f'typing.List[{nested_type}]'
@@ -438,8 +450,11 @@ class CdpParameter(CdpProperty):
 
     def generate_doc(self) -> str:
         ''' Generate the docstring for this parameter. '''
-        desc = self.description.replace('`', '``')
-        return f':param {self.py_name}: {desc}'
+        doc = f':param {self.py_name}:'
+        if self.description:
+            desc = self.description.replace('`', '``')
+            doc += f' {desc}'
+        return doc
 
     def generate_from_json(self, dict_) -> str:
         '''
@@ -463,7 +478,8 @@ class CdpReturn(CdpProperty):
                 py_ref = ref_to_python(self.items.ref)
                 ann = f"typing.List['{py_ref}']"
             else:
-                raise NotImplementedError(self)
+                py_type = CdpPrimitiveType[self.items.type].value
+                ann = f'typing.List[{py_type}]'
         else:
             if self.ref:
                 py_ref = ref_to_python(self.ref)
@@ -553,6 +569,8 @@ class CdpCommand:
             doc = ''
         if self.parameters and doc:
             doc += '\n\n'
+        elif not self.parameters and self.returns:
+            doc += '\n'
         doc += '\n'.join(p.generate_doc() for p in self.parameters)
         if len(self.returns) == 1:
             doc += '\n'
