@@ -12,7 +12,7 @@ codegen tests is almost always easier with the values displayed on stdout.
 
 from textwrap import dedent
 
-from generate import CdpCommand, CdpType, docstring
+from generate import CdpCommand, CdpEvent, CdpType, docstring
 
 
 def test_docstring():
@@ -265,6 +265,48 @@ def test_cdp_command():
             return [AXNode.from_json(i) for i in json['nodes']]""")
 
     cmd = CdpCommand.from_json(json_cmd, 'Accessibility')
+    actual = cmd.generate_code()
+    print('EXPECTED:', expected)
+    print('ACTUAL:', actual)
+    assert expected == actual
+
+
+def test_cdp_event():
+    json_cmd = {
+        "name": "recordingStateChanged",
+        "description": "Called when the recording state for the service has been updated.",
+        "parameters": [
+            {
+                "name": "isRecording",
+                "type": "boolean"
+            },
+            {
+                "name": "service",
+                "$ref": "ServiceName"
+            }
+        ]
+    }
+    expected = dedent("""\
+        @dataclass
+        class RecordingStateChanged:
+            '''
+            Called when the recording state for the service has been updated.
+            '''
+            is_recording: bool
+            service: 'ServiceName'
+
+            # These fields are used for internal purposes and are not part of CDP
+            _domain = 'BackgroundService'
+            _method = 'recordingStateChanged'
+
+            @classmethod
+            def from_json(cls, json: T_JSON_DICT) -> 'RecordingStateChanged':
+                return cls(
+                    is_recording=bool(json['isRecording']),
+                    service=ServiceName.from_json(json['service'])
+                )""")
+
+    cmd = CdpEvent.from_json(json_cmd, 'BackgroundService')
     actual = cmd.generate_code()
     print('EXPECTED:', expected)
     print('ACTUAL:', actual)

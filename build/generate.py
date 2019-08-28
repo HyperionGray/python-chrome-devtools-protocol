@@ -209,7 +209,7 @@ class CdpProperty:
             code = assign
         return code
 
-    def generate_from_json(self) -> str:
+    def generate_from_json(self, dict_='json') -> str:
         ''' Generate the code that creates an instance from a JSON dict named
         ``json``. '''
         # todo this is one of the few places where a real dependency is created
@@ -218,17 +218,17 @@ class CdpProperty:
         if self.items:
             if self.items.ref:
                 py_ref = ref_to_python(self.items.ref)
-                expr = f"[{py_ref}.from_json(i) for i in json['{self.name}']]"
+                expr = f"[{py_ref}.from_json(i) for i in {dict_}['{self.name}']]"
             else:
                 raise NotImplemented()
         else:
             if self.ref:
                 py_ref = ref_to_python(self.ref)
-                expr = f"{py_ref}.from_json(json['{self.name}'])"
+                expr = f"{py_ref}.from_json({dict_}['{self.name}'])"
             else:
-                expr = f"json['{self.name}']"
+                expr = f"{dict_}['{self.name}']"
         if self.optional:
-            expr = f"{expr} if '{self.name}' in json else None"
+            expr = f"{expr} if '{self.name}' in {dict_} else None"
         return expr
 
 
@@ -424,11 +424,32 @@ class CdpParameter(CdpProperty):
             code += ' = None'
         return code
 
+    def generate_decl(self) -> str:
+        ''' Generate the declaration for this parameter. '''
+        if self.description:
+            code = inline_doc(self.description)
+            code += '\n'
+        else:
+            code = ''
+        code += f'{self.py_name}: {self.py_annotation}'
+        return code
+
     def generate_doc(self) -> str:
         ''' Generate the docstring for this parameter. '''
         desc = self.description.replace('`', '``')
         return f':param {self.py_name}: {desc}'
 
+    def generate_from_json(self, dict_) -> str:
+        '''
+        Generate the code to instantiate this parameter from a JSON dict.
+        '''
+        code = super().generate_from_json(dict_)
+        try:
+            prim = CdpPrimitiveType[self.type].value
+            code = f'{prim}({code})'
+        except KeyError:
+            pass
+        return f'{self.py_name}={code}'
 
 class CdpReturn(CdpProperty):
     ''' A return value from a CDP command. '''
@@ -545,10 +566,50 @@ class CdpEvent:
     name: str
     description: str
     parameters: typing.List[CdpParameter]
+    domain: str
+
+    @property
+    def py_name(self):
+        ''' Return the Python class name for this event. '''
+        return inflection.camelize(self.name, uppercase_first_letter=True)
+
+    @classmethod
+    def from_json(cls, json: dict, domain: str):
+        ''' Create a new CDP event instance from a JSON dict. '''
+        return cls(json['name'], json.get('description'),
+            [CdpParameter.from_json(p) for p in json['parameters']], domain)
 
     def generate_code(self) -> str:
         ''' Generate code for a CDP event. '''
-        return 'TODO'
+        code = dedent(f'''\
+            @dataclass
+            class {self.py_name}:''')
+        code += '\n'
+        if self.description:
+            code += indent(docstring(self.description), 4)
+            code += '\n'
+        code += indent(
+            '\n'.join(p.generate_decl() for p in self.parameters), 4)
+        code += '\n\n'
+        internal = dedent(f'''\
+            # These fields are used for internal purposes and are not part of CDP
+            _domain = '{self.domain}'
+            _method = '{self.name}'
+        ''')
+        code += indent(internal, 4)
+        code += '\n'
+        def_from_json = dedent(f'''\
+            @classmethod
+            def from_json(cls, json: T_JSON_DICT) -> '{self.py_name}':
+                return cls(
+        ''')
+        code += indent(def_from_json, 4)
+        from_json = ',\n'.join(p.generate_from_json(dict_='json')
+            for p in self.parameters)
+        code += indent(from_json, 12)
+        code += '\n'
+        code += indent(')', 8)
+        return code
 
 
 @dataclass
@@ -567,20 +628,21 @@ class CdpDomain:
         return inflection.underscore(self.domain)
 
     @classmethod
-    def from_json(cls, domain):
+    def from_json(cls, domain: dict):
         ''' Instantiate a CDP domain from a JSON object. '''
         types = domain.get('types', list())
         commands = domain.get('commands', list())
         events = domain.get('events', list())
+        domain_name = domain['domain']
 
         return cls(
-            domain['domain'],
+            domain_name,
             domain.get('experimental', False),
             domain.get('dependencies', list()),
             [CdpType.from_json(type) for type in types],
-            [CdpCommand.from_json(command, domain['domain'])
+            [CdpCommand.from_json(command, domain_name)
                 for command in commands],
-            list(),
+            [CdpEvent.from_json(event, domain_name) for event in events]
         )
 
     def generate_code(self) -> str:
