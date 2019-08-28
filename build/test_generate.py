@@ -77,7 +77,7 @@ def test_cdp_array_of_primitive_type():
         }
     }
     expected = dedent("""\
-        class ArrayOfStrings(typing.List['StringIndex']):
+        class ArrayOfStrings(list):
             '''
             Index of the string in the strings table.
             '''

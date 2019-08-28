@@ -272,29 +272,31 @@ class CdpType:
             else:
                 nested_type = CdpPrimitiveType[self.items.type].value
                 py_type = f'typing.List[{nested_type}]'
+            superclass = 'list'
         else:
             # A primitive type cannot have a ref, so there is no branch here.
             py_type = CdpPrimitiveType[self.type].value
+            superclass = py_type
+
+        code = f'class {self.id}({superclass}):\n'
+        doc = docstring(self.description)
+        if doc:
+            code += indent(doc, 4) + '\n'
 
         def_to_json = dedent(f'''\
             def to_json(self) -> {py_type}:
                 return self''')
+        code += indent(def_to_json, 4)
 
         def_from_json = dedent(f'''\
             @classmethod
             def from_json(cls, json: {py_type}) -> '{self.id}':
                 return cls(json)''')
+        code += '\n\n' + indent(def_from_json, 4)
 
         def_repr = dedent(f'''\
             def __repr__(self):
                 return '{self.id}({{}})'.format(super().__repr__())''')
-
-        code = f'class {self.id}({py_type}):\n'
-        doc = docstring(self.description)
-        if doc:
-            code += indent(doc, 4) + '\n'
-        code += indent(def_to_json, 4)
-        code += '\n\n' + indent(def_from_json, 4)
         code += '\n\n' + indent(def_repr, 4)
 
         return code
