@@ -97,9 +97,7 @@ def ref_to_python(ref: str) -> str:
 
 
 class CdpPrimitiveType(Enum):
-    ''' All of the CDP types that map directly to a Python type annotation. '''
-    any = 'typing.Any'
-    array = 'typing.List'
+    ''' All of the CDP types that map directly to a Python type. '''
     boolean = 'bool'
     integer = 'int'
     number = 'float'
@@ -112,16 +110,6 @@ class CdpItemType:
     ''' The type of a repeated item. '''
     type: str
     ref: str
-
-    @property
-    def py_annotation(self) -> str:
-        if self.type:
-            annotation = CdpPrimitiveType[self.type].value
-        else:
-            py_ref = ref_to_python(self.ref)
-            annotation = f"'{py_ref}'"
-
-        return annotation
 
     @classmethod
     def from_json(cls, type) -> 'CdpItemType':
@@ -147,13 +135,21 @@ class CdpProperty:
     @property
     def py_annotation(self) -> str:
         ''' This property's Python type annotation. '''
-        if self.type == 'array':
-            ann = f'typing.List[{self.items.py_annotation}]'
-        elif self.ref:
-            py_ref = ref_to_python(self.ref)
-            ann = f"'{py_ref}'"
+        if self.items:
+            if self.items.ref:
+                py_ref = ref_to_python(self.items.ref)
+                ann = "typing.List['{}']".format(py_ref)
+            else:
+                ann = 'typing.List[{}]'.format(
+                    CdpPrimitiveType[self.type].value)
         else:
-            ann = CdpPrimitiveType[self.type].value
+            if self.ref:
+                py_ref = ref_to_python(self.ref)
+                ann = f"'{py_ref}'"
+            elif self.type == 'any':
+                ann = 'typing.Any'
+            else:
+                ann = CdpPrimitiveType[self.type].value
         if self.optional:
             ann = f'typing.Optional[{ann}]'
         return ann
@@ -189,18 +185,17 @@ class CdpProperty:
         ''' Generate the code that exports this property to the specified JSON
         dict. '''
         self_ref = 'self.' if use_self else ''
+        assign = f"{dict_}['{self.name}'] = "
         if self.items:
             if self.items.ref:
-                assign = f"{dict_}['{self.name}'] = " \
-                         f"[i.to_json() for i in {self_ref}{self.py_name}]"
+                assign += f"[i.to_json() for i in {self_ref}{self.py_name}]"
             else:
-                raise NotImplementedError()
+                assign += f"[i for i in {self_ref}{self.py_name}]"
         else:
             if self.ref:
-                assign = f"{dict_}['{self.name}'] = " \
-                         f"{self_ref}{self.py_name}.to_json()"
+                assign += f"{self_ref}{self.py_name}.to_json()"
             else:
-                assign = f"{dict_}['{self.name}'] = {self_ref}{self.py_name}"
+                assign += f"{self_ref}{self.py_name}"
         if self.optional:
             code = dedent(f'''\
                 if {self_ref}{self.py_name} is not None:
@@ -413,10 +408,17 @@ class CdpParameter(CdpProperty):
     ''' A parameter to a CDP command. '''
     def generate_code(self) -> str:
         ''' Generate the code for a parameter in a function call. '''
-        if self.ref:
-            py_type = "'{}'".format(ref_to_python(self.ref))
+        if self.items:
+            if self.ref:
+                raise NotImplementedError(self)
+            else:
+                nested_type = CdpPrimitiveType[self.items.type].value
+                py_type = f'typing.List[{nested_type}]'
         else:
-            py_type = CdpPrimitiveType[self.type].value
+            if self.ref:
+                py_type = "'{}'".format(ref_to_python(self.ref))
+            else:
+                py_type = CdpPrimitiveType[self.type].value
         if self.optional:
             py_type = f'typing.Optional[{py_type}]'
         code = f"{self.py_name}: {py_type}"
@@ -451,6 +453,7 @@ class CdpParameter(CdpProperty):
             pass
         return f'{self.py_name}={code}'
 
+
 class CdpReturn(CdpProperty):
     ''' A return value from a CDP command. '''
     @property
@@ -460,19 +463,35 @@ class CdpReturn(CdpProperty):
                 py_ref = ref_to_python(self.items.ref)
                 ann = f"typing.List['{py_ref}']"
             else:
-                raise NotImplementedError()
+                raise NotImplementedError(self)
         else:
             if self.ref:
-                raise NotImplementedError()
+                py_ref = ref_to_python(self.ref)
+                ann = f"'{py_ref}'"
             else:
-                raise NotImplementedError()
+                ann = CdpPrimitiveType[self.type].value
 
         return ann
 
     def generate_doc(self):
         ''' Generate the docstring for this return. '''
-        desc = self.description.replace('`', '``')
-        return f':returns: {desc}'
+        if self.description:
+            doc = self.description.replace('`', '``')
+            if self.optional:
+                doc = f'(Optional) {doc}'
+        else:
+            doc = ''
+        return doc
+
+    def generate_return(self, dict_):
+        ''' Generate code for returning this value. '''
+        code = super().generate_from_json()
+        try:
+            type_ = CdpPrimitiveType[self.type].value
+            code = f'{type_}({code})'
+        except:
+            pass
+        return code
 
 
 @dataclass
@@ -509,53 +528,65 @@ class CdpCommand:
         ''' Generate code for a CDP command. '''
         # Generate the function header
         if len(self.returns) == 0:
-            raise NotImplementedError()
+            ret_type = 'None'
         elif len(self.returns) == 1:
             ret_type = self.returns[0].py_annotation
         else:
-            raise NotImplementedError()
+            nested_types = ', '.join(r.py_annotation for r in self.returns)
+            ret_type = f'typing.Tuple[{nested_types}]'
         ret_type = f"typing.Generator[T_JSON_DICT,T_JSON_DICT,{ret_type}]"
-        code = f'def {self.py_name}(\n'
-        code += indent(
-            ',\n'.join(p.generate_code() for p in self.parameters), 8)
-        code += '\n'
-        code += indent(f') -> {ret_type}:\n', 4)
+        code = f'def {self.py_name}('
+        ret = f') -> {ret_type}:\n'
+        if self.parameters:
+            code += '\n'
+            code += indent(
+                ',\n'.join(p.generate_code() for p in self.parameters), 8)
+            code += '\n'
+            code += indent(ret, 4)
+        else:
+            code += ret
 
         # Generate the docstring
         if self.description:
-            doc = self.description + '\n\n'
+            doc = self.description
         else:
             doc = ''
+        if self.parameters and doc:
+            doc += '\n\n'
         doc += '\n'.join(p.generate_doc() for p in self.parameters)
         if len(self.returns) == 1:
             doc += '\n'
-            doc += self.returns[0].generate_doc()
+            ret_doc = self.returns[0].generate_doc()
+            doc += f':returns: {ret_doc}'
         elif len(self.returns) > 1:
             doc += '\n'
-            raise NotImplementedError()
+            doc += ':returns: a tuple with the following items:\n'
+            ret_docs = '\n'.join(f'{i}. {r.name}: {r.generate_doc()}' for i, r
+                in enumerate(self.returns))
+            doc += indent(ret_docs, 4)
         if doc:
             code += indent(docstring(doc), 4)
-            code += '\n'
 
         # Generate the function body
-        code += indent('params: T_JSON_DICT = dict()', 4)
-        code += '\n'
+        if self.parameters:
+            code += '\n'
+            code += indent('params: T_JSON_DICT = dict()', 4)
+            code += '\n'
         assigns = (p.generate_to_json(dict_='params', use_self=False)
             for p in self.parameters)
         code += indent('\n'.join(assigns), 4)
         code += '\n'
-        yield_code = dedent(f'''\
-            cmd_dict: T_JSON_DICT = {{
-                'method': '{self.domain}.{self.name}',
-                'params': params,
-            }}
-            json = yield cmd_dict''')
-        code += indent(yield_code, 4)
-        code += '\n'
+        code += indent('cmd_dict: T_JSON_DICT = {\n', 4)
+        code += indent(f"'method': '{self.domain}.{self.name}',\n", 8)
+        if self.parameters:
+            code += indent("'params': params,\n", 8)
+        code += indent('}\n', 4)
+        code += indent('json = yield cmd_dict', 4)
         if len(self.returns) == 0:
-            raise NotImplementedError()
+            pass
         else:
-            expr = ', '.join(r.generate_from_json() for r in self.returns)
+            code += '\n'
+            expr = ', '.join(r.generate_return(dict_='json') for r in self.returns)
             code += indent(f'return {expr}', 4)
         return code
 
@@ -576,8 +607,12 @@ class CdpEvent:
     @classmethod
     def from_json(cls, json: dict, domain: str):
         ''' Create a new CDP event instance from a JSON dict. '''
-        return cls(json['name'], json.get('description'),
-            [CdpParameter.from_json(p) for p in json['parameters']], domain)
+        return cls(
+            json['name'],
+            json.get('description'),
+            [CdpParameter.from_json(p) for p in json.get('parameters', list())],
+            domain
+        )
 
     def generate_code(self) -> str:
         ''' Generate code for a CDP event. '''
@@ -654,6 +689,7 @@ class CdpDomain:
             iter(self.events),
         )
         code += '\n\n\n'.join(item.generate_code() for item in item_iter)
+        code += '\n'
         return code
 
         # todo update dependencies

@@ -271,8 +271,251 @@ def test_cdp_command():
     assert expected == actual
 
 
-def test_cdp_event():
+def test_cdp_command_no_params_or_returns():
     json_cmd = {
+        "name": "disable",
+        "description": "Disables the accessibility domain."
+    }
+    expected = dedent("""\
+        def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+            '''
+            Disables the accessibility domain.
+            '''
+            cmd_dict: T_JSON_DICT = {
+                'method': 'Accessibility.disable',
+            }
+            json = yield cmd_dict""")
+
+    cmd = CdpCommand.from_json(json_cmd, 'Accessibility')
+    actual = cmd.generate_code()
+    print('EXPECTED:', expected)
+    print('ACTUAL:', actual)
+    assert expected == actual
+
+def test_cdp_command_return_primitive():
+    json_cmd = {
+        "name": "getCurrentTime",
+        "description": "Returns the current time of the an animation.",
+        "parameters": [
+            {
+                "name": "id",
+                "description": "Id of animation.",
+                "type": "string"
+            }
+        ],
+        "returns": [
+            {
+                "name": "currentTime",
+                "description": "Current time of the page.",
+                "type": "number"
+            }
+        ]
+    }
+    expected = dedent("""\
+        def get_current_time(
+                id: str
+            ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,float]:
+            '''
+            Returns the current time of the an animation.
+
+            :param id: Id of animation.
+            :returns: Current time of the page.
+            '''
+            params: T_JSON_DICT = dict()
+            params['id'] = id
+            cmd_dict: T_JSON_DICT = {
+                'method': 'Animation.getCurrentTime',
+                'params': params,
+            }
+            json = yield cmd_dict
+            return float(json['currentTime'])""")
+
+    cmd = CdpCommand.from_json(json_cmd, 'Animation')
+    actual = cmd.generate_code()
+    print('EXPECTED:', expected)
+    print('ACTUAL:', actual)
+    assert expected == actual
+
+
+def test_cdp_command_array_parameter():
+    json_cmd = {
+        "name": "releaseAnimations",
+        "description": "Releases a set of animations to no longer be manipulated.",
+        "parameters": [
+            {
+                "name": "animations",
+                "description": "List of animation ids to seek.",
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
+            }
+        ]
+    }
+    expected = dedent("""\
+        def release_animations(
+                animations: typing.List[str]
+            ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+            '''
+            Releases a set of animations to no longer be manipulated.
+
+            :param animations: List of animation ids to seek.
+            '''
+            params: T_JSON_DICT = dict()
+            params['animations'] = [i for i in animations]
+            cmd_dict: T_JSON_DICT = {
+                'method': 'Animation.releaseAnimations',
+                'params': params,
+            }
+            json = yield cmd_dict""")
+
+    cmd = CdpCommand.from_json(json_cmd, 'Animation')
+    actual = cmd.generate_code()
+    print('EXPECTED:', expected)
+    print('ACTUAL:', actual)
+    assert expected == actual
+
+
+def test_cdp_command_ref_parameter():
+    json_cmd = {
+        "name": "resolveAnimation",
+        "description": "Gets the remote object of the Animation.",
+        "parameters": [
+            {
+                "name": "animationId",
+                "description": "Animation id.",
+                "type": "string"
+            }
+        ],
+        "returns": [
+            {
+                "name": "remoteObject",
+                "description": "Corresponding remote object.",
+                "$ref": "Runtime.RemoteObject"
+            }
+        ]
+    }
+    expected = dedent("""\
+        def resolve_animation(
+                animation_id: str
+            ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,'runtime.RemoteObject']:
+            '''
+            Gets the remote object of the Animation.
+
+            :param animation_id: Animation id.
+            :returns: Corresponding remote object.
+            '''
+            params: T_JSON_DICT = dict()
+            params['animationId'] = animation_id
+            cmd_dict: T_JSON_DICT = {
+                'method': 'Animation.resolveAnimation',
+                'params': params,
+            }
+            json = yield cmd_dict
+            return runtime.RemoteObject.from_json(json['remoteObject'])""")
+
+    cmd = CdpCommand.from_json(json_cmd, 'Animation')
+    actual = cmd.generate_code()
+    print('EXPECTED:', expected)
+    print('ACTUAL:', actual)
+    assert expected == actual
+
+
+def test_cdp_command_multiple_return():
+    json_cmd = {
+        "name": "getEncodedResponse",
+        "description": "Returns the response body and size if it were re-encoded with the specified settings. Only\napplies to images.",
+        "parameters": [
+            {
+                "name": "requestId",
+                "description": "Identifier of the network request to get content for.",
+                "$ref": "Network.RequestId"
+            },
+            {
+                "name": "encoding",
+                "description": "The encoding to use.",
+                "type": "string",
+                "enum": [
+                    "webp",
+                    "jpeg",
+                    "png"
+                ]
+            },
+            {
+                "name": "quality",
+                "description": "The quality of the encoding (0-1). (defaults to 1)",
+                "optional": True,
+                "type": "number"
+            },
+            {
+                "name": "sizeOnly",
+                "description": "Whether to only return the size information (defaults to false).",
+                "optional": True,
+                "type": "boolean"
+            }
+        ],
+        "returns": [
+            {
+                "name": "body",
+                "description": "The encoded body as a base64 string. Omitted if sizeOnly is true.",
+                "optional": True,
+                "type": "string"
+            },
+            {
+                "name": "originalSize",
+                "description": "Size before re-encoding.",
+                "type": "integer"
+            },
+            {
+                "name": "encodedSize",
+                "description": "Size after re-encoding.",
+                "type": "integer"
+            }
+        ]
+    }
+    expected = dedent("""\
+        def get_encoded_response(
+                request_id: 'network.RequestId',
+                encoding: str,
+                quality: typing.Optional[float] = None,
+                size_only: typing.Optional[bool] = None
+            ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[str, int, int]]:
+            '''
+            Returns the response body and size if it were re-encoded with the specified settings. Only
+            applies to images.
+
+            :param request_id: Identifier of the network request to get content for.
+            :param encoding: The encoding to use.
+            :param quality: The quality of the encoding (0-1). (defaults to 1)
+            :param size_only: Whether to only return the size information (defaults to false).
+            :returns: a tuple with the following items:
+                0. body: (Optional) The encoded body as a base64 string. Omitted if sizeOnly is true.
+                1. originalSize: Size before re-encoding.
+                2. encodedSize: Size after re-encoding.
+            '''
+            params: T_JSON_DICT = dict()
+            params['requestId'] = request_id.to_json()
+            params['encoding'] = encoding
+            if quality is not None:
+                params['quality'] = quality
+            if size_only is not None:
+                params['sizeOnly'] = size_only
+            cmd_dict: T_JSON_DICT = {
+                'method': 'Audits.getEncodedResponse',
+                'params': params,
+            }
+            json = yield cmd_dict
+            return str(json['body'] if 'body' in json else None), int(json['originalSize']), int(json['encodedSize'])""")
+
+    cmd = CdpCommand.from_json(json_cmd, 'Audits')
+    actual = cmd.generate_code()
+    print('EXPECTED:', expected)
+    print('ACTUAL:', actual)
+    assert expected == actual
+
+
+def test_cdp_event():
+    json_event = {
         "name": "recordingStateChanged",
         "description": "Called when the recording state for the service has been updated.",
         "parameters": [
@@ -306,7 +549,7 @@ def test_cdp_event():
                     service=ServiceName.from_json(json['service'])
                 )""")
 
-    cmd = CdpEvent.from_json(json_cmd, 'BackgroundService')
+    cmd = CdpEvent.from_json(json_event, 'BackgroundService')
     actual = cmd.generate_code()
     print('EXPECTED:', expected)
     print('ACTUAL:', actual)
