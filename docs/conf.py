@@ -20,7 +20,7 @@
 project = 'PyCDP'
 copyright = '2019, Mark E. Haase, Brian Mackintosh'
 author = 'Mark E. Haase, Brian Mackintosh'
-
+master_doc = 'index'
 
 # -- General configuration ---------------------------------------------------
 
