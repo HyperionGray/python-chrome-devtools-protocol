@@ -4,3 +4,4 @@ inflection
 mypy
 sphinx
 sphinx-rtd-theme
+twine

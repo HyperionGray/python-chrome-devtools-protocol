@@ -8,7 +8,7 @@ with (here / 'README.md').open(encoding='utf8') as f:
 
 setup(
     name='chrome-devtools-protocol',
-    version='0.2.0-dev',
+    version='0.1.0',
     description='Python type wrappers for Chrome DevTools Protocol (CDP)',
     long_description=long_description,
     url='https://github.com/HyperionGray/python-chrome-devtools-protocol',
@@ -23,6 +23,6 @@ setup(
     python_requires='>=3.7',
     keywords='chrome devtools protocol cdp',
     package_data={'cdp': ['py.typed']},
-    packages=find_packages(exclude=['build', 'docs', 'examples', 'test']),
+    packages=find_packages(exclude=['build', 'docs', 'examples', 'generator']),
     install_requires=[]
 )
