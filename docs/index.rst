@@ -3,8 +3,6 @@
 PyCDP
 =====
 
-[![PyPI](https://img.shields.io/pypi/v/chrome-devtools-protocol.svg?style=flat-square)](https://pypi.org/project/chrome-devtools-protocol/)
-
 .. toctree::
    :caption: Contents
 
