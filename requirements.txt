@@ -2,3 +2,5 @@
 # needed if you only want to install this library.
 inflection
 mypy
+sphinx
+sphinx-rtd-theme

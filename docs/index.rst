@@ -1,8 +1,18 @@
-# PyCDP
+.. PyCDP
+
+PyCDP
+=====
+
+.. toctree::
+   :caption: Contents
+
+   getting_started
+   api
+   develop
 
 Python Chrome DevTools Protocol (shortened to PyCDP) is a library that provides
-Python wrappers for the types, commands, and events specified in the [Chrome
-DevTools Protocol](https://github.com/ChromeDevTools/devtools-protocol/).
+Python wrappers for the types, commands, and events specified in the `Chrome
+DevTools Protocol <https://github.com/ChromeDevTools/devtools-protocol/>`_.
 
 The Chrome DevTools Protocol provides for remote control of a web browser by
 sending JSON messages over a WebSocket. That JSON format is described by a
@@ -19,6 +29,13 @@ wrappers, this project makes it easier and faster to write CDP client code.
 flexibility, this library does not actually handle any network I/O, such as
 opening a socket or negotiating a WebSocket protocol. Instead, that
 responsibility is left to higher-level libraries, for example
-[trio-chrome-devtools-protocol](https://github.com/hyperiongray/trio-chrome-devtools-protocol).
+`trio-chrome-devtools-protocol
+<https://github.com/hyperiongray/trio-chrome-devtools-protocol>`_.
 
-For more information, see the [complete documentation](https://pycdp.readthedocs.io).
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
