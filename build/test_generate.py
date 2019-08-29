@@ -209,7 +209,7 @@ def test_cdp_class_type():
                 return cls(
                     type=AXValueType.from_json(json['type']),
                     value=json['value'] if 'value' in json else None,
-                    relatedNodes=[AXRelatedNode.from_json(i) for i in json['relatedNodes']] if 'relatedNodes' in json else None,
+                    related_nodes=[AXRelatedNode.from_json(i) for i in json['relatedNodes']] if 'relatedNodes' in json else None,
                     sources=[AXValueSource.from_json(i) for i in json['sources']] if 'sources' in json else None,
                 )""")
 
@@ -548,7 +548,7 @@ def test_cdp_command_multiple_return():
                 encoding: str,
                 quality: typing.Optional[float] = None,
                 size_only: typing.Optional[bool] = None
-            ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[str, int, int]]:
+            ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.Optional[str], int, int]]:
             '''
             Returns the response body and size if it were re-encoded with the specified settings. Only
             applies to images.
@@ -574,7 +574,11 @@ def test_cdp_command_multiple_return():
                 'params': params,
             }
             json = yield cmd_dict
-            return str(json['body'] if 'body' in json else None), int(json['originalSize']), int(json['encodedSize'])""")
+            return (
+                str(json['body']) if 'body' in json else None,
+                int(json['originalSize']),
+                int(json['encodedSize'])
+            )""")
 
     cmd = CdpCommand.from_json(json_cmd, 'Audits')
     actual = cmd.generate_code()
