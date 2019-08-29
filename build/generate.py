@@ -368,6 +368,26 @@ class CdpType:
 
         return code
 
+    def get_refs(self):
+        ''' Return all refs for this type. '''
+        refs = set()
+        if self.enum:
+            # Enum types don't have refs.
+            pass
+        elif self.properties:
+            # Enumerate refs for a class type.
+            for prop in self.properties:
+                if prop.items and prop.items.ref:
+                    refs.add(prop.items.ref)
+                elif prop.ref:
+                    refs.add(prop.ref)
+        else:
+            # A primitive type can't have a direct ref, but it can have an items
+            # which contains a ref.
+            if self.items and self.items.ref:
+                refs.add(self.items.ref)
+        return refs
+
 
 class CdpParameter(CdpProperty):
     ''' A parameter to a CDP command. '''
@@ -562,6 +582,16 @@ class CdpCommand:
             code += indent(f'return {expr}', 4)
         return code
 
+    def get_refs(self):
+        ''' Get all refs for this command. '''
+        refs = set()
+        for type_ in itertools.chain(self.parameters, self.returns):
+            if type_.items and type_.items.ref:
+                refs.add(type_.items.ref)
+            elif type_.ref:
+                refs.add(type_.ref)
+        return refs
+
 
 @dataclass
 class CdpEvent:
@@ -612,6 +642,16 @@ class CdpEvent:
         code += indent(')', 8)
         return code
 
+    def get_refs(self):
+        ''' Get all refs for this event. '''
+        refs = set()
+        for param in self.parameters:
+            if param.items and param.items.ref:
+                refs.add(param.items.ref)
+            elif param.ref:
+                refs.add(param.ref)
+        return refs
+
 
 @dataclass
 class CdpDomain:
@@ -649,13 +689,10 @@ class CdpDomain:
     def generate_code(self) -> str:
         ''' Generate the Python module code for a given CDP domain. '''
         code = MODULE_HEADER.format(self.domain, self.experimental)
-        imports = list()
-        for d in self.dependencies:
-            module = inflection.underscore(d)
-            imports.append(f'from . import {module}')
-        if imports:
-            code += '\n'.join(imports)
-            code += '\n\n\n'
+        import_code = self.generate_imports()
+        if import_code:
+            code += import_code
+            code += 3 * '\n'
         item_iter = itertools.chain(
             iter(self.types),
             iter(self.commands),
@@ -665,29 +702,33 @@ class CdpDomain:
         code += '\n'
         return code
 
-    # def generate_imports(self):
-    #     ''' Determine which modules this module depends on and emit the code to
-    #     import those modules. '''
-    #     refs = set()
-    #     for type_ in self.types:
-    #         # Remember: types never have a ref, but they can have an items with
-    #         # a ref.
-    #         if type_.items:
-    #             refs.add(type_.items.ref)
-    #     for command in self.commands:
-    #         pass
-    #     # If a type doesn't have a ref, then ref is None, so we should remove
-    #     # that here:
-    #     ref.remove(None)
-    #     dependencies = set()
-    #     for ref in refs:
-    #         try:
-    #             domain, _ = ref.split('.')
-    #         except ValueError:
-    #             continue
-    #         if domain != self.domain:
-    #             dependencies.add(inflection.underscore(domain))
-    #     return '\n'.join(f'import {d}' for d in dependencies)
+    def generate_imports(self):
+        '''
+        Determine which modules this module depends on and emit the code to
+        import those modules.
+
+        Notice that CDP defines a ``dependencies`` field for each domain, but
+        these dependencies are a subset of the modules that we actually need to
+        import to make our Python code work correctly and type safe. So we
+        ignore the CDP's declared dependencies and compute them ourselves.
+        '''
+        refs = set()
+        for type_ in self.types:
+            refs |= type_.get_refs()
+        for command in self.commands:
+            refs |= command.get_refs()
+        for event in self.events:
+            refs |= event.get_refs()
+        dependencies = set()
+        for ref in refs:
+            try:
+                domain, _ = ref.split('.')
+            except ValueError:
+                continue
+            if domain != self.domain:
+                dependencies.add(inflection.underscore(domain))
+        return '\n'.join(f'from . import {d}' for d in sorted(dependencies))
+        return code
 
 
 def parse(json_path, output_path):
