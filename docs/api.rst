@@ -100,9 +100,6 @@ API Reference
 .. automodule:: cdp.profiler
   :members:
 
-.. automodule:: py.cdp.ty
-  :members:
-
 .. automodule:: cdp.runtime
   :members:
 
