@@ -39,7 +39,6 @@ from dataclasses import dataclass
 import enum
 import typing
 
-
 '''.format(SHARED_HEADER)
 
 
@@ -169,12 +168,6 @@ class CdpProperty:
     def generate_decl(self) -> str:
         ''' Generate the code that declares this property. '''
         code = inline_doc(self.description)
-        # todo handle dependencies later
-        # elif '$ref' in prop and '.' not in prop_ann:
-        #     # If the type lives in this module and is not a type that refers
-        #     # to itself, then add it to the set of children so that
-        #     # inter-class dependencies can be resolved later on.
-        #     children.add(prop_ann)
         code += f'{self.py_name}: {self.py_annotation}'
         if self.optional:
             code += ' = None'
@@ -206,9 +199,6 @@ class CdpProperty:
     def generate_from_json(self, dict_='json') -> str:
         ''' Generate the code that creates an instance from a JSON dict named
         ``json``. '''
-        # todo this is one of the few places where a real dependency is created
-        # (most of the deps are type annotations and can be avoided by quoting
-        # the annotation)
         if self.items:
             if self.items.ref:
                 py_ref = ref_to_python(self.items.ref)
@@ -251,10 +241,6 @@ class CdpType:
 
     def generate_code(self) -> str:
         ''' Generate Python code for this type. '''
-        # todo handle exports and emitted types somewhere else?
-        # exports = list()
-        # exports.append(type_name)
-        # emitted_types = set()
         logger.debug('Generating type %s: %s', self.id, self.type)
         if self.enum:
             return self.generate_enum_code()
@@ -380,41 +366,7 @@ class CdpType:
         def_from_json += indent(')', 4)
         code += indent(def_from_json, 4)
 
-        # todo we used to return a dict but i'm not sure if that's still needed?
-        # return {
-        #     'name': self.id,
-        #     'code': code,
-        #     Don't emit children that live in a different module. We assume that
-        #     modules do not have cyclical dependencies on each other.
-        #     'children': [c for c in children if '.' not in c],
-        # }
         return code
-
-    # Todo how to resolve dependencies?
-    # The classes have dependencies on each other, so we have to emit them in
-    # a specific order. If we can't resolve these dependencies after a certain
-    # number of iterations, it suggests a cyclical dependency that this code
-    # cannot handle.
-    # tries_remaining = 1000
-    # while classes:
-    #     class_ = classes.pop(0)
-    #     if not class_['children']:
-    #         code += class_['code']
-    #         emitted_types.add(class_['name'])
-    #         continue
-    #     if all(child in emitted_types for child in class_['children']):
-    #         code += class_['code']
-    #         emitted_types.add(class_['name'])
-    #         continue
-    #     classes.append(class_)
-    #     tries_remaining -= 1
-    #     if not tries_remaining:
-    #         logger.error('Class resolution failed. Emitted these types: %s',
-    #             emitted_types)
-    #         logger.error('Class resolution failed. Cannot emit these types: %s',
-    #             json.dumps(classes, indent=2))
-    #         raise Exception('Failed to resolve class dependencies.'
-    #             ' See output above.')
 
 
 class CdpParameter(CdpProperty):
@@ -697,6 +649,13 @@ class CdpDomain:
     def generate_code(self) -> str:
         ''' Generate the Python module code for a given CDP domain. '''
         code = MODULE_HEADER.format(self.domain, self.experimental)
+        imports = list()
+        for d in self.dependencies:
+            module = inflection.underscore(d)
+            imports.append(f'from . import {module}')
+        if imports:
+            code += '\n'.join(imports)
+            code += '\n\n\n'
         item_iter = itertools.chain(
             iter(self.types),
             iter(self.commands),
@@ -706,80 +665,29 @@ class CdpDomain:
         code += '\n'
         return code
 
-        # todo update dependencies
-        # The dependencies listed in the JSON don't match the actual dependencies
-        # encountered when building the types. So we ignore the declared
-        # dependencies and compute it ourself.
-        # type_dependencies = set()
-        # domain_types = domain.get('types', list())
-        # for type_ in domain_types:
-        #     for prop in type_.get('properties', list()):
-        #         dependency = get_dependency(prop)
-        #         if dependency:
-        #             type_dependencies.add(dependency)
-        # if type_dependencies:
-        #     logger.debug('Computed type_dependencies: %s', ','.join(
-        #         type_dependencies))
-        #
-        # event_dependencies = set()
-        # domain_events = domain.get('events', list())
-        # for event in domain_events:
-        #     for param in event.get('parameters', list()):
-        #         dependency = get_dependency(param)
-        #         if dependency:
-        #             event_dependencies.add(dependency)
-        # if event_dependencies:
-        #     logger.debug('Computed event_dependencies: %s', ','.join(
-        #         event_dependencies))
-        #
-        # command_dependencies = set()
-        # domain_commands = domain.get('commands', list())
-        # for command in domain_commands:
-        #     for param in command.get('parameters', list()):
-        #         dependency = get_dependency(param)
-        #         if dependency:
-        #             command_dependencies.add(dependency)
-        #     for return_ in command.get('returns', list()):
-        #         dependency = get_dependency(return_)
-        #         if dependency:
-        #             command_dependencies.add(dependency)
-        # if command_dependencies:
-        #     logger.debug('Computed command_dependencies: %s', ','.join(
-        #         command_dependencies))
-
-        # types_path = module_path / 'types.py'
-        # with types_path.open('w') as types_file:
-        #     types_file.write(module_header.format(module_name, self.experimental))
-        #     for dependency in sorted(type_dependencies):
-        #         types_file.write(import_dependency(dependency))
-        #     if type_dependencies:
-        #         types_file.write('\n')
-        #     type_exports, type_code = generate_types(domain_types)
-        #     types_file.write(type_code)
-        #
-        # events_path = module_path / 'events.py'
-        # with events_path.open('w') as events_file:
-        #     events_file.write(module_header.format(module_name, self.experimental))
-        #     events_file.write('from .types import *\n')
-        #     for dependency in sorted(event_dependencies):
-        #         events_file.write(import_dependency(dependency))
-        #     if event_dependencies:
-        #         events_file.write('\n')
-        #     event_exports, event_code = generate_events(self.domain, domain_events)
-        #     events_file.write(event_code)
-        #
-        # commands_path = module_path / 'commands.py'
-        # with commands_path.open('w') as commands_file:
-        #     commands_file.write(module_header.format(module_name, self.experimental))
-        #     commands_file.write('from .types import *\n')
-        #     for dependency in sorted(command_dependencies):
-        #         commands_file.write(import_dependency(dependency))
-        #     if command_dependencies:
-        #         commands_file.write('\n')
-        #     command_exports, command_code = generate_commands(self.domain, domain_commands)
-        #     commands_file.write(command_code)
-
-        # return module_name, type_exports, event_exports, command_exports
+    # def generate_imports(self):
+    #     ''' Determine which modules this module depends on and emit the code to
+    #     import those modules. '''
+    #     refs = set()
+    #     for type_ in self.types:
+    #         # Remember: types never have a ref, but they can have an items with
+    #         # a ref.
+    #         if type_.items:
+    #             refs.add(type_.items.ref)
+    #     for command in self.commands:
+    #         pass
+    #     # If a type doesn't have a ref, then ref is None, so we should remove
+    #     # that here:
+    #     ref.remove(None)
+    #     dependencies = set()
+    #     for ref in refs:
+    #         try:
+    #             domain, _ = ref.split('.')
+    #         except ValueError:
+    #             continue
+    #         if domain != self.domain:
+    #             dependencies.add(inflection.underscore(domain))
+    #     return '\n'.join(f'import {d}' for d in dependencies)
 
 
 def parse(json_path, output_path):

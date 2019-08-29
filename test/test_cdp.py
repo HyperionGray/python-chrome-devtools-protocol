@@ -1,7 +1,7 @@
 '''
 Some basic tests for the generated CDP modules.
 '''
-from cdp import dom, page, util
+from cdp import dom, io, page, tracing, util
 
 
 def test_primitive_type():
@@ -42,6 +42,18 @@ def test_event_type():
     assert event.window_name == 'Window 1'
     assert event.window_features == ['feature1', 'feature2']
     assert not event.user_gesture
+
+
+def test_event_type_with_dependency():
+    ''' This tracing event has a dependency on the io module. '''
+    event = tracing.TracingComplete.from_json({
+        'stream': 'Foo Stream',
+        'traceFormat': tracing.StreamFormat.JSON,
+    })
+    assert isinstance(event.stream, io.StreamHandle)
+    assert repr(event.stream) == "StreamHandle('Foo Stream')"
+    assert event.trace_format.value == 'json'
+    assert event.stream_compression is None
 
 
 def test_event_dispatch():
