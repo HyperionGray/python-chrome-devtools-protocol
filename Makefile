@@ -7,7 +7,7 @@ mypy-cdp:
 	mypy cdp/
 
 mypy-generate:
-	mybuild build/
+	mypy build/
 
 test-cdp:
 	pytest test/

@@ -71,8 +71,8 @@ def inline_doc(description) -> str:
     if not description:
         return ''
 
-    lines = ['#: {}\n'.format(l) for l in description.split('\n')]
-    return ''.join(lines)
+    lines = ['#: {}'.format(l) for l in description.split('\n')]
+    return '\n'.join(lines)
 
 
 def docstring(description: typing.Optional[str]) -> str:
@@ -129,6 +129,7 @@ class CdpItems:
 
     @classmethod
     def from_json(cls, type) -> 'CdpItems':
+        ''' Generate code to instantiate an item from a JSON object. '''
         return cls(type.get('type'), type.get('$ref'))
 
 
@@ -185,6 +186,8 @@ class CdpProperty:
     def generate_decl(self) -> str:
         ''' Generate the code that declares this property. '''
         code = inline_doc(self.description)
+        if code:
+            code += '\n'
         code += f'{self.py_name}: {self.py_annotation}'
         if self.optional:
             code += ' = None'
@@ -464,6 +467,7 @@ class CdpReturn(CdpProperty):
     ''' A return value from a CDP command. '''
     @property
     def py_annotation(self):
+        ''' Return the Python type annotation for this return. '''
         if self.items:
             if self.items.ref:
                 py_ref = ref_to_python(self.items.ref)
@@ -819,7 +823,6 @@ def main():
         module_path = output_path / f'{domain.module}.py'
         with module_path.open('w') as module_file:
             module_file.write(domain.generate_code())
-
 
     init_path = output_path / '__init__.py'
     generate_init(init_path, domains)

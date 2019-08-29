@@ -682,6 +682,69 @@ def test_cdp_event():
     assert expected == actual
 
 
+def test_cdp_event_parameter_docs():
+    json_event = {
+        "name": "windowOpen",
+        "description": "Fired when a new window is going to be opened, via window.open(), link click, form submission,\netc.",
+        "parameters": [
+            {
+                "name": "url",
+                "description": "The URL for the new window.",
+                "type": "string"
+            },
+            {
+                "name": "windowName",
+                "description": "Window name.",
+                "type": "string"
+            },
+            {
+                "name": "windowFeatures",
+                "description": "An array of enabled window features.",
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
+            },
+            {
+                "name": "userGesture",
+                "description": "Whether or not it was triggered by user gesture.",
+                "type": "boolean"
+            }
+        ]
+    }
+    expected = dedent("""\
+        @event_class('Page.windowOpen')
+        @dataclass
+        class WindowOpen:
+            '''
+            Fired when a new window is going to be opened, via window.open(), link click, form submission,
+            etc.
+            '''
+            #: The URL for the new window.
+            url: str
+            #: Window name.
+            window_name: str
+            #: An array of enabled window features.
+            window_features: typing.List[str]
+            #: Whether or not it was triggered by user gesture.
+            user_gesture: bool
+
+            @classmethod
+            def from_json(cls, json: T_JSON_DICT) -> 'WindowOpen':
+                return cls(
+                    url=str(json['url']),
+                    window_name=str(json['windowName']),
+                    window_features=[str(i) for i in json['windowFeatures']],
+                    user_gesture=bool(json['userGesture'])
+                )""")
+
+    cmd = CdpEvent.from_json(json_event, 'Page')
+    actual = cmd.generate_code()
+    print('EXPECTED:', expected)
+    print('ACTUAL:', actual)
+    assert expected == actual
+
+
 def test_cdp_domain_imports():
     ''' This is a made-up domain in order to keep the test short. '''
     json_domain = {
