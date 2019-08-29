@@ -1,5 +1,5 @@
-Overview
-========
+Getting Started
+===============
 
 The best way to understand how to use PyCDP is to look at how it converts the
 machine-readable Chrome DevTools Protocol (CDP) spec into Python code. Once you
@@ -15,17 +15,13 @@ and snake casing module/function/variable names.
 Within each domain, CDP specifies three things. Note that CDP types can be
 further divided into three categories.
 
-1. Types
-
-   a. Primitive Types
-   b. Enumerations
-   c. Class Types
-
+1. Types: Primitives, Enumerations, & Classes
 2. Commands
 3. Events
 
-This overview will show examples of the CDP specification for each of these
-things, and then explain how that specification is used to generate Python code.
+This section shows examples of the CDP specification for each of these
+things, and then explains how that specification is used to generate Python
+code.
 
 
 Primitive Types
@@ -76,8 +72,8 @@ Instead, you'll receive a primitive type (such as script identifier) from one
 API call and then you'll send it back as an argument to a later API call.
 
 
-Enumerations
-------------
+Enumeration Types
+-----------------
 
 CDP specifies enumerations to provide named constants. Enumeration values are
 always strings.

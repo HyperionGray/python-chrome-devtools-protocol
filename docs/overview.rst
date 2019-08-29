@@ -1,14 +1,9 @@
-# PyCDP
-
-[![PyPI](https://img.shields.io/pypi/v/chrome-devtools-protocol.svg)](https://pypi.org/project/chrome-devtools-protocol/)
-![Python Versions](https://img.shields.io/pypi/pyversions/chrome-devtools-protocol)
-![MIT License](https://img.shields.io/github/license/HyperionGray/python-chrome-devtools-protocol.svg)
-[![Build Status](https://img.shields.io/travis/com/HyperionGray/python-chrome-devtools-protocol.svg?branch=master)](https://travis-ci.com/HyperionGray/python-chrome-devtools-protocol)
-[![Read the Docs](https://img.shields.io/readthedocs/py-cdp.svg)](https://py-cdp.readthedocs.io)
+Overview
+========
 
 Python Chrome DevTools Protocol (shortened to PyCDP) is a library that provides
-Python wrappers for the types, commands, and events specified in the [Chrome
-DevTools Protocol](https://github.com/ChromeDevTools/devtools-protocol/).
+Python wrappers for the types, commands, and events specified in the `Chrome
+DevTools Protocol <https://github.com/ChromeDevTools/devtools-protocol/>`_.
 
 The Chrome DevTools Protocol provides for remote control of a web browser by
 sending JSON messages over a WebSocket. That JSON format is described by a
@@ -25,6 +20,20 @@ wrappers, this project makes it easier and faster to write CDP client code.
 flexibility, this library does not actually handle any network I/O, such as
 opening a socket or negotiating a WebSocket protocol. Instead, that
 responsibility is left to higher-level libraries, for example
-[trio-chrome-devtools-protocol](https://github.com/hyperiongray/trio-chrome-devtools-protocol).
+`trio-chrome-devtools-protocol
+<https://github.com/hyperiongray/trio-chrome-devtools-protocol>`_.
 
-For more information, see the [complete documentation](https://pycdp.readthedocs.io).
+To install (requires Python ≥3.7):
+
+.. code-block::
+
+    $ pip install chrome-devtools-protocol
+
+Sample code:
+
+.. code-block::
+
+    from cdp import page
+
+    frame_id = page.FrameId('my id')
+    assert repr(frame_id) == "FrameId('my id')"
