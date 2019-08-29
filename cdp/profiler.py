@@ -455,11 +455,9 @@ def take_type_profile() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[
 class ConsoleProfileFinished:
     id: str
     #: Location of console.profileEnd().
-
     location: 'debugger.Location'
     profile: 'Profile'
     #: Profile title passed as an argument to console.profile().
-
     title: typing.Optional[str]
 
     @classmethod
@@ -480,10 +478,8 @@ class ConsoleProfileStarted:
     '''
     id: str
     #: Location of console.profile().
-
     location: 'debugger.Location'
     #: Profile title passed as an argument to console.profile().
-
     title: typing.Optional[str]
 
     @classmethod

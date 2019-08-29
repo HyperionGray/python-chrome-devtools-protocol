@@ -457,7 +457,6 @@ class AttachedToTarget:
     Issued when attached to target because of auto-attach or `attachToTarget` command.
     '''
     #: Identifier assigned to the session used to send/receive messages.
-
     session_id: 'SessionID'
     target_info: 'TargetInfo'
     waiting_for_debugger: bool
@@ -479,10 +478,8 @@ class DetachedFromTarget:
     issued multiple times per target if multiple sessions have been attached to it.
     '''
     #: Detached session identifier.
-
     session_id: 'SessionID'
     #: Deprecated.
-
     target_id: typing.Optional['TargetID']
 
     @classmethod
@@ -501,11 +498,9 @@ class ReceivedMessageFromTarget:
     `attachedToTarget` event).
     '''
     #: Identifier of a session which sends a message.
-
     session_id: 'SessionID'
     message: str
     #: Deprecated.
-
     target_id: typing.Optional['TargetID']
 
     @classmethod
@@ -555,10 +550,8 @@ class TargetCrashed:
     '''
     target_id: 'TargetID'
     #: Termination status type.
-
     status: str
     #: Termination error code.
-
     error_code: int
 
     @classmethod

@@ -230,14 +230,11 @@ def start(
 class BufferUsage:
     #: A number in range [0..1] that indicates the used size of event buffer as a fraction of its
     #: total size.
-
     percent_full: typing.Optional[float]
     #: An approximate number of events in the trace log.
-
     event_count: typing.Optional[float]
     #: A number in range [0..1] that indicates the used size of event buffer as a fraction of its
     #: total size.
-
     value: typing.Optional[float]
 
     @classmethod
@@ -273,13 +270,10 @@ class TracingComplete:
     delivered via dataCollected events.
     '''
     #: A handle of the stream that holds resulting trace data.
-
     stream: typing.Optional['io.StreamHandle']
     #: Trace data format of returned stream.
-
     trace_format: typing.Optional['StreamFormat']
     #: Compression format of returned stream.
-
     stream_compression: typing.Optional['StreamCompression']
 
     @classmethod

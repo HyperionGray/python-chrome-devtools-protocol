@@ -183,13 +183,10 @@ def get_manifest_for_frame(
 @dataclass
 class ApplicationCacheStatusUpdated:
     #: Identifier of the frame containing document whose application cache updated status.
-
     frame_id: 'page.FrameId'
     #: Manifest URL.
-
     manifest_url: str
     #: Updated application cache status.
-
     status: int
 
     @classmethod

@@ -378,7 +378,6 @@ class AnimationCanceled:
     Event for when an animation has been cancelled.
     '''
     #: Id of the animation that was cancelled.
-
     id: str
 
     @classmethod
@@ -395,7 +394,6 @@ class AnimationCreated:
     Event for each animation that has been created.
     '''
     #: Id of the animation that was created.
-
     id: str
 
     @classmethod
@@ -412,7 +410,6 @@ class AnimationStarted:
     Event for animation that has been started.
     '''
     #: Animation that was started.
-
     animation: 'Animation'
 
     @classmethod

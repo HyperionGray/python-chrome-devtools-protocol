@@ -1255,7 +1255,6 @@ class BindingCalled:
     name: str
     payload: str
     #: Identifier of the context where the call was made.
-
     execution_context_id: 'ExecutionContextId'
 
     @classmethod
@@ -1274,26 +1273,20 @@ class ConsoleAPICalled:
     Issued when console API was called.
     '''
     #: Type of the call.
-
     type: str
     #: Call arguments.
-
     args: typing.List['RemoteObject']
     #: Identifier of the context where the call was made.
-
     execution_context_id: 'ExecutionContextId'
     #: Call timestamp.
-
     timestamp: 'Timestamp'
     #: Stack trace captured when the call was made. The async stack chain is automatically reported for
     #: the following call types: `assert`, `error`, `trace`, `warning`. For other types the async call
     #: chain can be retrieved using `Debugger.getStackTrace` and `stackTrace.parentId` field.
-
     stack_trace: typing.Optional['StackTrace']
     #: Console context descriptor for calls on non-default console context (not console.*):
     #: 'anonymous#unique-logger-id' for call on unnamed context, 'name#unique-logger-id' for call
     #: on named context.
-
     context: typing.Optional[str]
 
     @classmethod
@@ -1315,10 +1308,8 @@ class ExceptionRevoked:
     Issued when unhandled exception was revoked.
     '''
     #: Reason describing why exception was revoked.
-
     reason: str
     #: The id of revoked exception, as reported in `exceptionThrown`.
-
     exception_id: int
 
     @classmethod
@@ -1336,7 +1327,6 @@ class ExceptionThrown:
     Issued when exception was thrown and unhandled.
     '''
     #: Timestamp of the exception.
-
     timestamp: 'Timestamp'
     exception_details: 'ExceptionDetails'
 
@@ -1355,7 +1345,6 @@ class ExecutionContextCreated:
     Issued when new execution context is created.
     '''
     #: A newly created execution context.
-
     context: 'ExecutionContextDescription'
 
     @classmethod
@@ -1372,7 +1361,6 @@ class ExecutionContextDestroyed:
     Issued when execution context is destroyed.
     '''
     #: Id of the destroyed context
-
     execution_context_id: 'ExecutionContextId'
 
     @classmethod

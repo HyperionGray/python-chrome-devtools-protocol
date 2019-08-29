@@ -98,10 +98,8 @@ class Metrics:
     Current values of the metrics.
     '''
     #: Current values of the metrics.
-
     metrics: typing.List['Metric']
     #: Timestamp title.
-
     title: str
 
     @classmethod

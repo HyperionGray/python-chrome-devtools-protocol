@@ -1275,7 +1275,6 @@ class FontsUpdated:
     web font
     '''
     #: The web font that has loaded.
-
     font: typing.Optional['FontFace']
 
     @classmethod
@@ -1308,7 +1307,6 @@ class StyleSheetAdded:
     Fired whenever an active document stylesheet is added.
     '''
     #: Added stylesheet metainfo.
-
     header: 'CSSStyleSheetHeader'
 
     @classmethod
@@ -1340,7 +1338,6 @@ class StyleSheetRemoved:
     Fired whenever an active document stylesheet is removed.
     '''
     #: Identifier of the removed stylesheet.
-
     style_sheet_id: 'StyleSheetId'
 
     @classmethod

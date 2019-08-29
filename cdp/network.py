@@ -1917,16 +1917,12 @@ class DataReceived:
     Fired when data chunk was received over the network.
     '''
     #: Request identifier.
-
     request_id: 'RequestId'
     #: Timestamp.
-
     timestamp: 'MonotonicTime'
     #: Data chunk length.
-
     data_length: int
     #: Actual bytes received (might be less than dataLength for compressed encodings).
-
     encoded_data_length: int
 
     @classmethod
@@ -1946,19 +1942,14 @@ class EventSourceMessageReceived:
     Fired when EventSource message is received.
     '''
     #: Request identifier.
-
     request_id: 'RequestId'
     #: Timestamp.
-
     timestamp: 'MonotonicTime'
     #: Message type.
-
     event_name: str
     #: Message identifier.
-
     event_id: str
     #: Message content.
-
     data: str
 
     @classmethod
@@ -1979,22 +1970,16 @@ class LoadingFailed:
     Fired when HTTP request has failed to load.
     '''
     #: Request identifier.
-
     request_id: 'RequestId'
     #: Timestamp.
-
     timestamp: 'MonotonicTime'
     #: Resource type.
-
     type: 'ResourceType'
     #: User friendly error message.
-
     error_text: str
     #: True if loading was canceled.
-
     canceled: typing.Optional[bool]
     #: The reason why loading was blocked, if any.
-
     blocked_reason: typing.Optional['BlockedReason']
 
     @classmethod
@@ -2016,17 +2001,13 @@ class LoadingFinished:
     Fired when HTTP request has finished loading.
     '''
     #: Request identifier.
-
     request_id: 'RequestId'
     #: Timestamp.
-
     timestamp: 'MonotonicTime'
     #: Total number of bytes received for this request.
-
     encoded_data_length: float
     #: Set when 1) response was blocked by Cross-Origin Read Blocking and also
     #: 2) this needs to be reported to the DevTools console.
-
     should_report_corb_blocking: typing.Optional[bool]
 
     @classmethod
@@ -2049,44 +2030,33 @@ class RequestIntercepted:
     #: Each request the page makes will have a unique id, however if any redirects are encountered
     #: while processing that fetch, they will be reported with the same id as the original fetch.
     #: Likewise if HTTP authentication is needed then the same fetch id will be used.
-
     interception_id: 'InterceptionId'
     request: 'Request'
     #: The id of the frame that initiated the request.
-
     frame_id: 'page.FrameId'
     #: How the requested resource will be used.
-
     resource_type: 'ResourceType'
     #: Whether this is a navigation request, which can abort the navigation completely.
-
     is_navigation_request: bool
     #: Set if the request is a navigation that will result in a download.
     #: Only present after response is received from the server (i.e. HeadersReceived stage).
-
     is_download: typing.Optional[bool]
     #: Redirect location, only sent if a redirect was intercepted.
-
     redirect_url: typing.Optional[str]
     #: Details of the Authorization Challenge encountered. If this is set then
     #: continueInterceptedRequest must contain an authChallengeResponse.
-
     auth_challenge: typing.Optional['AuthChallenge']
     #: Response error if intercepted at response stage or if redirect occurred while intercepting
     #: request.
-
     response_error_reason: typing.Optional['ErrorReason']
     #: Response code if intercepted at response stage or if redirect occurred while intercepting
     #: request or auth retry occurred.
-
     response_status_code: typing.Optional[int]
     #: Response headers if intercepted at the response stage or if redirect occurred while
     #: intercepting request or auth retry occurred.
-
     response_headers: typing.Optional['Headers']
     #: If the intercepted request had a corresponding requestWillBeSent event fired for it, then
     #: this requestId will be the same as the requestId present in the requestWillBeSent event.
-
     request_id: typing.Optional['RequestId']
 
     @classmethod
@@ -2114,7 +2084,6 @@ class RequestServedFromCache:
     Fired if request ended up loading from cache.
     '''
     #: Request identifier.
-
     request_id: 'RequestId'
 
     @classmethod
@@ -2131,37 +2100,26 @@ class RequestWillBeSent:
     Fired when page is about to send HTTP request.
     '''
     #: Request identifier.
-
     request_id: 'RequestId'
     #: Loader identifier. Empty string if the request is fetched from worker.
-
     loader_id: 'LoaderId'
     #: URL of the document this request is loaded for.
-
     document_url: str
     #: Request data.
-
     request: 'Request'
     #: Timestamp.
-
     timestamp: 'MonotonicTime'
     #: Timestamp.
-
     wall_time: 'TimeSinceEpoch'
     #: Request initiator.
-
     initiator: 'Initiator'
     #: Redirect response data.
-
     redirect_response: typing.Optional['Response']
     #: Type of this resource.
-
     type: typing.Optional['ResourceType']
     #: Frame identifier.
-
     frame_id: typing.Optional['page.FrameId']
     #: Whether the request is initiated by a user gesture. Defaults to false.
-
     has_user_gesture: typing.Optional[bool]
 
     @classmethod
@@ -2188,13 +2146,10 @@ class ResourceChangedPriority:
     Fired when resource loading priority is changed
     '''
     #: Request identifier.
-
     request_id: 'RequestId'
     #: New priority
-
     new_priority: 'ResourcePriority'
     #: Timestamp.
-
     timestamp: 'MonotonicTime'
 
     @classmethod
@@ -2213,10 +2168,8 @@ class SignedExchangeReceived:
     Fired when a signed exchange was received over the network
     '''
     #: Request identifier.
-
     request_id: 'RequestId'
     #: Information about the signed exchange response.
-
     info: 'SignedExchangeInfo'
 
     @classmethod
@@ -2234,22 +2187,16 @@ class ResponseReceived:
     Fired when HTTP response is available.
     '''
     #: Request identifier.
-
     request_id: 'RequestId'
     #: Loader identifier. Empty string if the request is fetched from worker.
-
     loader_id: 'LoaderId'
     #: Timestamp.
-
     timestamp: 'MonotonicTime'
     #: Resource type.
-
     type: 'ResourceType'
     #: Response data.
-
     response: 'Response'
     #: Frame identifier.
-
     frame_id: typing.Optional['page.FrameId']
 
     @classmethod
@@ -2271,10 +2218,8 @@ class WebSocketClosed:
     Fired when WebSocket is closed.
     '''
     #: Request identifier.
-
     request_id: 'RequestId'
     #: Timestamp.
-
     timestamp: 'MonotonicTime'
 
     @classmethod
@@ -2292,13 +2237,10 @@ class WebSocketCreated:
     Fired upon WebSocket creation.
     '''
     #: Request identifier.
-
     request_id: 'RequestId'
     #: WebSocket request URL.
-
     url: str
     #: Request initiator.
-
     initiator: typing.Optional['Initiator']
 
     @classmethod
@@ -2317,13 +2259,10 @@ class WebSocketFrameError:
     Fired when WebSocket message error occurs.
     '''
     #: Request identifier.
-
     request_id: 'RequestId'
     #: Timestamp.
-
     timestamp: 'MonotonicTime'
     #: WebSocket error message.
-
     error_message: str
 
     @classmethod
@@ -2342,13 +2281,10 @@ class WebSocketFrameReceived:
     Fired when WebSocket message is received.
     '''
     #: Request identifier.
-
     request_id: 'RequestId'
     #: Timestamp.
-
     timestamp: 'MonotonicTime'
     #: WebSocket response data.
-
     response: 'WebSocketFrame'
 
     @classmethod
@@ -2367,13 +2303,10 @@ class WebSocketFrameSent:
     Fired when WebSocket message is sent.
     '''
     #: Request identifier.
-
     request_id: 'RequestId'
     #: Timestamp.
-
     timestamp: 'MonotonicTime'
     #: WebSocket response data.
-
     response: 'WebSocketFrame'
 
     @classmethod
@@ -2392,13 +2325,10 @@ class WebSocketHandshakeResponseReceived:
     Fired when WebSocket handshake response becomes available.
     '''
     #: Request identifier.
-
     request_id: 'RequestId'
     #: Timestamp.
-
     timestamp: 'MonotonicTime'
     #: WebSocket response data.
-
     response: 'WebSocketResponse'
 
     @classmethod
@@ -2417,16 +2347,12 @@ class WebSocketWillSendHandshakeRequest:
     Fired when WebSocket is about to initiate handshake.
     '''
     #: Request identifier.
-
     request_id: 'RequestId'
     #: Timestamp.
-
     timestamp: 'MonotonicTime'
     #: UTC Timestamp.
-
     wall_time: 'TimeSinceEpoch'
     #: WebSocket request data.
-
     request: 'WebSocketRequest'
 
     @classmethod

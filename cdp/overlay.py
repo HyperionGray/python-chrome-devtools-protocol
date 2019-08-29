@@ -457,7 +457,6 @@ class InspectNodeRequested:
     user manually inspects an element.
     '''
     #: Id of the node to inspect.
-
     backend_node_id: 'dom.BackendNodeId'
 
     @classmethod
@@ -489,7 +488,6 @@ class ScreenshotRequested:
     Fired when user asks to capture screenshot of some area on the page.
     '''
     #: Viewport to capture, in device independent pixels (dip).
-
     viewport: 'page.Viewport'
 
     @classmethod

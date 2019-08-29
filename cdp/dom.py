@@ -1378,13 +1378,10 @@ class AttributeModified:
     Fired when `Element`'s attribute is modified.
     '''
     #: Id of the node that has changed.
-
     node_id: 'NodeId'
     #: Attribute name.
-
     name: str
     #: Attribute value.
-
     value: str
 
     @classmethod
@@ -1403,10 +1400,8 @@ class AttributeRemoved:
     Fired when `Element`'s attribute is removed.
     '''
     #: Id of the node that has changed.
-
     node_id: 'NodeId'
     #: A ttribute name.
-
     name: str
 
     @classmethod
@@ -1424,10 +1419,8 @@ class CharacterDataModified:
     Mirrors `DOMCharacterDataModified` event.
     '''
     #: Id of the node that has changed.
-
     node_id: 'NodeId'
     #: New text value.
-
     character_data: str
 
     @classmethod
@@ -1445,10 +1438,8 @@ class ChildNodeCountUpdated:
     Fired when `Container`'s child node count has changed.
     '''
     #: Id of the node that has changed.
-
     node_id: 'NodeId'
     #: New node count.
-
     child_node_count: int
 
     @classmethod
@@ -1466,13 +1457,10 @@ class ChildNodeInserted:
     Mirrors `DOMNodeInserted` event.
     '''
     #: Id of the node that has changed.
-
     parent_node_id: 'NodeId'
     #: If of the previous siblint.
-
     previous_node_id: 'NodeId'
     #: Inserted node data.
-
     node: 'Node'
 
     @classmethod
@@ -1491,10 +1479,8 @@ class ChildNodeRemoved:
     Mirrors `DOMNodeRemoved` event.
     '''
     #: Parent id.
-
     parent_node_id: 'NodeId'
     #: Id of the node that has been removed.
-
     node_id: 'NodeId'
 
     @classmethod
@@ -1512,10 +1498,8 @@ class DistributedNodesUpdated:
     Called when distrubution is changed.
     '''
     #: Insertion point where distrubuted nodes were updated.
-
     insertion_point_id: 'NodeId'
     #: Distributed nodes for given insertion point.
-
     distributed_nodes: typing.List['BackendNode']
 
     @classmethod
@@ -1548,7 +1532,6 @@ class InlineStyleInvalidated:
     Fired when `Element`'s inline style is modified via a CSS property modification.
     '''
     #: Ids of the nodes for which the inline styles have been invalidated.
-
     node_ids: typing.List['NodeId']
 
     @classmethod
@@ -1565,10 +1548,8 @@ class PseudoElementAdded:
     Called when a pseudo element is added to an element.
     '''
     #: Pseudo element's parent element id.
-
     parent_id: 'NodeId'
     #: The added pseudo element.
-
     pseudo_element: 'Node'
 
     @classmethod
@@ -1586,10 +1567,8 @@ class PseudoElementRemoved:
     Called when a pseudo element is removed from an element.
     '''
     #: Pseudo element's parent element id.
-
     parent_id: 'NodeId'
     #: The removed pseudo element id.
-
     pseudo_element_id: 'NodeId'
 
     @classmethod
@@ -1608,10 +1587,8 @@ class SetChildNodes:
     most of the calls requesting node ids.
     '''
     #: Parent node id to populate with children.
-
     parent_id: 'NodeId'
     #: Child nodes array.
-
     nodes: typing.List['Node']
 
     @classmethod
@@ -1629,10 +1606,8 @@ class ShadowRootPopped:
     Called when shadow root is popped from the element.
     '''
     #: Host element id.
-
     host_id: 'NodeId'
     #: Shadow root id.
-
     root_id: 'NodeId'
 
     @classmethod
@@ -1650,10 +1625,8 @@ class ShadowRootPushed:
     Called when shadow root is pushed into the element.
     '''
     #: Host element id.
-
     host_id: 'NodeId'
     #: Shadow root.
-
     root: 'Node'
 
     @classmethod

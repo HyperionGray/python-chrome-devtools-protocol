@@ -1694,13 +1694,10 @@ class FrameAttached:
     Fired when frame has been attached to its parent.
     '''
     #: Id of the frame that has been attached.
-
     frame_id: 'FrameId'
     #: Parent frame identifier.
-
     parent_frame_id: 'FrameId'
     #: JavaScript stack trace of when frame was attached, only set if frame initiated from script.
-
     stack: typing.Optional['runtime.StackTrace']
 
     @classmethod
@@ -1719,7 +1716,6 @@ class FrameClearedScheduledNavigation:
     Fired when frame no longer has a scheduled navigation.
     '''
     #: Id of the frame that has cleared its scheduled navigation.
-
     frame_id: 'FrameId'
 
     @classmethod
@@ -1736,7 +1732,6 @@ class FrameDetached:
     Fired when frame has been detached from its parent.
     '''
     #: Id of the frame that has been detached.
-
     frame_id: 'FrameId'
 
     @classmethod
@@ -1753,7 +1748,6 @@ class FrameNavigated:
     Fired once navigation of the frame has completed. Frame is now associated with the new loader.
     '''
     #: Frame object.
-
     frame: 'Frame'
 
     @classmethod
@@ -1783,13 +1777,10 @@ class FrameRequestedNavigation:
     Navigation may still be cancelled after the event is issued.
     '''
     #: Id of the frame that is being navigated.
-
     frame_id: 'FrameId'
     #: The reason for the navigation.
-
     reason: 'ClientNavigationReason'
     #: The destination URL for the requested navigation.
-
     url: str
 
     @classmethod
@@ -1808,17 +1799,13 @@ class FrameScheduledNavigation:
     Fired when frame schedules a potential navigation.
     '''
     #: Id of the frame that has scheduled a navigation.
-
     frame_id: 'FrameId'
     #: Delay (in seconds) until the navigation is scheduled to begin. The navigation is not
     #: guaranteed to start.
-
     delay: float
     #: The reason for the navigation.
-
     reason: str
     #: The destination URL for the scheduled navigation.
-
     url: str
 
     @classmethod
@@ -1838,7 +1825,6 @@ class FrameStartedLoading:
     Fired when frame has started loading.
     '''
     #: Id of the frame that has started loading.
-
     frame_id: 'FrameId'
 
     @classmethod
@@ -1855,7 +1841,6 @@ class FrameStoppedLoading:
     Fired when frame has stopped loading.
     '''
     #: Id of the frame that has stopped loading.
-
     frame_id: 'FrameId'
 
     @classmethod
@@ -1872,10 +1857,8 @@ class DownloadWillBegin:
     Fired when page is about to start a download.
     '''
     #: Id of the frame that caused download to begin.
-
     frame_id: 'FrameId'
     #: URL of the resource being downloaded.
-
     url: str
 
     @classmethod
@@ -1924,10 +1907,8 @@ class JavascriptDialogClosed:
     closed.
     '''
     #: Whether dialog was confirmed.
-
     result: bool
     #: User input in case of prompt.
-
     user_input: str
 
     @classmethod
@@ -1946,21 +1927,16 @@ class JavascriptDialogOpening:
     open.
     '''
     #: Frame url.
-
     url: str
     #: Message that will be displayed by the dialog.
-
     message: str
     #: Dialog type.
-
     type: 'DialogType'
     #: True iff browser is capable showing or acting on the given dialog. When browser has no
     #: dialog handler for given target, calling alert while Page domain is engaged will stall
     #: the page execution. Execution can be resumed via calling Page.handleJavaScriptDialog.
-
     has_browser_handler: bool
     #: Default dialog prompt.
-
     default_prompt: typing.Optional[str]
 
     @classmethod
@@ -1981,10 +1957,8 @@ class LifecycleEvent:
     Fired for top level page lifecycle events such as navigation, load, paint, etc.
     '''
     #: Id of the frame.
-
     frame_id: 'FrameId'
     #: Loader identifier. Empty string if the request is fetched from worker.
-
     loader_id: 'network.LoaderId'
     name: str
     timestamp: 'network.MonotonicTime'
@@ -2018,10 +1992,8 @@ class NavigatedWithinDocument:
     Fired when same-document navigation happens, e.g. due to history API usage or anchor navigation.
     '''
     #: Id of the frame.
-
     frame_id: 'FrameId'
     #: Frame's new url.
-
     url: str
 
     @classmethod
@@ -2039,13 +2011,10 @@ class ScreencastFrame:
     Compressed image data requested by the `startScreencast`.
     '''
     #: Base64-encoded compressed image.
-
     data: str
     #: Screencast frame metadata.
-
     metadata: 'ScreencastFrameMetadata'
     #: Frame number.
-
     session_id: int
 
     @classmethod
@@ -2064,7 +2033,6 @@ class ScreencastVisibilityChanged:
     Fired when the page with currently enabled screencast was shown or hidden `.
     '''
     #: True if the page is visible.
-
     visible: bool
 
     @classmethod
@@ -2082,16 +2050,12 @@ class WindowOpen:
     etc.
     '''
     #: The URL for the new window.
-
     url: str
     #: Window name.
-
     window_name: str
     #: An array of enabled window features.
-
     window_features: typing.List[str]
     #: Whether or not it was triggered by user gesture.
-
     user_gesture: bool
 
     @classmethod
@@ -2113,7 +2077,6 @@ class CompilationCacheProduced:
     '''
     url: str
     #: Base64-encoded data
-
     data: str
 
     @classmethod

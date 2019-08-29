@@ -184,10 +184,8 @@ class CacheStorageContentUpdated:
     A cache's contents have been modified.
     '''
     #: Origin to update.
-
     origin: str
     #: Name of cache in origin.
-
     cache_name: str
 
     @classmethod
@@ -205,7 +203,6 @@ class CacheStorageListUpdated:
     A cache has been added/deleted.
     '''
     #: Origin to update.
-
     origin: str
 
     @classmethod
@@ -222,13 +219,10 @@ class IndexedDBContentUpdated:
     The origin's IndexedDB object store has been modified.
     '''
     #: Origin to update.
-
     origin: str
     #: Database to update.
-
     database_name: str
     #: ObjectStore to update.
-
     object_store_name: str
 
     @classmethod
@@ -247,7 +241,6 @@ class IndexedDBListUpdated:
     The origin's IndexedDB database list has been modified.
     '''
     #: Origin to update.
-
     origin: str
 
     @classmethod

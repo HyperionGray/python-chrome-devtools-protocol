@@ -386,29 +386,21 @@ class RequestPaused:
     of these fields is present and in the request stage otherwise.
     '''
     #: Each request the page makes will have a unique id.
-
     request_id: 'RequestId'
     #: The details of the request.
-
     request: 'network.Request'
     #: The id of the frame that initiated the request.
-
     frame_id: 'page.FrameId'
     #: How the requested resource will be used.
-
     resource_type: 'network.ResourceType'
     #: Response error if intercepted at response stage.
-
     response_error_reason: typing.Optional['network.ErrorReason']
     #: Response code if intercepted at response stage.
-
     response_status_code: typing.Optional[int]
     #: Response headers if intercepted at the response stage.
-
     response_headers: typing.Optional[typing.List['HeaderEntry']]
     #: If the intercepted request had a corresponding Network.requestWillBeSent event fired for it,
     #: then this networkId will be the same as the requestId present in the requestWillBeSent event.
-
     network_id: typing.Optional['RequestId']
 
     @classmethod
@@ -433,21 +425,16 @@ class AuthRequired:
     The request is paused until client responds with continueWithAuth.
     '''
     #: Each request the page makes will have a unique id.
-
     request_id: 'RequestId'
     #: The details of the request.
-
     request: 'network.Request'
     #: The id of the frame that initiated the request.
-
     frame_id: 'page.FrameId'
     #: How the requested resource will be used.
-
     resource_type: 'network.ResourceType'
     #: Details of the Authorization Challenge encountered.
     #: If this is set, client should respond with continueRequest that
     #: contains AuthChallengeResponse.
-
     auth_challenge: 'AuthChallenge'
 
     @classmethod

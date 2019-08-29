@@ -100,7 +100,6 @@ class MessageAdded:
     Issued when new console message is added.
     '''
     #: Console message that has been added.
-
     message: 'ConsoleMessage'
 
     @classmethod

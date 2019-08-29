@@ -115,7 +115,6 @@ class NeedsBeginFramesChanged:
     Issued when the target starts or stops needing BeginFrames.
     '''
     #: True if BeginFrames are needed, false otherwise.
-
     needs_begin_frames: bool
 
     @classmethod

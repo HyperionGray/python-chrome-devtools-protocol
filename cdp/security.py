@@ -266,13 +266,10 @@ class CertificateError:
     certificate errors at the same time.
     '''
     #: The ID of the event.
-
     event_id: int
     #: The type of the error.
-
     error_type: str
     #: The url that was requested.
-
     request_url: str
 
     @classmethod
@@ -291,20 +288,15 @@ class SecurityStateChanged:
     The security state of the page changed.
     '''
     #: Security state.
-
     security_state: 'SecurityState'
     #: True if the page was loaded over cryptographic transport such as HTTPS.
-
     scheme_is_cryptographic: bool
     #: List of explanations for the security state. If the overall security state is `insecure` or
     #: `warning`, at least one corresponding explanation should be included.
-
     explanations: typing.List['SecurityStateExplanation']
     #: Information about insecure content on the page.
-
     insecure_content_status: 'InsecureContentStatus'
     #: Overrides user-visible description of the state.
-
     summary: typing.Optional[str]
 
     @classmethod

@@ -41,7 +41,6 @@ class Detached:
     Fired when remote debugging connection is about to be terminated. Contains detach reason.
     '''
     #: The reason why connection has been terminated.
-
     reason: str
 
     @classmethod

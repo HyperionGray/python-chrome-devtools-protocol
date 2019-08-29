@@ -55,10 +55,8 @@ class Accepted:
     Informs that port was successfully bound and got a specified connection id.
     '''
     #: Port number that was successfully bound.
-
     port: int
     #: Connection id to be used.
-
     connection_id: str
 
     @classmethod

@@ -435,10 +435,8 @@ def snapshot_command_log(
 @dataclass
 class LayerPainted:
     #: The id of the painted layer.
-
     layer_id: 'LayerId'
     #: Clip rectangle.
-
     clip: 'dom.Rect'
 
     @classmethod
@@ -453,7 +451,6 @@ class LayerPainted:
 @dataclass
 class LayerTreeDidChange:
     #: Layer tree, absent if not in the comspositing mode.
-
     layers: typing.Optional[typing.List['Layer']]
 
     @classmethod

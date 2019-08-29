@@ -909,10 +909,8 @@ class BreakpointResolved:
     Fired when breakpoint is resolved to an actual script and location.
     '''
     #: Breakpoint unique identifier.
-
     breakpoint_id: 'BreakpointId'
     #: Actual breakpoint location.
-
     location: 'Location'
 
     @classmethod
@@ -930,26 +928,19 @@ class Paused:
     Fired when the virtual machine stopped on breakpoint or exception or any other stop criteria.
     '''
     #: Call stack the virtual machine stopped on.
-
     call_frames: typing.List['CallFrame']
     #: Pause reason.
-
     reason: str
     #: Object containing break-specific auxiliary properties.
-
     data: typing.Optional[dict]
     #: Hit breakpoints IDs
-
     hit_breakpoints: typing.Optional[typing.List[str]]
     #: Async stack trace, if any.
-
     async_stack_trace: typing.Optional['runtime.StackTrace']
     #: Async stack trace, if any.
-
     async_stack_trace_id: typing.Optional['runtime.StackTraceId']
     #: Just scheduled async call will have this stack trace as parent stack during async execution.
     #: This field is available only after `Debugger.stepInto` call with `breakOnAsynCall` flag.
-
     async_call_stack_trace_id: typing.Optional['runtime.StackTraceId']
 
     @classmethod
@@ -987,46 +978,32 @@ class ScriptFailedToParse:
     Fired when virtual machine fails to parse the script.
     '''
     #: Identifier of the script parsed.
-
     script_id: 'runtime.ScriptId'
     #: URL or name of the script parsed (if any).
-
     url: str
     #: Line offset of the script within the resource with given URL (for script tags).
-
     start_line: int
     #: Column offset of the script within the resource with given URL.
-
     start_column: int
     #: Last line of the script.
-
     end_line: int
     #: Length of the last line of the script.
-
     end_column: int
     #: Specifies script creation context.
-
     execution_context_id: 'runtime.ExecutionContextId'
     #: Content hash of the script.
-
     hash: str
     #: Embedder-specific auxiliary data.
-
     execution_context_aux_data: typing.Optional[dict]
     #: URL of source map associated with script (if any).
-
     source_map_url: typing.Optional[str]
     #: True, if this script has sourceURL.
-
     has_source_url: typing.Optional[bool]
     #: True, if this script is ES6 module.
-
     is_module: typing.Optional[bool]
     #: This script length.
-
     length: typing.Optional[int]
     #: JavaScript top stack frame of where the script parsed event was triggered if available.
-
     stack_trace: typing.Optional['runtime.StackTrace']
 
     @classmethod
@@ -1057,49 +1034,34 @@ class ScriptParsed:
     scripts upon enabling debugger.
     '''
     #: Identifier of the script parsed.
-
     script_id: 'runtime.ScriptId'
     #: URL or name of the script parsed (if any).
-
     url: str
     #: Line offset of the script within the resource with given URL (for script tags).
-
     start_line: int
     #: Column offset of the script within the resource with given URL.
-
     start_column: int
     #: Last line of the script.
-
     end_line: int
     #: Length of the last line of the script.
-
     end_column: int
     #: Specifies script creation context.
-
     execution_context_id: 'runtime.ExecutionContextId'
     #: Content hash of the script.
-
     hash: str
     #: Embedder-specific auxiliary data.
-
     execution_context_aux_data: typing.Optional[dict]
     #: True, if this script is generated as a result of the live edit operation.
-
     is_live_edit: typing.Optional[bool]
     #: URL of source map associated with script (if any).
-
     source_map_url: typing.Optional[str]
     #: True, if this script has sourceURL.
-
     has_source_url: typing.Optional[bool]
     #: True, if this script is ES6 module.
-
     is_module: typing.Optional[bool]
     #: This script length.
-
     length: typing.Optional[int]
     #: JavaScript top stack frame of where the script parsed event was triggered if available.
-
     stack_trace: typing.Optional['runtime.StackTrace']
 
     @classmethod

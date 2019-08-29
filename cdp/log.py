@@ -178,7 +178,6 @@ class EntryAdded:
     Issued when new message was logged.
     '''
     #: The entry.
-
     entry: 'LogEntry'
 
     @classmethod
