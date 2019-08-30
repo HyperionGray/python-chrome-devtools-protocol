@@ -25,13 +25,13 @@ responsibility is left to higher-level libraries, for example
 
 To install (requires Python ≥3.7):
 
-.. code-block::
+::
 
     $ pip install chrome-devtools-protocol
 
 Sample code:
 
-.. code-block::
+.. code-block:: python
 
     from cdp import page
 
