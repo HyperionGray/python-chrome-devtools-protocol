@@ -28,3 +28,5 @@ responsibility is left to higher-level libraries, for example
 [trio-chrome-devtools-protocol](https://github.com/hyperiongray/trio-chrome-devtools-protocol).
 
 For more information, see the [complete documentation](https://pycdp.readthedocs.io).
+
+<a href="https://www.hyperiongray.com/?pk_campaign=github&pk_kwd=pycdp"><img alt="define hyperion gray" width="500px" src="https://hyperiongray.s3.amazonaws.com/define-hg.svg"></a>
