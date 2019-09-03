@@ -23,13 +23,21 @@ responsibility is left to higher-level libraries, for example
 `trio-chrome-devtools-protocol
 <https://github.com/hyperiongray/trio-chrome-devtools-protocol>`_.
 
-To install (requires Python ≥3.7):
+**This package provides Chrome DevTools Protocol r678025.** Download a compatible
+Chrome package:
+
+* `Linux <https://storage.googleapis.com/chromium-browser-snapshots/Linux_x64/689523/chrome-linux.zip>`_
+* `Mac <https://storage.googleapis.com/chromium-browser-snapshots/Mac/689523/chrome-mac.zip>`_
+* `Windows 32-bit <https://storage.googleapis.com/chromium-browser-snapshots/Win/689523/chrome-win.zip>`_
+* `Windows 64-bit <https://storage.googleapis.com/chromium-browser-snapshots/Win_x64/689523/chrome-win.zip>`_
+
+**To install (requires Python ≥3.7):**
 
 ::
 
     $ pip install chrome-devtools-protocol
 
-Sample code:
+**Sample code:**
 
 .. code-block:: python
 
