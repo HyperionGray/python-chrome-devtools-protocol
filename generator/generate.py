@@ -811,9 +811,7 @@ def main():
         if domain.domain == 'DOM':
             for cmd in domain.commands:
                 if cmd.name == 'resolveNode':
-                    print('found cmd!', cmd)
                     cmd.parameters[1].ref = 'BackendNodeId'
-                    print('found cmd!', cmd)
                     break
             break
 
