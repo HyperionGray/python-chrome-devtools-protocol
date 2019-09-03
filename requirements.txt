@@ -2,6 +2,7 @@
 # needed if you only want to install this library.
 inflection
 mypy
+pytest
 sphinx
 sphinx-rtd-theme
 twine
