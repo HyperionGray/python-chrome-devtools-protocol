@@ -269,6 +269,9 @@ class TracingComplete:
     Signals that tracing is stopped and there is no trace buffers pending flush, all data were
     delivered via dataCollected events.
     '''
+    #: Indicates whether some trace data is known to have been lost, e.g. because the trace ring
+    #: buffer wrapped around.
+    data_loss_occurred: bool
     #: A handle of the stream that holds resulting trace data.
     stream: typing.Optional['io.StreamHandle']
     #: Trace data format of returned stream.
@@ -279,6 +282,7 @@ class TracingComplete:
     @classmethod
     def from_json(cls, json: T_JSON_DICT) -> 'TracingComplete':
         return cls(
+            data_loss_occurred=bool(json['dataLossOccurred']),
             stream=io.StreamHandle.from_json(json['stream']) if 'stream' in json else None,
             trace_format=StreamFormat.from_json(json['traceFormat']) if 'traceFormat' in json else None,
             stream_compression=StreamCompression.from_json(json['streamCompression']) if 'streamCompression' in json else None

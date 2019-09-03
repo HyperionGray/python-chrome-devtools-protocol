@@ -60,6 +60,151 @@ class GPUDevice:
 
 
 @dataclass
+class Size:
+    '''
+    Describes the width and height dimensions of an entity.
+    '''
+    #: Width in pixels.
+    width: int
+
+    #: Height in pixels.
+    height: int
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['width'] = self.width
+        json['height'] = self.height
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'Size':
+        return cls(
+            width=int(json['width']),
+            height=int(json['height']),
+        )
+
+
+@dataclass
+class VideoDecodeAcceleratorCapability:
+    '''
+    Describes a supported video decoding profile with its associated minimum and
+    maximum resolutions.
+    '''
+    #: Video codec profile that is supported, e.g. VP9 Profile 2.
+    profile: str
+
+    #: Maximum video dimensions in pixels supported for this |profile|.
+    max_resolution: 'Size'
+
+    #: Minimum video dimensions in pixels supported for this |profile|.
+    min_resolution: 'Size'
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['profile'] = self.profile
+        json['maxResolution'] = self.max_resolution.to_json()
+        json['minResolution'] = self.min_resolution.to_json()
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'VideoDecodeAcceleratorCapability':
+        return cls(
+            profile=str(json['profile']),
+            max_resolution=Size.from_json(json['maxResolution']),
+            min_resolution=Size.from_json(json['minResolution']),
+        )
+
+
+@dataclass
+class VideoEncodeAcceleratorCapability:
+    '''
+    Describes a supported video encoding profile with its associated maximum
+    resolution and maximum framerate.
+    '''
+    #: Video codec profile that is supported, e.g H264 Main.
+    profile: str
+
+    #: Maximum video dimensions in pixels supported for this |profile|.
+    max_resolution: 'Size'
+
+    #: Maximum encoding framerate in frames per second supported for this
+    #: |profile|, as fraction's numerator and denominator, e.g. 24/1 fps,
+    #: 24000/1001 fps, etc.
+    max_framerate_numerator: int
+
+    max_framerate_denominator: int
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['profile'] = self.profile
+        json['maxResolution'] = self.max_resolution.to_json()
+        json['maxFramerateNumerator'] = self.max_framerate_numerator
+        json['maxFramerateDenominator'] = self.max_framerate_denominator
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'VideoEncodeAcceleratorCapability':
+        return cls(
+            profile=str(json['profile']),
+            max_resolution=Size.from_json(json['maxResolution']),
+            max_framerate_numerator=int(json['maxFramerateNumerator']),
+            max_framerate_denominator=int(json['maxFramerateDenominator']),
+        )
+
+
+class SubsamplingFormat(enum.Enum):
+    '''
+    YUV subsampling type of the pixels of a given image.
+    '''
+    YUV420 = "yuv420"
+    YUV422 = "yuv422"
+    YUV444 = "yuv444"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> 'SubsamplingFormat':
+        return cls(json)
+
+
+@dataclass
+class ImageDecodeAcceleratorCapability:
+    '''
+    Describes a supported image decoding profile with its associated minimum and
+    maximum resolutions and subsampling.
+    '''
+    #: Image coded, e.g. Jpeg.
+    image_type: str
+
+    #: Maximum supported dimensions of the image in pixels.
+    max_dimensions: 'Size'
+
+    #: Minimum supported dimensions of the image in pixels.
+    min_dimensions: 'Size'
+
+    #: Optional array of supported subsampling formats, e.g. 4:2:0, if known.
+    subsamplings: typing.List['SubsamplingFormat']
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['imageType'] = self.image_type
+        json['maxDimensions'] = self.max_dimensions.to_json()
+        json['minDimensions'] = self.min_dimensions.to_json()
+        json['subsamplings'] = [i.to_json() for i in self.subsamplings]
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'ImageDecodeAcceleratorCapability':
+        return cls(
+            image_type=str(json['imageType']),
+            max_dimensions=Size.from_json(json['maxDimensions']),
+            min_dimensions=Size.from_json(json['minDimensions']),
+            subsamplings=[SubsamplingFormat.from_json(i) for i in json['subsamplings']],
+        )
+
+
+@dataclass
 class GPUInfo:
     '''
     Provides information about the GPU(s) on the system.
@@ -69,6 +214,15 @@ class GPUInfo:
 
     #: An optional array of GPU driver bug workarounds.
     driver_bug_workarounds: typing.List[str]
+
+    #: Supported accelerated video decoding capabilities.
+    video_decoding: typing.List['VideoDecodeAcceleratorCapability']
+
+    #: Supported accelerated video encoding capabilities.
+    video_encoding: typing.List['VideoEncodeAcceleratorCapability']
+
+    #: Supported accelerated image decoding capabilities.
+    image_decoding: typing.List['ImageDecodeAcceleratorCapability']
 
     #: An optional dictionary of additional GPU related attributes.
     aux_attributes: typing.Optional[dict] = None
@@ -80,6 +234,9 @@ class GPUInfo:
         json: T_JSON_DICT = dict()
         json['devices'] = [i.to_json() for i in self.devices]
         json['driverBugWorkarounds'] = [i for i in self.driver_bug_workarounds]
+        json['videoDecoding'] = [i.to_json() for i in self.video_decoding]
+        json['videoEncoding'] = [i.to_json() for i in self.video_encoding]
+        json['imageDecoding'] = [i.to_json() for i in self.image_decoding]
         if self.aux_attributes is not None:
             json['auxAttributes'] = self.aux_attributes
         if self.feature_status is not None:
@@ -91,6 +248,9 @@ class GPUInfo:
         return cls(
             devices=[GPUDevice.from_json(i) for i in json['devices']],
             driver_bug_workarounds=[str(i) for i in json['driverBugWorkarounds']],
+            video_decoding=[VideoDecodeAcceleratorCapability.from_json(i) for i in json['videoDecoding']],
+            video_encoding=[VideoEncodeAcceleratorCapability.from_json(i) for i in json['videoEncoding']],
+            image_decoding=[ImageDecodeAcceleratorCapability.from_json(i) for i in json['imageDecoding']],
             aux_attributes=dict(json['auxAttributes']) if 'auxAttributes' in json else None,
             feature_status=dict(json['featureStatus']) if 'featureStatus' in json else None,
         )

@@ -14,6 +14,115 @@ import enum
 import typing
 
 
+class AuthenticatorId(str):
+    def to_json(self) -> str:
+        return self
+
+    @classmethod
+    def from_json(cls, json: str) -> 'AuthenticatorId':
+        return cls(json)
+
+    def __repr__(self):
+        return 'AuthenticatorId({})'.format(super().__repr__())
+
+
+class AuthenticatorProtocol(enum.Enum):
+    U2F = "u2f"
+    CTAP2 = "ctap2"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> 'AuthenticatorProtocol':
+        return cls(json)
+
+
+class AuthenticatorTransport(enum.Enum):
+    USB = "usb"
+    NFC = "nfc"
+    BLE = "ble"
+    CABLE = "cable"
+    INTERNAL = "internal"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> 'AuthenticatorTransport':
+        return cls(json)
+
+
+@dataclass
+class VirtualAuthenticatorOptions:
+    protocol: 'AuthenticatorProtocol'
+
+    transport: 'AuthenticatorTransport'
+
+    has_resident_key: bool
+
+    has_user_verification: bool
+
+    #: If set to true, tests of user presence will succeed immediately.
+    #: Otherwise, they will not be resolved. Defaults to true.
+    automatic_presence_simulation: typing.Optional[bool] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['protocol'] = self.protocol.to_json()
+        json['transport'] = self.transport.to_json()
+        json['hasResidentKey'] = self.has_resident_key
+        json['hasUserVerification'] = self.has_user_verification
+        if self.automatic_presence_simulation is not None:
+            json['automaticPresenceSimulation'] = self.automatic_presence_simulation
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'VirtualAuthenticatorOptions':
+        return cls(
+            protocol=AuthenticatorProtocol.from_json(json['protocol']),
+            transport=AuthenticatorTransport.from_json(json['transport']),
+            has_resident_key=bool(json['hasResidentKey']),
+            has_user_verification=bool(json['hasUserVerification']),
+            automatic_presence_simulation=bool(json['automaticPresenceSimulation']) if 'automaticPresenceSimulation' in json else None,
+        )
+
+
+@dataclass
+class Credential:
+    credential_id: str
+
+    #: SHA-256 hash of the Relying Party ID the credential is scoped to. Must
+    #: be 32 bytes long.
+    #: See https://w3c.github.io/webauthn/#rpidhash
+    rp_id_hash: str
+
+    #: The private key in PKCS#8 format.
+    private_key: str
+
+    #: Signature counter. This is incremented by one for each successful
+    #: assertion.
+    #: See https://w3c.github.io/webauthn/#signature-counter
+    sign_count: int
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['credentialId'] = self.credential_id
+        json['rpIdHash'] = self.rp_id_hash
+        json['privateKey'] = self.private_key
+        json['signCount'] = self.sign_count
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'Credential':
+        return cls(
+            credential_id=str(json['credentialId']),
+            rp_id_hash=str(json['rpIdHash']),
+            private_key=str(json['privateKey']),
+            sign_count=int(json['signCount']),
+        )
+
+
 def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enable the WebAuthn domain and start intercepting credential storage and
@@ -31,5 +140,118 @@ def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     cmd_dict: T_JSON_DICT = {
         'method': 'WebAuthn.disable',
+    }
+    json = yield cmd_dict
+
+
+def add_virtual_authenticator(
+        options: 'VirtualAuthenticatorOptions'
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,'AuthenticatorId']:
+    '''
+    Creates and adds a virtual authenticator.
+
+    :param options:
+    :returns: 
+    '''
+    params: T_JSON_DICT = dict()
+    params['options'] = options.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'WebAuthn.addVirtualAuthenticator',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return AuthenticatorId.from_json(json['authenticatorId'])
+
+
+def remove_virtual_authenticator(
+        authenticator_id: 'AuthenticatorId'
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    '''
+    Removes the given authenticator.
+
+    :param authenticator_id:
+    '''
+    params: T_JSON_DICT = dict()
+    params['authenticatorId'] = authenticator_id.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'WebAuthn.removeVirtualAuthenticator',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
+def add_credential(
+        authenticator_id: 'AuthenticatorId',
+        credential: 'Credential'
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    '''
+    Adds the credential to the specified authenticator.
+
+    :param authenticator_id:
+    :param credential:
+    '''
+    params: T_JSON_DICT = dict()
+    params['authenticatorId'] = authenticator_id.to_json()
+    params['credential'] = credential.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'WebAuthn.addCredential',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
+def get_credentials(
+        authenticator_id: 'AuthenticatorId'
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['Credential']]:
+    '''
+    Returns all the credentials stored in the given virtual authenticator.
+
+    :param authenticator_id:
+    :returns: 
+    '''
+    params: T_JSON_DICT = dict()
+    params['authenticatorId'] = authenticator_id.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'WebAuthn.getCredentials',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return [Credential.from_json(i) for i in json['credentials']]
+
+
+def clear_credentials(
+        authenticator_id: 'AuthenticatorId'
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    '''
+    Clears all the credentials from the specified device.
+
+    :param authenticator_id:
+    '''
+    params: T_JSON_DICT = dict()
+    params['authenticatorId'] = authenticator_id.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'WebAuthn.clearCredentials',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
+def set_user_verified(
+        authenticator_id: 'AuthenticatorId',
+        is_user_verified: bool
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    '''
+    Sets whether User Verification succeeds or fails for an authenticator.
+    The default is true.
+
+    :param authenticator_id:
+    :param is_user_verified:
+    '''
+    params: T_JSON_DICT = dict()
+    params['authenticatorId'] = authenticator_id.to_json()
+    params['isUserVerified'] = is_user_verified
+    cmd_dict: T_JSON_DICT = {
+        'method': 'WebAuthn.setUserVerified',
+        'params': params,
     }
     json = yield cmd_dict

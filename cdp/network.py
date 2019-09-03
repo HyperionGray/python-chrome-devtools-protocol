@@ -931,6 +931,114 @@ class Cookie:
         )
 
 
+class SetCookieBlockedReason(enum.Enum):
+    '''
+    Types of reasons why a cookie may not be stored from a response.
+    '''
+    SECURE_ONLY = "SecureOnly"
+    SAME_SITE_STRICT = "SameSiteStrict"
+    SAME_SITE_LAX = "SameSiteLax"
+    SAME_SITE_EXTENDED = "SameSiteExtended"
+    SAME_SITE_UNSPECIFIED_TREATED_AS_LAX = "SameSiteUnspecifiedTreatedAsLax"
+    SAME_SITE_NONE_INSECURE = "SameSiteNoneInsecure"
+    USER_PREFERENCES = "UserPreferences"
+    SYNTAX_ERROR = "SyntaxError"
+    SCHEME_NOT_SUPPORTED = "SchemeNotSupported"
+    OVERWRITE_SECURE = "OverwriteSecure"
+    INVALID_DOMAIN = "InvalidDomain"
+    INVALID_PREFIX = "InvalidPrefix"
+    UNKNOWN_ERROR = "UnknownError"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> 'SetCookieBlockedReason':
+        return cls(json)
+
+
+class CookieBlockedReason(enum.Enum):
+    '''
+    Types of reasons why a cookie may not be sent with a request.
+    '''
+    SECURE_ONLY = "SecureOnly"
+    NOT_ON_PATH = "NotOnPath"
+    DOMAIN_MISMATCH = "DomainMismatch"
+    SAME_SITE_STRICT = "SameSiteStrict"
+    SAME_SITE_LAX = "SameSiteLax"
+    SAME_SITE_EXTENDED = "SameSiteExtended"
+    SAME_SITE_UNSPECIFIED_TREATED_AS_LAX = "SameSiteUnspecifiedTreatedAsLax"
+    SAME_SITE_NONE_INSECURE = "SameSiteNoneInsecure"
+    USER_PREFERENCES = "UserPreferences"
+    UNKNOWN_ERROR = "UnknownError"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> 'CookieBlockedReason':
+        return cls(json)
+
+
+@dataclass
+class BlockedSetCookieWithReason:
+    '''
+    A cookie which was not stored from a response with the corresponding reason.
+    '''
+    #: The reason this cookie was blocked.
+    blocked_reason: 'SetCookieBlockedReason'
+
+    #: The string representing this individual cookie as it would appear in the header.
+    #: This is not the entire "cookie" or "set-cookie" header which could have multiple cookies.
+    cookie_line: str
+
+    #: The cookie object which represents the cookie which was not stored. It is optional because
+    #: sometimes complete cookie information is not available, such as in the case of parsing
+    #: errors.
+    cookie: typing.Optional['Cookie'] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['blockedReason'] = self.blocked_reason.to_json()
+        json['cookieLine'] = self.cookie_line
+        if self.cookie is not None:
+            json['cookie'] = self.cookie.to_json()
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'BlockedSetCookieWithReason':
+        return cls(
+            blocked_reason=SetCookieBlockedReason.from_json(json['blockedReason']),
+            cookie_line=str(json['cookieLine']),
+            cookie=Cookie.from_json(json['cookie']) if 'cookie' in json else None,
+        )
+
+
+@dataclass
+class BlockedCookieWithReason:
+    '''
+    A cookie with was not sent with a request with the corresponding reason.
+    '''
+    #: The reason the cookie was blocked.
+    blocked_reason: 'CookieBlockedReason'
+
+    #: The cookie object representing the cookie which was not sent.
+    cookie: 'Cookie'
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['blockedReason'] = self.blocked_reason.to_json()
+        json['cookie'] = self.cookie.to_json()
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'BlockedCookieWithReason':
+        return cls(
+            blocked_reason=CookieBlockedReason.from_json(json['blockedReason']),
+            cookie=Cookie.from_json(json['cookie']),
+        )
+
+
 @dataclass
 class CookieParam:
     '''
@@ -1203,12 +1311,16 @@ class SignedExchangeHeader:
     #: Signed exchange response signature.
     signatures: typing.List['SignedExchangeSignature']
 
+    #: Signed exchange header integrity hash in the form of "sha256-<base64-hash-value>".
+    header_integrity: str
+
     def to_json(self) -> T_JSON_DICT:
         json: T_JSON_DICT = dict()
         json['requestUrl'] = self.request_url
         json['responseCode'] = self.response_code
         json['responseHeaders'] = self.response_headers.to_json()
         json['signatures'] = [i.to_json() for i in self.signatures]
+        json['headerIntegrity'] = self.header_integrity
         return json
 
     @classmethod
@@ -1218,6 +1330,7 @@ class SignedExchangeHeader:
             response_code=int(json['responseCode']),
             response_headers=Headers.from_json(json['responseHeaders']),
             signatures=[SignedExchangeSignature.from_json(i) for i in json['signatures']],
+            header_integrity=str(json['headerIntegrity']),
         )
 
 
@@ -1384,6 +1497,7 @@ def continue_intercepted_request(
     modifications, or blocks it, or completes it with the provided response bytes. If a network
     fetch occurs as a result which encounters a redirect an additional Network.requestIntercepted
     event will be sent with the same InterceptionId.
+    Deprecated, use Fetch.continueRequest, Fetch.fulfillRequest and Fetch.failRequest instead.
 
     :param interception_id:
     :param error_reason: If set this causes the request to fail with the given reason. Passing ``Aborted`` for requests
@@ -1872,6 +1986,7 @@ def set_request_interception(
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Sets the requests to intercept that match the provided patterns and optionally resource types.
+    Deprecated, please use Fetch.enable instead.
 
     :param patterns: Requests matching any of these patterns will be forwarded and wait for the corresponding
     continueInterceptedRequest call.
@@ -2026,6 +2141,7 @@ class RequestIntercepted:
     '''
     Details of an intercepted HTTP request, which must be either allowed, blocked, modified or
     mocked.
+    Deprecated, use Fetch.requestPaused instead.
     '''
     #: Each request the page makes will have a unique id, however if any redirects are encountered
     #: while processing that fetch, they will be reported with the same id as the original fetch.
@@ -2362,4 +2478,60 @@ class WebSocketWillSendHandshakeRequest:
             timestamp=MonotonicTime.from_json(json['timestamp']),
             wall_time=TimeSinceEpoch.from_json(json['wallTime']),
             request=WebSocketRequest.from_json(json['request'])
+        )
+
+
+@event_class('Network.requestWillBeSentExtraInfo')
+@dataclass
+class RequestWillBeSentExtraInfo:
+    '''
+    Fired when additional information about a requestWillBeSent event is available from the
+    network stack. Not every requestWillBeSent event will have an additional
+    requestWillBeSentExtraInfo fired for it, and there is no guarantee whether requestWillBeSent
+    or requestWillBeSentExtraInfo will be fired first for the same request.
+    '''
+    #: Request identifier. Used to match this information to an existing requestWillBeSent event.
+    request_id: 'RequestId'
+    #: A list of cookies which will not be sent with this request along with corresponding reasons
+    #: for blocking.
+    blocked_cookies: typing.List['BlockedCookieWithReason']
+    #: Raw request headers as they will be sent over the wire.
+    headers: 'Headers'
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'RequestWillBeSentExtraInfo':
+        return cls(
+            request_id=RequestId.from_json(json['requestId']),
+            blocked_cookies=[BlockedCookieWithReason.from_json(i) for i in json['blockedCookies']],
+            headers=Headers.from_json(json['headers'])
+        )
+
+
+@event_class('Network.responseReceivedExtraInfo')
+@dataclass
+class ResponseReceivedExtraInfo:
+    '''
+    Fired when additional information about a responseReceived event is available from the network
+    stack. Not every responseReceived event will have an additional responseReceivedExtraInfo for
+    it, and responseReceivedExtraInfo may be fired before or after responseReceived.
+    '''
+    #: Request identifier. Used to match this information to another responseReceived event.
+    request_id: 'RequestId'
+    #: A list of cookies which were not stored from the response along with the corresponding
+    #: reasons for blocking. The cookies here may not be valid due to syntax errors, which
+    #: are represented by the invalid cookie line string instead of a proper cookie.
+    blocked_cookies: typing.List['BlockedSetCookieWithReason']
+    #: Raw response headers as they were received over the wire.
+    headers: 'Headers'
+    #: Raw response header text as it was received over the wire. The raw text may not always be
+    #: available, such as in the case of HTTP/2 or QUIC.
+    headers_text: typing.Optional[str]
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'ResponseReceivedExtraInfo':
+        return cls(
+            request_id=RequestId.from_json(json['requestId']),
+            blocked_cookies=[BlockedSetCookieWithReason.from_json(i) for i in json['blockedCookies']],
+            headers=Headers.from_json(json['headers']),
+            headers_text=str(json['headersText']) if 'headersText' in json else None
         )

@@ -109,6 +109,8 @@ class PermissionType(enum.Enum):
     SENSORS = "sensors"
     VIDEO_CAPTURE = "videoCapture"
     IDLE_DETECTION = "idleDetection"
+    WAKE_LOCK_SCREEN = "wakeLockScreen"
+    WAKE_LOCK_SYSTEM = "wakeLockSystem"
 
     def to_json(self) -> str:
         return self.value

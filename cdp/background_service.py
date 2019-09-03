@@ -27,6 +27,7 @@ class ServiceName(enum.Enum):
     BACKGROUND_SYNC = "backgroundSync"
     PUSH_MESSAGING = "pushMessaging"
     NOTIFICATIONS = "notifications"
+    PAYMENT_HANDLER = "paymentHandler"
 
     def to_json(self) -> str:
         return self.value

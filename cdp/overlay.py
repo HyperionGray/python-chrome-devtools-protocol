@@ -142,19 +142,23 @@ def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 def get_highlight_object_for_test(
         node_id: 'dom.NodeId',
-        include_distance: typing.Optional[bool] = None
+        include_distance: typing.Optional[bool] = None,
+        include_style: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
     '''
     For testing.
 
     :param node_id: Id of the node to get highlight object for.
     :param include_distance: Whether to include distance info.
+    :param include_style: Whether to include style info.
     :returns: Highlight data for the node.
     '''
     params: T_JSON_DICT = dict()
     params['nodeId'] = node_id.to_json()
     if include_distance is not None:
         params['includeDistance'] = include_distance
+    if include_style is not None:
+        params['includeStyle'] = include_style
     cmd_dict: T_JSON_DICT = {
         'method': 'Overlay.getHighlightObjectForTest',
         'params': params,
@@ -393,6 +397,23 @@ def set_show_paint_rects(
     params['result'] = result
     cmd_dict: T_JSON_DICT = {
         'method': 'Overlay.setShowPaintRects',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
+def set_show_layout_shift_regions(
+        result: bool
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    '''
+    Requests that backend shows layout shift regions
+
+    :param result: True for showing layout shift regions
+    '''
+    params: T_JSON_DICT = dict()
+    params['result'] = result
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Overlay.setShowLayoutShiftRegions',
         'params': params,
     }
     json = yield cmd_dict

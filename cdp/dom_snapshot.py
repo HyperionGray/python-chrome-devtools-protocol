@@ -642,6 +642,15 @@ class LayoutTreeSnapshot:
     #: Stacking context information.
     stacking_contexts: 'RareBooleanData'
 
+    #: The offset rect of nodes. Only available when includeDOMRects is set to true
+    offset_rects: typing.Optional[typing.List['Rectangle']] = None
+
+    #: The scroll rect of nodes. Only available when includeDOMRects is set to true
+    scroll_rects: typing.Optional[typing.List['Rectangle']] = None
+
+    #: The client rect of nodes. Only available when includeDOMRects is set to true
+    client_rects: typing.Optional[typing.List['Rectangle']] = None
+
     def to_json(self) -> T_JSON_DICT:
         json: T_JSON_DICT = dict()
         json['nodeIndex'] = [i for i in self.node_index]
@@ -649,6 +658,12 @@ class LayoutTreeSnapshot:
         json['bounds'] = [i.to_json() for i in self.bounds]
         json['text'] = [i.to_json() for i in self.text]
         json['stackingContexts'] = self.stacking_contexts.to_json()
+        if self.offset_rects is not None:
+            json['offsetRects'] = [i.to_json() for i in self.offset_rects]
+        if self.scroll_rects is not None:
+            json['scrollRects'] = [i.to_json() for i in self.scroll_rects]
+        if self.client_rects is not None:
+            json['clientRects'] = [i.to_json() for i in self.client_rects]
         return json
 
     @classmethod
@@ -659,6 +674,9 @@ class LayoutTreeSnapshot:
             bounds=[Rectangle.from_json(i) for i in json['bounds']],
             text=[StringIndex.from_json(i) for i in json['text']],
             stacking_contexts=RareBooleanData.from_json(json['stackingContexts']),
+            offset_rects=[Rectangle.from_json(i) for i in json['offsetRects']] if 'offsetRects' in json else None,
+            scroll_rects=[Rectangle.from_json(i) for i in json['scrollRects']] if 'scrollRects' in json else None,
+            client_rects=[Rectangle.from_json(i) for i in json['clientRects']] if 'clientRects' in json else None,
         )
 
 
@@ -762,7 +780,8 @@ def get_snapshot(
 
 
 def capture_snapshot(
-        computed_styles: typing.List[str]
+        computed_styles: typing.List[str],
+        include_dom_rects: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.List['DocumentSnapshot'], typing.List[str]]]:
     '''
     Returns a document snapshot, including the full DOM tree of the root node (including iframes,
@@ -771,12 +790,15 @@ def capture_snapshot(
     flattened.
 
     :param computed_styles: Whitelist of computed styles to return.
+    :param include_dom_rects: Whether to include DOM rectangles (offsetRects, clientRects, scrollRects) into the snapshot
     :returns: a tuple with the following items:
         0. documents: The nodes in the DOM tree. The DOMNode at index 0 corresponds to the root document.
         1. strings: Shared string table that all string properties refer to with indexes.
     '''
     params: T_JSON_DICT = dict()
     params['computedStyles'] = [i for i in computed_styles]
+    if include_dom_rects is not None:
+        params['includeDOMRects'] = include_dom_rects
     cmd_dict: T_JSON_DICT = {
         'method': 'DOMSnapshot.captureSnapshot',
         'params': params,

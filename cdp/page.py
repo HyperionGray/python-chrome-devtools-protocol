@@ -16,6 +16,7 @@ import typing
 from . import debugger
 from . import dom
 from . import emulation
+from . import io
 from . import network
 from . import runtime
 
@@ -46,7 +47,7 @@ class Frame:
     #: Identifier of the loader associated with this frame.
     loader_id: 'network.LoaderId'
 
-    #: Frame document's URL.
+    #: Frame document's URL without fragment.
     url: str
 
     #: Frame document's security origin.
@@ -61,7 +62,10 @@ class Frame:
     #: Frame's name as specified in the tag.
     name: typing.Optional[str] = None
 
-    #: If the frame failed to load, this contains the URL that could not be loaded.
+    #: Frame document's URL fragment including the '#'.
+    url_fragment: typing.Optional[str] = None
+
+    #: If the frame failed to load, this contains the URL that could not be loaded. Note that unlike url above, this URL may contain a fragment.
     unreachable_url: typing.Optional[str] = None
 
     def to_json(self) -> T_JSON_DICT:
@@ -75,6 +79,8 @@ class Frame:
             json['parentId'] = self.parent_id
         if self.name is not None:
             json['name'] = self.name
+        if self.url_fragment is not None:
+            json['urlFragment'] = self.url_fragment
         if self.unreachable_url is not None:
             json['unreachableUrl'] = self.unreachable_url
         return json
@@ -89,6 +95,7 @@ class Frame:
             mime_type=str(json['mimeType']),
             parent_id=str(json['parentId']) if 'parentId' in json else None,
             name=str(json['name']) if 'name' in json else None,
+            url_fragment=str(json['urlFragment']) if 'urlFragment' in json else None,
             unreachable_url=str(json['unreachableUrl']) if 'unreachableUrl' in json else None,
         )
 
@@ -1065,8 +1072,9 @@ def print_to_pdf(
         ignore_invalid_page_ranges: typing.Optional[bool] = None,
         header_template: typing.Optional[str] = None,
         footer_template: typing.Optional[str] = None,
-        prefer_css_page_size: typing.Optional[bool] = None
-    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,str]:
+        prefer_css_page_size: typing.Optional[bool] = None,
+        transfer_mode: typing.Optional[str] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[str, typing.Optional['io.StreamHandle']]]:
     '''
     Print page as PDF.
 
@@ -1096,7 +1104,10 @@ def print_to_pdf(
     :param footer_template: HTML template for the print footer. Should use the same format as the ``headerTemplate``.
     :param prefer_css_page_size: Whether or not to prefer page size as defined by css. Defaults to false,
     in which case the content will be scaled to fit the paper size.
-    :returns: Base64-encoded pdf data.
+    :param transfer_mode: return as stream
+    :returns: a tuple with the following items:
+        0. data: Base64-encoded pdf data. Empty if |returnAsStream| is specified.
+        1. stream: (Optional) A handle of the stream that holds resulting PDF data.
     '''
     params: T_JSON_DICT = dict()
     if landscape is not None:
@@ -1129,12 +1140,17 @@ def print_to_pdf(
         params['footerTemplate'] = footer_template
     if prefer_css_page_size is not None:
         params['preferCSSPageSize'] = prefer_css_page_size
+    if transfer_mode is not None:
+        params['transferMode'] = transfer_mode
     cmd_dict: T_JSON_DICT = {
         'method': 'Page.printToPDF',
         'params': params,
     }
     json = yield cmd_dict
-    return str(json['data'])
+    return (
+        str(json['data']),
+        io.StreamHandle.from_json(json['stream']) if 'stream' in json else None
+    )
 
 
 def reload(
@@ -1675,6 +1691,47 @@ def wait_for_debugger() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     json = yield cmd_dict
 
 
+def set_intercept_file_chooser_dialog(
+        enabled: bool
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    '''
+    Intercept file chooser requests and transfer control to protocol clients.
+    When file chooser interception is enabled, native file chooser dialog is not shown.
+    Instead, a protocol event `Page.fileChooserOpened` is emitted.
+    File chooser can be handled with `page.handleFileChooser` command.
+
+    :param enabled:
+    '''
+    params: T_JSON_DICT = dict()
+    params['enabled'] = enabled
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Page.setInterceptFileChooserDialog',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
+def handle_file_chooser(
+        action: str,
+        files: typing.Optional[typing.List[str]] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    '''
+    Accepts or cancels an intercepted file chooser dialog.
+
+    :param action:
+    :param files: Array of absolute file paths to set, only respected with ``accept`` action.
+    '''
+    params: T_JSON_DICT = dict()
+    params['action'] = action
+    if files is not None:
+        params['files'] = [i for i in files]
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Page.handleFileChooser',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
 @event_class('Page.domContentEventFired')
 @dataclass
 class DomContentEventFired:
@@ -1684,6 +1741,21 @@ class DomContentEventFired:
     def from_json(cls, json: T_JSON_DICT) -> 'DomContentEventFired':
         return cls(
             timestamp=network.MonotonicTime.from_json(json['timestamp'])
+        )
+
+
+@event_class('Page.fileChooserOpened')
+@dataclass
+class FileChooserOpened:
+    '''
+    Emitted only when `page.interceptFileChooser` is enabled.
+    '''
+    mode: str
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> 'FileChooserOpened':
+        return cls(
+            mode=str(json['mode'])
         )
 
 

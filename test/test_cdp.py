@@ -49,6 +49,7 @@ def test_event_type_with_dependency():
     event = tracing.TracingComplete.from_json({
         'stream': 'Foo Stream',
         'traceFormat': tracing.StreamFormat.JSON,
+        'dataLossOccurred': False,
     })
     assert isinstance(event.stream, io.StreamHandle)
     assert repr(event.stream) == "StreamHandle('Foo Stream')"

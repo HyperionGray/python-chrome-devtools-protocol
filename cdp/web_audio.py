@@ -63,30 +63,37 @@ class ContextState(enum.Enum):
 @dataclass
 class ContextRealtimeData:
     '''
-    Fields in AudioContext that change in real-time. These are not updated
-    on OfflineAudioContext.
+    Fields in AudioContext that change in real-time.
     '''
     #: The current context time in second in BaseAudioContext.
-    current_time: typing.Optional[float] = None
+    current_time: float
 
     #: The time spent on rendering graph divided by render qunatum duration,
     #: and multiplied by 100. 100 means the audio renderer reached the full
     #: capacity and glitch may occur.
-    render_capacity: typing.Optional[float] = None
+    render_capacity: float
+
+    #: A running mean of callback interval.
+    callback_interval_mean: float
+
+    #: A running variance of callback interval.
+    callback_interval_variance: float
 
     def to_json(self) -> T_JSON_DICT:
         json: T_JSON_DICT = dict()
-        if self.current_time is not None:
-            json['currentTime'] = self.current_time
-        if self.render_capacity is not None:
-            json['renderCapacity'] = self.render_capacity
+        json['currentTime'] = self.current_time
+        json['renderCapacity'] = self.render_capacity
+        json['callbackIntervalMean'] = self.callback_interval_mean
+        json['callbackIntervalVariance'] = self.callback_interval_variance
         return json
 
     @classmethod
     def from_json(cls, json: T_JSON_DICT) -> 'ContextRealtimeData':
         return cls(
-            current_time=float(json['currentTime']) if 'currentTime' in json else None,
-            render_capacity=float(json['renderCapacity']) if 'renderCapacity' in json else None,
+            current_time=float(json['currentTime']),
+            render_capacity=float(json['renderCapacity']),
+            callback_interval_mean=float(json['callbackIntervalMean']),
+            callback_interval_variance=float(json['callbackIntervalVariance']),
         )
 
 
