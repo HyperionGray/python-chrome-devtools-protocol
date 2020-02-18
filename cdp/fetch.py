@@ -194,11 +194,8 @@ def enable(
     Enables issuing of requestPaused events. A request will be paused until client
     calls one of failRequest, fulfillRequest or continueRequest/continueWithAuth.
 
-    :param patterns: If specified, only requests matching any of these patterns will produce
-    fetchRequested event and will be paused until clients response. If not set,
-    all requests will be affected.
-    :param handle_auth_requests: If true, authRequired events will be issued and requests will be paused
-    expecting a call to continueWithAuth.
+    :param patterns: If specified, only requests matching any of these patterns will produce fetchRequested event and will be paused until clients response. If not set, all requests will be affected.
+    :param handle_auth_requests: If true, authRequired events will be issued and requests will be paused expecting a call to continueWithAuth.
     '''
     params: T_JSON_DICT = dict()
     if patterns is not None:
@@ -246,8 +243,7 @@ def fulfill_request(
     :param response_code: An HTTP response code.
     :param response_headers: Response headers.
     :param body: A response body.
-    :param response_phrase: A textual representation of responseCode.
-    If absent, a standard phrase mathcing responseCode is used.
+    :param response_phrase: A textual representation of responseCode. If absent, a standard phrase mathcing responseCode is used.
     '''
     params: T_JSON_DICT = dict()
     params['requestId'] = request_id.to_json()

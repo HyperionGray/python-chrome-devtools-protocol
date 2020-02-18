@@ -217,8 +217,7 @@ def start_sampling(
         sampling_interval: typing.Optional[float] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
-    :param sampling_interval: Average sample interval in bytes. Poisson distribution is used for the intervals. The
-    default value is 32768 bytes.
+    :param sampling_interval: Average sample interval in bytes. Poisson distribution is used for the intervals. The default value is 32768 bytes.
     '''
     params: T_JSON_DICT = dict()
     if sampling_interval is not None:
@@ -263,8 +262,7 @@ def stop_tracking_heap_objects(
         report_progress: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
-    :param report_progress: If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken
-    when the tracking is stopped.
+    :param report_progress: If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken when the tracking is stopped.
     '''
     params: T_JSON_DICT = dict()
     if report_progress is not None:

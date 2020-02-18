@@ -451,7 +451,7 @@ class CdpParameter(CdpProperty):
         ''' Generate the docstring for this parameter. '''
         doc = f':param {self.py_name}:'
         if self.description:
-            desc = self.description.replace('`', '``')
+            desc = self.description.replace('`', '``').replace('\n', ' ')
             doc += f' {desc}'
         return doc
 

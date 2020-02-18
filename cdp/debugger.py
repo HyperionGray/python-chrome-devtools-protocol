@@ -297,8 +297,7 @@ def enable(
     Enables debugger for the given page. Clients should not assume that the debugging has been
     enabled until the result for this command is received.
 
-    :param max_scripts_cache_size: The maximum size in bytes of collected scripts (not referenced by other heap objects)
-    the debugger can hold. Puts no limit if paramter is omitted.
+    :param max_scripts_cache_size: The maximum size in bytes of collected scripts (not referenced by other heap objects) the debugger can hold. Puts no limit if paramter is omitted.
     :returns: Unique identifier of the debugger.
     '''
     params: T_JSON_DICT = dict()
@@ -328,12 +327,9 @@ def evaluate_on_call_frame(
 
     :param call_frame_id: Call frame identifier to evaluate on.
     :param expression: Expression to evaluate.
-    :param object_group: String object group name to put result into (allows rapid releasing resulting object handles
-    using ``releaseObjectGroup``).
-    :param include_command_line_api: Specifies whether command line API should be available to the evaluated expression, defaults
-    to false.
-    :param silent: In silent mode exceptions thrown during evaluation are not reported and do not pause
-    execution. Overrides ``setPauseOnException`` state.
+    :param object_group: String object group name to put result into (allows rapid releasing resulting object handles using ``releaseObjectGroup``).
+    :param include_command_line_api: Specifies whether command line API should be available to the evaluated expression, defaults to false.
+    :param silent: In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides ``setPauseOnException`` state.
     :param return_by_value: Whether the result is expected to be a JSON object that should be sent by value.
     :param generate_preview: Whether preview should be generated for the result.
     :param throw_on_side_effect: Whether to throw an exception if side effect cannot be ruled out during evaluation.
@@ -380,8 +376,7 @@ def get_possible_breakpoints(
     the same.
 
     :param start: Start of range to search possible breakpoint locations in.
-    :param end: End of range to search possible breakpoint locations in (excluding). When not specified, end
-    of scripts is used as end of range.
+    :param end: End of range to search possible breakpoint locations in (excluding). When not specified, end of scripts is used as end of range.
     :param restrict_to_function: Only consider locations which are in the same (non-nested) function as start.
     :returns: List of the possible breakpoint locations.
     '''
@@ -551,8 +546,7 @@ def set_async_call_stack_depth(
     '''
     Enables or disables async call stacks tracking.
 
-    :param max_depth: Maximum depth of async call stacks. Setting to ``0`` will effectively disable collecting async
-    call stacks (default).
+    :param max_depth: Maximum depth of async call stacks. Setting to ``0`` will effectively disable collecting async call stacks (default).
     '''
     params: T_JSON_DICT = dict()
     params['maxDepth'] = max_depth
@@ -613,8 +607,7 @@ def set_breakpoint(
     Sets JavaScript breakpoint at a given location.
 
     :param location: Location to set breakpoint in.
-    :param condition: Expression to use as a breakpoint condition. When specified, debugger will only stop on the
-    breakpoint if this expression evaluates to true.
+    :param condition: Expression to use as a breakpoint condition. When specified, debugger will only stop on the breakpoint if this expression evaluates to true.
     :returns: a tuple with the following items:
         0. breakpointId: Id of the created breakpoint for further reference.
         1. actualLocation: Location this breakpoint resolved into.
@@ -669,12 +662,10 @@ def set_breakpoint_by_url(
 
     :param line_number: Line number to set breakpoint at.
     :param url: URL of the resources to set breakpoint on.
-    :param url_regex: Regex pattern for the URLs of the resources to set breakpoints on. Either ``url`` or
-    ``urlRegex`` must be specified.
+    :param url_regex: Regex pattern for the URLs of the resources to set breakpoints on. Either ``url`` or ``urlRegex`` must be specified.
     :param script_hash: Script hash of the resources to set breakpoint on.
     :param column_number: Offset in the line to set breakpoint at.
-    :param condition: Expression to use as a breakpoint condition. When specified, debugger will only stop on the
-    breakpoint if this expression evaluates to true.
+    :param condition: Expression to use as a breakpoint condition. When specified, debugger will only stop on the breakpoint if this expression evaluates to true.
     :returns: a tuple with the following items:
         0. breakpointId: Id of the created breakpoint for further reference.
         1. locations: List of the locations this breakpoint resolved into upon addition.
@@ -712,8 +703,7 @@ def set_breakpoint_on_function_call(
     calling it will also trigger the breakpoint.
 
     :param object_id: Function object id.
-    :param condition: Expression to use as a breakpoint condition. When specified, debugger will
-    stop on the breakpoint if this expression evaluates to true.
+    :param condition: Expression to use as a breakpoint condition. When specified, debugger will stop on the breakpoint if this expression evaluates to true.
     :returns: Id of the created breakpoint for further reference.
     '''
     params: T_JSON_DICT = dict()
@@ -790,8 +780,7 @@ def set_script_source(
 
     :param script_id: Id of the script to edit.
     :param script_source: New content of the script.
-    :param dry_run: If true the change will not actually be applied. Dry run may be used to get result
-    description without actually modifying the code.
+    :param dry_run: If true the change will not actually be applied. Dry run may be used to get result description without actually modifying the code.
     :returns: a tuple with the following items:
         0. callFrames: (Optional) New stack trace in case editing has happened while VM was stopped.
         1. stackChanged: (Optional) Whether current call stack  was modified after applying the changes.
@@ -845,8 +834,7 @@ def set_variable_value(
     Changes value of variable in a callframe. Object-based scopes are not supported and must be
     mutated manually.
 
-    :param scope_number: 0-based number of scope as was listed in scope chain. Only 'local', 'closure' and 'catch'
-    scope types are allowed. Other scopes could be manipulated manually.
+    :param scope_number: 0-based number of scope as was listed in scope chain. Only 'local', 'closure' and 'catch' scope types are allowed. Other scopes could be manipulated manually.
     :param variable_name: Variable name.
     :param new_value: New variable value.
     :param call_frame_id: Id of callframe that holds variable.
@@ -869,8 +857,7 @@ def step_into(
     '''
     Steps into the function call.
 
-    :param break_on_async_call: Debugger will issue additional Debugger.paused notification if any async task is scheduled
-    before next pause.
+    :param break_on_async_call: Debugger will issue additional Debugger.paused notification if any async task is scheduled before next pause.
     '''
     params: T_JSON_DICT = dict()
     if break_on_async_call is not None:
