@@ -14,7 +14,7 @@ import enum
 import typing
 
 
-from deprecated.sphinx import deprecated
+from deprecated.sphinx import deprecated # type: ignore
 
 
 class CertificateId(int):

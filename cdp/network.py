@@ -18,7 +18,7 @@ from . import io
 from . import page
 from . import runtime
 from . import security
-from deprecated.sphinx import deprecated
+from deprecated.sphinx import deprecated # type: ignore
 
 
 class ResourceType(enum.Enum):

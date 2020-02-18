@@ -16,7 +16,7 @@ import typing
 from . import dom
 from . import network
 from . import page
-from deprecated.sphinx import deprecated
+from deprecated.sphinx import deprecated # type: ignore
 
 
 @dataclass
