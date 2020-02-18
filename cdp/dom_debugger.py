@@ -110,10 +110,8 @@ def get_event_listeners(
     Returns event listeners of the given object.
 
     :param object_id: Identifier of the object to return listeners for.
-    :param depth: The maximum depth at which Node children should be retrieved, defaults to 1. Use -1 for the
-    entire subtree or provide an integer larger than 0.
-    :param pierce: Whether or not iframes and shadow roots should be traversed when returning the subtree
-    (default is false). Reports listeners for all contexts if pierce is enabled.
+    :param depth: The maximum depth at which Node children should be retrieved, defaults to 1. Use -1 for the entire subtree or provide an integer larger than 0.
+    :param pierce: Whether or not iframes and shadow roots should be traversed when returning the subtree (default is false). Reports listeners for all contexts if pierce is enabled.
     :returns: Array of relevant listeners.
     '''
     params: T_JSON_DICT = dict()
@@ -233,8 +231,7 @@ def set_event_listener_breakpoint(
     Sets breakpoint on particular DOM event.
 
     :param event_name: DOM Event name to stop on (any DOM event will do).
-    :param target_name: EventTarget interface name to stop on. If equal to ``"*"`` or not provided, will stop on any
-    EventTarget.
+    :param target_name: EventTarget interface name to stop on. If equal to ``"*"`` or not provided, will stop on any EventTarget.
     '''
     params: T_JSON_DICT = dict()
     params['eventName'] = event_name

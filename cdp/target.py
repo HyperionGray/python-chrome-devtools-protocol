@@ -260,11 +260,9 @@ def create_target(
     :param width: Frame width in DIP (headless chrome only).
     :param height: Frame height in DIP (headless chrome only).
     :param browser_context_id: The browser context to create the page in.
-    :param enable_begin_frame_control: Whether BeginFrames for this target will be controlled via DevTools (headless chrome only,
-    not supported on MacOS yet, false by default).
+    :param enable_begin_frame_control: Whether BeginFrames for this target will be controlled via DevTools (headless chrome only, not supported on MacOS yet, false by default).
     :param new_window: Whether to create a new Window or Tab (chrome-only, false by default).
-    :param background: Whether to create the target in background or foreground (chrome-only,
-    false by default).
+    :param background: Whether to create the target in background or foreground (chrome-only, false by default).
     :returns: The id of the page opened.
     '''
     params: T_JSON_DICT = dict()
@@ -398,8 +396,7 @@ def set_auto_attach(
     automatically detaches from all currently attached targets.
 
     :param auto_attach: Whether to auto-attach to related targets.
-    :param wait_for_debugger_on_start: Whether to pause new targets when attaching to them. Use ``Runtime.runIfWaitingForDebugger``
-    to run paused targets.
+    :param wait_for_debugger_on_start: Whether to pause new targets when attaching to them. Use ``Runtime.runIfWaitingForDebugger`` to run paused targets.
     :param flatten: Enables "flat" access to the session via specifying sessionId attribute in the commands.
     '''
     params: T_JSON_DICT = dict()

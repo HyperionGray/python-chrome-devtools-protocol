@@ -304,8 +304,7 @@ def set_inspect_mode(
     Backend then generates 'inspectNodeRequested' event upon element selection.
 
     :param mode: Set an inspection mode.
-    :param highlight_config: A descriptor for the highlight appearance of hovered-over nodes. May be omitted if ``enabled
-    == false``.
+    :param highlight_config: A descriptor for the highlight appearance of hovered-over nodes. May be omitted if ``enabled == false``.
     '''
     params: T_JSON_DICT = dict()
     params['mode'] = mode.to_json()

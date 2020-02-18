@@ -302,9 +302,7 @@ def get_histograms(
     '''
     Get Chrome histograms.
 
-    :param query: Requested substring in name. Only histograms which have query as a
-    substring in their name are extracted. An empty or absent query returns
-    all histograms.
+    :param query: Requested substring in name. Only histograms which have query as a substring in their name are extracted. An empty or absent query returns all histograms.
     :param delta: If true, retrieve delta since last call.
     :returns: Histograms.
     '''
@@ -398,8 +396,7 @@ def set_window_bounds(
     Set position and/or size of the browser window.
 
     :param window_id: Browser window id.
-    :param bounds: New window bounds. The 'minimized', 'maximized' and 'fullscreen' states cannot be combined
-    with 'left', 'top', 'width' or 'height'. Leaves unspecified fields unchanged.
+    :param bounds: New window bounds. The 'minimized', 'maximized' and 'fullscreen' states cannot be combined with 'left', 'top', 'width' or 'height'. Leaves unspecified fields unchanged.
     '''
     params: T_JSON_DICT = dict()
     params['windowId'] = window_id.to_json()

@@ -16,6 +16,7 @@ import typing
 from . import dom
 from . import network
 from . import page
+from deprecated.sphinx import deprecated # type: ignore
 
 
 @dataclass
@@ -146,8 +147,7 @@ def set_default_background_color_override(
     Sets or clears an override of the default background color of the frame. This override is used
     if the content does not specify one.
 
-    :param color: RGBA of the default background color. If not specified, any existing override will be
-    cleared.
+    :param color: RGBA of the default background color. If not specified, any existing override will be cleared.
     '''
     params: T_JSON_DICT = dict()
     if color is not None:
@@ -181,8 +181,7 @@ def set_device_metrics_override(
     :param width: Overriding width value in pixels (minimum 0, maximum 10000000). 0 disables the override.
     :param height: Overriding height value in pixels (minimum 0, maximum 10000000). 0 disables the override.
     :param device_scale_factor: Overriding device scale factor value. 0 disables the override.
-    :param mobile: Whether to emulate mobile device. This includes viewport meta tag, overlay scrollbars, text
-    autosizing and more.
+    :param mobile: Whether to emulate mobile device. This includes viewport meta tag, overlay scrollbars, text autosizing and more.
     :param scale: Scale to apply to resulting view image.
     :param screen_width: Overriding screen width value in pixels (minimum 0, maximum 10000000).
     :param screen_height: Overriding screen height value in pixels (minimum 0, maximum 10000000).
@@ -190,8 +189,7 @@ def set_device_metrics_override(
     :param position_y: Overriding view Y position on screen in pixels (minimum 0, maximum 10000000).
     :param dont_set_visible_size: Do not set visible view size, rely upon explicit setVisibleSize call.
     :param screen_orientation: Screen orientation override.
-    :param viewport: If set, the visible area of the page will be overridden to this viewport. This viewport
-    change is not observed by the page, e.g. viewport-relative elements do not change positions.
+    :param viewport: If set, the visible area of the page will be overridden to this viewport. This viewport change is not observed by the page, e.g. viewport-relative elements do not change positions.
     '''
     params: T_JSON_DICT = dict()
     params['width'] = width
@@ -314,10 +312,13 @@ def set_geolocation_override(
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 def set_navigator_overrides(
         platform: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    .. deprecated:: 1.3
+
     Overrides value returned by the javascript navigator object.
 
     :param platform: The platform navigator.platform should return.
@@ -398,12 +399,9 @@ def set_virtual_time_policy(
     the current virtual time policy.  Note this supersedes any previous time budget.
 
     :param policy:
-    :param budget: If set, after this many virtual milliseconds have elapsed virtual time will be paused and a
-    virtualTimeBudgetExpired event is sent.
-    :param max_virtual_time_task_starvation_count: If set this specifies the maximum number of tasks that can be run before virtual is forced
-    forwards to prevent deadlock.
-    :param wait_for_navigation: If set the virtual time policy change should be deferred until any frame starts navigating.
-    Note any previous deferred policy change is superseded.
+    :param budget: If set, after this many virtual milliseconds have elapsed virtual time will be paused and a virtualTimeBudgetExpired event is sent.
+    :param max_virtual_time_task_starvation_count: If set this specifies the maximum number of tasks that can be run before virtual is forced forwards to prevent deadlock.
+    :param wait_for_navigation: If set the virtual time policy change should be deferred until any frame starts navigating. Note any previous deferred policy change is superseded.
     :param initial_virtual_time: If set, base::Time::Now will be overriden to initially return this value.
     :returns: Absolute timestamp at which virtual time was first enabled (up time in milliseconds).
     '''
@@ -431,8 +429,7 @@ def set_timezone_override(
     '''
     Overrides default host system timezone with the specified one.
 
-    :param timezone_id: The timezone identifier. If empty, disables the override and
-    restores default host system timezone.
+    :param timezone_id: The timezone identifier. If empty, disables the override and restores default host system timezone.
     '''
     params: T_JSON_DICT = dict()
     params['timezoneId'] = timezone_id
@@ -443,11 +440,14 @@ def set_timezone_override(
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 def set_visible_size(
         width: int,
         height: int
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    .. deprecated:: 1.3
+
     Resizes the frame/viewport of the page. Note that this does not affect the frame's container
     (e.g. browser window). Can be used to produce screenshots of the specified size. Not supported
     on Android.

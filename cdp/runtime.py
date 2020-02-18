@@ -742,21 +742,15 @@ def call_function_on(
     inherited from the target object.
 
     :param function_declaration: Declaration of the function to call.
-    :param object_id: Identifier of the object to call function on. Either objectId or executionContextId should
-    be specified.
-    :param arguments: Call arguments. All call arguments must belong to the same JavaScript world as the target
-    object.
-    :param silent: In silent mode exceptions thrown during evaluation are not reported and do not pause
-    execution. Overrides ``setPauseOnException`` state.
+    :param object_id: Identifier of the object to call function on. Either objectId or executionContextId should be specified.
+    :param arguments: Call arguments. All call arguments must belong to the same JavaScript world as the target object.
+    :param silent: In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides ``setPauseOnException`` state.
     :param return_by_value: Whether the result is expected to be a JSON object which should be sent by value.
     :param generate_preview: Whether preview should be generated for the result.
     :param user_gesture: Whether execution should be treated as initiated by user in the UI.
-    :param await_promise: Whether execution should ``await`` for resulting value and return once awaited promise is
-    resolved.
-    :param execution_context_id: Specifies execution context which global object will be used to call function on. Either
-    executionContextId or objectId should be specified.
-    :param object_group: Symbolic group name that can be used to release multiple objects. If objectGroup is not
-    specified and objectId is, objectGroup will be inherited from object.
+    :param await_promise: Whether execution should ``await`` for resulting value and return once awaited promise is resolved.
+    :param execution_context_id: Specifies execution context which global object will be used to call function on. Either executionContextId or objectId should be specified.
+    :param object_group: Symbolic group name that can be used to release multiple objects. If objectGroup is not specified and objectId is, objectGroup will be inherited from object.
     :returns: a tuple with the following items:
         0. result: Call result.
         1. exceptionDetails: (Optional) Exception details.
@@ -804,8 +798,7 @@ def compile_script(
     :param expression: Expression to compile.
     :param source_url: Source url to be set for the script.
     :param persist_script: Specifies whether the compiled script should be persisted.
-    :param execution_context_id: Specifies in which execution context to perform script run. If the parameter is omitted the
-    evaluation will be performed in the context of the inspected page.
+    :param execution_context_id: Specifies in which execution context to perform script run. If the parameter is omitted the evaluation will be performed in the context of the inspected page.
     :returns: a tuple with the following items:
         0. scriptId: (Optional) Id of the script.
         1. exceptionDetails: (Optional) Exception details.
@@ -878,15 +871,12 @@ def evaluate(
     :param expression: Expression to evaluate.
     :param object_group: Symbolic group name that can be used to release multiple objects.
     :param include_command_line_api: Determines whether Command Line API should be available during the evaluation.
-    :param silent: In silent mode exceptions thrown during evaluation are not reported and do not pause
-    execution. Overrides ``setPauseOnException`` state.
-    :param context_id: Specifies in which execution context to perform evaluation. If the parameter is omitted the
-    evaluation will be performed in the context of the inspected page.
+    :param silent: In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides ``setPauseOnException`` state.
+    :param context_id: Specifies in which execution context to perform evaluation. If the parameter is omitted the evaluation will be performed in the context of the inspected page.
     :param return_by_value: Whether the result is expected to be a JSON object that should be sent by value.
     :param generate_preview: Whether preview should be generated for the result.
     :param user_gesture: Whether execution should be treated as initiated by user in the UI.
-    :param await_promise: Whether execution should ``await`` for resulting value and return once awaited promise is
-    resolved.
+    :param await_promise: Whether execution should ``await`` for resulting value and return once awaited promise is resolved.
     :param throw_on_side_effect: Whether to throw an exception if side effect cannot be ruled out during evaluation.
     :param timeout: Terminate execution after timing out (number of milliseconds).
     :returns: a tuple with the following items:
@@ -969,10 +959,8 @@ def get_properties(
     object.
 
     :param object_id: Identifier of the object to return properties for.
-    :param own_properties: If true, returns properties belonging only to the element itself, not to its prototype
-    chain.
-    :param accessor_properties_only: If true, returns accessor properties (with getter/setter) only; internal properties are not
-    returned either.
+    :param own_properties: If true, returns properties belonging only to the element itself, not to its prototype chain.
+    :param accessor_properties_only: If true, returns accessor properties (with getter/setter) only; internal properties are not returned either.
     :param generate_preview: Whether preview should be generated for the results.
     :returns: a tuple with the following items:
         0. result: Object properties.
@@ -1100,16 +1088,13 @@ def run_script(
     Runs script with given id in a given context.
 
     :param script_id: Id of the script to run.
-    :param execution_context_id: Specifies in which execution context to perform script run. If the parameter is omitted the
-    evaluation will be performed in the context of the inspected page.
+    :param execution_context_id: Specifies in which execution context to perform script run. If the parameter is omitted the evaluation will be performed in the context of the inspected page.
     :param object_group: Symbolic group name that can be used to release multiple objects.
-    :param silent: In silent mode exceptions thrown during evaluation are not reported and do not pause
-    execution. Overrides ``setPauseOnException`` state.
+    :param silent: In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides ``setPauseOnException`` state.
     :param include_command_line_api: Determines whether Command Line API should be available during the evaluation.
     :param return_by_value: Whether the result is expected to be a JSON object which should be sent by value.
     :param generate_preview: Whether preview should be generated for the result.
-    :param await_promise: Whether execution should ``await`` for resulting value and return once awaited promise is
-    resolved.
+    :param await_promise: Whether execution should ``await`` for resulting value and return once awaited promise is resolved.
     :returns: a tuple with the following items:
         0. result: Run result.
         1. exceptionDetails: (Optional) Exception details.
@@ -1147,8 +1132,7 @@ def set_async_call_stack_depth(
     '''
     Enables or disables async call stacks tracking.
 
-    :param max_depth: Maximum depth of async call stacks. Setting to ``0`` will effectively disable collecting async
-    call stacks (default).
+    :param max_depth: Maximum depth of async call stacks. Setting to ``0`` will effectively disable collecting async call stacks (default).
     '''
     params: T_JSON_DICT = dict()
     params['maxDepth'] = max_depth

@@ -18,6 +18,7 @@ from . import io
 from . import page
 from . import runtime
 from . import security
+from deprecated.sphinx import deprecated # type: ignore
 
 
 class ResourceType(enum.Enum):
@@ -1423,8 +1424,11 @@ class SignedExchangeInfo:
         )
 
 
+@deprecated(version="1.3")
 def can_clear_browser_cache() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,bool]:
     '''
+    .. deprecated:: 1.3
+
     Tells whether clearing browser cache is supported.
 
     :returns: True if browser cache can be cleared.
@@ -1436,8 +1440,11 @@ def can_clear_browser_cache() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,bool]:
     return bool(json['result'])
 
 
+@deprecated(version="1.3")
 def can_clear_browser_cookies() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,bool]:
     '''
+    .. deprecated:: 1.3
+
     Tells whether clearing browser cookies is supported.
 
     :returns: True if browser cookies can be cleared.
@@ -1449,8 +1456,11 @@ def can_clear_browser_cookies() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,bool
     return bool(json['result'])
 
 
+@deprecated(version="1.3")
 def can_emulate_network_conditions() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,bool]:
     '''
+    .. deprecated:: 1.3
+
     Tells whether emulation of network conditions is supported.
 
     :returns: True if emulation of network conditions is supported.
@@ -1482,6 +1492,7 @@ def clear_browser_cookies() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 def continue_intercepted_request(
         interception_id: 'InterceptionId',
         error_reason: typing.Optional['ErrorReason'] = None,
@@ -1493,6 +1504,8 @@ def continue_intercepted_request(
         auth_challenge_response: typing.Optional['AuthChallengeResponse'] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    .. deprecated:: 1.3
+
     Response to Network.requestIntercepted which either modifies the request to continue with any
     modifications, or blocks it, or completes it with the provided response bytes. If a network
     fetch occurs as a result which encounters a redirect an additional Network.requestIntercepted
@@ -1500,18 +1513,12 @@ def continue_intercepted_request(
     Deprecated, use Fetch.continueRequest, Fetch.fulfillRequest and Fetch.failRequest instead.
 
     :param interception_id:
-    :param error_reason: If set this causes the request to fail with the given reason. Passing ``Aborted`` for requests
-    marked with ``isNavigationRequest`` also cancels the navigation. Must not be set in response
-    to an authChallenge.
-    :param raw_response: If set the requests completes using with the provided base64 encoded raw response, including
-    HTTP status line and headers etc... Must not be set in response to an authChallenge.
-    :param url: If set the request url will be modified in a way that's not observable by page. Must not be
-    set in response to an authChallenge.
-    :param method: If set this allows the request method to be overridden. Must not be set in response to an
-    authChallenge.
+    :param error_reason: If set this causes the request to fail with the given reason. Passing ``Aborted`` for requests marked with ``isNavigationRequest`` also cancels the navigation. Must not be set in response to an authChallenge.
+    :param raw_response: If set the requests completes using with the provided base64 encoded raw response, including HTTP status line and headers etc... Must not be set in response to an authChallenge.
+    :param url: If set the request url will be modified in a way that's not observable by page. Must not be set in response to an authChallenge.
+    :param method: If set this allows the request method to be overridden. Must not be set in response to an authChallenge.
     :param post_data: If set this allows postData to be set. Must not be set in response to an authChallenge.
-    :param headers: If set this allows the request headers to be changed. Must not be set in response to an
-    authChallenge.
+    :param headers: If set this allows the request headers to be changed. Must not be set in response to an authChallenge.
     :param auth_challenge_response: Response to a requestIntercepted with an authChallenge. Must not be set otherwise.
     '''
     params: T_JSON_DICT = dict()
@@ -1547,8 +1554,7 @@ def delete_cookies(
     Deletes browser cookies with matching name and url or domain/path pair.
 
     :param name: Name of the cookies to remove.
-    :param url: If specified, deletes all the cookies with the given name where domain and path match
-    provided URL.
+    :param url: If specified, deletes all the cookies with the given name where domain and path match provided URL.
     :param domain: If specified, deletes only cookies with the exact domain.
     :param path: If specified, deletes only cookies with the exact path.
     '''
@@ -1892,8 +1898,7 @@ def set_cookie(
 
     :param name: Cookie name.
     :param value: Cookie value.
-    :param url: The request-URI to associate with the setting of the cookie. This value can affect the
-    default domain and path values of the created cookie.
+    :param url: The request-URI to associate with the setting of the cookie. This value can affect the default domain and path values of the created cookie.
     :param domain: Cookie domain.
     :param path: Cookie path.
     :param secure: True if cookie is secure.
@@ -1981,15 +1986,17 @@ def set_extra_http_headers(
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 def set_request_interception(
         patterns: typing.List['RequestPattern']
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    .. deprecated:: 1.3
+
     Sets the requests to intercept that match the provided patterns and optionally resource types.
     Deprecated, please use Fetch.enable instead.
 
-    :param patterns: Requests matching any of these patterns will be forwarded and wait for the corresponding
-    continueInterceptedRequest call.
+    :param patterns: Requests matching any of these patterns will be forwarded and wait for the corresponding continueInterceptedRequest call.
     '''
     params: T_JSON_DICT = dict()
     params['patterns'] = [i.to_json() for i in patterns]
@@ -2135,6 +2142,7 @@ class LoadingFinished:
         )
 
 
+@deprecated(version="1.3")
 @event_class('Network.requestIntercepted')
 @dataclass
 class RequestIntercepted:

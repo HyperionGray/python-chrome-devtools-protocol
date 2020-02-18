@@ -14,6 +14,9 @@ import enum
 import typing
 
 
+from deprecated.sphinx import deprecated # type: ignore
+
+
 class CertificateId(int):
     '''
     An internal certificate ID value.
@@ -218,11 +221,14 @@ def set_ignore_certificate_errors(
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 def handle_certificate_error(
         event_id: int,
         action: 'CertificateErrorAction'
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    .. deprecated:: 1.3
+
     Handles a certificate error that fired a certificateError event.
 
     :param event_id: The ID of the event.
@@ -238,10 +244,13 @@ def handle_certificate_error(
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 def set_override_certificate_errors(
         override: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    .. deprecated:: 1.3
+
     Enable/disable overriding certificate errors. If enabled, all certificate error events need to
     be handled by the DevTools client and should be answered with `handleCertificateError` commands.
 
@@ -256,6 +265,7 @@ def set_override_certificate_errors(
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 @event_class('Security.certificateError')
 @dataclass
 class CertificateError:

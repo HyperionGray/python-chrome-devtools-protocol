@@ -498,8 +498,7 @@ def copy_to(
 
     :param node_id: Id of the node to copy.
     :param target_node_id: Id of the element to drop the copy into.
-    :param insert_before_node_id: Drop the copy before this node (if absent, the copy becomes the last child of
-    ``targetNodeId``).
+    :param insert_before_node_id: Drop the copy before this node (if absent, the copy becomes the last child of ``targetNodeId``).
     :returns: Id of the node clone.
     '''
     params: T_JSON_DICT = dict()
@@ -529,10 +528,8 @@ def describe_node(
     :param node_id: Identifier of the node.
     :param backend_node_id: Identifier of the backend node.
     :param object_id: JavaScript object id of the node wrapper.
-    :param depth: The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the
-    entire subtree or provide an integer larger than 0.
-    :param pierce: Whether or not iframes and shadow roots should be traversed when returning the subtree
-    (default is false).
+    :param depth: The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the entire subtree or provide an integer larger than 0.
+    :param pierce: Whether or not iframes and shadow roots should be traversed when returning the subtree (default is false).
     :returns: Node description.
     '''
     params: T_JSON_DICT = dict()
@@ -701,10 +698,8 @@ def get_document(
     '''
     Returns the root DOM node (and optionally the subtree) to the caller.
 
-    :param depth: The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the
-    entire subtree or provide an integer larger than 0.
-    :param pierce: Whether or not iframes and shadow roots should be traversed when returning the subtree
-    (default is false).
+    :param depth: The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the entire subtree or provide an integer larger than 0.
+    :param pierce: Whether or not iframes and shadow roots should be traversed when returning the subtree (default is false).
     :returns: Resulting node.
     '''
     params: T_JSON_DICT = dict()
@@ -727,10 +722,8 @@ def get_flattened_document(
     '''
     Returns the root DOM node (and optionally the subtree) to the caller.
 
-    :param depth: The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the
-    entire subtree or provide an integer larger than 0.
-    :param pierce: Whether or not iframes and shadow roots should be traversed when returning the subtree
-    (default is false).
+    :param depth: The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the entire subtree or provide an integer larger than 0.
+    :param pierce: Whether or not iframes and shadow roots should be traversed when returning the subtree (default is false).
     :returns: Resulting node.
     '''
     params: T_JSON_DICT = dict()
@@ -901,8 +894,7 @@ def move_to(
 
     :param node_id: Id of the node to move.
     :param target_node_id: Id of the element to drop the moved node into.
-    :param insert_before_node_id: Drop node before this one (if absent, the moved node becomes the last child of
-    ``targetNodeId``).
+    :param insert_before_node_id: Drop node before this one (if absent, the moved node becomes the last child of ``targetNodeId``).
     :returns: New id of the moved node.
     '''
     params: T_JSON_DICT = dict()
@@ -1088,10 +1080,8 @@ def request_child_nodes(
     the specified depth.
 
     :param node_id: Id of the node to get children for.
-    :param depth: The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the
-    entire subtree or provide an integer larger than 0.
-    :param pierce: Whether or not iframes and shadow roots should be traversed when returning the sub-tree
-    (default is false).
+    :param depth: The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the entire subtree or provide an integer larger than 0.
+    :param pierce: Whether or not iframes and shadow roots should be traversed when returning the sub-tree (default is false).
     '''
     params: T_JSON_DICT = dict()
     params['nodeId'] = node_id.to_json()
@@ -1193,8 +1183,7 @@ def set_attributes_as_text(
 
     :param node_id: Id of the element to set attributes for.
     :param text: Text with a number of attributes. Will parse this text using HTML parser.
-    :param name: Attribute name to replace with new attributes derived from text in case text parsed
-    successfully.
+    :param name: Attribute name to replace with new attributes derived from text in case text parsed successfully.
     '''
     params: T_JSON_DICT = dict()
     params['nodeId'] = node_id.to_json()

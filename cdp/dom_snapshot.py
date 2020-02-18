@@ -16,6 +16,7 @@ import typing
 from . import dom
 from . import dom_debugger
 from . import page
+from deprecated.sphinx import deprecated # type: ignore
 
 
 @dataclass
@@ -738,6 +739,7 @@ def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 def get_snapshot(
         computed_style_whitelist: typing.List[str],
         include_event_listeners: typing.Optional[bool] = None,
@@ -745,6 +747,8 @@ def get_snapshot(
         include_user_agent_shadow_tree: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.List['DOMNode'], typing.List['LayoutTreeNode'], typing.List['ComputedStyle']]]:
     '''
+    .. deprecated:: 1.3
+
     Returns a document snapshot, including the full DOM tree of the root node (including iframes,
     template contents, and imported documents) in a flattened array, as well as layout and
     white-listed computed style information for the nodes. Shadow DOM in the returned DOM tree is

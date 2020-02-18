@@ -19,6 +19,7 @@ from . import emulation
 from . import io
 from . import network
 from . import runtime
+from deprecated.sphinx import deprecated # type: ignore
 
 
 class FrameId(str):
@@ -627,10 +628,13 @@ class ClientNavigationReason(enum.Enum):
         return cls(json)
 
 
+@deprecated(version="1.3")
 def add_script_to_evaluate_on_load(
         script_source: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,'ScriptIdentifier']:
     '''
+    .. deprecated:: 1.3
+
     Deprecated, please use addScriptToEvaluateOnNewDocument instead.
 
     :param script_source:
@@ -654,9 +658,7 @@ def add_script_to_evaluate_on_new_document(
     Evaluates given script in every frame upon creation (before loading frame's scripts).
 
     :param source:
-    :param world_name: If specified, creates an isolated world with the given name and evaluates given script in it.
-    This world name will be used as the ExecutionContextDescription::name when the corresponding
-    event is emitted.
+    :param world_name: If specified, creates an isolated world with the given name and evaluates given script in it. This world name will be used as the ExecutionContextDescription::name when the corresponding event is emitted.
     :returns: Identifier of the added script.
     '''
     params: T_JSON_DICT = dict()
@@ -734,8 +736,11 @@ def capture_snapshot(
     return str(json['data'])
 
 
+@deprecated(version="1.3")
 def clear_device_metrics_override() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    .. deprecated:: 1.3
+
     Clears the overriden device metrics.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -744,8 +749,11 @@ def clear_device_metrics_override() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 def clear_device_orientation_override() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    .. deprecated:: 1.3
+
     Clears the overridden Device Orientation.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -754,8 +762,11 @@ def clear_device_orientation_override() -> typing.Generator[T_JSON_DICT,T_JSON_D
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 def clear_geolocation_override() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    .. deprecated:: 1.3
+
     Clears the overriden Geolocation Position and Error.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -774,8 +785,7 @@ def create_isolated_world(
 
     :param frame_id: Id of the frame in which the isolated world should be created.
     :param world_name: An optional name which is reported in the Execution Context.
-    :param grant_univeral_access: Whether or not universal access should be granted to the isolated world. This is a powerful
-    option, use with caution.
+    :param grant_univeral_access: Whether or not universal access should be granted to the isolated world. This is a powerful option, use with caution.
     :returns: Execution context of the isolated world.
     '''
     params: T_JSON_DICT = dict()
@@ -792,11 +802,14 @@ def create_isolated_world(
     return runtime.ExecutionContextId.from_json(json['executionContextId'])
 
 
+@deprecated(version="1.3")
 def delete_cookie(
         cookie_name: str,
         url: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    .. deprecated:: 1.3
+
     Deletes browser cookie with given name, domain and path.
 
     :param cookie_name: Name of the cookie to remove.
@@ -865,8 +878,11 @@ def get_installability_errors() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typi
     return [str(i) for i in json['errors']]
 
 
+@deprecated(version="1.3")
 def get_cookies() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['network.Cookie']]:
     '''
+    .. deprecated:: 1.3
+
     Returns all browser cookies. Depending on the backend support, will return detailed cookie
     information in the `cookies` field.
 
@@ -988,8 +1004,7 @@ def handle_java_script_dialog(
     Accepts or dismisses a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload).
 
     :param accept: Whether to accept or dismiss the dialog.
-    :param prompt_text: The text to enter into the dialog prompt before accepting. Used only if this is a prompt
-    dialog.
+    :param prompt_text: The text to enter into the dialog prompt before accepting. Used only if this is a prompt dialog.
     '''
     params: T_JSON_DICT = dict()
     params['accept'] = accept
@@ -1088,22 +1103,11 @@ def print_to_pdf(
     :param margin_bottom: Bottom margin in inches. Defaults to 1cm (~0.4 inches).
     :param margin_left: Left margin in inches. Defaults to 1cm (~0.4 inches).
     :param margin_right: Right margin in inches. Defaults to 1cm (~0.4 inches).
-    :param page_ranges: Paper ranges to print, e.g., '1-5, 8, 11-13'. Defaults to the empty string, which means
-    print all pages.
-    :param ignore_invalid_page_ranges: Whether to silently ignore invalid but successfully parsed page ranges, such as '3-2'.
-    Defaults to false.
-    :param header_template: HTML template for the print header. Should be valid HTML markup with following
-    classes used to inject printing values into them:
-    - ``date``: formatted print date
-    - ``title``: document title
-    - ``url``: document location
-    - ``pageNumber``: current page number
-    - ``totalPages``: total pages in the document
-
-    For example, ``<span class=title></span>`` would generate span containing the title.
+    :param page_ranges: Paper ranges to print, e.g., '1-5, 8, 11-13'. Defaults to the empty string, which means print all pages.
+    :param ignore_invalid_page_ranges: Whether to silently ignore invalid but successfully parsed page ranges, such as '3-2'. Defaults to false.
+    :param header_template: HTML template for the print header. Should be valid HTML markup with following classes used to inject printing values into them: - ``date``: formatted print date - ``title``: document title - ``url``: document location - ``pageNumber``: current page number - ``totalPages``: total pages in the document  For example, ``<span class=title></span>`` would generate span containing the title.
     :param footer_template: HTML template for the print footer. Should use the same format as the ``headerTemplate``.
-    :param prefer_css_page_size: Whether or not to prefer page size as defined by css. Defaults to false,
-    in which case the content will be scaled to fit the paper size.
+    :param prefer_css_page_size: Whether or not to prefer page size as defined by css. Defaults to false, in which case the content will be scaled to fit the paper size.
     :param transfer_mode: return as stream
     :returns: a tuple with the following items:
         0. data: Base64-encoded pdf data. Empty if |returnAsStream| is specified.
@@ -1161,8 +1165,7 @@ def reload(
     Reloads given page optionally ignoring the cache.
 
     :param ignore_cache: If true, browser cache is ignored (as if the user pressed Shift+refresh).
-    :param script_to_evaluate_on_load: If set, the script will be injected into all frames of the inspected page after reload.
-    Argument will be ignored if reloading dataURL origin.
+    :param script_to_evaluate_on_load: If set, the script will be injected into all frames of the inspected page after reload. Argument will be ignored if reloading dataURL origin.
     '''
     params: T_JSON_DICT = dict()
     if ignore_cache is not None:
@@ -1176,10 +1179,13 @@ def reload(
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 def remove_script_to_evaluate_on_load(
         identifier: 'ScriptIdentifier'
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    .. deprecated:: 1.3
+
     Deprecated, please use removeScriptToEvaluateOnNewDocument instead.
 
     :param identifier:
@@ -1294,6 +1300,7 @@ def set_bypass_csp(
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 def set_device_metrics_override(
         width: int,
         height: int,
@@ -1309,6 +1316,8 @@ def set_device_metrics_override(
         viewport: typing.Optional['Viewport'] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    .. deprecated:: 1.3
+
     Overrides the values of device screen dimensions (window.screen.width, window.screen.height,
     window.innerWidth, window.innerHeight, and "device-width"/"device-height"-related CSS media
     query results).
@@ -1316,8 +1325,7 @@ def set_device_metrics_override(
     :param width: Overriding width value in pixels (minimum 0, maximum 10000000). 0 disables the override.
     :param height: Overriding height value in pixels (minimum 0, maximum 10000000). 0 disables the override.
     :param device_scale_factor: Overriding device scale factor value. 0 disables the override.
-    :param mobile: Whether to emulate mobile device. This includes viewport meta tag, overlay scrollbars, text
-    autosizing and more.
+    :param mobile: Whether to emulate mobile device. This includes viewport meta tag, overlay scrollbars, text autosizing and more.
     :param scale: Scale to apply to resulting view image.
     :param screen_width: Overriding screen width value in pixels (minimum 0, maximum 10000000).
     :param screen_height: Overriding screen height value in pixels (minimum 0, maximum 10000000).
@@ -1355,12 +1363,15 @@ def set_device_metrics_override(
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 def set_device_orientation_override(
         alpha: float,
         beta: float,
         gamma: float
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    .. deprecated:: 1.3
+
     Overrides the Device Orientation.
 
     :param alpha: Mock alpha
@@ -1439,8 +1450,7 @@ def set_download_behavior(
     '''
     Set the behavior when downloading a file.
 
-    :param behavior: Whether to allow all or deny all download requests, or use default Chrome behavior if
-    available (otherwise deny).
+    :param behavior: Whether to allow all or deny all download requests, or use default Chrome behavior if available (otherwise deny).
     :param download_path: The default path to save downloaded files to. This is requred if behavior is set to 'allow'
     '''
     params: T_JSON_DICT = dict()
@@ -1454,12 +1464,15 @@ def set_download_behavior(
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 def set_geolocation_override(
         latitude: typing.Optional[float] = None,
         longitude: typing.Optional[float] = None,
         accuracy: typing.Optional[float] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    .. deprecated:: 1.3
+
     Overrides the Geolocation Position or Error. Omitting any of the parameters emulates position
     unavailable.
 
@@ -1498,11 +1511,14 @@ def set_lifecycle_events_enabled(
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 def set_touch_emulation_enabled(
         enabled: bool,
         configuration: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    .. deprecated:: 1.3
+
     Toggles mouse event-based touch event emulation.
 
     :param enabled: Whether the touch event emulation should be enabled.
@@ -1781,6 +1797,7 @@ class FrameAttached:
         )
 
 
+@deprecated(version="1.3")
 @event_class('Page.frameClearedScheduledNavigation')
 @dataclass
 class FrameClearedScheduledNavigation:
@@ -1864,6 +1881,7 @@ class FrameRequestedNavigation:
         )
 
 
+@deprecated(version="1.3")
 @event_class('Page.frameScheduledNavigation')
 @dataclass
 class FrameScheduledNavigation:
