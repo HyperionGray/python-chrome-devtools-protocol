@@ -18,6 +18,7 @@ from . import io
 from . import page
 from . import runtime
 from . import security
+from deprecated.sphinx import deprecated
 
 
 class ResourceType(enum.Enum):
@@ -1423,8 +1424,11 @@ class SignedExchangeInfo:
         )
 
 
+@deprecated(version="1.3")
 def can_clear_browser_cache() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,bool]:
     '''
+    .. deprecated:: 1.3
+
     Tells whether clearing browser cache is supported.
 
     :returns: True if browser cache can be cleared.
@@ -1436,8 +1440,11 @@ def can_clear_browser_cache() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,bool]:
     return bool(json['result'])
 
 
+@deprecated(version="1.3")
 def can_clear_browser_cookies() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,bool]:
     '''
+    .. deprecated:: 1.3
+
     Tells whether clearing browser cookies is supported.
 
     :returns: True if browser cookies can be cleared.
@@ -1449,8 +1456,11 @@ def can_clear_browser_cookies() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,bool
     return bool(json['result'])
 
 
+@deprecated(version="1.3")
 def can_emulate_network_conditions() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,bool]:
     '''
+    .. deprecated:: 1.3
+
     Tells whether emulation of network conditions is supported.
 
     :returns: True if emulation of network conditions is supported.
@@ -1482,6 +1492,7 @@ def clear_browser_cookies() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 def continue_intercepted_request(
         interception_id: 'InterceptionId',
         error_reason: typing.Optional['ErrorReason'] = None,
@@ -1493,6 +1504,8 @@ def continue_intercepted_request(
         auth_challenge_response: typing.Optional['AuthChallengeResponse'] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    .. deprecated:: 1.3
+
     Response to Network.requestIntercepted which either modifies the request to continue with any
     modifications, or blocks it, or completes it with the provided response bytes. If a network
     fetch occurs as a result which encounters a redirect an additional Network.requestIntercepted
@@ -1973,10 +1986,13 @@ def set_extra_http_headers(
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 def set_request_interception(
         patterns: typing.List['RequestPattern']
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    .. deprecated:: 1.3
+
     Sets the requests to intercept that match the provided patterns and optionally resource types.
     Deprecated, please use Fetch.enable instead.
 
@@ -2126,6 +2142,7 @@ class LoadingFinished:
         )
 
 
+@deprecated(version="1.3")
 @event_class('Network.requestIntercepted')
 @dataclass
 class RequestIntercepted:

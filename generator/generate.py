@@ -41,6 +41,7 @@ import typing
 
 '''.format(SHARED_HEADER)
 
+current_version = ''
 
 def indent(s: str, n: int):
     ''' A shortcut for ``textwrap.indent`` that always uses spaces. '''
@@ -506,6 +507,7 @@ class CdpCommand:
     name: str
     description: str
     experimental: bool
+    deprecated: bool
     parameters: typing.List[CdpParameter]
     returns: typing.List[CdpReturn]
     domain: str
@@ -525,6 +527,7 @@ class CdpCommand:
             command['name'],
             command.get('description'),
             command.get('experimental', False),
+            command.get('deprecated', False),
             [typing.cast(CdpParameter, CdpParameter.from_json(p)) for p in parameters],
             [typing.cast(CdpReturn, CdpReturn.from_json(r)) for r in returns],
             domain,
@@ -532,6 +535,7 @@ class CdpCommand:
 
     def generate_code(self) -> str:
         ''' Generate code for a CDP command. '''
+        global current_version
         # Generate the function header
         if len(self.returns) == 0:
             ret_type = 'None'
@@ -541,7 +545,13 @@ class CdpCommand:
             nested_types = ', '.join(r.py_annotation for r in self.returns)
             ret_type = f'typing.Tuple[{nested_types}]'
         ret_type = f"typing.Generator[T_JSON_DICT,T_JSON_DICT,{ret_type}]"
-        code = f'def {self.py_name}('
+
+        code = ''
+
+        if self.deprecated:
+            code += f'@deprecated(version="{current_version}")\n'
+
+        code += f'def {self.py_name}('
         ret = f') -> {ret_type}:\n'
         if self.parameters:
             code += '\n'
@@ -553,10 +563,13 @@ class CdpCommand:
             code += ret
 
         # Generate the docstring
-        if self.description:
-            doc = self.description
+        if self.deprecated:
+            doc = f'.. deprecated:: {current_version}'
+            doc += '\n\n'
         else:
             doc = ''
+        if self.description:
+            doc += self.description
         if self.parameters and doc:
             doc += '\n\n'
         elif not self.parameters and self.returns:
@@ -619,6 +632,7 @@ class CdpEvent:
     ''' A CDP event object. '''
     name: str
     description: typing.Optional[str]
+    deprecated: bool
     parameters: typing.List[CdpParameter]
     domain: str
 
@@ -633,6 +647,7 @@ class CdpEvent:
         return cls(
             json['name'],
             json.get('description'),
+            json.get('deprecated', False),
             [typing.cast(CdpParameter, CdpParameter.from_json(p))
                 for p in json.get('parameters', list())],
             domain
@@ -640,10 +655,15 @@ class CdpEvent:
 
     def generate_code(self) -> str:
         ''' Generate code for a CDP event. '''
+        global current_version
         code = dedent(f'''\
             @event_class('{self.domain}.{self.name}')
             @dataclass
             class {self.py_name}:''')
+
+        if self.deprecated:
+            code = f'@deprecated(version="{current_version}")\n' + code
+        
         code += '\n'
         if self.description:
             code += indent(docstring(self.description), 4)
@@ -737,12 +757,17 @@ class CdpDomain:
         ignore the CDP's declared dependencies and compute them ourselves.
         '''
         refs = set()
+        needs_deprecation = False
         for type_ in self.types:
             refs |= type_.get_refs()
         for command in self.commands:
             refs |= command.get_refs()
+            if command.deprecated:
+                needs_deprecation = True
         for event in self.events:
             refs |= event.get_refs()
+            if event.deprecated:
+                needs_deprecation = True
         dependencies = set()
         for ref in refs:
             try:
@@ -751,7 +776,11 @@ class CdpDomain:
                 continue
             if domain != self.domain:
                 dependencies.add(inflection.underscore(domain))
-        return '\n'.join(f'from . import {d}' for d in sorted(dependencies))
+        code = '\n'.join(f'from . import {d}' for d in sorted(dependencies))
+
+        if needs_deprecation:
+            code += '\nfrom deprecated.sphinx import deprecated'
+
         return code
 
 
@@ -763,10 +792,12 @@ def parse(json_path, output_path):
     :param Path output_path: a directory path to create the modules in
     :returns: a list of CDP domain objects
     '''
+    global current_version
     with json_path.open() as json_file:
         schema = json.load(json_file)
     version = schema['version']
     assert (version['major'], version['minor']) == ('1', '3')
+    current_version = f'{version["major"]}.{version["minor"]}'
     domains = list()
     for domain in schema['domains']:
         domains.append(CdpDomain.from_json(domain))

@@ -19,6 +19,7 @@ from . import emulation
 from . import io
 from . import network
 from . import runtime
+from deprecated.sphinx import deprecated
 
 
 class FrameId(str):
@@ -627,10 +628,13 @@ class ClientNavigationReason(enum.Enum):
         return cls(json)
 
 
+@deprecated(version="1.3")
 def add_script_to_evaluate_on_load(
         script_source: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,'ScriptIdentifier']:
     '''
+    .. deprecated:: 1.3
+
     Deprecated, please use addScriptToEvaluateOnNewDocument instead.
 
     :param script_source:
@@ -732,8 +736,11 @@ def capture_snapshot(
     return str(json['data'])
 
 
+@deprecated(version="1.3")
 def clear_device_metrics_override() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    .. deprecated:: 1.3
+
     Clears the overriden device metrics.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -742,8 +749,11 @@ def clear_device_metrics_override() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 def clear_device_orientation_override() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    .. deprecated:: 1.3
+
     Clears the overridden Device Orientation.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -752,8 +762,11 @@ def clear_device_orientation_override() -> typing.Generator[T_JSON_DICT,T_JSON_D
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 def clear_geolocation_override() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    .. deprecated:: 1.3
+
     Clears the overriden Geolocation Position and Error.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -789,11 +802,14 @@ def create_isolated_world(
     return runtime.ExecutionContextId.from_json(json['executionContextId'])
 
 
+@deprecated(version="1.3")
 def delete_cookie(
         cookie_name: str,
         url: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    .. deprecated:: 1.3
+
     Deletes browser cookie with given name, domain and path.
 
     :param cookie_name: Name of the cookie to remove.
@@ -862,8 +878,11 @@ def get_installability_errors() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typi
     return [str(i) for i in json['errors']]
 
 
+@deprecated(version="1.3")
 def get_cookies() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['network.Cookie']]:
     '''
+    .. deprecated:: 1.3
+
     Returns all browser cookies. Depending on the backend support, will return detailed cookie
     information in the `cookies` field.
 
@@ -1160,10 +1179,13 @@ def reload(
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 def remove_script_to_evaluate_on_load(
         identifier: 'ScriptIdentifier'
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    .. deprecated:: 1.3
+
     Deprecated, please use removeScriptToEvaluateOnNewDocument instead.
 
     :param identifier:
@@ -1278,6 +1300,7 @@ def set_bypass_csp(
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 def set_device_metrics_override(
         width: int,
         height: int,
@@ -1293,6 +1316,8 @@ def set_device_metrics_override(
         viewport: typing.Optional['Viewport'] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    .. deprecated:: 1.3
+
     Overrides the values of device screen dimensions (window.screen.width, window.screen.height,
     window.innerWidth, window.innerHeight, and "device-width"/"device-height"-related CSS media
     query results).
@@ -1338,12 +1363,15 @@ def set_device_metrics_override(
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 def set_device_orientation_override(
         alpha: float,
         beta: float,
         gamma: float
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    .. deprecated:: 1.3
+
     Overrides the Device Orientation.
 
     :param alpha: Mock alpha
@@ -1436,12 +1464,15 @@ def set_download_behavior(
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 def set_geolocation_override(
         latitude: typing.Optional[float] = None,
         longitude: typing.Optional[float] = None,
         accuracy: typing.Optional[float] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    .. deprecated:: 1.3
+
     Overrides the Geolocation Position or Error. Omitting any of the parameters emulates position
     unavailable.
 
@@ -1480,11 +1511,14 @@ def set_lifecycle_events_enabled(
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 def set_touch_emulation_enabled(
         enabled: bool,
         configuration: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    .. deprecated:: 1.3
+
     Toggles mouse event-based touch event emulation.
 
     :param enabled: Whether the touch event emulation should be enabled.
@@ -1763,6 +1797,7 @@ class FrameAttached:
         )
 
 
+@deprecated(version="1.3")
 @event_class('Page.frameClearedScheduledNavigation')
 @dataclass
 class FrameClearedScheduledNavigation:
@@ -1846,6 +1881,7 @@ class FrameRequestedNavigation:
         )
 
 
+@deprecated(version="1.3")
 @event_class('Page.frameScheduledNavigation')
 @dataclass
 class FrameScheduledNavigation:

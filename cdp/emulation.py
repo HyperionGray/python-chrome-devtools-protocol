@@ -16,6 +16,7 @@ import typing
 from . import dom
 from . import network
 from . import page
+from deprecated.sphinx import deprecated
 
 
 @dataclass
@@ -311,10 +312,13 @@ def set_geolocation_override(
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 def set_navigator_overrides(
         platform: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    .. deprecated:: 1.3
+
     Overrides value returned by the javascript navigator object.
 
     :param platform: The platform navigator.platform should return.
@@ -436,11 +440,14 @@ def set_timezone_override(
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 def set_visible_size(
         width: int,
         height: int
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    .. deprecated:: 1.3
+
     Resizes the frame/viewport of the page. Note that this does not affect the frame's container
     (e.g. browser window). Can be used to produce screenshots of the specified size. Not supported
     on Android.

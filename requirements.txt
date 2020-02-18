@@ -6,3 +6,4 @@ pytest
 sphinx
 sphinx-rtd-theme
 twine
+deprecated
