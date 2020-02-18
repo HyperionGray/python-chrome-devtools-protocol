@@ -26,7 +26,6 @@ setup(
     package_data={'cdp': ['py.typed']},
     packages=find_packages(exclude=['build', 'docs', 'examples', 'generator']),
     install_requires=[
-        'inflection',
         'deprecated'
     ]
 )
