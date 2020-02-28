@@ -191,11 +191,13 @@ def grant_permissions(
         browser_context_id: typing.Optional['target.BrowserContextID'] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Grant specific permissions to the given origin and reject all others.
 
     :param origin:
     :param permissions:
-    :param browser_context_id: BrowserContext to override permissions. When omitted, default browser context is used.
+    :param browser_context_id: *(Optional)* BrowserContext to override permissions. When omitted, default browser context is used.
     '''
     params: T_JSON_DICT = dict()
     params['origin'] = origin
@@ -213,9 +215,11 @@ def reset_permissions(
         browser_context_id: typing.Optional['target.BrowserContextID'] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Reset all permission management for all origins.
 
-    :param browser_context_id: BrowserContext to reset permissions. When omitted, default browser context is used.
+    :param browser_context_id: *(Optional)* BrowserContext to reset permissions. When omitted, default browser context is used.
     '''
     params: T_JSON_DICT = dict()
     if browser_context_id is not None:
@@ -239,6 +243,8 @@ def close() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 def crash() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Crashes browser on the main thread.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -249,6 +255,8 @@ def crash() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 def crash_gpu_process() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Crashes GPU process.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -261,12 +269,13 @@ def get_version() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[str, 
     '''
     Returns version information.
 
-    :returns: a tuple with the following items:
-        0. protocolVersion: Protocol version.
-        1. product: Product name.
-        2. revision: Product revision.
-        3. userAgent: User-Agent.
-        4. jsVersion: V8 version.
+    :returns: A tuple with the following items:
+
+        1. **protocolVersion** -  Protocol version.
+        2. **product** -  Product name.
+        3. **revision** -  Product revision.
+        4. **userAgent** -  User-Agent.
+        5. **jsVersion** -  V8 version.
     '''
     cmd_dict: T_JSON_DICT = {
         'method': 'Browser.getVersion',
@@ -283,6 +292,8 @@ def get_version() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[str, 
 
 def get_browser_command_line() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[str]]:
     '''
+    **EXPERIMENTAL**
+
     Returns the command line switches for the browser process if, and only if
     --enable-automation is on the commandline.
 
@@ -300,10 +311,12 @@ def get_histograms(
         delta: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['Histogram']]:
     '''
+    **EXPERIMENTAL**
+
     Get Chrome histograms.
 
-    :param query: Requested substring in name. Only histograms which have query as a substring in their name are extracted. An empty or absent query returns all histograms.
-    :param delta: If true, retrieve delta since last call.
+    :param query: *(Optional)* Requested substring in name. Only histograms which have query as a substring in their name are extracted. An empty or absent query returns all histograms.
+    :param delta: *(Optional)* If true, retrieve delta since last call.
     :returns: Histograms.
     '''
     params: T_JSON_DICT = dict()
@@ -324,10 +337,12 @@ def get_histogram(
         delta: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,'Histogram']:
     '''
+    **EXPERIMENTAL**
+
     Get a Chrome histogram by name.
 
     :param name: Requested histogram name.
-    :param delta: If true, retrieve delta since last call.
+    :param delta: *(Optional)* If true, retrieve delta since last call.
     :returns: Histogram.
     '''
     params: T_JSON_DICT = dict()
@@ -346,6 +361,8 @@ def get_window_bounds(
         window_id: 'WindowID'
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,'Bounds']:
     '''
+    **EXPERIMENTAL**
+
     Get position and size of the browser window.
 
     :param window_id: Browser window id.
@@ -366,12 +383,15 @@ def get_window_for_target(
         target_id: typing.Optional['target.TargetID'] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple['WindowID', 'Bounds']]:
     '''
+    **EXPERIMENTAL**
+
     Get the browser window that contains the devtools target.
 
-    :param target_id: Devtools agent host id. If called as a part of the session, associated targetId is used.
-    :returns: a tuple with the following items:
-        0. windowId: Browser window id.
-        1. bounds: Bounds information of the window. When window state is 'minimized', the restored window
+    :param target_id: *(Optional)* Devtools agent host id. If called as a part of the session, associated targetId is used.
+    :returns: A tuple with the following items:
+
+        1. **windowId** -  Browser window id.
+        2. **bounds** -  Bounds information of the window. When window state is 'minimized', the restored window
         position and size are returned.
     '''
     params: T_JSON_DICT = dict()
@@ -393,6 +413,8 @@ def set_window_bounds(
         bounds: 'Bounds'
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Set position and/or size of the browser window.
 
     :param window_id: Browser window id.
@@ -413,10 +435,12 @@ def set_dock_tile(
         image: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Set dock tile details, platform-specific.
 
-    :param badge_label:
-    :param image: Png encoded image.
+    :param badge_label: *(Optional)*
+    :param image: *(Optional)* Png encoded image.
     '''
     params: T_JSON_DICT = dict()
     if badge_label is not None:

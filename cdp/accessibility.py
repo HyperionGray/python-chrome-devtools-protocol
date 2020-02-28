@@ -417,12 +417,14 @@ def get_partial_ax_tree(
         fetch_relatives: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['AXNode']]:
     '''
+    **EXPERIMENTAL**
+
     Fetches the accessibility node and partial accessibility tree for this DOM node, if it exists.
 
-    :param node_id: Identifier of the node to get the partial accessibility tree for.
-    :param backend_node_id: Identifier of the backend node to get the partial accessibility tree for.
-    :param object_id: JavaScript object id of the node wrapper to get the partial accessibility tree for.
-    :param fetch_relatives: Whether to fetch this nodes ancestors, siblings and children. Defaults to true.
+    :param node_id: *(Optional)* Identifier of the node to get the partial accessibility tree for.
+    :param backend_node_id: *(Optional)* Identifier of the backend node to get the partial accessibility tree for.
+    :param object_id: *(Optional)* JavaScript object id of the node wrapper to get the partial accessibility tree for.
+    :param fetch_relatives: *(Optional)* Whether to fetch this nodes ancestors, siblings and children. Defaults to true.
     :returns: The ``Accessibility.AXNode`` for this DOM node, if it exists, plus its ancestors, siblings and
     children, if requested.
     '''
@@ -445,6 +447,8 @@ def get_partial_ax_tree(
 
 def get_full_ax_tree() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['AXNode']]:
     '''
+    **EXPERIMENTAL**
+
     Fetches the entire accessibility tree
 
     :returns: 

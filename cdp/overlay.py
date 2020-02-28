@@ -149,8 +149,8 @@ def get_highlight_object_for_test(
     For testing.
 
     :param node_id: Id of the node to get highlight object for.
-    :param include_distance: Whether to include distance info.
-    :param include_style: Whether to include style info.
+    :param include_distance: *(Optional)* Whether to include distance info.
+    :param include_style: *(Optional)* Whether to include style info.
     :returns: Highlight data for the node.
     '''
     params: T_JSON_DICT = dict()
@@ -186,8 +186,8 @@ def highlight_frame(
     Highlights owner element of the frame with given id.
 
     :param frame_id: Identifier of the frame to highlight.
-    :param content_color: The content box highlight fill color (default: transparent).
-    :param content_outline_color: The content box highlight outline color (default: transparent).
+    :param content_color: *(Optional)* The content box highlight fill color (default: transparent).
+    :param content_outline_color: *(Optional)* The content box highlight outline color (default: transparent).
     '''
     params: T_JSON_DICT = dict()
     params['frameId'] = frame_id.to_json()
@@ -214,10 +214,10 @@ def highlight_node(
     objectId must be specified.
 
     :param highlight_config: A descriptor for the highlight appearance.
-    :param node_id: Identifier of the node to highlight.
-    :param backend_node_id: Identifier of the backend node to highlight.
-    :param object_id: JavaScript object id of the node to be highlighted.
-    :param selector: Selectors to highlight relevant nodes.
+    :param node_id: *(Optional)* Identifier of the node to highlight.
+    :param backend_node_id: *(Optional)* Identifier of the backend node to highlight.
+    :param object_id: *(Optional)* JavaScript object id of the node to be highlighted.
+    :param selector: *(Optional)* Selectors to highlight relevant nodes.
     '''
     params: T_JSON_DICT = dict()
     params['highlightConfig'] = highlight_config.to_json()
@@ -245,8 +245,8 @@ def highlight_quad(
     Highlights given quad. Coordinates are absolute with respect to the main frame viewport.
 
     :param quad: Quad to highlight
-    :param color: The highlight fill color (default: transparent).
-    :param outline_color: The highlight outline color (default: transparent).
+    :param color: *(Optional)* The highlight fill color (default: transparent).
+    :param outline_color: *(Optional)* The highlight outline color (default: transparent).
     '''
     params: T_JSON_DICT = dict()
     params['quad'] = quad.to_json()
@@ -276,8 +276,8 @@ def highlight_rect(
     :param y: Y coordinate
     :param width: Rectangle width
     :param height: Rectangle height
-    :param color: The highlight fill color (default: transparent).
-    :param outline_color: The highlight outline color (default: transparent).
+    :param color: *(Optional)* The highlight fill color (default: transparent).
+    :param outline_color: *(Optional)* The highlight outline color (default: transparent).
     '''
     params: T_JSON_DICT = dict()
     params['x'] = x
@@ -304,7 +304,7 @@ def set_inspect_mode(
     Backend then generates 'inspectNodeRequested' event upon element selection.
 
     :param mode: Set an inspection mode.
-    :param highlight_config: A descriptor for the highlight appearance of hovered-over nodes. May be omitted if ``enabled == false``.
+    :param highlight_config: *(Optional)* A descriptor for the highlight appearance of hovered-over nodes. May be omitted if ``enabled == false``.
     '''
     params: T_JSON_DICT = dict()
     params['mode'] = mode.to_json()
@@ -338,7 +338,7 @@ def set_paused_in_debugger_message(
         message: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
-    :param message: The message to display, also triggers resume and step over controls.
+    :param message: *(Optional)* The message to display, also triggers resume and step over controls.
     '''
     params: T_JSON_DICT = dict()
     if message is not None:

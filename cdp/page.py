@@ -633,7 +633,7 @@ def add_script_to_evaluate_on_load(
         script_source: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,'ScriptIdentifier']:
     '''
-    .. deprecated:: 1.3
+    .. deprecated:: 1.3**EXPERIMENTAL**
 
     Deprecated, please use addScriptToEvaluateOnNewDocument instead.
 
@@ -658,7 +658,7 @@ def add_script_to_evaluate_on_new_document(
     Evaluates given script in every frame upon creation (before loading frame's scripts).
 
     :param source:
-    :param world_name: If specified, creates an isolated world with the given name and evaluates given script in it. This world name will be used as the ExecutionContextDescription::name when the corresponding event is emitted.
+    :param world_name: **(EXPERIMENTAL)** *(Optional)* If specified, creates an isolated world with the given name and evaluates given script in it. This world name will be used as the ExecutionContextDescription::name when the corresponding event is emitted.
     :returns: Identifier of the added script.
     '''
     params: T_JSON_DICT = dict()
@@ -692,10 +692,10 @@ def capture_screenshot(
     '''
     Capture page screenshot.
 
-    :param format: Image compression format (defaults to png).
-    :param quality: Compression quality from range [0..100] (jpeg only).
-    :param clip: Capture the screenshot of a given region only.
-    :param from_surface: Capture the screenshot from the surface, rather than the view. Defaults to true.
+    :param format: *(Optional)* Image compression format (defaults to png).
+    :param quality: *(Optional)* Compression quality from range [0..100] (jpeg only).
+    :param clip: *(Optional)* Capture the screenshot of a given region only.
+    :param from_surface: **(EXPERIMENTAL)** *(Optional)* Capture the screenshot from the surface, rather than the view. Defaults to true.
     :returns: Base64-encoded image data.
     '''
     params: T_JSON_DICT = dict()
@@ -719,10 +719,12 @@ def capture_snapshot(
         format: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,str]:
     '''
+    **EXPERIMENTAL**
+
     Returns a snapshot of the page as a string. For MHTML format, the serialization includes
     iframes, shadow DOM, external resources, and element-inline styles.
 
-    :param format: Format (defaults to mhtml).
+    :param format: *(Optional)* Format (defaults to mhtml).
     :returns: Serialized page data.
     '''
     params: T_JSON_DICT = dict()
@@ -739,7 +741,7 @@ def capture_snapshot(
 @deprecated(version="1.3")
 def clear_device_metrics_override() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
-    .. deprecated:: 1.3
+    .. deprecated:: 1.3**EXPERIMENTAL**
 
     Clears the overriden device metrics.
     '''
@@ -752,7 +754,7 @@ def clear_device_metrics_override() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,
 @deprecated(version="1.3")
 def clear_device_orientation_override() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
-    .. deprecated:: 1.3
+    .. deprecated:: 1.3**EXPERIMENTAL**
 
     Clears the overridden Device Orientation.
     '''
@@ -765,9 +767,7 @@ def clear_device_orientation_override() -> typing.Generator[T_JSON_DICT,T_JSON_D
 @deprecated(version="1.3")
 def clear_geolocation_override() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
-    .. deprecated:: 1.3
-
-    Clears the overriden Geolocation Position and Error.
+    .. deprecated:: 1.3Clears the overriden Geolocation Position and Error.
     '''
     cmd_dict: T_JSON_DICT = {
         'method': 'Page.clearGeolocationOverride',
@@ -784,8 +784,8 @@ def create_isolated_world(
     Creates an isolated world for the given frame.
 
     :param frame_id: Id of the frame in which the isolated world should be created.
-    :param world_name: An optional name which is reported in the Execution Context.
-    :param grant_univeral_access: Whether or not universal access should be granted to the isolated world. This is a powerful option, use with caution.
+    :param world_name: *(Optional)* An optional name which is reported in the Execution Context.
+    :param grant_univeral_access: *(Optional)* Whether or not universal access should be granted to the isolated world. This is a powerful option, use with caution.
     :returns: Execution context of the isolated world.
     '''
     params: T_JSON_DICT = dict()
@@ -808,7 +808,7 @@ def delete_cookie(
         url: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
-    .. deprecated:: 1.3
+    .. deprecated:: 1.3**EXPERIMENTAL**
 
     Deletes browser cookie with given name, domain and path.
 
@@ -849,10 +849,11 @@ def get_app_manifest() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[
     '''
 
 
-    :returns: a tuple with the following items:
-        0. url: Manifest location.
-        1. errors: 
-        2. data: (Optional) Manifest content.
+    :returns: A tuple with the following items:
+
+        1. **url** -  Manifest location.
+        2. **errors** -  
+        3. **data** -  *(Optional)* Manifest content.
     '''
     cmd_dict: T_JSON_DICT = {
         'method': 'Page.getAppManifest',
@@ -867,6 +868,8 @@ def get_app_manifest() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[
 
 def get_installability_errors() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[str]]:
     '''
+    **EXPERIMENTAL**
+
 
 
     :returns: 
@@ -881,7 +884,7 @@ def get_installability_errors() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typi
 @deprecated(version="1.3")
 def get_cookies() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['network.Cookie']]:
     '''
-    .. deprecated:: 1.3
+    .. deprecated:: 1.3**EXPERIMENTAL**
 
     Returns all browser cookies. Depending on the backend support, will return detailed cookie
     information in the `cookies` field.
@@ -912,10 +915,11 @@ def get_layout_metrics() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tupl
     '''
     Returns metrics relating to the layouting of the page, such as viewport bounds/scale.
 
-    :returns: a tuple with the following items:
-        0. layoutViewport: Metrics relating to the layout viewport.
-        1. visualViewport: Metrics relating to the visual viewport.
-        2. contentSize: Size of scrollable area.
+    :returns: A tuple with the following items:
+
+        1. **layoutViewport** -  Metrics relating to the layout viewport.
+        2. **visualViewport** -  Metrics relating to the visual viewport.
+        3. **contentSize** -  Size of scrollable area.
     '''
     cmd_dict: T_JSON_DICT = {
         'method': 'Page.getLayoutMetrics',
@@ -932,9 +936,10 @@ def get_navigation_history() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.
     '''
     Returns navigation history for the current page.
 
-    :returns: a tuple with the following items:
-        0. currentIndex: Index of the current navigation history entry.
-        1. entries: Array of navigation history entries.
+    :returns: A tuple with the following items:
+
+        1. **currentIndex** -  Index of the current navigation history entry.
+        2. **entries** -  Array of navigation history entries.
     '''
     cmd_dict: T_JSON_DICT = {
         'method': 'Page.getNavigationHistory',
@@ -961,13 +966,16 @@ def get_resource_content(
         url: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[str, bool]]:
     '''
+    **EXPERIMENTAL**
+
     Returns content of the given resource.
 
     :param frame_id: Frame id to get resource for.
     :param url: URL of the resource to get content for.
-    :returns: a tuple with the following items:
-        0. content: Resource content.
-        1. base64Encoded: True, if content was served as base64.
+    :returns: A tuple with the following items:
+
+        1. **content** -  Resource content.
+        2. **base64Encoded** -  True, if content was served as base64.
     '''
     params: T_JSON_DICT = dict()
     params['frameId'] = frame_id.to_json()
@@ -985,6 +993,8 @@ def get_resource_content(
 
 def get_resource_tree() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,'FrameResourceTree']:
     '''
+    **EXPERIMENTAL**
+
     Returns present frame / resource tree structure.
 
     :returns: Present frame / resource tree structure.
@@ -1004,7 +1014,7 @@ def handle_java_script_dialog(
     Accepts or dismisses a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload).
 
     :param accept: Whether to accept or dismiss the dialog.
-    :param prompt_text: The text to enter into the dialog prompt before accepting. Used only if this is a prompt dialog.
+    :param prompt_text: *(Optional)* The text to enter into the dialog prompt before accepting. Used only if this is a prompt dialog.
     '''
     params: T_JSON_DICT = dict()
     params['accept'] = accept
@@ -1027,13 +1037,14 @@ def navigate(
     Navigates current page to the given URL.
 
     :param url: URL to navigate the page to.
-    :param referrer: Referrer URL.
-    :param transition_type: Intended transition type.
-    :param frame_id: Frame id to navigate, if not specified navigates the top frame.
-    :returns: a tuple with the following items:
-        0. frameId: Frame id that has navigated (or failed to navigate)
-        1. loaderId: (Optional) Loader identifier.
-        2. errorText: (Optional) User friendly error message, present if and only if navigation has failed.
+    :param referrer: *(Optional)* Referrer URL.
+    :param transition_type: *(Optional)* Intended transition type.
+    :param frame_id: *(Optional)* Frame id to navigate, if not specified navigates the top frame.
+    :returns: A tuple with the following items:
+
+        1. **frameId** -  Frame id that has navigated (or failed to navigate)
+        2. **loaderId** -  *(Optional)* Loader identifier.
+        3. **errorText** -  *(Optional)* User friendly error message, present if and only if navigation has failed.
     '''
     params: T_JSON_DICT = dict()
     params['url'] = url
@@ -1093,25 +1104,26 @@ def print_to_pdf(
     '''
     Print page as PDF.
 
-    :param landscape: Paper orientation. Defaults to false.
-    :param display_header_footer: Display header and footer. Defaults to false.
-    :param print_background: Print background graphics. Defaults to false.
-    :param scale: Scale of the webpage rendering. Defaults to 1.
-    :param paper_width: Paper width in inches. Defaults to 8.5 inches.
-    :param paper_height: Paper height in inches. Defaults to 11 inches.
-    :param margin_top: Top margin in inches. Defaults to 1cm (~0.4 inches).
-    :param margin_bottom: Bottom margin in inches. Defaults to 1cm (~0.4 inches).
-    :param margin_left: Left margin in inches. Defaults to 1cm (~0.4 inches).
-    :param margin_right: Right margin in inches. Defaults to 1cm (~0.4 inches).
-    :param page_ranges: Paper ranges to print, e.g., '1-5, 8, 11-13'. Defaults to the empty string, which means print all pages.
-    :param ignore_invalid_page_ranges: Whether to silently ignore invalid but successfully parsed page ranges, such as '3-2'. Defaults to false.
-    :param header_template: HTML template for the print header. Should be valid HTML markup with following classes used to inject printing values into them: - ``date``: formatted print date - ``title``: document title - ``url``: document location - ``pageNumber``: current page number - ``totalPages``: total pages in the document  For example, ``<span class=title></span>`` would generate span containing the title.
-    :param footer_template: HTML template for the print footer. Should use the same format as the ``headerTemplate``.
-    :param prefer_css_page_size: Whether or not to prefer page size as defined by css. Defaults to false, in which case the content will be scaled to fit the paper size.
-    :param transfer_mode: return as stream
-    :returns: a tuple with the following items:
-        0. data: Base64-encoded pdf data. Empty if |returnAsStream| is specified.
-        1. stream: (Optional) A handle of the stream that holds resulting PDF data.
+    :param landscape: *(Optional)* Paper orientation. Defaults to false.
+    :param display_header_footer: *(Optional)* Display header and footer. Defaults to false.
+    :param print_background: *(Optional)* Print background graphics. Defaults to false.
+    :param scale: *(Optional)* Scale of the webpage rendering. Defaults to 1.
+    :param paper_width: *(Optional)* Paper width in inches. Defaults to 8.5 inches.
+    :param paper_height: *(Optional)* Paper height in inches. Defaults to 11 inches.
+    :param margin_top: *(Optional)* Top margin in inches. Defaults to 1cm (~0.4 inches).
+    :param margin_bottom: *(Optional)* Bottom margin in inches. Defaults to 1cm (~0.4 inches).
+    :param margin_left: *(Optional)* Left margin in inches. Defaults to 1cm (~0.4 inches).
+    :param margin_right: *(Optional)* Right margin in inches. Defaults to 1cm (~0.4 inches).
+    :param page_ranges: *(Optional)* Paper ranges to print, e.g., '1-5, 8, 11-13'. Defaults to the empty string, which means print all pages.
+    :param ignore_invalid_page_ranges: *(Optional)* Whether to silently ignore invalid but successfully parsed page ranges, such as '3-2'. Defaults to false.
+    :param header_template: *(Optional)* HTML template for the print header. Should be valid HTML markup with following classes used to inject printing values into them: - ``date``: formatted print date - ``title``: document title - ``url``: document location - ``pageNumber``: current page number - ``totalPages``: total pages in the document  For example, ``<span class=title></span>`` would generate span containing the title.
+    :param footer_template: *(Optional)* HTML template for the print footer. Should use the same format as the ``headerTemplate``.
+    :param prefer_css_page_size: *(Optional)* Whether or not to prefer page size as defined by css. Defaults to false, in which case the content will be scaled to fit the paper size.
+    :param transfer_mode: **(EXPERIMENTAL)** *(Optional)* return as stream
+    :returns: A tuple with the following items:
+
+        1. **data** -  Base64-encoded pdf data. Empty if |returnAsStream| is specified.
+        2. **stream** -  *(Optional)* A handle of the stream that holds resulting PDF data.
     '''
     params: T_JSON_DICT = dict()
     if landscape is not None:
@@ -1164,8 +1176,8 @@ def reload(
     '''
     Reloads given page optionally ignoring the cache.
 
-    :param ignore_cache: If true, browser cache is ignored (as if the user pressed Shift+refresh).
-    :param script_to_evaluate_on_load: If set, the script will be injected into all frames of the inspected page after reload. Argument will be ignored if reloading dataURL origin.
+    :param ignore_cache: *(Optional)* If true, browser cache is ignored (as if the user pressed Shift+refresh).
+    :param script_to_evaluate_on_load: *(Optional)* If set, the script will be injected into all frames of the inspected page after reload. Argument will be ignored if reloading dataURL origin.
     '''
     params: T_JSON_DICT = dict()
     if ignore_cache is not None:
@@ -1184,7 +1196,7 @@ def remove_script_to_evaluate_on_load(
         identifier: 'ScriptIdentifier'
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
-    .. deprecated:: 1.3
+    .. deprecated:: 1.3**EXPERIMENTAL**
 
     Deprecated, please use removeScriptToEvaluateOnNewDocument instead.
 
@@ -1220,6 +1232,8 @@ def screencast_frame_ack(
         session_id: int
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Acknowledges that a screencast frame has been received by the frontend.
 
     :param session_id: Frame number.
@@ -1241,13 +1255,15 @@ def search_in_resource(
         is_regex: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['debugger.SearchMatch']]:
     '''
+    **EXPERIMENTAL**
+
     Searches for given string in resource content.
 
     :param frame_id: Frame id for resource to search in.
     :param url: URL of the resource to search in.
     :param query: String to search for.
-    :param case_sensitive: If true, search is case sensitive.
-    :param is_regex: If true, treats string parameter as regex.
+    :param case_sensitive: *(Optional)* If true, search is case sensitive.
+    :param is_regex: *(Optional)* If true, treats string parameter as regex.
     :returns: List of search matches.
     '''
     params: T_JSON_DICT = dict()
@@ -1270,6 +1286,8 @@ def set_ad_blocking_enabled(
         enabled: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Enable Chrome's experimental ad filter on all sites.
 
     :param enabled: Whether to block ads.
@@ -1287,6 +1305,8 @@ def set_bypass_csp(
         enabled: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Enable page Content Security Policy by-passing.
 
     :param enabled: Whether to bypass page CSP.
@@ -1316,7 +1336,7 @@ def set_device_metrics_override(
         viewport: typing.Optional['Viewport'] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
-    .. deprecated:: 1.3
+    .. deprecated:: 1.3**EXPERIMENTAL**
 
     Overrides the values of device screen dimensions (window.screen.width, window.screen.height,
     window.innerWidth, window.innerHeight, and "device-width"/"device-height"-related CSS media
@@ -1326,14 +1346,14 @@ def set_device_metrics_override(
     :param height: Overriding height value in pixels (minimum 0, maximum 10000000). 0 disables the override.
     :param device_scale_factor: Overriding device scale factor value. 0 disables the override.
     :param mobile: Whether to emulate mobile device. This includes viewport meta tag, overlay scrollbars, text autosizing and more.
-    :param scale: Scale to apply to resulting view image.
-    :param screen_width: Overriding screen width value in pixels (minimum 0, maximum 10000000).
-    :param screen_height: Overriding screen height value in pixels (minimum 0, maximum 10000000).
-    :param position_x: Overriding view X position on screen in pixels (minimum 0, maximum 10000000).
-    :param position_y: Overriding view Y position on screen in pixels (minimum 0, maximum 10000000).
-    :param dont_set_visible_size: Do not set visible view size, rely upon explicit setVisibleSize call.
-    :param screen_orientation: Screen orientation override.
-    :param viewport: The viewport dimensions and scale. If not set, the override is cleared.
+    :param scale: *(Optional)* Scale to apply to resulting view image.
+    :param screen_width: *(Optional)* Overriding screen width value in pixels (minimum 0, maximum 10000000).
+    :param screen_height: *(Optional)* Overriding screen height value in pixels (minimum 0, maximum 10000000).
+    :param position_x: *(Optional)* Overriding view X position on screen in pixels (minimum 0, maximum 10000000).
+    :param position_y: *(Optional)* Overriding view Y position on screen in pixels (minimum 0, maximum 10000000).
+    :param dont_set_visible_size: *(Optional)* Do not set visible view size, rely upon explicit setVisibleSize call.
+    :param screen_orientation: *(Optional)* Screen orientation override.
+    :param viewport: *(Optional)* The viewport dimensions and scale. If not set, the override is cleared.
     '''
     params: T_JSON_DICT = dict()
     params['width'] = width
@@ -1370,7 +1390,7 @@ def set_device_orientation_override(
         gamma: float
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
-    .. deprecated:: 1.3
+    .. deprecated:: 1.3**EXPERIMENTAL**
 
     Overrides the Device Orientation.
 
@@ -1393,6 +1413,8 @@ def set_font_families(
         font_families: 'FontFamilies'
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Set generic font families.
 
     :param font_families: Specifies font families to set. If a font family is not specified, it won't be changed.
@@ -1410,6 +1432,8 @@ def set_font_sizes(
         font_sizes: 'FontSizes'
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Set default font sizes.
 
     :param font_sizes: Specifies font sizes to set. If a font size is not specified, it won't be changed.
@@ -1448,10 +1472,12 @@ def set_download_behavior(
         download_path: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Set the behavior when downloading a file.
 
     :param behavior: Whether to allow all or deny all download requests, or use default Chrome behavior if available (otherwise deny).
-    :param download_path: The default path to save downloaded files to. This is requred if behavior is set to 'allow'
+    :param download_path: *(Optional)* The default path to save downloaded files to. This is requred if behavior is set to 'allow'
     '''
     params: T_JSON_DICT = dict()
     params['behavior'] = behavior
@@ -1471,14 +1497,12 @@ def set_geolocation_override(
         accuracy: typing.Optional[float] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
-    .. deprecated:: 1.3
-
-    Overrides the Geolocation Position or Error. Omitting any of the parameters emulates position
+    .. deprecated:: 1.3Overrides the Geolocation Position or Error. Omitting any of the parameters emulates position
     unavailable.
 
-    :param latitude: Mock latitude
-    :param longitude: Mock longitude
-    :param accuracy: Mock accuracy
+    :param latitude: *(Optional)* Mock latitude
+    :param longitude: *(Optional)* Mock longitude
+    :param accuracy: *(Optional)* Mock accuracy
     '''
     params: T_JSON_DICT = dict()
     if latitude is not None:
@@ -1498,6 +1522,8 @@ def set_lifecycle_events_enabled(
         enabled: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Controls whether page will emit lifecycle events.
 
     :param enabled: If true, starts emitting lifecycle events.
@@ -1517,12 +1543,12 @@ def set_touch_emulation_enabled(
         configuration: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
-    .. deprecated:: 1.3
+    .. deprecated:: 1.3**EXPERIMENTAL**
 
     Toggles mouse event-based touch event emulation.
 
     :param enabled: Whether the touch event emulation should be enabled.
-    :param configuration: Touch/gesture events configuration. Default: current platform.
+    :param configuration: *(Optional)* Touch/gesture events configuration. Default: current platform.
     '''
     params: T_JSON_DICT = dict()
     params['enabled'] = enabled
@@ -1543,13 +1569,15 @@ def start_screencast(
         every_nth_frame: typing.Optional[int] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Starts sending each frame using the `screencastFrame` event.
 
-    :param format: Image compression format.
-    :param quality: Compression quality from range [0..100].
-    :param max_width: Maximum screenshot width.
-    :param max_height: Maximum screenshot height.
-    :param every_nth_frame: Send every n-th frame.
+    :param format: *(Optional)* Image compression format.
+    :param quality: *(Optional)* Compression quality from range [0..100].
+    :param max_width: *(Optional)* Maximum screenshot width.
+    :param max_height: *(Optional)* Maximum screenshot height.
+    :param every_nth_frame: *(Optional)* Send every n-th frame.
     '''
     params: T_JSON_DICT = dict()
     if format is not None:
@@ -1581,6 +1609,8 @@ def stop_loading() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 def crash() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Crashes renderer on the IO thread, generates minidumps.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -1591,6 +1621,8 @@ def crash() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 def close() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Tries to close page, running its beforeunload hooks, if any.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -1603,6 +1635,8 @@ def set_web_lifecycle_state(
         state: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Tries to update the web lifecycle state of the page.
     It will transition the page to the given state according to:
     https://github.com/WICG/web-lifecycle/
@@ -1620,6 +1654,8 @@ def set_web_lifecycle_state(
 
 def stop_screencast() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Stops sending each frame in the `screencastFrame`.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -1632,6 +1668,8 @@ def set_produce_compilation_cache(
         enabled: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Forces compilation cache to be generated for every subresource script.
 
     :param enabled:
@@ -1650,6 +1688,8 @@ def add_compilation_cache(
         data: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Seeds compilation cache for given url. Compilation cache does not survive
     cross-process navigation.
 
@@ -1668,6 +1708,8 @@ def add_compilation_cache(
 
 def clear_compilation_cache() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Clears seeded compilation cache.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -1681,10 +1723,12 @@ def generate_test_report(
         group: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Generates a report for testing.
 
     :param message: Message to be displayed in the report.
-    :param group: Specifies the endpoint group to deliver the report to.
+    :param group: *(Optional)* Specifies the endpoint group to deliver the report to.
     '''
     params: T_JSON_DICT = dict()
     params['message'] = message
@@ -1699,6 +1743,8 @@ def generate_test_report(
 
 def wait_for_debugger() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Pauses page execution. Can be resumed using generic Runtime.runIfWaitingForDebugger.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -1711,6 +1757,8 @@ def set_intercept_file_chooser_dialog(
         enabled: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Intercept file chooser requests and transfer control to protocol clients.
     When file chooser interception is enabled, native file chooser dialog is not shown.
     Instead, a protocol event `Page.fileChooserOpened` is emitted.
@@ -1732,10 +1780,12 @@ def handle_file_chooser(
         files: typing.Optional[typing.List[str]] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Accepts or cancels an intercepted file chooser dialog.
 
     :param action:
-    :param files: Array of absolute file paths to set, only respected with ``accept`` action.
+    :param files: *(Optional)* Array of absolute file paths to set, only respected with ``accept`` action.
     '''
     params: T_JSON_DICT = dict()
     params['action'] = action
@@ -1849,6 +1899,11 @@ class FrameNavigated:
 @event_class('Page.frameResized')
 @dataclass
 class FrameResized:
+    '''
+    **EXPERIMENTAL**
+
+
+    '''
 
 
     @classmethod
@@ -1862,6 +1917,8 @@ class FrameResized:
 @dataclass
 class FrameRequestedNavigation:
     '''
+    **EXPERIMENTAL**
+
     Fired when a renderer-initiated navigation is requested.
     Navigation may still be cancelled after the event is issued.
     '''
@@ -1912,6 +1969,8 @@ class FrameScheduledNavigation:
 @dataclass
 class FrameStartedLoading:
     '''
+    **EXPERIMENTAL**
+
     Fired when frame has started loading.
     '''
     #: Id of the frame that has started loading.
@@ -1928,6 +1987,8 @@ class FrameStartedLoading:
 @dataclass
 class FrameStoppedLoading:
     '''
+    **EXPERIMENTAL**
+
     Fired when frame has stopped loading.
     '''
     #: Id of the frame that has stopped loading.
@@ -1944,6 +2005,8 @@ class FrameStoppedLoading:
 @dataclass
 class DownloadWillBegin:
     '''
+    **EXPERIMENTAL**
+
     Fired when page is about to start a download.
     '''
     #: Id of the frame that caused download to begin.
@@ -2079,6 +2142,8 @@ class LoadEventFired:
 @dataclass
 class NavigatedWithinDocument:
     '''
+    **EXPERIMENTAL**
+
     Fired when same-document navigation happens, e.g. due to history API usage or anchor navigation.
     '''
     #: Id of the frame.
@@ -2098,6 +2163,8 @@ class NavigatedWithinDocument:
 @dataclass
 class ScreencastFrame:
     '''
+    **EXPERIMENTAL**
+
     Compressed image data requested by the `startScreencast`.
     '''
     #: Base64-encoded compressed image.
@@ -2120,6 +2187,8 @@ class ScreencastFrame:
 @dataclass
 class ScreencastVisibilityChanged:
     '''
+    **EXPERIMENTAL**
+
     Fired when the page with currently enabled screencast was shown or hidden `.
     '''
     #: True if the page is visible.
@@ -2162,6 +2231,8 @@ class WindowOpen:
 @dataclass
 class CompilationCacheProduced:
     '''
+    **EXPERIMENTAL**
+
     Issued for every compilation cache generated. Is only available
     if Page.setGenerateCompilationCache is enabled.
     '''

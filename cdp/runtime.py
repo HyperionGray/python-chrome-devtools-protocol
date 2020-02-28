@@ -702,11 +702,12 @@ def await_promise(
     Add handler to promise with given promise object id.
 
     :param promise_object_id: Identifier of the promise.
-    :param return_by_value: Whether the result is expected to be a JSON object that should be sent by value.
-    :param generate_preview: Whether preview should be generated for the result.
-    :returns: a tuple with the following items:
-        0. result: Promise result. Will contain rejected value if promise was rejected.
-        1. exceptionDetails: (Optional) Exception details if stack strace is available.
+    :param return_by_value: *(Optional)* Whether the result is expected to be a JSON object that should be sent by value.
+    :param generate_preview: *(Optional)* Whether preview should be generated for the result.
+    :returns: A tuple with the following items:
+
+        1. **result** -  Promise result. Will contain rejected value if promise was rejected.
+        2. **exceptionDetails** -  *(Optional)* Exception details if stack strace is available.
     '''
     params: T_JSON_DICT = dict()
     params['promiseObjectId'] = promise_object_id.to_json()
@@ -742,18 +743,19 @@ def call_function_on(
     inherited from the target object.
 
     :param function_declaration: Declaration of the function to call.
-    :param object_id: Identifier of the object to call function on. Either objectId or executionContextId should be specified.
-    :param arguments: Call arguments. All call arguments must belong to the same JavaScript world as the target object.
-    :param silent: In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides ``setPauseOnException`` state.
-    :param return_by_value: Whether the result is expected to be a JSON object which should be sent by value.
-    :param generate_preview: Whether preview should be generated for the result.
-    :param user_gesture: Whether execution should be treated as initiated by user in the UI.
-    :param await_promise: Whether execution should ``await`` for resulting value and return once awaited promise is resolved.
-    :param execution_context_id: Specifies execution context which global object will be used to call function on. Either executionContextId or objectId should be specified.
-    :param object_group: Symbolic group name that can be used to release multiple objects. If objectGroup is not specified and objectId is, objectGroup will be inherited from object.
-    :returns: a tuple with the following items:
-        0. result: Call result.
-        1. exceptionDetails: (Optional) Exception details.
+    :param object_id: *(Optional)* Identifier of the object to call function on. Either objectId or executionContextId should be specified.
+    :param arguments: *(Optional)* Call arguments. All call arguments must belong to the same JavaScript world as the target object.
+    :param silent: *(Optional)* In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides ``setPauseOnException`` state.
+    :param return_by_value: *(Optional)* Whether the result is expected to be a JSON object which should be sent by value.
+    :param generate_preview: **(EXPERIMENTAL)** *(Optional)* Whether preview should be generated for the result.
+    :param user_gesture: *(Optional)* Whether execution should be treated as initiated by user in the UI.
+    :param await_promise: *(Optional)* Whether execution should ``await`` for resulting value and return once awaited promise is resolved.
+    :param execution_context_id: *(Optional)* Specifies execution context which global object will be used to call function on. Either executionContextId or objectId should be specified.
+    :param object_group: *(Optional)* Symbolic group name that can be used to release multiple objects. If objectGroup is not specified and objectId is, objectGroup will be inherited from object.
+    :returns: A tuple with the following items:
+
+        1. **result** -  Call result.
+        2. **exceptionDetails** -  *(Optional)* Exception details.
     '''
     params: T_JSON_DICT = dict()
     params['functionDeclaration'] = function_declaration
@@ -798,10 +800,11 @@ def compile_script(
     :param expression: Expression to compile.
     :param source_url: Source url to be set for the script.
     :param persist_script: Specifies whether the compiled script should be persisted.
-    :param execution_context_id: Specifies in which execution context to perform script run. If the parameter is omitted the evaluation will be performed in the context of the inspected page.
-    :returns: a tuple with the following items:
-        0. scriptId: (Optional) Id of the script.
-        1. exceptionDetails: (Optional) Exception details.
+    :param execution_context_id: *(Optional)* Specifies in which execution context to perform script run. If the parameter is omitted the evaluation will be performed in the context of the inspected page.
+    :returns: A tuple with the following items:
+
+        1. **scriptId** -  *(Optional)* Id of the script.
+        2. **exceptionDetails** -  *(Optional)* Exception details.
     '''
     params: T_JSON_DICT = dict()
     params['expression'] = expression
@@ -869,19 +872,20 @@ def evaluate(
     Evaluates expression on global object.
 
     :param expression: Expression to evaluate.
-    :param object_group: Symbolic group name that can be used to release multiple objects.
-    :param include_command_line_api: Determines whether Command Line API should be available during the evaluation.
-    :param silent: In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides ``setPauseOnException`` state.
-    :param context_id: Specifies in which execution context to perform evaluation. If the parameter is omitted the evaluation will be performed in the context of the inspected page.
-    :param return_by_value: Whether the result is expected to be a JSON object that should be sent by value.
-    :param generate_preview: Whether preview should be generated for the result.
-    :param user_gesture: Whether execution should be treated as initiated by user in the UI.
-    :param await_promise: Whether execution should ``await`` for resulting value and return once awaited promise is resolved.
-    :param throw_on_side_effect: Whether to throw an exception if side effect cannot be ruled out during evaluation.
-    :param timeout: Terminate execution after timing out (number of milliseconds).
-    :returns: a tuple with the following items:
-        0. result: Evaluation result.
-        1. exceptionDetails: (Optional) Exception details.
+    :param object_group: *(Optional)* Symbolic group name that can be used to release multiple objects.
+    :param include_command_line_api: *(Optional)* Determines whether Command Line API should be available during the evaluation.
+    :param silent: *(Optional)* In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides ``setPauseOnException`` state.
+    :param context_id: *(Optional)* Specifies in which execution context to perform evaluation. If the parameter is omitted the evaluation will be performed in the context of the inspected page.
+    :param return_by_value: *(Optional)* Whether the result is expected to be a JSON object that should be sent by value.
+    :param generate_preview: **(EXPERIMENTAL)** *(Optional)* Whether preview should be generated for the result.
+    :param user_gesture: *(Optional)* Whether execution should be treated as initiated by user in the UI.
+    :param await_promise: *(Optional)* Whether execution should ``await`` for resulting value and return once awaited promise is resolved.
+    :param throw_on_side_effect: **(EXPERIMENTAL)** *(Optional)* Whether to throw an exception if side effect cannot be ruled out during evaluation.
+    :param timeout: **(EXPERIMENTAL)** *(Optional)* Terminate execution after timing out (number of milliseconds).
+    :returns: A tuple with the following items:
+
+        1. **result** -  Evaluation result.
+        2. **exceptionDetails** -  *(Optional)* Exception details.
     '''
     params: T_JSON_DICT = dict()
     params['expression'] = expression
@@ -918,6 +922,8 @@ def evaluate(
 
 def get_isolate_id() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,str]:
     '''
+    **EXPERIMENTAL**
+
     Returns the isolate id.
 
     :returns: The isolate id.
@@ -931,12 +937,15 @@ def get_isolate_id() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,str]:
 
 def get_heap_usage() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[float, float]]:
     '''
+    **EXPERIMENTAL**
+
     Returns the JavaScript heap usage.
     It is the total usage of the corresponding isolate not scoped to a particular Runtime.
 
-    :returns: a tuple with the following items:
-        0. usedSize: Used heap size in bytes.
-        1. totalSize: Allocated heap size in bytes.
+    :returns: A tuple with the following items:
+
+        1. **usedSize** -  Used heap size in bytes.
+        2. **totalSize** -  Allocated heap size in bytes.
     '''
     cmd_dict: T_JSON_DICT = {
         'method': 'Runtime.getHeapUsage',
@@ -959,14 +968,15 @@ def get_properties(
     object.
 
     :param object_id: Identifier of the object to return properties for.
-    :param own_properties: If true, returns properties belonging only to the element itself, not to its prototype chain.
-    :param accessor_properties_only: If true, returns accessor properties (with getter/setter) only; internal properties are not returned either.
-    :param generate_preview: Whether preview should be generated for the results.
-    :returns: a tuple with the following items:
-        0. result: Object properties.
-        1. internalProperties: (Optional) Internal object properties (only of the element itself).
-        2. privateProperties: (Optional) Object private properties.
-        3. exceptionDetails: (Optional) Exception details.
+    :param own_properties: *(Optional)* If true, returns properties belonging only to the element itself, not to its prototype chain.
+    :param accessor_properties_only: **(EXPERIMENTAL)** *(Optional)* If true, returns accessor properties (with getter/setter) only; internal properties are not returned either.
+    :param generate_preview: **(EXPERIMENTAL)** *(Optional)* Whether preview should be generated for the results.
+    :returns: A tuple with the following items:
+
+        1. **result** -  Object properties.
+        2. **internalProperties** -  *(Optional)* Internal object properties (only of the element itself).
+        3. **privateProperties** -  *(Optional)* Object private properties.
+        4. **exceptionDetails** -  *(Optional)* Exception details.
     '''
     params: T_JSON_DICT = dict()
     params['objectId'] = object_id.to_json()
@@ -995,7 +1005,7 @@ def global_lexical_scope_names(
     '''
     Returns all let, const and class variables from global scope.
 
-    :param execution_context_id: Specifies in which execution context to lookup global scope variables.
+    :param execution_context_id: *(Optional)* Specifies in which execution context to lookup global scope variables.
     :returns: 
     '''
     params: T_JSON_DICT = dict()
@@ -1015,7 +1025,7 @@ def query_objects(
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,'RemoteObject']:
     '''
     :param prototype_object_id: Identifier of the prototype to return objects for.
-    :param object_group: Symbolic group name that can be used to release the results.
+    :param object_group: *(Optional)* Symbolic group name that can be used to release the results.
     :returns: Array with objects.
     '''
     params: T_JSON_DICT = dict()
@@ -1088,16 +1098,17 @@ def run_script(
     Runs script with given id in a given context.
 
     :param script_id: Id of the script to run.
-    :param execution_context_id: Specifies in which execution context to perform script run. If the parameter is omitted the evaluation will be performed in the context of the inspected page.
-    :param object_group: Symbolic group name that can be used to release multiple objects.
-    :param silent: In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides ``setPauseOnException`` state.
-    :param include_command_line_api: Determines whether Command Line API should be available during the evaluation.
-    :param return_by_value: Whether the result is expected to be a JSON object which should be sent by value.
-    :param generate_preview: Whether preview should be generated for the result.
-    :param await_promise: Whether execution should ``await`` for resulting value and return once awaited promise is resolved.
-    :returns: a tuple with the following items:
-        0. result: Run result.
-        1. exceptionDetails: (Optional) Exception details.
+    :param execution_context_id: *(Optional)* Specifies in which execution context to perform script run. If the parameter is omitted the evaluation will be performed in the context of the inspected page.
+    :param object_group: *(Optional)* Symbolic group name that can be used to release multiple objects.
+    :param silent: *(Optional)* In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides ``setPauseOnException`` state.
+    :param include_command_line_api: *(Optional)* Determines whether Command Line API should be available during the evaluation.
+    :param return_by_value: *(Optional)* Whether the result is expected to be a JSON object which should be sent by value.
+    :param generate_preview: *(Optional)* Whether preview should be generated for the result.
+    :param await_promise: *(Optional)* Whether execution should ``await`` for resulting value and return once awaited promise is resolved.
+    :returns: A tuple with the following items:
+
+        1. **result** -  Run result.
+        2. **exceptionDetails** -  *(Optional)* Exception details.
     '''
     params: T_JSON_DICT = dict()
     params['scriptId'] = script_id.to_json()
@@ -1147,6 +1158,10 @@ def set_custom_object_formatter_enabled(
         enabled: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
+
+
     :param enabled:
     '''
     params: T_JSON_DICT = dict()
@@ -1162,6 +1177,10 @@ def set_max_call_stack_size_to_capture(
         size: int
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
+
+
     :param size:
     '''
     params: T_JSON_DICT = dict()
@@ -1175,6 +1194,8 @@ def set_max_call_stack_size_to_capture(
 
 def terminate_execution() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Terminate current or next JavaScript execution.
     Will cancel the termination when the outer-most script execution ends.
     '''
@@ -1189,6 +1210,8 @@ def add_binding(
         execution_context_id: typing.Optional['ExecutionContextId'] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     If executionContextId is empty, adds binding with the given name on the
     global objects of all inspected contexts, including those created later,
     bindings survive reloads.
@@ -1199,7 +1222,7 @@ def add_binding(
     Each binding function call produces Runtime.bindingCalled notification.
 
     :param name:
-    :param execution_context_id:
+    :param execution_context_id: *(Optional)*
     '''
     params: T_JSON_DICT = dict()
     params['name'] = name
@@ -1216,6 +1239,8 @@ def remove_binding(
         name: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     This method does not remove binding function from global object but
     unsubscribes current runtime agent from Runtime.bindingCalled notifications.
 
@@ -1234,6 +1259,8 @@ def remove_binding(
 @dataclass
 class BindingCalled:
     '''
+    **EXPERIMENTAL**
+
     Notification is issued every time when binding is called.
     '''
     name: str

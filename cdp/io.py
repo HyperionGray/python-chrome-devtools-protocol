@@ -58,12 +58,13 @@ def read(
     Read a chunk of the stream
 
     :param handle: Handle of the stream to read.
-    :param offset: Seek to the specified offset before reading (if not specificed, proceed with offset following the last read). Some types of streams may only support sequential reads.
-    :param size: Maximum number of bytes to read (left upon the agent discretion if not specified).
-    :returns: a tuple with the following items:
-        0. base64Encoded: (Optional) Set if the data is base64-encoded
-        1. data: Data that were read.
-        2. eof: Set if the end-of-file condition occured while reading.
+    :param offset: *(Optional)* Seek to the specified offset before reading (if not specificed, proceed with offset following the last read). Some types of streams may only support sequential reads.
+    :param size: *(Optional)* Maximum number of bytes to read (left upon the agent discretion if not specified).
+    :returns: A tuple with the following items:
+
+        1. **base64Encoded** -  *(Optional)* Set if the data is base64-encoded
+        2. **data** -  Data that were read.
+        3. **eof** -  Set if the end-of-file condition occured while reading.
     '''
     params: T_JSON_DICT = dict()
     params['handle'] = handle.to_json()

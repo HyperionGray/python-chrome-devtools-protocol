@@ -1427,9 +1427,7 @@ class SignedExchangeInfo:
 @deprecated(version="1.3")
 def can_clear_browser_cache() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,bool]:
     '''
-    .. deprecated:: 1.3
-
-    Tells whether clearing browser cache is supported.
+    .. deprecated:: 1.3Tells whether clearing browser cache is supported.
 
     :returns: True if browser cache can be cleared.
     '''
@@ -1443,9 +1441,7 @@ def can_clear_browser_cache() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,bool]:
 @deprecated(version="1.3")
 def can_clear_browser_cookies() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,bool]:
     '''
-    .. deprecated:: 1.3
-
-    Tells whether clearing browser cookies is supported.
+    .. deprecated:: 1.3Tells whether clearing browser cookies is supported.
 
     :returns: True if browser cookies can be cleared.
     '''
@@ -1459,9 +1455,7 @@ def can_clear_browser_cookies() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,bool
 @deprecated(version="1.3")
 def can_emulate_network_conditions() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,bool]:
     '''
-    .. deprecated:: 1.3
-
-    Tells whether emulation of network conditions is supported.
+    .. deprecated:: 1.3Tells whether emulation of network conditions is supported.
 
     :returns: True if emulation of network conditions is supported.
     '''
@@ -1504,7 +1498,7 @@ def continue_intercepted_request(
         auth_challenge_response: typing.Optional['AuthChallengeResponse'] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
-    .. deprecated:: 1.3
+    .. deprecated:: 1.3**EXPERIMENTAL**
 
     Response to Network.requestIntercepted which either modifies the request to continue with any
     modifications, or blocks it, or completes it with the provided response bytes. If a network
@@ -1513,13 +1507,13 @@ def continue_intercepted_request(
     Deprecated, use Fetch.continueRequest, Fetch.fulfillRequest and Fetch.failRequest instead.
 
     :param interception_id:
-    :param error_reason: If set this causes the request to fail with the given reason. Passing ``Aborted`` for requests marked with ``isNavigationRequest`` also cancels the navigation. Must not be set in response to an authChallenge.
-    :param raw_response: If set the requests completes using with the provided base64 encoded raw response, including HTTP status line and headers etc... Must not be set in response to an authChallenge.
-    :param url: If set the request url will be modified in a way that's not observable by page. Must not be set in response to an authChallenge.
-    :param method: If set this allows the request method to be overridden. Must not be set in response to an authChallenge.
-    :param post_data: If set this allows postData to be set. Must not be set in response to an authChallenge.
-    :param headers: If set this allows the request headers to be changed. Must not be set in response to an authChallenge.
-    :param auth_challenge_response: Response to a requestIntercepted with an authChallenge. Must not be set otherwise.
+    :param error_reason: *(Optional)* If set this causes the request to fail with the given reason. Passing ``Aborted`` for requests marked with ``isNavigationRequest`` also cancels the navigation. Must not be set in response to an authChallenge.
+    :param raw_response: *(Optional)* If set the requests completes using with the provided base64 encoded raw response, including HTTP status line and headers etc... Must not be set in response to an authChallenge.
+    :param url: *(Optional)* If set the request url will be modified in a way that's not observable by page. Must not be set in response to an authChallenge.
+    :param method: *(Optional)* If set this allows the request method to be overridden. Must not be set in response to an authChallenge.
+    :param post_data: *(Optional)* If set this allows postData to be set. Must not be set in response to an authChallenge.
+    :param headers: *(Optional)* If set this allows the request headers to be changed. Must not be set in response to an authChallenge.
+    :param auth_challenge_response: *(Optional)* Response to a requestIntercepted with an authChallenge. Must not be set otherwise.
     '''
     params: T_JSON_DICT = dict()
     params['interceptionId'] = interception_id.to_json()
@@ -1554,9 +1548,9 @@ def delete_cookies(
     Deletes browser cookies with matching name and url or domain/path pair.
 
     :param name: Name of the cookies to remove.
-    :param url: If specified, deletes all the cookies with the given name where domain and path match provided URL.
-    :param domain: If specified, deletes only cookies with the exact domain.
-    :param path: If specified, deletes only cookies with the exact path.
+    :param url: *(Optional)* If specified, deletes all the cookies with the given name where domain and path match provided URL.
+    :param domain: *(Optional)* If specified, deletes only cookies with the exact domain.
+    :param path: *(Optional)* If specified, deletes only cookies with the exact path.
     '''
     params: T_JSON_DICT = dict()
     params['name'] = name
@@ -1597,7 +1591,7 @@ def emulate_network_conditions(
     :param latency: Minimum latency from request sent to response headers received (ms).
     :param download_throughput: Maximal aggregated download throughput (bytes/sec). -1 disables download throttling.
     :param upload_throughput: Maximal aggregated upload throughput (bytes/sec).  -1 disables upload throttling.
-    :param connection_type: Connection type if known.
+    :param connection_type: *(Optional)* Connection type if known.
     '''
     params: T_JSON_DICT = dict()
     params['offline'] = offline
@@ -1621,9 +1615,9 @@ def enable(
     '''
     Enables network tracking, network events will now be delivered to the client.
 
-    :param max_total_buffer_size: Buffer size in bytes to use when preserving network payloads (XHRs, etc).
-    :param max_resource_buffer_size: Per-resource buffer size in bytes to use when preserving network payloads (XHRs, etc).
-    :param max_post_data_size: Longest post body size (in bytes) that would be included in requestWillBeSent notification
+    :param max_total_buffer_size: **(EXPERIMENTAL)** *(Optional)* Buffer size in bytes to use when preserving network payloads (XHRs, etc).
+    :param max_resource_buffer_size: **(EXPERIMENTAL)** *(Optional)* Per-resource buffer size in bytes to use when preserving network payloads (XHRs, etc).
+    :param max_post_data_size: *(Optional)* Longest post body size (in bytes) that would be included in requestWillBeSent notification
     '''
     params: T_JSON_DICT = dict()
     if max_total_buffer_size is not None:
@@ -1657,6 +1651,8 @@ def get_certificate(
         origin: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[str]]:
     '''
+    **EXPERIMENTAL**
+
     Returns the DER-encoded certificate.
 
     :param origin: Origin to get certificate for.
@@ -1679,7 +1675,7 @@ def get_cookies(
     Returns all browser cookies for the current URL. Depending on the backend support, will return
     detailed cookie information in the `cookies` field.
 
-    :param urls: The list of URLs for which applicable cookies will be fetched
+    :param urls: *(Optional)* The list of URLs for which applicable cookies will be fetched
     :returns: Array of cookie objects.
     '''
     params: T_JSON_DICT = dict()
@@ -1700,9 +1696,10 @@ def get_response_body(
     Returns content served for the given request.
 
     :param request_id: Identifier of the network request to get content for.
-    :returns: a tuple with the following items:
-        0. body: Response body.
-        1. base64Encoded: True, if content was sent as base64.
+    :returns: A tuple with the following items:
+
+        1. **body** -  Response body.
+        2. **base64Encoded** -  True, if content was sent as base64.
     '''
     params: T_JSON_DICT = dict()
     params['requestId'] = request_id.to_json()
@@ -1740,12 +1737,15 @@ def get_response_body_for_interception(
         interception_id: 'InterceptionId'
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[str, bool]]:
     '''
+    **EXPERIMENTAL**
+
     Returns content served for the given currently intercepted request.
 
     :param interception_id: Identifier for the intercepted request to get body for.
-    :returns: a tuple with the following items:
-        0. body: Response body.
-        1. base64Encoded: True, if content was sent as base64.
+    :returns: A tuple with the following items:
+
+        1. **body** -  Response body.
+        2. **base64Encoded** -  True, if content was sent as base64.
     '''
     params: T_JSON_DICT = dict()
     params['interceptionId'] = interception_id.to_json()
@@ -1764,6 +1764,8 @@ def take_response_body_for_interception_as_stream(
         interception_id: 'InterceptionId'
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,'io.StreamHandle']:
     '''
+    **EXPERIMENTAL**
+
     Returns a handle to the stream representing the response body. Note that after this command,
     the intercepted request can't be continued as is -- you either need to cancel it or to provide
     the response body. The stream only supports sequential read, IO.read will fail if the position
@@ -1786,6 +1788,8 @@ def replay_xhr(
         request_id: 'RequestId'
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     This method sends a new XMLHttpRequest which is identical to the original one. The following
     parameters should be identical: method, url, async, request body, extra headers, withCredentials
     attribute, user, password.
@@ -1808,12 +1812,14 @@ def search_in_response_body(
         is_regex: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['debugger.SearchMatch']]:
     '''
+    **EXPERIMENTAL**
+
     Searches for given string in response content.
 
     :param request_id: Identifier of the network response to search.
     :param query: String to search for.
-    :param case_sensitive: If true, search is case sensitive.
-    :param is_regex: If true, treats string parameter as regex.
+    :param case_sensitive: *(Optional)* If true, search is case sensitive.
+    :param is_regex: *(Optional)* If true, treats string parameter as regex.
     :returns: List of search matches.
     '''
     params: T_JSON_DICT = dict()
@@ -1835,6 +1841,8 @@ def set_blocked_ur_ls(
         urls: typing.List[str]
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Blocks URLs from loading.
 
     :param urls: URL patterns to block. Wildcards ('*') are allowed.
@@ -1852,6 +1860,8 @@ def set_bypass_service_worker(
         bypass: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Toggles ignoring of service worker for each request.
 
     :param bypass: Bypass service worker and load from network.
@@ -1898,13 +1908,13 @@ def set_cookie(
 
     :param name: Cookie name.
     :param value: Cookie value.
-    :param url: The request-URI to associate with the setting of the cookie. This value can affect the default domain and path values of the created cookie.
-    :param domain: Cookie domain.
-    :param path: Cookie path.
-    :param secure: True if cookie is secure.
-    :param http_only: True if cookie is http-only.
-    :param same_site: Cookie SameSite type.
-    :param expires: Cookie expiration date, session cookie if not set
+    :param url: *(Optional)* The request-URI to associate with the setting of the cookie. This value can affect the default domain and path values of the created cookie.
+    :param domain: *(Optional)* Cookie domain.
+    :param path: *(Optional)* Cookie path.
+    :param secure: *(Optional)* True if cookie is secure.
+    :param http_only: *(Optional)* True if cookie is http-only.
+    :param same_site: *(Optional)* Cookie SameSite type.
+    :param expires: *(Optional)* Cookie expiration date, session cookie if not set
     :returns: True if successfully set cookie.
     '''
     params: T_JSON_DICT = dict()
@@ -1954,6 +1964,8 @@ def set_data_size_limits_for_test(
         max_resource_size: int
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     For testing.
 
     :param max_total_size: Maximum total buffer size.
@@ -1991,7 +2003,7 @@ def set_request_interception(
         patterns: typing.List['RequestPattern']
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
-    .. deprecated:: 1.3
+    .. deprecated:: 1.3**EXPERIMENTAL**
 
     Sets the requests to intercept that match the provided patterns and optionally resource types.
     Deprecated, please use Fetch.enable instead.
@@ -2016,8 +2028,8 @@ def set_user_agent_override(
     Allows overriding user agent with the given string.
 
     :param user_agent: User agent to use.
-    :param accept_language: Browser langugage to emulate.
-    :param platform: The platform navigator.platform should return.
+    :param accept_language: *(Optional)* Browser langugage to emulate.
+    :param platform: *(Optional)* The platform navigator.platform should return.
     '''
     params: T_JSON_DICT = dict()
     params['userAgent'] = user_agent
@@ -2147,6 +2159,8 @@ class LoadingFinished:
 @dataclass
 class RequestIntercepted:
     '''
+    **EXPERIMENTAL**
+
     Details of an intercepted HTTP request, which must be either allowed, blocked, modified or
     mocked.
     Deprecated, use Fetch.requestPaused instead.
@@ -2267,6 +2281,8 @@ class RequestWillBeSent:
 @dataclass
 class ResourceChangedPriority:
     '''
+    **EXPERIMENTAL**
+
     Fired when resource loading priority is changed
     '''
     #: Request identifier.
@@ -2289,6 +2305,8 @@ class ResourceChangedPriority:
 @dataclass
 class SignedExchangeReceived:
     '''
+    **EXPERIMENTAL**
+
     Fired when a signed exchange was received over the network
     '''
     #: Request identifier.
@@ -2493,6 +2511,8 @@ class WebSocketWillSendHandshakeRequest:
 @dataclass
 class RequestWillBeSentExtraInfo:
     '''
+    **EXPERIMENTAL**
+
     Fired when additional information about a requestWillBeSent event is available from the
     network stack. Not every requestWillBeSent event will have an additional
     requestWillBeSentExtraInfo fired for it, and there is no guarantee whether requestWillBeSent
@@ -2519,6 +2539,8 @@ class RequestWillBeSentExtraInfo:
 @dataclass
 class ResponseReceivedExtraInfo:
     '''
+    **EXPERIMENTAL**
+
     Fired when additional information about a responseReceived event is available from the network
     stack. Not every responseReceived event will have an additional responseReceivedExtraInfo for
     it, and responseReceivedExtraInfo may be fired before or after responseReceived.

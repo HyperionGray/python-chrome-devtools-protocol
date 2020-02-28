@@ -472,6 +472,8 @@ def collect_class_names_from_subtree(
         node_id: 'NodeId'
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[str]]:
     '''
+    **EXPERIMENTAL**
+
     Collects class names for the node with given id and all of it's child nodes.
 
     :param node_id: Id of the node to collect class names.
@@ -493,12 +495,14 @@ def copy_to(
         insert_before_node_id: typing.Optional['NodeId'] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,'NodeId']:
     '''
+    **EXPERIMENTAL**
+
     Creates a deep copy of the specified node and places it into the target container before the
     given anchor.
 
     :param node_id: Id of the node to copy.
     :param target_node_id: Id of the element to drop the copy into.
-    :param insert_before_node_id: Drop the copy before this node (if absent, the copy becomes the last child of ``targetNodeId``).
+    :param insert_before_node_id: *(Optional)* Drop the copy before this node (if absent, the copy becomes the last child of ``targetNodeId``).
     :returns: Id of the node clone.
     '''
     params: T_JSON_DICT = dict()
@@ -525,11 +529,11 @@ def describe_node(
     Describes node given its id, does not require domain to be enabled. Does not start tracking any
     objects, can be used for automation.
 
-    :param node_id: Identifier of the node.
-    :param backend_node_id: Identifier of the backend node.
-    :param object_id: JavaScript object id of the node wrapper.
-    :param depth: The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the entire subtree or provide an integer larger than 0.
-    :param pierce: Whether or not iframes and shadow roots should be traversed when returning the subtree (default is false).
+    :param node_id: *(Optional)* Identifier of the node.
+    :param backend_node_id: *(Optional)* Identifier of the backend node.
+    :param object_id: *(Optional)* JavaScript object id of the node wrapper.
+    :param depth: *(Optional)* The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the entire subtree or provide an integer larger than 0.
+    :param pierce: *(Optional)* Whether or not iframes and shadow roots should be traversed when returning the subtree (default is false).
     :returns: Node description.
     '''
     params: T_JSON_DICT = dict()
@@ -565,6 +569,8 @@ def discard_search_results(
         search_id: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Discards search results from the session with the given id. `getSearchResults` should no longer
     be called for that search.
 
@@ -597,9 +603,9 @@ def focus(
     '''
     Focuses the given element.
 
-    :param node_id: Identifier of the node.
-    :param backend_node_id: Identifier of the backend node.
-    :param object_id: JavaScript object id of the node wrapper.
+    :param node_id: *(Optional)* Identifier of the node.
+    :param backend_node_id: *(Optional)* Identifier of the backend node.
+    :param object_id: *(Optional)* JavaScript object id of the node wrapper.
     '''
     params: T_JSON_DICT = dict()
     if node_id is not None:
@@ -642,9 +648,9 @@ def get_box_model(
     '''
     Returns boxes for the given node.
 
-    :param node_id: Identifier of the node.
-    :param backend_node_id: Identifier of the backend node.
-    :param object_id: JavaScript object id of the node wrapper.
+    :param node_id: *(Optional)* Identifier of the node.
+    :param backend_node_id: *(Optional)* Identifier of the backend node.
+    :param object_id: *(Optional)* JavaScript object id of the node wrapper.
     :returns: Box model for the node.
     '''
     params: T_JSON_DICT = dict()
@@ -668,12 +674,14 @@ def get_content_quads(
         object_id: typing.Optional['runtime.RemoteObjectId'] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['Quad']]:
     '''
+    **EXPERIMENTAL**
+
     Returns quads that describe node position on the page. This method
     might return multiple quads for inline nodes.
 
-    :param node_id: Identifier of the node.
-    :param backend_node_id: Identifier of the backend node.
-    :param object_id: JavaScript object id of the node wrapper.
+    :param node_id: *(Optional)* Identifier of the node.
+    :param backend_node_id: *(Optional)* Identifier of the backend node.
+    :param object_id: *(Optional)* JavaScript object id of the node wrapper.
     :returns: Quads that describe node layout relative to viewport.
     '''
     params: T_JSON_DICT = dict()
@@ -698,8 +706,8 @@ def get_document(
     '''
     Returns the root DOM node (and optionally the subtree) to the caller.
 
-    :param depth: The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the entire subtree or provide an integer larger than 0.
-    :param pierce: Whether or not iframes and shadow roots should be traversed when returning the subtree (default is false).
+    :param depth: *(Optional)* The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the entire subtree or provide an integer larger than 0.
+    :param pierce: *(Optional)* Whether or not iframes and shadow roots should be traversed when returning the subtree (default is false).
     :returns: Resulting node.
     '''
     params: T_JSON_DICT = dict()
@@ -722,8 +730,8 @@ def get_flattened_document(
     '''
     Returns the root DOM node (and optionally the subtree) to the caller.
 
-    :param depth: The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the entire subtree or provide an integer larger than 0.
-    :param pierce: Whether or not iframes and shadow roots should be traversed when returning the subtree (default is false).
+    :param depth: *(Optional)* The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the entire subtree or provide an integer larger than 0.
+    :param pierce: *(Optional)* Whether or not iframes and shadow roots should be traversed when returning the subtree (default is false).
     :returns: Resulting node.
     '''
     params: T_JSON_DICT = dict()
@@ -745,15 +753,18 @@ def get_node_for_location(
         include_user_agent_shadow_dom: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple['BackendNodeId', typing.Optional['NodeId']]]:
     '''
+    **EXPERIMENTAL**
+
     Returns node id at given location. Depending on whether DOM domain is enabled, nodeId is
     either returned or not.
 
     :param x: X coordinate.
     :param y: Y coordinate.
-    :param include_user_agent_shadow_dom: False to skip to the nearest non-UA shadow root ancestor (default: false).
-    :returns: a tuple with the following items:
-        0. backendNodeId: Resulting node.
-        1. nodeId: (Optional) Id of the node at given coordinates, only when enabled and requested document.
+    :param include_user_agent_shadow_dom: *(Optional)* False to skip to the nearest non-UA shadow root ancestor (default: false).
+    :returns: A tuple with the following items:
+
+        1. **backendNodeId** -  Resulting node.
+        2. **nodeId** -  *(Optional)* Id of the node at given coordinates, only when enabled and requested document.
     '''
     params: T_JSON_DICT = dict()
     params['x'] = x
@@ -779,9 +790,9 @@ def get_outer_html(
     '''
     Returns node's HTML markup.
 
-    :param node_id: Identifier of the node.
-    :param backend_node_id: Identifier of the backend node.
-    :param object_id: JavaScript object id of the node wrapper.
+    :param node_id: *(Optional)* Identifier of the node.
+    :param backend_node_id: *(Optional)* Identifier of the backend node.
+    :param object_id: *(Optional)* JavaScript object id of the node wrapper.
     :returns: Outer HTML markup.
     '''
     params: T_JSON_DICT = dict()
@@ -803,6 +814,8 @@ def get_relayout_boundary(
         node_id: 'NodeId'
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,'NodeId']:
     '''
+    **EXPERIMENTAL**
+
     Returns the id of the nearest ancestor that is a relayout boundary.
 
     :param node_id: Id of the node.
@@ -824,6 +837,8 @@ def get_search_results(
         to_index: int
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['NodeId']]:
     '''
+    **EXPERIMENTAL**
+
     Returns search results from given `fromIndex` to given `toIndex` from the search with the given
     identifier.
 
@@ -876,6 +891,8 @@ def highlight_rect() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 def mark_undoable_state() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Marks last undoable state.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -894,7 +911,7 @@ def move_to(
 
     :param node_id: Id of the node to move.
     :param target_node_id: Id of the element to drop the moved node into.
-    :param insert_before_node_id: Drop node before this one (if absent, the moved node becomes the last child of ``targetNodeId``).
+    :param insert_before_node_id: *(Optional)* Drop node before this one (if absent, the moved node becomes the last child of ``targetNodeId``).
     :returns: New id of the moved node.
     '''
     params: T_JSON_DICT = dict()
@@ -915,14 +932,17 @@ def perform_search(
         include_user_agent_shadow_dom: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[str, int]]:
     '''
+    **EXPERIMENTAL**
+
     Searches for a given string in the DOM tree. Use `getSearchResults` to access search results or
     `cancelSearch` to end this search session.
 
     :param query: Plain text or query selector or XPath search query.
-    :param include_user_agent_shadow_dom: True to search in user agent shadow DOM.
-    :returns: a tuple with the following items:
-        0. searchId: Unique search session identifier.
-        1. resultCount: Number of search results.
+    :param include_user_agent_shadow_dom: *(Optional)* True to search in user agent shadow DOM.
+    :returns: A tuple with the following items:
+
+        1. **searchId** -  Unique search session identifier.
+        2. **resultCount** -  Number of search results.
     '''
     params: T_JSON_DICT = dict()
     params['query'] = query
@@ -943,6 +963,8 @@ def push_node_by_path_to_frontend(
         path: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,'NodeId']:
     '''
+    **EXPERIMENTAL**
+
     Requests that the node is sent to the caller given its path. // FIXME, use XPath
 
     :param path: Path to node in the proprietary format.
@@ -962,6 +984,8 @@ def push_nodes_by_backend_ids_to_frontend(
         backend_node_ids: typing.List['BackendNodeId']
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['NodeId']]:
     '''
+    **EXPERIMENTAL**
+
     Requests that a batch of nodes is sent to the caller given their backend node ids.
 
     :param backend_node_ids: The array of backend node ids.
@@ -1024,6 +1048,8 @@ def query_selector_all(
 
 def redo() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Re-does the last undone action.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -1080,8 +1106,8 @@ def request_child_nodes(
     the specified depth.
 
     :param node_id: Id of the node to get children for.
-    :param depth: The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the entire subtree or provide an integer larger than 0.
-    :param pierce: Whether or not iframes and shadow roots should be traversed when returning the sub-tree (default is false).
+    :param depth: *(Optional)* The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the entire subtree or provide an integer larger than 0.
+    :param pierce: *(Optional)* Whether or not iframes and shadow roots should be traversed when returning the sub-tree (default is false).
     '''
     params: T_JSON_DICT = dict()
     params['nodeId'] = node_id.to_json()
@@ -1126,10 +1152,10 @@ def resolve_node(
     '''
     Resolves the JavaScript node object for a given NodeId or BackendNodeId.
 
-    :param node_id: Id of the node to resolve.
-    :param backend_node_id: Backend identifier of the node to resolve.
-    :param object_group: Symbolic group name that can be used to release multiple objects.
-    :param execution_context_id: Execution context in which to resolve the node.
+    :param node_id: *(Optional)* Id of the node to resolve.
+    :param backend_node_id: *(Optional)* Backend identifier of the node to resolve.
+    :param object_group: *(Optional)* Symbolic group name that can be used to release multiple objects.
+    :param execution_context_id: *(Optional)* Execution context in which to resolve the node.
     :returns: JavaScript object wrapper for given node.
     '''
     params: T_JSON_DICT = dict()
@@ -1183,7 +1209,7 @@ def set_attributes_as_text(
 
     :param node_id: Id of the element to set attributes for.
     :param text: Text with a number of attributes. Will parse this text using HTML parser.
-    :param name: Attribute name to replace with new attributes derived from text in case text parsed successfully.
+    :param name: *(Optional)* Attribute name to replace with new attributes derived from text in case text parsed successfully.
     '''
     params: T_JSON_DICT = dict()
     params['nodeId'] = node_id.to_json()
@@ -1207,9 +1233,9 @@ def set_file_input_files(
     Sets files for the given file input element.
 
     :param files: Array of file paths to set.
-    :param node_id: Identifier of the node.
-    :param backend_node_id: Identifier of the backend node.
-    :param object_id: JavaScript object id of the node wrapper.
+    :param node_id: *(Optional)* Identifier of the node.
+    :param backend_node_id: *(Optional)* Identifier of the backend node.
+    :param object_id: *(Optional)* JavaScript object id of the node wrapper.
     '''
     params: T_JSON_DICT = dict()
     params['files'] = [i for i in files]
@@ -1230,6 +1256,8 @@ def get_file_info(
         object_id: 'runtime.RemoteObjectId'
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,str]:
     '''
+    **EXPERIMENTAL**
+
     Returns file information for the given
     File wrapper.
 
@@ -1250,6 +1278,8 @@ def set_inspected_node(
         node_id: 'NodeId'
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Enables console to refer to the node with given id via $x (see Command Line API for more details
     $x functions).
 
@@ -1328,6 +1358,8 @@ def set_outer_html(
 
 def undo() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Undoes the last performed action.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -1340,12 +1372,15 @@ def get_frame_owner(
         frame_id: 'page.FrameId'
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple['BackendNodeId', typing.Optional['NodeId']]]:
     '''
+    **EXPERIMENTAL**
+
     Returns iframe node that owns iframe with the given domain.
 
     :param frame_id:
-    :returns: a tuple with the following items:
-        0. backendNodeId: Resulting node.
-        1. nodeId: (Optional) Id of the node at given coordinates, only when enabled and requested document.
+    :returns: A tuple with the following items:
+
+        1. **backendNodeId** -  Resulting node.
+        2. **nodeId** -  *(Optional)* Id of the node at given coordinates, only when enabled and requested document.
     '''
     params: T_JSON_DICT = dict()
     params['frameId'] = frame_id.to_json()
@@ -1484,6 +1519,8 @@ class ChildNodeRemoved:
 @dataclass
 class DistributedNodesUpdated:
     '''
+    **EXPERIMENTAL**
+
     Called when distrubution is changed.
     '''
     #: Insertion point where distrubuted nodes were updated.
@@ -1518,6 +1555,8 @@ class DocumentUpdated:
 @dataclass
 class InlineStyleInvalidated:
     '''
+    **EXPERIMENTAL**
+
     Fired when `Element`'s inline style is modified via a CSS property modification.
     '''
     #: Ids of the nodes for which the inline styles have been invalidated.
@@ -1534,6 +1573,8 @@ class InlineStyleInvalidated:
 @dataclass
 class PseudoElementAdded:
     '''
+    **EXPERIMENTAL**
+
     Called when a pseudo element is added to an element.
     '''
     #: Pseudo element's parent element id.
@@ -1553,6 +1594,8 @@ class PseudoElementAdded:
 @dataclass
 class PseudoElementRemoved:
     '''
+    **EXPERIMENTAL**
+
     Called when a pseudo element is removed from an element.
     '''
     #: Pseudo element's parent element id.
@@ -1592,6 +1635,8 @@ class SetChildNodes:
 @dataclass
 class ShadowRootPopped:
     '''
+    **EXPERIMENTAL**
+
     Called when shadow root is popped from the element.
     '''
     #: Host element id.
@@ -1611,6 +1656,8 @@ class ShadowRootPopped:
 @dataclass
 class ShadowRootPushed:
     '''
+    **EXPERIMENTAL**
+
     Called when shadow root is pushed into the element.
     '''
     #: Host element id.

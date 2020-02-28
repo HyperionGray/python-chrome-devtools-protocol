@@ -142,7 +142,7 @@ def attach_to_target(
     Attaches to the target with given id.
 
     :param target_id:
-    :param flatten: Enables "flat" access to the session via specifying sessionId attribute in the commands.
+    :param flatten: **(EXPERIMENTAL)** *(Optional)* Enables "flat" access to the session via specifying sessionId attribute in the commands.
     :returns: Id assigned to the session.
     '''
     params: T_JSON_DICT = dict()
@@ -159,6 +159,8 @@ def attach_to_target(
 
 def attach_to_browser_target() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,'SessionID']:
     '''
+    **EXPERIMENTAL**
+
     Attaches to the browser target, only uses flat sessionId mode.
 
     :returns: Id assigned to the session.
@@ -194,6 +196,8 @@ def expose_dev_tools_protocol(
         binding_name: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Inject object to the target's main frame that provides a communication
     channel with browser target.
 
@@ -204,7 +208,7 @@ def expose_dev_tools_protocol(
     - `binding.onmessage = json => handleMessage(json)` - a callback that will be called for the protocol notifications and command responses.
 
     :param target_id:
-    :param binding_name: Binding name, 'cdp' if not specified.
+    :param binding_name: *(Optional)* Binding name, 'cdp' if not specified.
     '''
     params: T_JSON_DICT = dict()
     params['targetId'] = target_id.to_json()
@@ -219,6 +223,8 @@ def expose_dev_tools_protocol(
 
 def create_browser_context() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,'BrowserContextID']:
     '''
+    **EXPERIMENTAL**
+
     Creates a new empty BrowserContext. Similar to an incognito profile but you can have more than
     one.
 
@@ -233,6 +239,8 @@ def create_browser_context() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,'Browse
 
 def get_browser_contexts() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['BrowserContextID']]:
     '''
+    **EXPERIMENTAL**
+
     Returns all browser contexts created with `Target.createBrowserContext` method.
 
     :returns: An array of browser context ids.
@@ -257,12 +265,12 @@ def create_target(
     Creates a new page.
 
     :param url: The initial URL the page will be navigated to.
-    :param width: Frame width in DIP (headless chrome only).
-    :param height: Frame height in DIP (headless chrome only).
-    :param browser_context_id: The browser context to create the page in.
-    :param enable_begin_frame_control: Whether BeginFrames for this target will be controlled via DevTools (headless chrome only, not supported on MacOS yet, false by default).
-    :param new_window: Whether to create a new Window or Tab (chrome-only, false by default).
-    :param background: Whether to create the target in background or foreground (chrome-only, false by default).
+    :param width: *(Optional)* Frame width in DIP (headless chrome only).
+    :param height: *(Optional)* Frame height in DIP (headless chrome only).
+    :param browser_context_id: *(Optional)* The browser context to create the page in.
+    :param enable_begin_frame_control: **(EXPERIMENTAL)** *(Optional)* Whether BeginFrames for this target will be controlled via DevTools (headless chrome only, not supported on MacOS yet, false by default).
+    :param new_window: *(Optional)* Whether to create a new Window or Tab (chrome-only, false by default).
+    :param background: *(Optional)* Whether to create the target in background or foreground (chrome-only, false by default).
     :returns: The id of the page opened.
     '''
     params: T_JSON_DICT = dict()
@@ -294,8 +302,8 @@ def detach_from_target(
     '''
     Detaches session with given id.
 
-    :param session_id: Session to detach.
-    :param target_id: Deprecated.
+    :param session_id: *(Optional)* Session to detach.
+    :param target_id: **(DEPRECATED)** *(Optional)* Deprecated.
     '''
     params: T_JSON_DICT = dict()
     if session_id is not None:
@@ -313,6 +321,8 @@ def dispose_browser_context(
         browser_context_id: 'BrowserContextID'
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Deletes a BrowserContext. All the belonging pages will be closed without calling their
     beforeunload hooks.
 
@@ -331,9 +341,11 @@ def get_target_info(
         target_id: typing.Optional['TargetID'] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,'TargetInfo']:
     '''
+    **EXPERIMENTAL**
+
     Returns information about a target.
 
-    :param target_id:
+    :param target_id: *(Optional)*
     :returns: 
     '''
     params: T_JSON_DICT = dict()
@@ -369,8 +381,8 @@ def send_message_to_target(
     Sends protocol message over session with given id.
 
     :param message:
-    :param session_id: Identifier of the session.
-    :param target_id: Deprecated.
+    :param session_id: *(Optional)* Identifier of the session.
+    :param target_id: **(DEPRECATED)** *(Optional)* Deprecated.
     '''
     params: T_JSON_DICT = dict()
     params['message'] = message
@@ -391,13 +403,15 @@ def set_auto_attach(
         flatten: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Controls whether to automatically attach to new targets which are considered to be related to
     this one. When turned on, attaches to all existing related targets as well. When turned off,
     automatically detaches from all currently attached targets.
 
     :param auto_attach: Whether to auto-attach to related targets.
     :param wait_for_debugger_on_start: Whether to pause new targets when attaching to them. Use ``Runtime.runIfWaitingForDebugger`` to run paused targets.
-    :param flatten: Enables "flat" access to the session via specifying sessionId attribute in the commands.
+    :param flatten: **(EXPERIMENTAL)** *(Optional)* Enables "flat" access to the session via specifying sessionId attribute in the commands.
     '''
     params: T_JSON_DICT = dict()
     params['autoAttach'] = auto_attach
@@ -433,6 +447,8 @@ def set_remote_locations(
         locations: typing.List['RemoteLocation']
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Enables target discovery for the specified locations, when `setDiscoverTargets` was set to
     `true`.
 
@@ -451,6 +467,8 @@ def set_remote_locations(
 @dataclass
 class AttachedToTarget:
     '''
+    **EXPERIMENTAL**
+
     Issued when attached to target because of auto-attach or `attachToTarget` command.
     '''
     #: Identifier assigned to the session used to send/receive messages.
@@ -471,6 +489,8 @@ class AttachedToTarget:
 @dataclass
 class DetachedFromTarget:
     '''
+    **EXPERIMENTAL**
+
     Issued when detached from target for any reason (including `detachFromTarget` command). Can be
     issued multiple times per target if multiple sessions have been attached to it.
     '''

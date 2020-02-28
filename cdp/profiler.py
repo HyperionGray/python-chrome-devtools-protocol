@@ -364,8 +364,8 @@ def start_precise_coverage(
     coverage may be incomplete. Enabling prevents running optimized code and resets execution
     counters.
 
-    :param call_count: Collect accurate call counts beyond simple 'covered' or 'not covered'.
-    :param detailed: Collect block-based coverage.
+    :param call_count: *(Optional)* Collect accurate call counts beyond simple 'covered' or 'not covered'.
+    :param detailed: *(Optional)* Collect block-based coverage.
     '''
     params: T_JSON_DICT = dict()
     if call_count is not None:
@@ -381,6 +381,8 @@ def start_precise_coverage(
 
 def start_type_profile() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Enable type profile.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -415,6 +417,8 @@ def stop_precise_coverage() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 def stop_type_profile() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Disable type profile. Disabling releases type profile data collected so far.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -439,6 +443,8 @@ def take_precise_coverage() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.L
 
 def take_type_profile() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['ScriptTypeProfile']]:
     '''
+    **EXPERIMENTAL**
+
     Collect type profile.
 
     :returns: Type profile for all scripts since startTypeProfile() was turned on.
