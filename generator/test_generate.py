@@ -832,14 +832,78 @@ def test_domain_shadows_builtin():
     assert domain.module == 'input_'
 
 
-def test_domain_shadows_builtin():
-    ''' If a domain name shadows a Python builtin, it should have an underscore
-    appended to the module name. '''
-    input_domain = {
-        "domain": "Input",
-        "types": [],
-        "commands": [],
-        "events": [],
+def test_cdp_domain_sphinx():
+    json_domain = {
+        "domain": "Animation",
+        "description": "This is the animation domain.",
+        "experimental": True,
+        "dependencies": [
+            "Runtime",
+            "DOM"
+        ],
+        "types": [
+            {
+                "id": "KeyframeStyle",
+                "description": "Keyframe Style",
+                "type": "object",
+                "properties": [
+                    {
+                        "name": "offset",
+                        "description": "Keyframe's time offset.",
+                        "type": "string"
+                    },
+                    {
+                        "name": "easing",
+                        "description": "`AnimationEffect`'s timing function.",
+                        "type": "string"
+                    }
+                ]
+            }
+        ],
+        "commands": [
+            {
+                "name": "getCurrentTime",
+                "description": "Returns the current time of the an animation.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "description": "Id of animation.",
+                        "type": "string"
+                    }
+                ],
+                "returns": [
+                    {
+                        "name": "currentTime",
+                        "description": "Current time of the page.",
+                        "type": "number"
+                    }
+                ]
+            },
+        ],
+        "events": [
+            {
+                "name": "animationCanceled",
+                "description": "Event for when an animation has been cancelled.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "description": "Id of the animation that was cancelled.",
+                        "type": "string"
+                    }
+                ]
+            },
+        ]
     }
-    domain = CdpDomain.from_json(input_domain)
-    assert domain.module == 'input_'
+    ''' A CDP domain should generate Sphinx documentation. '''
+    expected = dedent("""\
+        Animation
+        =========
+
+        This is the animation domain.
+
+        .. automodule:: cdp.animation
+          :members:
+    """)
+    domain = CdpDomain.from_json(json_domain)
+    actual = domain.generate_sphinx()
+    assert expected == actual

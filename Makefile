@@ -1,4 +1,9 @@
-all: mypy-generate test-generate generate test-import mypy-cdp test-cdp
+.PHONY: docs
+
+default: mypy-generate test-generate generate test-import mypy-cdp test-cdp
+
+docs:
+	$(MAKE) -C docs html
 
 generate:
 	python generator/generate.py

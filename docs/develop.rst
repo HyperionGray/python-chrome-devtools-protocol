@@ -35,9 +35,10 @@ Note that the verification in this project occurs in two phases:
 2. Run the generator.
 3. Verify the *generated* code.
 
-We focus on more effort on step 1, because if the generator is correct then the
-generated code is correct by definition. The default ``make`` target runs all of
-these targets in order, serving as a quick way to verify the entire project.
+We focus most of the effort on step 1, because if the generator is correct then
+the generated code is correct by definition. The default ``make`` target runs
+all of these targets in order, serving as a quick way to verify the entire
+project.
 
 To make documentation (i.e. the docs you're reading right now) go into the
 ``docs/`` directory and run ``make html``.

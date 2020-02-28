@@ -48,26 +48,6 @@ def indent(s: str, n: int):
     return tw_indent(s, n * ' ')
 
 
-def clear_dirs(package_path: Path):
-    ''' Remove generated code. '''
-    def rmdir(path):
-        for subpath in path.iterdir():
-            if subpath.is_file():
-                subpath.unlink()
-            elif subpath.is_dir():
-                rmdir(subpath)
-        path.rmdir()
-
-    try:
-        (package_path / '__init__.py').unlink()
-    except FileNotFoundError:
-        pass
-
-    for subpath in package_path.iterdir():
-        if subpath.is_dir():
-            rmdir(subpath)
-
-
 def inline_doc(description) -> str:
     ''' Generate an inline doc, e.g. ``#: This type is a ...`` '''
     if not description:
@@ -741,6 +721,7 @@ class CdpEvent:
 class CdpDomain:
     ''' A CDP domain contains metadata, types, commands, and events. '''
     domain: str
+    description: typing.Optional[str]
     experimental: bool
     dependencies: typing.List[str]
     types: typing.List[CdpType]
@@ -762,6 +743,7 @@ class CdpDomain:
 
         return cls(
             domain_name,
+            domain.get('description'),
             domain.get('experimental', False),
             domain.get('dependencies', list()),
             [CdpType.from_json(type) for type in types],
@@ -826,6 +808,21 @@ class CdpDomain:
 
         return code
 
+    def generate_sphinx(self) -> str:
+        '''
+        Generate a Sphinx document for this domain.
+        '''
+        docs = self.domain + '\n'
+        docs += '=' * len(self.domain) + '\n\n'
+
+        if self.description:
+            docs += f'{self.description}\n\n'
+
+        docs += f'.. automodule:: cdp.{self.module}\n'
+        docs += '  :members:\n'
+
+        return docs
+
 
 def parse(json_path, output_path):
     '''
@@ -862,6 +859,22 @@ def generate_init(init_path, domains):
             init_file.write('import cdp.{}\n'.format(domain.module))
 
 
+def generate_docs(docs_path, domains):
+    '''
+    Generate Sphinx documents for each domain.
+    '''
+    logger.info('Generating Sphinx documents')
+
+    # Remove generated documents
+    for subpath in docs_path.iterdir():
+        subpath.unlink()
+
+    # Generate document for each domain
+    for domain in domains:
+        doc = docs_path / f'{domain.module}.rst'
+        with doc.open('w') as f:
+            f.write(domain.generate_sphinx())
+
 def main():
     ''' Main entry point. '''
     here = Path(__file__).parent.resolve()
@@ -871,8 +884,13 @@ def main():
     ]
     output_path = here.parent / 'cdp'
     output_path.mkdir(exist_ok=True)
-    clear_dirs(output_path)
 
+    # Remove generated code
+    for subpath in output_path.iterdir():
+        if subpath.is_file() and subpath.name not in ('py.typed', 'util.py'):
+            subpath.unlink()
+
+    # Parse domains
     domains = list()
     for json_path in json_paths:
         logger.info('Parsing JSON file %s', json_path)
@@ -898,6 +916,9 @@ def main():
 
     init_path = output_path / '__init__.py'
     generate_init(init_path, domains)
+
+    docs_path = here.parent / 'docs' / 'api'
+    generate_docs(docs_path, domains)
 
     py_typed_path = output_path / 'py.typed'
     py_typed_path.touch()
