@@ -7,6 +7,7 @@ import logging
 import operator
 import os
 from pathlib import Path
+import re
 from textwrap import dedent, indent as tw_indent
 import typing
 
@@ -48,11 +49,39 @@ def indent(s: str, n: int):
     return tw_indent(s, n * ' ')
 
 
+BACKTICK_RE = re.compile(r'`([^`]+)`(\w+)?')
+
+
+def escape_backticks(docstr: str) -> str:
+    '''
+    Escape backticks in a docstring by doubling them up.
+
+    This is a little tricky because RST requires a non-letter character after
+    the closing backticks, but some CDPs docs have things like "`AxNodeId`s".
+    If we double the backticks in that string, then it won't be valid RST. The
+    fix is to insert an apostrophe if an "s" trails the backticks.
+    '''
+    def replace_one(match):
+        if match.group(2) == 's':
+            return f"``{match.group(1)}``'s"
+        elif match.group(2):
+            # This case (some trailer other than "s") doesn't currently exist
+            # in the CDP definitions, but it's here just to be safe.
+            return f'``{match.group(1)}`` {match.group(2)}'
+        else:
+            return f'``{match.group(1)}``'
+
+    # Sometimes pipes are used where backticks should have been used.
+    docstr = docstr.replace('|', '`')
+    return BACKTICK_RE.sub(replace_one, docstr)
+
+
 def inline_doc(description) -> str:
     ''' Generate an inline doc, e.g. ``#: This type is a ...`` '''
     if not description:
         return ''
 
+    description = escape_backticks(description)
     lines = ['#: {}'.format(l) for l in description.split('\n')]
     return '\n'.join(lines)
 
@@ -62,6 +91,7 @@ def docstring(description: typing.Optional[str]) -> str:
     if not description:
         return ''
 
+    description = escape_backticks(description)
     return dedent("'''\n{}\n'''").format(description)
 
 
@@ -501,7 +531,7 @@ class CdpReturn(CdpProperty):
     def generate_doc(self):
         ''' Generate the docstring for this return. '''
         if self.description:
-            doc = self.description.replace('`', '``')
+            doc = self.description.replace('`', '``').replace('\n', ' ')
             if self.optional:
                 doc = f'*(Optional)* {doc}'
         else:
@@ -575,14 +605,13 @@ class CdpCommand:
             code += ret
 
         # Generate the docstring
-        if self.deprecated:
-            doc = f'.. deprecated:: {current_version}'
-        else:
-            doc = ''
-        if self.experimental:
-            doc += f'**EXPERIMENTAL**\n\n'
+        doc = ''
         if self.description:
-            doc += self.description
+            doc = self.description
+        if self.deprecated:
+            doc += f'\n\n.. deprecated:: {current_version}'
+        if self.experimental:
+            doc += f'\n\n**EXPERIMENTAL**'
         if self.parameters and doc:
             doc += '\n\n'
         elif not self.parameters and self.returns:
@@ -875,6 +904,7 @@ def generate_docs(docs_path, domains):
         with doc.open('w') as f:
             f.write(domain.generate_sphinx())
 
+
 def main():
     ''' Main entry point. '''
     here = Path(__file__).parent.resolve()
@@ -897,15 +927,21 @@ def main():
         domains.extend(parse(json_path, output_path))
     domains.sort(key=operator.attrgetter('domain'))
 
-    # The DOM domain includes an erroneous $ref that refers to itself. It's
-    # easier to patch that here than it is to modify the generator code.
+    # Patch up CDP errors. It's easier to patch that here than it is to modify
+    # the generator code.
+    # 1. DOM includes an erroneous $ref that refers to itself.
+    # 2. Page includes an event with an extraneous backtick in the description.
     for domain in domains:
         if domain.domain == 'DOM':
             for cmd in domain.commands:
                 if cmd.name == 'resolveNode':
+                    # Patch 1
                     cmd.parameters[1].ref = 'BackendNodeId'
-                    break
-            break
+        elif domain.domain == 'Page':
+            for event in domain.events:
+                if event.name == 'screencastVisibilityChanged':
+                    # Patch 2
+                    event.description = event.description.replace('`', '')
 
     for domain in domains:
         logger.info('Generating module: %s → %s.py', domain.domain,

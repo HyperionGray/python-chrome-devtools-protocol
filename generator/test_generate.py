@@ -37,6 +37,16 @@ def test_docstring():
     assert expected == actual
 
 
+def test_escape_docstring():
+    description =  'Escape a `Backtick` and some `Backtick`s.'
+    expected = dedent("""\
+        '''
+        Escape a ``Backtick`` and some ``Backtick``'s.
+        '''""")
+    actual = docstring(description)
+    assert expected == actual
+
+
 def test_cdp_primitive_type():
     json_type = {
         "id": "AXNodeId",
