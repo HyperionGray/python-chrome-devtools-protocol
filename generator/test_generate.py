@@ -272,12 +272,13 @@ def test_cdp_command():
             '''
             Fetches the accessibility node and partial accessibility tree for this DOM node, if it exists.
 
-            :param node_id: Identifier of the node to get the partial accessibility tree for.
-            :param backend_node_id: Identifier of the backend node to get the partial accessibility tree for.
-            :param object_id: JavaScript object id of the node wrapper to get the partial accessibility tree for.
-            :param fetch_relatives: Whether to fetch this nodes ancestors, siblings and children. Defaults to true.
-            :returns: The ``Accessibility.AXNode`` for this DOM node, if it exists, plus its ancestors, siblings and
-            children, if requested.
+            **EXPERIMENTAL**
+
+            :param node_id: *(Optional)* Identifier of the node to get the partial accessibility tree for.
+            :param backend_node_id: *(Optional)* Identifier of the backend node to get the partial accessibility tree for.
+            :param object_id: *(Optional)* JavaScript object id of the node wrapper to get the partial accessibility tree for.
+            :param fetch_relatives: *(Optional)* Whether to fetch this nodes ancestors, siblings and children. Defaults to true.
+            :returns: The ``Accessibility.AXNode`` for this DOM node, if it exists, plus its ancestors, siblings and children, if requested.
             '''
             params: T_JSON_DICT = dict()
             if node_id is not None:
@@ -384,6 +385,8 @@ def test_cdp_command_return_array_of_primitive():
             '''
             Returns the command line switches for the browser process if, and only if
             --enable-automation is on the commandline.
+
+            **EXPERIMENTAL**
 
             :returns: Commandline parameters
             '''
@@ -543,12 +546,13 @@ def test_cdp_command_multiple_return():
 
             :param request_id: Identifier of the network request to get content for.
             :param encoding: The encoding to use.
-            :param quality: The quality of the encoding (0-1). (defaults to 1)
-            :param size_only: Whether to only return the size information (defaults to false).
-            :returns: a tuple with the following items:
-                0. body: (Optional) The encoded body as a base64 string. Omitted if sizeOnly is true.
-                1. originalSize: Size before re-encoding.
-                2. encodedSize: Size after re-encoding.
+            :param quality: *(Optional)* The quality of the encoding (0-1). (defaults to 1)
+            :param size_only: *(Optional)* Whether to only return the size information (defaults to false).
+            :returns: A tuple with the following items:
+
+                0. **body** – *(Optional)* The encoded body as a base64 string. Omitted if sizeOnly is true.
+                1. **originalSize** – Size before re-encoding.
+                2. **encodedSize** – Size after re-encoding.
             '''
             params: T_JSON_DICT = dict()
             params['requestId'] = request_id.to_json()
@@ -607,9 +611,11 @@ def test_cdp_command_array_of_ref_parameter():
             '''
             Grant specific permissions to the given origin and reject all others.
 
+            **EXPERIMENTAL**
+
             :param origin:
             :param permissions:
-            :param browser_context_id: BrowserContext to override permissions. When omitted, default browser context is used.
+            :param browser_context_id: *(Optional)* BrowserContext to override permissions. When omitted, default browser context is used.
             '''
             params: T_JSON_DICT = dict()
             params['origin'] = origin

@@ -529,7 +529,7 @@ class CdpReturn(CdpProperty):
     def generate_doc(self):
         ''' Generate the docstring for this return. '''
         if self.description:
-            doc = self.description.replace('`', '``').replace('\n', ' ')
+            doc = self.description.replace('\n', ' ')
             if self.optional:
                 doc = f'*(Optional)* {doc}'
         else:
@@ -622,7 +622,7 @@ class CdpCommand:
         elif len(self.returns) > 1:
             doc += '\n'
             doc += ':returns: A tuple with the following items:\n\n'
-            ret_docs = '\n'.join(f'{i+1}. **{r.name}** -  {r.generate_doc()}' for i, r
+            ret_docs = '\n'.join(f'{i}. **{r.name}** – {r.generate_doc()}' for i, r
                 in enumerate(self.returns))
             doc += indent(ret_docs, 4)
         if doc:
