@@ -849,8 +849,15 @@ class CdpDomain:
         docs += '* Types_\n* Commands_\n* Events_\n\n'
 
         docs += 'Types\n-----\n'
+        docs += '\nGenerally you do not need to instantiate CDP types ' \
+            'yourself. Instead, the API creates objects for you as return ' \
+            'values from commands, and then you can use those objects as ' \
+            'arguments to other commands.\n'
         for type in self.types:
             docs += f'\n.. autoclass:: {type.id}\n'
+            docs += '      :members:\n'
+            docs += '      :undoc-members:\n'
+            docs += '      :exclude-members: from_json, to_json\n'
 
         docs += '\nCommands\n--------\n'
         for command in sorted(self.commands, key=operator.attrgetter('py_name')):
@@ -859,6 +866,9 @@ class CdpDomain:
         docs += '\nEvents\n------\n'
         for event in self.events:
             docs += f'\n.. autoclass:: {event.py_name}\n'
+            docs += '      :members:\n'
+            docs += '      :undoc-members:\n'
+            docs += '      :exclude-members: from_json, to_json\n'
 
         return docs
 
