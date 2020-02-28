@@ -54,7 +54,7 @@ def test_cdp_primitive_type():
                 return self
 
             @classmethod
-            def from_json(cls, json: str) -> 'AXNodeId':
+            def from_json(cls, json: str) -> AXNodeId:
                 return cls(json)
 
             def __repr__(self):
@@ -81,11 +81,11 @@ def test_cdp_array_of_primitive_type():
             '''
             Index of the string in the strings table.
             '''
-            def to_json(self) -> typing.List['StringIndex']:
+            def to_json(self) -> typing.List[StringIndex]:
                 return self
 
             @classmethod
-            def from_json(cls, json: typing.List['StringIndex']) -> 'ArrayOfStrings':
+            def from_json(cls, json: typing.List[StringIndex]) -> ArrayOfStrings:
                 return cls(json)
 
             def __repr__(self):
@@ -128,7 +128,7 @@ def test_cdp_enum_type():
                 return self.value
 
             @classmethod
-            def from_json(cls, json: str) -> 'AXValueSourceType':
+            def from_json(cls, json: str) -> AXValueSourceType:
                 return cls(json)""")
 
     type = CdpType.from_json(json_type)
@@ -182,16 +182,16 @@ def test_cdp_class_type():
             A single computed AX property.
             '''
             #: The type of this value.
-            type: 'AXValueType'
+            type: AXValueType
 
             #: The computed value of this property.
             value: typing.Optional[typing.Any] = None
 
             #: One or more related nodes, if applicable.
-            related_nodes: typing.Optional[typing.List['AXRelatedNode']] = None
+            related_nodes: typing.Optional[typing.List[AXRelatedNode]] = None
 
             #: The sources which contributed to the computation of this property.
-            sources: typing.Optional[typing.List['AXValueSource']] = None
+            sources: typing.Optional[typing.List[AXValueSource]] = None
 
             def to_json(self) -> T_JSON_DICT:
                 json: T_JSON_DICT = dict()
@@ -205,7 +205,7 @@ def test_cdp_class_type():
                 return json
 
             @classmethod
-            def from_json(cls, json: T_JSON_DICT) -> 'AXValue':
+            def from_json(cls, json: T_JSON_DICT) -> AXValue:
                 return cls(
                     type=AXValueType.from_json(json['type']),
                     value=json['value'] if 'value' in json else None,
@@ -264,11 +264,11 @@ def test_cdp_command():
     }
     expected = dedent("""\
         def get_partial_ax_tree(
-                node_id: typing.Optional['dom.NodeId'] = None,
-                backend_node_id: typing.Optional['dom.BackendNodeId'] = None,
-                object_id: typing.Optional['runtime.RemoteObjectId'] = None,
+                node_id: typing.Optional[dom.NodeId] = None,
+                backend_node_id: typing.Optional[dom.BackendNodeId] = None,
+                object_id: typing.Optional[runtime.RemoteObjectId] = None,
                 fetch_relatives: typing.Optional[bool] = None
-            ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List['AXNode']]:
+            ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[AXNode]]:
             '''
             Fetches the accessibility node and partial accessibility tree for this DOM node, if it exists.
 
@@ -467,7 +467,7 @@ def test_cdp_command_ref_parameter():
     expected = dedent("""\
         def resolve_animation(
                 animation_id: str
-            ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,'runtime.RemoteObject']:
+            ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,runtime.RemoteObject]:
             '''
             Gets the remote object of the Animation.
 
@@ -544,7 +544,7 @@ def test_cdp_command_multiple_return():
     }
     expected = dedent("""\
         def get_encoded_response(
-                request_id: 'network.RequestId',
+                request_id: network.RequestId,
                 encoding: str,
                 quality: typing.Optional[float] = None,
                 size_only: typing.Optional[bool] = None
@@ -615,8 +615,8 @@ def test_cdp_command_array_of_ref_parameter():
     expected = dedent("""\
         def grant_permissions(
                 origin: str,
-                permissions: typing.List['PermissionType'],
-                browser_context_id: typing.Optional['target.BrowserContextID'] = None
+                permissions: typing.List[PermissionType],
+                browser_context_id: typing.Optional[target.BrowserContextID] = None
             ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
             '''
             Grant specific permissions to the given origin and reject all others.
@@ -666,10 +666,10 @@ def test_cdp_event():
             Called when the recording state for the service has been updated.
             '''
             is_recording: bool
-            service: 'ServiceName'
+            service: ServiceName
 
             @classmethod
-            def from_json(cls, json: T_JSON_DICT) -> 'RecordingStateChanged':
+            def from_json(cls, json: T_JSON_DICT) -> RecordingStateChanged:
                 return cls(
                     is_recording=bool(json['isRecording']),
                     service=ServiceName.from_json(json['service'])
@@ -730,7 +730,7 @@ def test_cdp_event_parameter_docs():
             user_gesture: bool
 
             @classmethod
-            def from_json(cls, json: T_JSON_DICT) -> 'WindowOpen':
+            def from_json(cls, json: T_JSON_DICT) -> WindowOpen:
                 return cls(
                     url=str(json['url']),
                     window_name=str(json['windowName']),

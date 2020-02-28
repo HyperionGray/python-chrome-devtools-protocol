@@ -31,6 +31,7 @@ MODULE_HEADER = '''{}
 CDP {{}} Domain{{}}
 \'\'\'
 
+from __future__ import annotations
 from cdp.util import event_class, T_JSON_DICT
 from dataclasses import dataclass
 import enum
@@ -153,14 +154,14 @@ class CdpProperty:
         if self.items:
             if self.items.ref:
                 py_ref = ref_to_python(self.items.ref)
-                ann = "typing.List['{}']".format(py_ref)
+                ann = "typing.List[{}]".format(py_ref)
             else:
                 ann = 'typing.List[{}]'.format(
                     CdpPrimitiveType.get_annotation(self.items.type))
         else:
             if self.ref:
                 py_ref = ref_to_python(self.ref)
-                ann = f"'{py_ref}'"
+                ann = py_ref
             else:
                 ann = CdpPrimitiveType.get_annotation(
                     typing.cast(str, self.type))
@@ -216,7 +217,7 @@ class CdpProperty:
 
     def generate_from_json(self, dict_) -> str:
         ''' Generate the code that creates an instance from a JSON dict named
-        ``json``. '''
+        ``dict_``. '''
         if self.items:
             if self.items.ref:
                 py_ref = ref_to_python(self.items.ref)
@@ -273,10 +274,9 @@ class CdpType:
         if self.items:
             if self.items.ref:
                 nested_type = ref_to_python(self.items.ref)
-                py_type = f"typing.List['{nested_type}']"
             else:
                 nested_type = CdpPrimitiveType.get_annotation(self.items.type)
-                py_type = f'typing.List[{nested_type}]'
+            py_type = f'typing.List[{nested_type}]'
             superclass = 'list'
         else:
             # A primitive type cannot have a ref, so there is no branch here.
@@ -295,7 +295,7 @@ class CdpType:
 
         def_from_json = dedent(f'''\
             @classmethod
-            def from_json(cls, json: {py_type}) -> '{self.id}':
+            def from_json(cls, json: {py_type}) -> {self.id}:
                 return cls(json)''')
         code += '\n\n' + indent(def_from_json, 4)
 
@@ -321,7 +321,7 @@ class CdpType:
 
         def_from_json = dedent(f'''\
             @classmethod
-            def from_json(cls, json: str) -> '{self.id}':
+            def from_json(cls, json: str) -> {self.id}:
                 return cls(json)''')
 
         code = f'class {self.id}(enum.Enum):\n'
@@ -376,7 +376,7 @@ class CdpType:
         # as above for readability.
         def_from_json = dedent(f'''\
             @classmethod
-            def from_json(cls, json: T_JSON_DICT) -> '{self.id}':
+            def from_json(cls, json: T_JSON_DICT) -> {self.id}:
                 return cls(
         ''')
         from_jsons = list()
@@ -418,13 +418,13 @@ class CdpParameter(CdpProperty):
         if self.items:
             if self.items.ref:
                 nested_type = ref_to_python(self.items.ref)
-                py_type = f"typing.List['{nested_type}']"
+                py_type = f"typing.List[{nested_type}]"
             else:
                 nested_type = CdpPrimitiveType.get_annotation(self.items.type)
                 py_type = f'typing.List[{nested_type}]'
         else:
             if self.ref:
-                py_type = "'{}'".format(ref_to_python(self.ref))
+                py_type = "{}".format(ref_to_python(self.ref))
             else:
                 py_type = CdpPrimitiveType.get_annotation(
                     typing.cast(str, self.type))
@@ -469,14 +469,14 @@ class CdpReturn(CdpProperty):
         if self.items:
             if self.items.ref:
                 py_ref = ref_to_python(self.items.ref)
-                ann = f"typing.List['{py_ref}']"
+                ann = f"typing.List[{py_ref}]"
             else:
                 py_type = CdpPrimitiveType.get_annotation(self.items.type)
                 ann = f'typing.List[{py_type}]'
         else:
             if self.ref:
                 py_ref = ref_to_python(self.ref)
-                ann = f"'{py_ref}'"
+                ann = f"{py_ref}"
             else:
                 ann = CdpPrimitiveType.get_annotation(self.type)
         if self.optional:
@@ -660,7 +660,7 @@ class CdpEvent:
 
         if self.deprecated:
             code = f'@deprecated(version="{current_version}")\n' + code
-        
+
         code += '\n'
         if self.description:
             code += indent(docstring(self.description), 4)
@@ -670,7 +670,7 @@ class CdpEvent:
         code += '\n\n'
         def_from_json = dedent(f'''\
             @classmethod
-            def from_json(cls, json: T_JSON_DICT) -> '{self.py_name}':
+            def from_json(cls, json: T_JSON_DICT) -> {self.py_name}:
                 return cls(
         ''')
         code += indent(def_from_json, 4)
