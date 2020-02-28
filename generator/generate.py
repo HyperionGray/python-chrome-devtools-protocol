@@ -28,10 +28,8 @@ INIT_HEADER = '''{}
 '''.format(SHARED_HEADER)
 
 MODULE_HEADER = '''{}
-
-\'\'\'
-CDP {{}} Domain{{}}
-\'\'\'
+#
+# CDP domain: {{}}{{}}
 
 from __future__ import annotations
 from cdp.util import event_class, T_JSON_DICT
@@ -843,12 +841,24 @@ class CdpDomain:
         '''
         docs = self.domain + '\n'
         docs += '=' * len(self.domain) + '\n\n'
-
         if self.description:
             docs += f'{self.description}\n\n'
+        if self.experimental:
+            docs += '*This CDP domain is experimental.*\n\n'
+        docs += f'.. module:: cdp.{self.module}\n\n'
+        docs += '* Types_\n* Commands_\n* Events_\n\n'
 
-        docs += f'.. automodule:: cdp.{self.module}\n'
-        docs += '  :members:\n'
+        docs += 'Types\n-----\n'
+        for type in self.types:
+            docs += f'\n.. autoclass:: {type.id}\n'
+
+        docs += '\nCommands\n--------\n'
+        for command in sorted(self.commands, key=operator.attrgetter('py_name')):
+            docs += f'\n.. autofunction:: {command.py_name}\n'
+
+        docs += '\nEvents\n------\n'
+        for event in self.events:
+            docs += f'\n.. autoclass:: {event.py_name}\n'
 
         return docs
 

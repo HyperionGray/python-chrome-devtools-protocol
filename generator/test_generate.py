@@ -911,8 +911,28 @@ def test_cdp_domain_sphinx():
 
         This is the animation domain.
 
-        .. automodule:: cdp.animation
-          :members:
+        *This CDP domain is experimental.*
+
+        .. module:: cdp.animation
+
+        * Types_
+        * Commands_
+        * Events_
+
+        Types
+        -----
+
+        .. autoclass:: KeyframeStyle
+
+        Commands
+        --------
+
+        .. autofunction:: get_current_time
+
+        Events
+        ------
+
+        .. autoclass:: AnimationCanceled
     """)
     domain = CdpDomain.from_json(json_domain)
     actual = domain.generate_sphinx()
