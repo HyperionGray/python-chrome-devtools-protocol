@@ -34,8 +34,6 @@ def test_docstring():
         - from 'activedescendant' to 'owns' - relationships between elements other than parent/child/sibling.
         '''""")
     actual = docstring(description)
-    print('EXPECTED:', expected)
-    print('ACTUAL:', actual)
     assert expected == actual
 
 
@@ -62,8 +60,6 @@ def test_cdp_primitive_type():
 
     type = CdpType.from_json(json_type)
     actual = type.generate_code()
-    print('EXPECTED:', expected)
-    print('ACTUAL:', actual)
     assert expected == actual
 
 
@@ -93,8 +89,6 @@ def test_cdp_array_of_primitive_type():
 
     type = CdpType.from_json(json_type)
     actual = type.generate_code()
-    print('EXPECTED:', expected)
-    print('ACTUAL:', actual)
     assert expected == actual
 
 
@@ -133,8 +127,6 @@ def test_cdp_enum_type():
 
     type = CdpType.from_json(json_type)
     actual = type.generate_code()
-    print('EXPECTED:', expected)
-    print('ACTUAL:', actual)
     assert expected == actual
 
 
@@ -182,7 +174,7 @@ def test_cdp_class_type():
             A single computed AX property.
             '''
             #: The type of this value.
-            type: AXValueType
+            type_: AXValueType
 
             #: The computed value of this property.
             value: typing.Optional[typing.Any] = None
@@ -195,7 +187,7 @@ def test_cdp_class_type():
 
             def to_json(self) -> T_JSON_DICT:
                 json: T_JSON_DICT = dict()
-                json['type'] = self.type.to_json()
+                json['type'] = self.type_.to_json()
                 if self.value is not None:
                     json['value'] = self.value
                 if self.related_nodes is not None:
@@ -207,7 +199,7 @@ def test_cdp_class_type():
             @classmethod
             def from_json(cls, json: T_JSON_DICT) -> AXValue:
                 return cls(
-                    type=AXValueType.from_json(json['type']),
+                    type_=AXValueType.from_json(json['type']),
                     value=json['value'] if 'value' in json else None,
                     related_nodes=[AXRelatedNode.from_json(i) for i in json['relatedNodes']] if 'relatedNodes' in json else None,
                     sources=[AXValueSource.from_json(i) for i in json['sources']] if 'sources' in json else None,
@@ -215,8 +207,6 @@ def test_cdp_class_type():
 
     type = CdpType.from_json(json_type)
     actual = type.generate_code()
-    print('EXPECTED:', expected)
-    print('ACTUAL:', actual)
     assert expected == actual
 
 
@@ -297,8 +287,6 @@ def test_cdp_command():
 
     cmd = CdpCommand.from_json(json_cmd, 'Accessibility')
     actual = cmd.generate_code()
-    print('EXPECTED:', expected)
-    print('ACTUAL:', actual)
     assert expected == actual
 
 
@@ -319,8 +307,6 @@ def test_cdp_command_no_params_or_returns():
 
     cmd = CdpCommand.from_json(json_cmd, 'Accessibility')
     actual = cmd.generate_code()
-    print('EXPECTED:', expected)
-    print('ACTUAL:', actual)
     assert expected == actual
 
 
@@ -345,16 +331,16 @@ def test_cdp_command_return_primitive():
     }
     expected = dedent("""\
         def get_current_time(
-                id: str
+                id_: str
             ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,float]:
             '''
             Returns the current time of the an animation.
 
-            :param id: Id of animation.
+            :param id_: Id of animation.
             :returns: Current time of the page.
             '''
             params: T_JSON_DICT = dict()
-            params['id'] = id
+            params['id'] = id_
             cmd_dict: T_JSON_DICT = {
                 'method': 'Animation.getCurrentTime',
                 'params': params,
@@ -364,8 +350,6 @@ def test_cdp_command_return_primitive():
 
     cmd = CdpCommand.from_json(json_cmd, 'Animation')
     actual = cmd.generate_code()
-    print('EXPECTED:', expected)
-    print('ACTUAL:', actual)
     assert expected == actual
 
 
@@ -401,8 +385,6 @@ def test_cdp_command_return_array_of_primitive():
 
     cmd = CdpCommand.from_json(json_cmd, 'Browser')
     actual = cmd.generate_code()
-    print('EXPECTED:', expected)
-    print('ACTUAL:', actual)
     assert expected == actual
 
 
@@ -440,8 +422,6 @@ def test_cdp_command_array_of_primitive_parameter():
 
     cmd = CdpCommand.from_json(json_cmd, 'Animation')
     actual = cmd.generate_code()
-    print('EXPECTED:', expected)
-    print('ACTUAL:', actual)
     assert expected == actual
 
 
@@ -485,8 +465,6 @@ def test_cdp_command_ref_parameter():
 
     cmd = CdpCommand.from_json(json_cmd, 'Animation')
     actual = cmd.generate_code()
-    print('EXPECTED:', expected)
-    print('ACTUAL:', actual)
     assert expected == actual
 
 
@@ -582,8 +560,6 @@ def test_cdp_command_multiple_return():
 
     cmd = CdpCommand.from_json(json_cmd, 'Audits')
     actual = cmd.generate_code()
-    print('EXPECTED:', expected)
-    print('ACTUAL:', actual)
     assert expected == actual
 
 
@@ -638,8 +614,6 @@ def test_cdp_command_array_of_ref_parameter():
 
     cmd = CdpCommand.from_json(json_cmd, 'Browser')
     actual = cmd.generate_code()
-    print('EXPECTED:', expected)
-    print('ACTUAL:', actual)
     assert expected == actual
 
 
@@ -677,8 +651,6 @@ def test_cdp_event():
 
     cmd = CdpEvent.from_json(json_event, 'BackgroundService')
     actual = cmd.generate_code()
-    print('EXPECTED:', expected)
-    print('ACTUAL:', actual)
     assert expected == actual
 
 
@@ -740,8 +712,6 @@ def test_cdp_event_parameter_docs():
 
     cmd = CdpEvent.from_json(json_event, 'Page')
     actual = cmd.generate_code()
-    print('EXPECTED:', expected)
-    print('ACTUAL:', actual)
     assert expected == actual
 
 
@@ -846,6 +816,30 @@ def test_cdp_domain_imports():
 
     domain = CdpDomain.from_json(json_domain)
     actual = domain.generate_imports()
-    print('EXPECTED:', expected)
-    print('ACTUAL:', actual)
     assert expected == actual
+
+
+def test_domain_shadows_builtin():
+    ''' If a domain name shadows a Python builtin, it should have an underscore
+    appended to the module name. '''
+    input_domain = {
+        "domain": "Input",
+        "types": [],
+        "commands": [],
+        "events": [],
+    }
+    domain = CdpDomain.from_json(input_domain)
+    assert domain.module == 'input_'
+
+
+def test_domain_shadows_builtin():
+    ''' If a domain name shadows a Python builtin, it should have an underscore
+    appended to the module name. '''
+    input_domain = {
+        "domain": "Input",
+        "types": [],
+        "commands": [],
+        "events": [],
+    }
+    domain = CdpDomain.from_json(input_domain)
+    assert domain.module == 'input_'

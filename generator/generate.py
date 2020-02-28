@@ -1,3 +1,4 @@
+import builtins
 from dataclasses import dataclass
 from enum import Enum
 import itertools
@@ -41,9 +42,11 @@ import typing
 
 current_version = ''
 
+
 def indent(s: str, n: int):
     ''' A shortcut for ``textwrap.indent`` that always uses spaces. '''
     return tw_indent(s, n * ' ')
+
 
 def clear_dirs(package_path: Path):
     ''' Remove generated code. '''
@@ -82,6 +85,24 @@ def docstring(description: typing.Optional[str]) -> str:
     return dedent("'''\n{}\n'''").format(description)
 
 
+def is_builtin(name: str) -> bool:
+    ''' Return True if ``name`` would shadow a builtin. '''
+    try:
+        getattr(builtins, name)
+        return True
+    except AttributeError:
+        return False
+
+
+def snake_case(name: str) -> str:
+    ''' Convert a camel case name to snake case. If the name would shadow a
+    Python builtin, then append an underscore. '''
+    name = inflection.underscore(name)
+    if is_builtin(name):
+        name += '_'
+    return name
+
+
 def ref_to_python(ref: str) -> str:
     '''
     Convert a CDP ``$ref`` to the name of a Python type.
@@ -90,7 +111,7 @@ def ref_to_python(ref: str) -> str:
     '''
     if '.' in ref:
         domain, subtype = ref.split('.')
-        ref = '{}.{}'.format(inflection.underscore(domain), subtype)
+        ref = '{}.{}'.format(snake_case(domain), subtype)
     return f"{ref}"
 
 
@@ -148,7 +169,7 @@ class CdpProperty:
     @property
     def py_name(self) -> str:
         ''' Get this property's Python name. '''
-        return inflection.underscore(self.name)
+        return snake_case(self.name)
 
     @property
     def py_annotation(self) -> str:
@@ -333,8 +354,8 @@ class CdpType:
         if doc:
             code += indent(doc, 4) + '\n'
         for enum_member in self.enum:
-            snake_case = inflection.underscore(enum_member).upper()
-            enum_code = f'{snake_case} = "{enum_member}"\n'
+            snake_name = snake_case(enum_member).upper()
+            enum_code = f'{snake_name} = "{enum_member}"\n'
             code += indent(enum_code, 4)
         code += '\n' + indent(def_to_json, 4)
         code += '\n\n' + indent(def_from_json, 4)
@@ -526,7 +547,7 @@ class CdpCommand:
     @property
     def py_name(self):
         ''' Get a Python name for this command. '''
-        return inflection.underscore(self.name)
+        return snake_case(self.name)
 
     @classmethod
     def from_json(cls, command, domain) -> 'CdpCommand':
@@ -686,7 +707,7 @@ class CdpEvent:
 
             if self.description:
                 desc += self.description
-            
+
             code += indent(docstring(desc), 4)
             code += '\n'
         code += indent(
@@ -729,7 +750,7 @@ class CdpDomain:
     @property
     def module(self):
         ''' The name of the Python module for this CDP domain. '''
-        return inflection.underscore(self.domain)
+        return snake_case(self.domain)
 
     @classmethod
     def from_json(cls, domain: dict):
@@ -797,7 +818,7 @@ class CdpDomain:
             except ValueError:
                 continue
             if domain != self.domain:
-                dependencies.add(inflection.underscore(domain))
+                dependencies.add(snake_case(domain))
         code = '\n'.join(f'from . import {d}' for d in sorted(dependencies))
 
         if needs_deprecation:
