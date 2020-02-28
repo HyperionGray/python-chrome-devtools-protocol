@@ -3,8 +3,11 @@
 PyCDP
 =====
 
+Python wrappers for Chrome DevTools Protocol (CDP).
+
 .. toctree::
    :caption: Contents
+   :maxdepth: 1
 
    overview
    getting_started
@@ -16,7 +19,6 @@ Indices and tables
 
 * :ref:`genindex`
 * :ref:`modindex`
-* :ref:`search`
 
 
 .. image:: https://hyperiongray.s3.amazonaws.com/define-hg.svg

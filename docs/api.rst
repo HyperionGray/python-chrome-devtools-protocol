@@ -6,5 +6,6 @@ commands, and events.
 
 .. toctree::
    :glob:
+   :maxdepth: 1
 
    api/*
