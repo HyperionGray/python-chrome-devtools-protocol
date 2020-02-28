@@ -266,10 +266,11 @@ def request_entries(
     :param cache_id: ID of cache to get entries from.
     :param skip_count: Number of records to skip.
     :param page_size: Number of records to fetch.
-    :param path_filter: If present, only return the entries containing this substring in the path
-    :returns: a tuple with the following items:
-        0. cacheDataEntries: Array of object store data entries.
-        1. returnCount: Count of returned entries from this storage. If pathFilter is empty, it
+    :param path_filter: *(Optional)* If present, only return the entries containing this substring in the path
+    :returns: A tuple with the following items:
+
+        1. **cacheDataEntries** -  Array of object store data entries.
+        2. **returnCount** -  Count of returned entries from this storage. If pathFilter is empty, it
         is the count of all entries from this storage.
     '''
     params: T_JSON_DICT = dict()

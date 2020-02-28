@@ -185,7 +185,7 @@ def get_object_by_heap_object_id(
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,'runtime.RemoteObject']:
     '''
     :param object_id:
-    :param object_group: Symbolic group name that can be used to release multiple objects.
+    :param object_group: *(Optional)* Symbolic group name that can be used to release multiple objects.
     :returns: Evaluation result.
     '''
     params: T_JSON_DICT = dict()
@@ -217,7 +217,7 @@ def start_sampling(
         sampling_interval: typing.Optional[float] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
-    :param sampling_interval: Average sample interval in bytes. Poisson distribution is used for the intervals. The default value is 32768 bytes.
+    :param sampling_interval: *(Optional)* Average sample interval in bytes. Poisson distribution is used for the intervals. The default value is 32768 bytes.
     '''
     params: T_JSON_DICT = dict()
     if sampling_interval is not None:
@@ -233,7 +233,7 @@ def start_tracking_heap_objects(
         track_allocations: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
-    :param track_allocations:
+    :param track_allocations: *(Optional)*
     '''
     params: T_JSON_DICT = dict()
     if track_allocations is not None:
@@ -262,7 +262,7 @@ def stop_tracking_heap_objects(
         report_progress: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
-    :param report_progress: If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken when the tracking is stopped.
+    :param report_progress: *(Optional)* If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken when the tracking is stopped.
     '''
     params: T_JSON_DICT = dict()
     if report_progress is not None:
@@ -278,7 +278,7 @@ def take_heap_snapshot(
         report_progress: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
-    :param report_progress: If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken.
+    :param report_progress: *(Optional)* If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken.
     '''
     params: T_JSON_DICT = dict()
     if report_progress is not None:

@@ -267,7 +267,7 @@ def continue_to_location(
     Continues execution until specific location is reached.
 
     :param location: Location to continue to.
-    :param target_call_frames:
+    :param target_call_frames: *(Optional)*
     '''
     params: T_JSON_DICT = dict()
     params['location'] = location.to_json()
@@ -297,7 +297,7 @@ def enable(
     Enables debugger for the given page. Clients should not assume that the debugging has been
     enabled until the result for this command is received.
 
-    :param max_scripts_cache_size: The maximum size in bytes of collected scripts (not referenced by other heap objects) the debugger can hold. Puts no limit if paramter is omitted.
+    :param max_scripts_cache_size: **(EXPERIMENTAL)** *(Optional)* The maximum size in bytes of collected scripts (not referenced by other heap objects) the debugger can hold. Puts no limit if paramter is omitted.
     :returns: Unique identifier of the debugger.
     '''
     params: T_JSON_DICT = dict()
@@ -327,16 +327,17 @@ def evaluate_on_call_frame(
 
     :param call_frame_id: Call frame identifier to evaluate on.
     :param expression: Expression to evaluate.
-    :param object_group: String object group name to put result into (allows rapid releasing resulting object handles using ``releaseObjectGroup``).
-    :param include_command_line_api: Specifies whether command line API should be available to the evaluated expression, defaults to false.
-    :param silent: In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides ``setPauseOnException`` state.
-    :param return_by_value: Whether the result is expected to be a JSON object that should be sent by value.
-    :param generate_preview: Whether preview should be generated for the result.
-    :param throw_on_side_effect: Whether to throw an exception if side effect cannot be ruled out during evaluation.
-    :param timeout: Terminate execution after timing out (number of milliseconds).
-    :returns: a tuple with the following items:
-        0. result: Object wrapper for the evaluation result.
-        1. exceptionDetails: (Optional) Exception details.
+    :param object_group: *(Optional)* String object group name to put result into (allows rapid releasing resulting object handles using ``releaseObjectGroup``).
+    :param include_command_line_api: *(Optional)* Specifies whether command line API should be available to the evaluated expression, defaults to false.
+    :param silent: *(Optional)* In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides ``setPauseOnException`` state.
+    :param return_by_value: *(Optional)* Whether the result is expected to be a JSON object that should be sent by value.
+    :param generate_preview: **(EXPERIMENTAL)** *(Optional)* Whether preview should be generated for the result.
+    :param throw_on_side_effect: *(Optional)* Whether to throw an exception if side effect cannot be ruled out during evaluation.
+    :param timeout: **(EXPERIMENTAL)** *(Optional)* Terminate execution after timing out (number of milliseconds).
+    :returns: A tuple with the following items:
+
+        1. **result** -  Object wrapper for the evaluation result.
+        2. **exceptionDetails** -  *(Optional)* Exception details.
     '''
     params: T_JSON_DICT = dict()
     params['callFrameId'] = call_frame_id.to_json()
@@ -376,8 +377,8 @@ def get_possible_breakpoints(
     the same.
 
     :param start: Start of range to search possible breakpoint locations in.
-    :param end: End of range to search possible breakpoint locations in (excluding). When not specified, end of scripts is used as end of range.
-    :param restrict_to_function: Only consider locations which are in the same (non-nested) function as start.
+    :param end: *(Optional)* End of range to search possible breakpoint locations in (excluding). When not specified, end of scripts is used as end of range.
+    :param restrict_to_function: *(Optional)* Only consider locations which are in the same (non-nested) function as start.
     :returns: List of the possible breakpoint locations.
     '''
     params: T_JSON_DICT = dict()
@@ -417,6 +418,8 @@ def get_stack_trace(
         stack_trace_id: 'runtime.StackTraceId'
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,'runtime.StackTrace']:
     '''
+    **EXPERIMENTAL**
+
     Returns stack trace with given `stackTraceId`.
 
     :param stack_trace_id:
@@ -446,6 +449,10 @@ def pause_on_async_call(
         parent_stack_trace_id: 'runtime.StackTraceId'
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
+
+
     :param parent_stack_trace_id: Debugger will pause when async call with given stack trace is started.
     '''
     params: T_JSON_DICT = dict()
@@ -481,10 +488,11 @@ def restart_frame(
     Restarts particular call frame from the beginning.
 
     :param call_frame_id: Call frame identifier to evaluate on.
-    :returns: a tuple with the following items:
-        0. callFrames: New stack trace.
-        1. asyncStackTrace: (Optional) Async stack trace, if any.
-        2. asyncStackTraceId: (Optional) Async stack trace, if any.
+    :returns: A tuple with the following items:
+
+        1. **callFrames** -  New stack trace.
+        2. **asyncStackTrace** -  *(Optional)* Async stack trace, if any.
+        3. **asyncStackTraceId** -  *(Optional)* Async stack trace, if any.
     '''
     params: T_JSON_DICT = dict()
     params['callFrameId'] = call_frame_id.to_json()
@@ -521,8 +529,8 @@ def search_in_content(
 
     :param script_id: Id of the script to search in.
     :param query: String to search for.
-    :param case_sensitive: If true, search is case sensitive.
-    :param is_regex: If true, treats string parameter as regex.
+    :param case_sensitive: *(Optional)* If true, search is case sensitive.
+    :param is_regex: *(Optional)* If true, treats string parameter as regex.
     :returns: List of search matches.
     '''
     params: T_JSON_DICT = dict()
@@ -561,6 +569,8 @@ def set_blackbox_patterns(
         patterns: typing.List[str]
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Replace previous blackbox patterns with passed ones. Forces backend to skip stepping/pausing in
     scripts with url matching one of the patterns. VM will try to leave blackboxed script by
     performing 'step in' several times, finally resorting to 'step out' if unsuccessful.
@@ -581,6 +591,8 @@ def set_blackboxed_ranges(
         positions: typing.List['ScriptPosition']
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Makes backend skip steps in the script in blackboxed ranges. VM will try leave blacklisted
     scripts by performing 'step in' several times, finally resorting to 'step out' if unsuccessful.
     Positions array contains positions where blackbox state is changed. First interval isn't
@@ -607,10 +619,11 @@ def set_breakpoint(
     Sets JavaScript breakpoint at a given location.
 
     :param location: Location to set breakpoint in.
-    :param condition: Expression to use as a breakpoint condition. When specified, debugger will only stop on the breakpoint if this expression evaluates to true.
-    :returns: a tuple with the following items:
-        0. breakpointId: Id of the created breakpoint for further reference.
-        1. actualLocation: Location this breakpoint resolved into.
+    :param condition: *(Optional)* Expression to use as a breakpoint condition. When specified, debugger will only stop on the breakpoint if this expression evaluates to true.
+    :returns: A tuple with the following items:
+
+        1. **breakpointId** -  Id of the created breakpoint for further reference.
+        2. **actualLocation** -  Location this breakpoint resolved into.
     '''
     params: T_JSON_DICT = dict()
     params['location'] = location.to_json()
@@ -661,14 +674,15 @@ def set_breakpoint_by_url(
     `breakpointResolved` events issued. This logical breakpoint will survive page reloads.
 
     :param line_number: Line number to set breakpoint at.
-    :param url: URL of the resources to set breakpoint on.
-    :param url_regex: Regex pattern for the URLs of the resources to set breakpoints on. Either ``url`` or ``urlRegex`` must be specified.
-    :param script_hash: Script hash of the resources to set breakpoint on.
-    :param column_number: Offset in the line to set breakpoint at.
-    :param condition: Expression to use as a breakpoint condition. When specified, debugger will only stop on the breakpoint if this expression evaluates to true.
-    :returns: a tuple with the following items:
-        0. breakpointId: Id of the created breakpoint for further reference.
-        1. locations: List of the locations this breakpoint resolved into upon addition.
+    :param url: *(Optional)* URL of the resources to set breakpoint on.
+    :param url_regex: *(Optional)* Regex pattern for the URLs of the resources to set breakpoints on. Either ``url`` or ``urlRegex`` must be specified.
+    :param script_hash: *(Optional)* Script hash of the resources to set breakpoint on.
+    :param column_number: *(Optional)* Offset in the line to set breakpoint at.
+    :param condition: *(Optional)* Expression to use as a breakpoint condition. When specified, debugger will only stop on the breakpoint if this expression evaluates to true.
+    :returns: A tuple with the following items:
+
+        1. **breakpointId** -  Id of the created breakpoint for further reference.
+        2. **locations** -  List of the locations this breakpoint resolved into upon addition.
     '''
     params: T_JSON_DICT = dict()
     params['lineNumber'] = line_number
@@ -698,12 +712,14 @@ def set_breakpoint_on_function_call(
         condition: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,'BreakpointId']:
     '''
+    **EXPERIMENTAL**
+
     Sets JavaScript breakpoint before each call to the given function.
     If another function was created from the same source as a given one,
     calling it will also trigger the breakpoint.
 
     :param object_id: Function object id.
-    :param condition: Expression to use as a breakpoint condition. When specified, debugger will stop on the breakpoint if this expression evaluates to true.
+    :param condition: *(Optional)* Expression to use as a breakpoint condition. When specified, debugger will stop on the breakpoint if this expression evaluates to true.
     :returns: Id of the created breakpoint for further reference.
     '''
     params: T_JSON_DICT = dict()
@@ -757,6 +773,8 @@ def set_return_value(
         new_value: 'runtime.CallArgument'
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Changes return value in top frame. Available only at return break position.
 
     :param new_value: New return value.
@@ -780,13 +798,14 @@ def set_script_source(
 
     :param script_id: Id of the script to edit.
     :param script_source: New content of the script.
-    :param dry_run: If true the change will not actually be applied. Dry run may be used to get result description without actually modifying the code.
-    :returns: a tuple with the following items:
-        0. callFrames: (Optional) New stack trace in case editing has happened while VM was stopped.
-        1. stackChanged: (Optional) Whether current call stack  was modified after applying the changes.
-        2. asyncStackTrace: (Optional) Async stack trace, if any.
-        3. asyncStackTraceId: (Optional) Async stack trace, if any.
-        4. exceptionDetails: (Optional) Exception details if any.
+    :param dry_run: *(Optional)* If true the change will not actually be applied. Dry run may be used to get result description without actually modifying the code.
+    :returns: A tuple with the following items:
+
+        1. **callFrames** -  *(Optional)* New stack trace in case editing has happened while VM was stopped.
+        2. **stackChanged** -  *(Optional)* Whether current call stack  was modified after applying the changes.
+        3. **asyncStackTrace** -  *(Optional)* Async stack trace, if any.
+        4. **asyncStackTraceId** -  *(Optional)* Async stack trace, if any.
+        5. **exceptionDetails** -  *(Optional)* Exception details if any.
     '''
     params: T_JSON_DICT = dict()
     params['scriptId'] = script_id.to_json()
@@ -857,7 +876,7 @@ def step_into(
     '''
     Steps into the function call.
 
-    :param break_on_async_call: Debugger will issue additional Debugger.paused notification if any async task is scheduled before next pause.
+    :param break_on_async_call: **(EXPERIMENTAL)** *(Optional)* Debugger will issue additional Debugger.paused notification if any async task is scheduled before next pause.
     '''
     params: T_JSON_DICT = dict()
     if break_on_async_call is not None:

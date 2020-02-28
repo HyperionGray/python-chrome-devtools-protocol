@@ -51,7 +51,7 @@ def enable(
     Also starts observing for issue messages. When an issue is added or removed,
     an |issueUpdated| event is fired.
 
-    :param presentation_url:
+    :param presentation_url: *(Optional)*
     '''
     params: T_JSON_DICT = dict()
     if presentation_url is not None:

@@ -28,12 +28,13 @@ def get_encoded_response(
 
     :param request_id: Identifier of the network request to get content for.
     :param encoding: The encoding to use.
-    :param quality: The quality of the encoding (0-1). (defaults to 1)
-    :param size_only: Whether to only return the size information (defaults to false).
-    :returns: a tuple with the following items:
-        0. body: (Optional) The encoded body as a base64 string. Omitted if sizeOnly is true.
-        1. originalSize: Size before re-encoding.
-        2. encodedSize: Size after re-encoding.
+    :param quality: *(Optional)* The quality of the encoding (0-1). (defaults to 1)
+    :param size_only: *(Optional)* Whether to only return the size information (defaults to false).
+    :returns: A tuple with the following items:
+
+        1. **body** -  *(Optional)* The encoded body as a base64 string. Omitted if sizeOnly is true.
+        2. **originalSize** -  Size before re-encoding.
+        3. **encodedSize** -  Size after re-encoding.
     '''
     params: T_JSON_DICT = dict()
     params['requestId'] = request_id.to_json()

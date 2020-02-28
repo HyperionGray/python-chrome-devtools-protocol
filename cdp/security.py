@@ -208,6 +208,8 @@ def set_ignore_certificate_errors(
         ignore: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
+    **EXPERIMENTAL**
+
     Enable/disable whether all certificate errors should be ignored.
 
     :param ignore: If true, all certificate errors will be ignored.
@@ -227,9 +229,7 @@ def handle_certificate_error(
         action: 'CertificateErrorAction'
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
-    .. deprecated:: 1.3
-
-    Handles a certificate error that fired a certificateError event.
+    .. deprecated:: 1.3Handles a certificate error that fired a certificateError event.
 
     :param event_id: The ID of the event.
     :param action: The action to take on the certificate error.
@@ -249,9 +249,7 @@ def set_override_certificate_errors(
         override: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
-    .. deprecated:: 1.3
-
-    Enable/disable overriding certificate errors. If enabled, all certificate error events need to
+    .. deprecated:: 1.3Enable/disable overriding certificate errors. If enabled, all certificate error events need to
     be handled by the DevTools client and should be answered with `handleCertificateError` commands.
 
     :param override: If true, certificate errors will be overridden.

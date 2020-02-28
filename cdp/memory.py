@@ -122,10 +122,11 @@ def get_dom_counters() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[
     '''
 
 
-    :returns: a tuple with the following items:
-        0. documents: 
-        1. nodes: 
-        2. jsEventListeners: 
+    :returns: A tuple with the following items:
+
+        1. **documents** -  
+        2. **nodes** -  
+        3. **jsEventListeners** -  
     '''
     cmd_dict: T_JSON_DICT = {
         'method': 'Memory.getDOMCounters',
@@ -197,8 +198,8 @@ def start_sampling(
     '''
     Start collecting native memory profile.
 
-    :param sampling_interval: Average number of bytes between samples.
-    :param suppress_randomness: Do not randomize intervals between samples.
+    :param sampling_interval: *(Optional)* Average number of bytes between samples.
+    :param suppress_randomness: *(Optional)* Do not randomize intervals between samples.
     '''
     params: T_JSON_DICT = dict()
     if sampling_interval is not None:

@@ -747,21 +747,20 @@ def get_snapshot(
         include_user_agent_shadow_tree: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.List['DOMNode'], typing.List['LayoutTreeNode'], typing.List['ComputedStyle']]]:
     '''
-    .. deprecated:: 1.3
-
-    Returns a document snapshot, including the full DOM tree of the root node (including iframes,
+    .. deprecated:: 1.3Returns a document snapshot, including the full DOM tree of the root node (including iframes,
     template contents, and imported documents) in a flattened array, as well as layout and
     white-listed computed style information for the nodes. Shadow DOM in the returned DOM tree is
     flattened.
 
     :param computed_style_whitelist: Whitelist of computed styles to return.
-    :param include_event_listeners: Whether or not to retrieve details of DOM listeners (default false).
-    :param include_paint_order: Whether to determine and include the paint order index of LayoutTreeNodes (default false).
-    :param include_user_agent_shadow_tree: Whether to include UA shadow tree in the snapshot (default false).
-    :returns: a tuple with the following items:
-        0. domNodes: The nodes in the DOM tree. The DOMNode at index 0 corresponds to the root document.
-        1. layoutTreeNodes: The nodes in the layout tree.
-        2. computedStyles: Whitelisted ComputedStyle properties for each node in the layout tree.
+    :param include_event_listeners: *(Optional)* Whether or not to retrieve details of DOM listeners (default false).
+    :param include_paint_order: *(Optional)* Whether to determine and include the paint order index of LayoutTreeNodes (default false).
+    :param include_user_agent_shadow_tree: *(Optional)* Whether to include UA shadow tree in the snapshot (default false).
+    :returns: A tuple with the following items:
+
+        1. **domNodes** -  The nodes in the DOM tree. The DOMNode at index 0 corresponds to the root document.
+        2. **layoutTreeNodes** -  The nodes in the layout tree.
+        3. **computedStyles** -  Whitelisted ComputedStyle properties for each node in the layout tree.
     '''
     params: T_JSON_DICT = dict()
     params['computedStyleWhitelist'] = [i for i in computed_style_whitelist]
@@ -794,10 +793,11 @@ def capture_snapshot(
     flattened.
 
     :param computed_styles: Whitelist of computed styles to return.
-    :param include_dom_rects: Whether to include DOM rectangles (offsetRects, clientRects, scrollRects) into the snapshot
-    :returns: a tuple with the following items:
-        0. documents: The nodes in the DOM tree. The DOMNode at index 0 corresponds to the root document.
-        1. strings: Shared string table that all string properties refer to with indexes.
+    :param include_dom_rects: *(Optional)* Whether to include DOM rectangles (offsetRects, clientRects, scrollRects) into the snapshot
+    :returns: A tuple with the following items:
+
+        1. **documents** -  The nodes in the DOM tree. The DOMNode at index 0 corresponds to the root document.
+        2. **strings** -  Shared string table that all string properties refer to with indexes.
     '''
     params: T_JSON_DICT = dict()
     params['computedStyles'] = [i for i in computed_styles]

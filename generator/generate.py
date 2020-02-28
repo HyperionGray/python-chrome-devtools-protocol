@@ -144,6 +144,8 @@ class CdpProperty:
     enum: typing.List[str]
     items: typing.Optional[CdpItems]
     optional: bool
+    experimental: bool
+    deprecated: bool
 
     @property
     def py_name(self) -> str:
@@ -182,6 +184,8 @@ class CdpProperty:
             property.get('enum'),
             CdpItems.from_json(property['items']) if 'items' in property else None,
             property.get('optional', False),
+            property.get('experimental', False),
+            property.get('deprecated', False),
         )
 
     def generate_decl(self) -> str:
@@ -451,6 +455,16 @@ class CdpParameter(CdpProperty):
     def generate_doc(self) -> str:
         ''' Generate the docstring for this parameter. '''
         doc = f':param {self.py_name}:'
+
+        if self.deprecated:
+            doc += f' **(DEPRECATED)**'
+
+        if self.experimental:
+            doc += f' **(EXPERIMENTAL)**'
+
+        if self.optional:
+            doc += f' *(Optional)*'
+
         if self.description:
             desc = self.description.replace('`', '``').replace('\n', ' ')
             doc += f' {desc}'
@@ -491,7 +505,7 @@ class CdpReturn(CdpProperty):
         if self.description:
             doc = self.description.replace('`', '``')
             if self.optional:
-                doc = f'(Optional) {doc}'
+                doc = f'*(Optional)* {doc}'
         else:
             doc = ''
         return doc
@@ -565,9 +579,10 @@ class CdpCommand:
         # Generate the docstring
         if self.deprecated:
             doc = f'.. deprecated:: {current_version}'
-            doc += '\n\n'
         else:
             doc = ''
+        if self.experimental:
+            doc += f'**EXPERIMENTAL**\n\n'
         if self.description:
             doc += self.description
         if self.parameters and doc:
@@ -581,8 +596,8 @@ class CdpCommand:
             doc += f':returns: {ret_doc}'
         elif len(self.returns) > 1:
             doc += '\n'
-            doc += ':returns: a tuple with the following items:\n'
-            ret_docs = '\n'.join(f'{i}. {r.name}: {r.generate_doc()}' for i, r
+            doc += ':returns: A tuple with the following items:\n\n'
+            ret_docs = '\n'.join(f'{i+1}. **{r.name}** -  {r.generate_doc()}' for i, r
                 in enumerate(self.returns))
             doc += indent(ret_docs, 4)
         if doc:
@@ -633,6 +648,7 @@ class CdpEvent:
     name: str
     description: typing.Optional[str]
     deprecated: bool
+    experimental: bool
     parameters: typing.List[CdpParameter]
     domain: str
 
@@ -648,6 +664,7 @@ class CdpEvent:
             json['name'],
             json.get('description'),
             json.get('deprecated', False),
+            json.get('experimental', False),
             [typing.cast(CdpParameter, CdpParameter.from_json(p))
                 for p in json.get('parameters', list())],
             domain
@@ -665,8 +682,15 @@ class CdpEvent:
             code = f'@deprecated(version="{current_version}")\n' + code
         
         code += '\n'
-        if self.description:
-            code += indent(docstring(self.description), 4)
+        desc = ''
+        if self.description or self.experimental:
+            if self.experimental:
+                desc += '**EXPERIMENTAL**\n\n'
+
+            if self.description:
+                desc += self.description
+            
+            code += indent(docstring(desc), 4)
             code += '\n'
         code += indent(
             '\n'.join(p.generate_decl() for p in self.parameters), 4)

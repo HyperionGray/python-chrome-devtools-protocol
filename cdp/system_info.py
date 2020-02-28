@@ -291,13 +291,14 @@ def get_info() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple['GPUInfo
     '''
     Returns information about the system.
 
-    :returns: a tuple with the following items:
-        0. gpu: Information about the GPUs on the system.
-        1. modelName: A platform-dependent description of the model of the machine. On Mac OS, this is, for
+    :returns: A tuple with the following items:
+
+        1. **gpu** -  Information about the GPUs on the system.
+        2. **modelName** -  A platform-dependent description of the model of the machine. On Mac OS, this is, for
         example, 'MacBookPro'. Will be the empty string if not supported.
-        2. modelVersion: A platform-dependent description of the version of the machine. On Mac OS, this is, for
+        3. **modelVersion** -  A platform-dependent description of the version of the machine. On Mac OS, this is, for
         example, '10.1'. Will be the empty string if not supported.
-        3. commandLine: The command line string used to launch the browser. Will be the empty string if not
+        4. **commandLine** -  The command line string used to launch the browser. Will be the empty string if not
         supported.
     '''
     cmd_dict: T_JSON_DICT = {
