@@ -848,22 +848,48 @@ class CdpDomain:
         docs += f'.. module:: cdp.{self.module}\n\n'
         docs += '* Types_\n* Commands_\n* Events_\n\n'
 
-        docs += 'Types\n-----\n'
-        docs += '\nGenerally you do not need to instantiate CDP types ' \
-            'yourself. Instead, the API creates objects for you as return ' \
-            'values from commands, and then you can use those objects as ' \
-            'arguments to other commands.\n'
+        docs += 'Types\n-----\n\n'
+        if self.types:
+            docs += dedent('''\
+                Generally, you do not need to instantiate CDP types
+                yourself. Instead, the API creates objects for you as return
+                values from commands, and then you can use those objects as
+                arguments to other commands.
+            ''')
+        else:
+            docs += '*There are no types in this module.*\n'
         for type in self.types:
             docs += f'\n.. autoclass:: {type.id}\n'
             docs += '      :members:\n'
             docs += '      :undoc-members:\n'
             docs += '      :exclude-members: from_json, to_json\n'
 
-        docs += '\nCommands\n--------\n'
+        docs += '\nCommands\n--------\n\n'
+        if self.commands:
+            docs += dedent('''\
+                Each command is a generator function. The return
+                type ``Generator[x, y, z]`` indicates that the generator
+                *yields* arguments of type ``x``, it must be resumed with
+                an argument of type ``y``, and it returns type ``z``. In
+                this library, types ``x`` and ``y`` are the same for all
+                commands, and ``z`` is the return type you should pay attention
+                to. For more information, see
+                :ref:`Getting Started: Commands <getting-started-commands>`.
+            ''')
+        else:
+            docs += '*There are no types in this module.*\n'
         for command in sorted(self.commands, key=operator.attrgetter('py_name')):
             docs += f'\n.. autofunction:: {command.py_name}\n'
 
-        docs += '\nEvents\n------\n'
+        docs += '\nEvents\n------\n\n'
+        if self.events:
+            docs += dedent('''\
+                Generally, you do not need to instantiate CDP events
+                yourself. Instead, the API creates events for you and then
+                you use the event\'s attributes.
+            ''')
+        else:
+            docs += '*There are no events in this module.*\n'
         for event in self.events:
             docs += f'\n.. autoclass:: {event.py_name}\n'
             docs += '      :members:\n'

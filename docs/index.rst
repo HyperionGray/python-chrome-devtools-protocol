@@ -13,9 +13,11 @@ Python wrappers for Chrome DevTools Protocol (CDP).
    getting_started
    api
    develop
+   changelog
 
-Indices and tables
-==================
+
+Indices
+=======
 
 * :ref:`genindex`
 * :ref:`modindex`

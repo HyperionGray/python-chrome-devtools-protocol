@@ -185,6 +185,8 @@ types. These types can improve autocompletion and also allow you to type check
 your own code that uses PyCDP.
 
 
+.. _getting-started-commands:
+
 Commands
 --------
 
@@ -303,10 +305,10 @@ convention transparently for you.
 Events
 ------
 
-While each command elicits a single response, the CDP protocol provides _events_
+While each command elicits a single response, the CDP protocol provides *events*
 as a mechanism for the browser to send information to the client that is not
-necessarily tied to a single command/response pair. Here's an example of a CDP
-event definition:
+tied to a single command/response pair. Here's an example of a CDP event
+definition:
 
 .. code-block:: json
 
