@@ -550,9 +550,9 @@ def test_cdp_command_multiple_return():
             :param size_only: *(Optional)* Whether to only return the size information (defaults to false).
             :returns: A tuple with the following items:
 
-                0. **body** – *(Optional)* The encoded body as a base64 string. Omitted if sizeOnly is true.
-                1. **originalSize** – Size before re-encoding.
-                2. **encodedSize** – Size after re-encoding.
+                0. **body** - *(Optional)* The encoded body as a base64 string. Omitted if sizeOnly is true.
+                1. **originalSize** - Size before re-encoding.
+                2. **encodedSize** - Size after re-encoding.
             '''
             params: T_JSON_DICT = dict()
             params['requestId'] = request_id.to_json()
