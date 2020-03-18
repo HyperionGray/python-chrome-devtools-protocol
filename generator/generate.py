@@ -622,7 +622,7 @@ class CdpCommand:
         elif len(self.returns) > 1:
             doc += '\n'
             doc += ':returns: A tuple with the following items:\n\n'
-            ret_docs = '\n'.join(f'{i}. **{r.name}** – {r.generate_doc()}' for i, r
+            ret_docs = '\n'.join(f'{i}. **{r.name}** - {r.generate_doc()}' for i, r
                 in enumerate(self.returns))
             doc += indent(ret_docs, 4)
         if doc:
