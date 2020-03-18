@@ -286,7 +286,7 @@ multiple commands concurrently.
         return response
 
     target_id = target.TargetID('F86FCB9B3890EB413FAC5DD9DD150E6F')
-    target_info = run_command(target.get_target_info(target_info))
+    target_info = run_command(target.get_target_info(target_id))
     print(target_info)
 
 The script above prints something like this:
