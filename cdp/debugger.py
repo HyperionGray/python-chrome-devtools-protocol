@@ -334,8 +334,8 @@ def evaluate_on_call_frame(
     :param timeout: **(EXPERIMENTAL)** *(Optional)* Terminate execution after timing out (number of milliseconds).
     :returns: A tuple with the following items:
 
-        0. **result** – Object wrapper for the evaluation result.
-        1. **exceptionDetails** – *(Optional)* Exception details.
+        0. **result** - Object wrapper for the evaluation result.
+        1. **exceptionDetails** - *(Optional)* Exception details.
     '''
     params: T_JSON_DICT = dict()
     params['callFrameId'] = call_frame_id.to_json()
@@ -488,9 +488,9 @@ def restart_frame(
     :param call_frame_id: Call frame identifier to evaluate on.
     :returns: A tuple with the following items:
 
-        0. **callFrames** – New stack trace.
-        1. **asyncStackTrace** – *(Optional)* Async stack trace, if any.
-        2. **asyncStackTraceId** – *(Optional)* Async stack trace, if any.
+        0. **callFrames** - New stack trace.
+        1. **asyncStackTrace** - *(Optional)* Async stack trace, if any.
+        2. **asyncStackTraceId** - *(Optional)* Async stack trace, if any.
     '''
     params: T_JSON_DICT = dict()
     params['callFrameId'] = call_frame_id.to_json()
@@ -620,8 +620,8 @@ def set_breakpoint(
     :param condition: *(Optional)* Expression to use as a breakpoint condition. When specified, debugger will only stop on the breakpoint if this expression evaluates to true.
     :returns: A tuple with the following items:
 
-        0. **breakpointId** – Id of the created breakpoint for further reference.
-        1. **actualLocation** – Location this breakpoint resolved into.
+        0. **breakpointId** - Id of the created breakpoint for further reference.
+        1. **actualLocation** - Location this breakpoint resolved into.
     '''
     params: T_JSON_DICT = dict()
     params['location'] = location.to_json()
@@ -679,8 +679,8 @@ def set_breakpoint_by_url(
     :param condition: *(Optional)* Expression to use as a breakpoint condition. When specified, debugger will only stop on the breakpoint if this expression evaluates to true.
     :returns: A tuple with the following items:
 
-        0. **breakpointId** – Id of the created breakpoint for further reference.
-        1. **locations** – List of the locations this breakpoint resolved into upon addition.
+        0. **breakpointId** - Id of the created breakpoint for further reference.
+        1. **locations** - List of the locations this breakpoint resolved into upon addition.
     '''
     params: T_JSON_DICT = dict()
     params['lineNumber'] = line_number
@@ -799,11 +799,11 @@ def set_script_source(
     :param dry_run: *(Optional)* If true the change will not actually be applied. Dry run may be used to get result description without actually modifying the code.
     :returns: A tuple with the following items:
 
-        0. **callFrames** – *(Optional)* New stack trace in case editing has happened while VM was stopped.
-        1. **stackChanged** – *(Optional)* Whether current call stack  was modified after applying the changes.
-        2. **asyncStackTrace** – *(Optional)* Async stack trace, if any.
-        3. **asyncStackTraceId** – *(Optional)* Async stack trace, if any.
-        4. **exceptionDetails** – *(Optional)* Exception details if any.
+        0. **callFrames** - *(Optional)* New stack trace in case editing has happened while VM was stopped.
+        1. **stackChanged** - *(Optional)* Whether current call stack  was modified after applying the changes.
+        2. **asyncStackTrace** - *(Optional)* Async stack trace, if any.
+        3. **asyncStackTraceId** - *(Optional)* Async stack trace, if any.
+        4. **exceptionDetails** - *(Optional)* Exception details if any.
     '''
     params: T_JSON_DICT = dict()
     params['scriptId'] = script_id.to_json()

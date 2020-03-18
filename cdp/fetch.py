@@ -325,8 +325,8 @@ def get_response_body(
     :param request_id: Identifier for the intercepted request to get body for.
     :returns: A tuple with the following items:
 
-        0. **body** – Response body.
-        1. **base64Encoded** – True, if content was sent as base64.
+        0. **body** - Response body.
+        1. **base64Encoded** - True, if content was sent as base64.
     '''
     params: T_JSON_DICT = dict()
     params['requestId'] = request_id.to_json()

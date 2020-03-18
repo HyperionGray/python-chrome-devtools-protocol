@@ -267,8 +267,8 @@ def request_entries(
     :param path_filter: *(Optional)* If present, only return the entries containing this substring in the path
     :returns: A tuple with the following items:
 
-        0. **cacheDataEntries** – Array of object store data entries.
-        1. **returnCount** – Count of returned entries from this storage. If pathFilter is empty, it is the count of all entries from this storage.
+        0. **cacheDataEntries** - Array of object store data entries.
+        1. **returnCount** - Count of returned entries from this storage. If pathFilter is empty, it is the count of all entries from this storage.
     '''
     params: T_JSON_DICT = dict()
     params['cacheId'] = cache_id.to_json()

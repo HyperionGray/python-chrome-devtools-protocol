@@ -166,8 +166,8 @@ def request_memory_dump() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tup
 
     :returns: A tuple with the following items:
 
-        0. **dumpGuid** – GUID of the resulting global memory dump.
-        1. **success** – True iff the global memory dump succeeded.
+        0. **dumpGuid** - GUID of the resulting global memory dump.
+        1. **success** - True iff the global memory dump succeeded.
     '''
     cmd_dict: T_JSON_DICT = {
         'method': 'Tracing.requestMemoryDump',

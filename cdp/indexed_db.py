@@ -368,8 +368,8 @@ def request_data(
     :param key_range: *(Optional)* Key range.
     :returns: A tuple with the following items:
 
-        0. **objectStoreDataEntries** – Array of object store data entries.
-        1. **hasMore** – If true, there are more entries to fetch in the given range.
+        0. **objectStoreDataEntries** - Array of object store data entries.
+        1. **hasMore** - If true, there are more entries to fetch in the given range.
     '''
     params: T_JSON_DICT = dict()
     params['securityOrigin'] = security_origin
@@ -404,8 +404,8 @@ def get_metadata(
     :param object_store_name: Object store name.
     :returns: A tuple with the following items:
 
-        0. **entriesCount** – the entries count
-        1. **keyGeneratorValue** – the current value of key generator, to become the next inserted key into the object store. Valid if objectStore.autoIncrement is true.
+        0. **entriesCount** - the entries count
+        1. **keyGeneratorValue** - the current value of key generator, to become the next inserted key into the object store. Valid if objectStore.autoIncrement is true.
     '''
     params: T_JSON_DICT = dict()
     params['securityOrigin'] = security_origin

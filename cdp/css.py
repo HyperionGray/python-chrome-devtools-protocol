@@ -937,9 +937,9 @@ def get_background_colors(
     :param node_id: Id of the node to get background colors for.
     :returns: A tuple with the following items:
 
-        0. **backgroundColors** – *(Optional)* The range of background colors behind this element, if it contains any visible text. If no visible text is present, this will be undefined. In the case of a flat background color, this will consist of simply that color. In the case of a gradient, this will consist of each of the color stops. For anything more complicated, this will be an empty array. Images will be ignored (as if the image had failed to load).
-        1. **computedFontSize** – *(Optional)* The computed font size for this node, as a CSS computed value string (e.g. '12px').
-        2. **computedFontWeight** – *(Optional)* The computed font weight for this node, as a CSS computed value string (e.g. 'normal' or '100').
+        0. **backgroundColors** - *(Optional)* The range of background colors behind this element, if it contains any visible text. If no visible text is present, this will be undefined. In the case of a flat background color, this will consist of simply that color. In the case of a gradient, this will consist of each of the color stops. For anything more complicated, this will be an empty array. Images will be ignored (as if the image had failed to load).
+        1. **computedFontSize** - *(Optional)* The computed font size for this node, as a CSS computed value string (e.g. '12px').
+        2. **computedFontWeight** - *(Optional)* The computed font weight for this node, as a CSS computed value string (e.g. 'normal' or '100').
     '''
     params: T_JSON_DICT = dict()
     params['nodeId'] = node_id.to_json()
@@ -984,8 +984,8 @@ def get_inline_styles_for_node(
     :param node_id:
     :returns: A tuple with the following items:
 
-        0. **inlineStyle** – *(Optional)* Inline style for the specified DOM node.
-        1. **attributesStyle** – *(Optional)* Attribute-defined element style (e.g. resulting from "width=20 height=100%").
+        0. **inlineStyle** - *(Optional)* Inline style for the specified DOM node.
+        1. **attributesStyle** - *(Optional)* Attribute-defined element style (e.g. resulting from "width=20 height=100%").
     '''
     params: T_JSON_DICT = dict()
     params['nodeId'] = node_id.to_json()
@@ -1009,12 +1009,12 @@ def get_matched_styles_for_node(
     :param node_id:
     :returns: A tuple with the following items:
 
-        0. **inlineStyle** – *(Optional)* Inline style for the specified DOM node.
-        1. **attributesStyle** – *(Optional)* Attribute-defined element style (e.g. resulting from "width=20 height=100%").
-        2. **matchedCSSRules** – *(Optional)* CSS rules matching this node, from all applicable stylesheets.
-        3. **pseudoElements** – *(Optional)* Pseudo style matches for this node.
-        4. **inherited** – *(Optional)* A chain of inherited styles (from the immediate node parent up to the DOM tree root).
-        5. **cssKeyframesRules** – *(Optional)* A list of CSS keyframed animations matching this node.
+        0. **inlineStyle** - *(Optional)* Inline style for the specified DOM node.
+        1. **attributesStyle** - *(Optional)* Attribute-defined element style (e.g. resulting from "width=20 height=100%").
+        2. **matchedCSSRules** - *(Optional)* CSS rules matching this node, from all applicable stylesheets.
+        3. **pseudoElements** - *(Optional)* Pseudo style matches for this node.
+        4. **inherited** - *(Optional)* A chain of inherited styles (from the immediate node parent up to the DOM tree root).
+        5. **cssKeyframesRules** - *(Optional)* A list of CSS keyframed animations matching this node.
     '''
     params: T_JSON_DICT = dict()
     params['nodeId'] = node_id.to_json()

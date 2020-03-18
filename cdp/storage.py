@@ -90,9 +90,9 @@ def get_usage_and_quota(
     :param origin: Security origin.
     :returns: A tuple with the following items:
 
-        0. **usage** – Storage usage (bytes).
-        1. **quota** – Storage quota (bytes).
-        2. **usageBreakdown** – Storage usage per type (bytes).
+        0. **usage** - Storage usage (bytes).
+        1. **quota** - Storage quota (bytes).
+        2. **usageBreakdown** - Storage usage per type (bytes).
     '''
     params: T_JSON_DICT = dict()
     params['origin'] = origin

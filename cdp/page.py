@@ -859,9 +859,9 @@ def get_app_manifest() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[
 
     :returns: A tuple with the following items:
 
-        0. **url** – Manifest location.
-        1. **errors** – 
-        2. **data** – *(Optional)* Manifest content.
+        0. **url** - Manifest location.
+        1. **errors** - 
+        2. **data** - *(Optional)* Manifest content.
     '''
     cmd_dict: T_JSON_DICT = {
         'method': 'Page.getAppManifest',
@@ -927,9 +927,9 @@ def get_layout_metrics() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tupl
 
     :returns: A tuple with the following items:
 
-        0. **layoutViewport** – Metrics relating to the layout viewport.
-        1. **visualViewport** – Metrics relating to the visual viewport.
-        2. **contentSize** – Size of scrollable area.
+        0. **layoutViewport** - Metrics relating to the layout viewport.
+        1. **visualViewport** - Metrics relating to the visual viewport.
+        2. **contentSize** - Size of scrollable area.
     '''
     cmd_dict: T_JSON_DICT = {
         'method': 'Page.getLayoutMetrics',
@@ -948,8 +948,8 @@ def get_navigation_history() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.
 
     :returns: A tuple with the following items:
 
-        0. **currentIndex** – Index of the current navigation history entry.
-        1. **entries** – Array of navigation history entries.
+        0. **currentIndex** - Index of the current navigation history entry.
+        1. **entries** - Array of navigation history entries.
     '''
     cmd_dict: T_JSON_DICT = {
         'method': 'Page.getNavigationHistory',
@@ -984,8 +984,8 @@ def get_resource_content(
     :param url: URL of the resource to get content for.
     :returns: A tuple with the following items:
 
-        0. **content** – Resource content.
-        1. **base64Encoded** – True, if content was served as base64.
+        0. **content** - Resource content.
+        1. **base64Encoded** - True, if content was served as base64.
     '''
     params: T_JSON_DICT = dict()
     params['frameId'] = frame_id.to_json()
@@ -1052,9 +1052,9 @@ def navigate(
     :param frame_id: *(Optional)* Frame id to navigate, if not specified navigates the top frame.
     :returns: A tuple with the following items:
 
-        0. **frameId** – Frame id that has navigated (or failed to navigate)
-        1. **loaderId** – *(Optional)* Loader identifier.
-        2. **errorText** – *(Optional)* User friendly error message, present if and only if navigation has failed.
+        0. **frameId** - Frame id that has navigated (or failed to navigate)
+        1. **loaderId** - *(Optional)* Loader identifier.
+        2. **errorText** - *(Optional)* User friendly error message, present if and only if navigation has failed.
     '''
     params: T_JSON_DICT = dict()
     params['url'] = url
@@ -1132,8 +1132,8 @@ def print_to_pdf(
     :param transfer_mode: **(EXPERIMENTAL)** *(Optional)* return as stream
     :returns: A tuple with the following items:
 
-        0. **data** – Base64-encoded pdf data. Empty if `` returnAsStream` is specified.
-        1. **stream** – *(Optional)* A handle of the stream that holds resulting PDF data.
+        0. **data** - Base64-encoded pdf data. Empty if `` returnAsStream` is specified.
+        1. **stream** - *(Optional)* A handle of the stream that holds resulting PDF data.
     '''
     params: T_JSON_DICT = dict()
     if landscape is not None:

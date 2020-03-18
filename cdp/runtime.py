@@ -704,8 +704,8 @@ def await_promise(
     :param generate_preview: *(Optional)* Whether preview should be generated for the result.
     :returns: A tuple with the following items:
 
-        0. **result** – Promise result. Will contain rejected value if promise was rejected.
-        1. **exceptionDetails** – *(Optional)* Exception details if stack strace is available.
+        0. **result** - Promise result. Will contain rejected value if promise was rejected.
+        1. **exceptionDetails** - *(Optional)* Exception details if stack strace is available.
     '''
     params: T_JSON_DICT = dict()
     params['promiseObjectId'] = promise_object_id.to_json()
@@ -752,8 +752,8 @@ def call_function_on(
     :param object_group: *(Optional)* Symbolic group name that can be used to release multiple objects. If objectGroup is not specified and objectId is, objectGroup will be inherited from object.
     :returns: A tuple with the following items:
 
-        0. **result** – Call result.
-        1. **exceptionDetails** – *(Optional)* Exception details.
+        0. **result** - Call result.
+        1. **exceptionDetails** - *(Optional)* Exception details.
     '''
     params: T_JSON_DICT = dict()
     params['functionDeclaration'] = function_declaration
@@ -801,8 +801,8 @@ def compile_script(
     :param execution_context_id: *(Optional)* Specifies in which execution context to perform script run. If the parameter is omitted the evaluation will be performed in the context of the inspected page.
     :returns: A tuple with the following items:
 
-        0. **scriptId** – *(Optional)* Id of the script.
-        1. **exceptionDetails** – *(Optional)* Exception details.
+        0. **scriptId** - *(Optional)* Id of the script.
+        1. **exceptionDetails** - *(Optional)* Exception details.
     '''
     params: T_JSON_DICT = dict()
     params['expression'] = expression
@@ -882,8 +882,8 @@ def evaluate(
     :param timeout: **(EXPERIMENTAL)** *(Optional)* Terminate execution after timing out (number of milliseconds).
     :returns: A tuple with the following items:
 
-        0. **result** – Evaluation result.
-        1. **exceptionDetails** – *(Optional)* Exception details.
+        0. **result** - Evaluation result.
+        1. **exceptionDetails** - *(Optional)* Exception details.
     '''
     params: T_JSON_DICT = dict()
     params['expression'] = expression
@@ -942,8 +942,8 @@ def get_heap_usage() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[fl
 
     :returns: A tuple with the following items:
 
-        0. **usedSize** – Used heap size in bytes.
-        1. **totalSize** – Allocated heap size in bytes.
+        0. **usedSize** - Used heap size in bytes.
+        1. **totalSize** - Allocated heap size in bytes.
     '''
     cmd_dict: T_JSON_DICT = {
         'method': 'Runtime.getHeapUsage',
@@ -971,10 +971,10 @@ def get_properties(
     :param generate_preview: **(EXPERIMENTAL)** *(Optional)* Whether preview should be generated for the results.
     :returns: A tuple with the following items:
 
-        0. **result** – Object properties.
-        1. **internalProperties** – *(Optional)* Internal object properties (only of the element itself).
-        2. **privateProperties** – *(Optional)* Object private properties.
-        3. **exceptionDetails** – *(Optional)* Exception details.
+        0. **result** - Object properties.
+        1. **internalProperties** - *(Optional)* Internal object properties (only of the element itself).
+        2. **privateProperties** - *(Optional)* Object private properties.
+        3. **exceptionDetails** - *(Optional)* Exception details.
     '''
     params: T_JSON_DICT = dict()
     params['objectId'] = object_id.to_json()
@@ -1105,8 +1105,8 @@ def run_script(
     :param await_promise: *(Optional)* Whether execution should ````await``` for resulting value and return once awaited promise is resolved.
     :returns: A tuple with the following items:
 
-        0. **result** – Run result.
-        1. **exceptionDetails** – *(Optional)* Exception details.
+        0. **result** - Run result.
+        1. **exceptionDetails** - *(Optional)* Exception details.
     '''
     params: T_JSON_DICT = dict()
     params['scriptId'] = script_id.to_json()

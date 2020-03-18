@@ -761,8 +761,8 @@ def get_node_for_location(
     :param include_user_agent_shadow_dom: *(Optional)* False to skip to the nearest non-UA shadow root ancestor (default: false).
     :returns: A tuple with the following items:
 
-        0. **backendNodeId** – Resulting node.
-        1. **nodeId** – *(Optional)* Id of the node at given coordinates, only when enabled and requested document.
+        0. **backendNodeId** - Resulting node.
+        1. **nodeId** - *(Optional)* Id of the node at given coordinates, only when enabled and requested document.
     '''
     params: T_JSON_DICT = dict()
     params['x'] = x
@@ -939,8 +939,8 @@ def perform_search(
     :param include_user_agent_shadow_dom: *(Optional)* True to search in user agent shadow DOM.
     :returns: A tuple with the following items:
 
-        0. **searchId** – Unique search session identifier.
-        1. **resultCount** – Number of search results.
+        0. **searchId** - Unique search session identifier.
+        1. **resultCount** - Number of search results.
     '''
     params: T_JSON_DICT = dict()
     params['query'] = query
@@ -1376,8 +1376,8 @@ def get_frame_owner(
     :param frame_id:
     :returns: A tuple with the following items:
 
-        0. **backendNodeId** – Resulting node.
-        1. **nodeId** – *(Optional)* Id of the node at given coordinates, only when enabled and requested document.
+        0. **backendNodeId** - Resulting node.
+        1. **nodeId** - *(Optional)* Id of the node at given coordinates, only when enabled and requested document.
     '''
     params: T_JSON_DICT = dict()
     params['frameId'] = frame_id.to_json()

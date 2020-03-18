@@ -269,11 +269,11 @@ def get_version() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[str, 
 
     :returns: A tuple with the following items:
 
-        0. **protocolVersion** – Protocol version.
-        1. **product** – Product name.
-        2. **revision** – Product revision.
-        3. **userAgent** – User-Agent.
-        4. **jsVersion** – V8 version.
+        0. **protocolVersion** - Protocol version.
+        1. **product** - Product name.
+        2. **revision** - Product revision.
+        3. **userAgent** - User-Agent.
+        4. **jsVersion** - V8 version.
     '''
     cmd_dict: T_JSON_DICT = {
         'method': 'Browser.getVersion',
@@ -387,8 +387,8 @@ def get_window_for_target(
     :param target_id: *(Optional)* Devtools agent host id. If called as a part of the session, associated targetId is used.
     :returns: A tuple with the following items:
 
-        0. **windowId** – Browser window id.
-        1. **bounds** – Bounds information of the window. When window state is 'minimized', the restored window position and size are returned.
+        0. **windowId** - Browser window id.
+        1. **bounds** - Bounds information of the window. When window state is 'minimized', the restored window position and size are returned.
     '''
     params: T_JSON_DICT = dict()
     if target_id is not None:

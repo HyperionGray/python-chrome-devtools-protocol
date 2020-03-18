@@ -57,8 +57,8 @@ def begin_frame(
     :param screenshot: *(Optional)* If set, a screenshot of the frame will be captured and returned in the response. Otherwise, no screenshot will be captured. Note that capturing a screenshot can fail, for example, during renderer initialization. In such a case, no screenshot data will be returned.
     :returns: A tuple with the following items:
 
-        0. **hasDamage** – Whether the BeginFrame resulted in damage and, thus, a new frame was committed to the display. Reported for diagnostic uses, may be removed in the future.
-        1. **screenshotData** – *(Optional)* Base64-encoded image data of the screenshot, if one was requested and successfully taken.
+        0. **hasDamage** - Whether the BeginFrame resulted in damage and, thus, a new frame was committed to the display. Reported for diagnostic uses, may be removed in the future.
+        1. **screenshotData** - *(Optional)* Base64-encoded image data of the screenshot, if one was requested and successfully taken.
     '''
     params: T_JSON_DICT = dict()
     if frame_time_ticks is not None:

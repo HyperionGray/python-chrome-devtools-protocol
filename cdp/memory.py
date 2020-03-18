@@ -122,9 +122,9 @@ def get_dom_counters() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[
 
     :returns: A tuple with the following items:
 
-        0. **documents** – 
-        1. **nodes** – 
-        2. **jsEventListeners** – 
+        0. **documents** - 
+        1. **nodes** - 
+        2. **jsEventListeners** - 
     '''
     cmd_dict: T_JSON_DICT = {
         'method': 'Memory.getDOMCounters',
