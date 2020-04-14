@@ -1,4 +1,4 @@
-# The targets in this makefile should be executed inside Poetry, i.e. `poetry make
+# The targets in this makefile should be executed inside Poetry, i.e. `poetry run make
 # docs`.
 
 .PHONY: docs
