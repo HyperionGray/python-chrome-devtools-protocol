@@ -6,8 +6,13 @@ modify the code generation process. Note that code is generated and then checked
 in, so that anybody who wants to use the library can use it immediately–no build
 step is required in that scenario.
 
-You'll first need to install the extra dependencies specified in
-``requirements.txt``, ideally inside a virtual environment.
+The repository uses `Poetry <https://python-poetry.org/>`_ to manage dependencies. Once
+you have Poetry installed, use this command to create a new virtual environment and
+install PyCDP and its dependencies (including dev dependencies0 in it.
+
+::
+
+    $ poetry install
 
 Next, a ``Makefile`` is included that provides the following build targets:
 

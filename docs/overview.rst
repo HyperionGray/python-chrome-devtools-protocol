@@ -31,7 +31,7 @@ Chrome package:
 * `Windows 32-bit <https://storage.googleapis.com/chromium-browser-snapshots/Win/678025/chrome-win.zip>`_
 * `Windows 64-bit <https://storage.googleapis.com/chromium-browser-snapshots/Win_x64/678025/chrome-win.zip>`_
 
-**To install (requires Python ≥3.7):**
+**Install from PyPI (requires Python ≥3.7):**
 
 ::
 

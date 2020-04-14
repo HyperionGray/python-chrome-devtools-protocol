@@ -1,9 +1,0 @@
-# These packages are required for generating the CDP sources. They are not
-# needed if you only want to install this library.
-inflection
-mypy
-pytest
-sphinx
-sphinx-autodoc-typehints
-sphinx-rtd-theme
-twine

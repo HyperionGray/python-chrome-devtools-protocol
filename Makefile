@@ -1,3 +1,6 @@
+# The targets in this makefile should be executed inside Poetry, i.e. `poetry make
+# docs`.
+
 .PHONY: docs
 
 default: mypy-generate test-generate generate test-import mypy-cdp test-cdp
@@ -13,11 +16,6 @@ mypy-cdp:
 
 mypy-generate:
 	mypy generator/
-
-publish:
-	rm -fr dist chrome_devtools_protocol.egg-info
-	$(PYTHON) setup.py sdist
-	twine upload dist/*
 
 test-cdp:
 	pytest test/

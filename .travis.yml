@@ -8,9 +8,11 @@ matrix:
   include:
     - python: 3.7
 
+before_install:
+  - pip install poetry
+
 install:
-  - pip install -e .
-  - pip install -r requirements.txt
+  - poetry install
 
 script:
-  - make
+  - poetry run make
