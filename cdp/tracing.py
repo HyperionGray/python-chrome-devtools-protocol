@@ -120,6 +120,44 @@ class StreamCompression(enum.Enum):
         return cls(json)
 
 
+class MemoryDumpLevelOfDetail(enum.Enum):
+    '''
+    Details exposed when memory request explicitly declared.
+    Keep consistent with memory_dump_request_args.h and
+    memory_instrumentation.mojom
+    '''
+    BACKGROUND = "background"
+    LIGHT = "light"
+    DETAILED = "detailed"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> MemoryDumpLevelOfDetail:
+        return cls(json)
+
+
+class TracingBackend(enum.Enum):
+    '''
+    Backend type to use for tracing. ``chrome`` uses the Chrome-integrated
+    tracing service and is supported on all platforms. ``system`` is only
+    supported on Chrome OS and uses the Perfetto system tracing service.
+    ``auto`` chooses ``system`` when the perfettoConfig provided to Tracing.start
+    specifies at least one non-Chrome data source; otherwise uses ``chrome``.
+    '''
+    AUTO = "auto"
+    CHROME = "chrome"
+    SYSTEM = "system"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> TracingBackend:
+        return cls(json)
+
+
 def end() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Stop trace events collection.
@@ -160,17 +198,28 @@ def record_clock_sync_marker(
     json = yield cmd_dict
 
 
-def request_memory_dump() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[str, bool]]:
+def request_memory_dump(
+        deterministic: typing.Optional[bool] = None,
+        level_of_detail: typing.Optional[MemoryDumpLevelOfDetail] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[str, bool]]:
     '''
     Request a global memory dump.
 
+    :param deterministic: *(Optional)* Enables more deterministic results by forcing garbage collection
+    :param level_of_detail: *(Optional)* Specifies level of details in memory dump. Defaults to "detailed".
     :returns: A tuple with the following items:
 
         0. **dumpGuid** - GUID of the resulting global memory dump.
         1. **success** - True iff the global memory dump succeeded.
     '''
+    params: T_JSON_DICT = dict()
+    if deterministic is not None:
+        params['deterministic'] = deterministic
+    if level_of_detail is not None:
+        params['levelOfDetail'] = level_of_detail.to_json()
     cmd_dict: T_JSON_DICT = {
         'method': 'Tracing.requestMemoryDump',
+        'params': params,
     }
     json = yield cmd_dict
     return (
@@ -186,7 +235,9 @@ def start(
         transfer_mode: typing.Optional[str] = None,
         stream_format: typing.Optional[StreamFormat] = None,
         stream_compression: typing.Optional[StreamCompression] = None,
-        trace_config: typing.Optional[TraceConfig] = None
+        trace_config: typing.Optional[TraceConfig] = None,
+        perfetto_config: typing.Optional[str] = None,
+        tracing_backend: typing.Optional[TracingBackend] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Start trace events collection.
@@ -196,8 +247,10 @@ def start(
     :param buffer_usage_reporting_interval: *(Optional)* If set, the agent will issue bufferUsage events at this interval, specified in milliseconds
     :param transfer_mode: *(Optional)* Whether to report trace events as series of dataCollected events or to save trace to a stream (defaults to ```ReportEvents````).
     :param stream_format: *(Optional)* Trace data format to use. This only applies when using ````ReturnAsStream```` transfer mode (defaults to ````json````).
-    :param stream_compression: *(Optional)* Compression format to use. This only applies when using ````ReturnAsStream```` transfer mode (defaults to ````none```)
+    :param stream_compression: *(Optional)* Compression format to use. This only applies when using ````ReturnAsStream```` transfer mode (defaults to ````none````)
     :param trace_config: *(Optional)*
+    :param perfetto_config: *(Optional)* Base64-encoded serialized perfetto.protos.TraceConfig protobuf message When specified, the parameters ````categories````, ````options````, ````traceConfig```` are ignored. (Encoded as a base64 string when passed over JSON)
+    :param tracing_backend: *(Optional)* Backend type (defaults to ````auto```)
     '''
     params: T_JSON_DICT = dict()
     if categories is not None:
@@ -214,6 +267,10 @@ def start(
         params['streamCompression'] = stream_compression.to_json()
     if trace_config is not None:
         params['traceConfig'] = trace_config.to_json()
+    if perfetto_config is not None:
+        params['perfettoConfig'] = perfetto_config
+    if tracing_backend is not None:
+        params['tracingBackend'] = tracing_backend.to_json()
     cmd_dict: T_JSON_DICT = {
         'method': 'Tracing.start',
         'params': params,

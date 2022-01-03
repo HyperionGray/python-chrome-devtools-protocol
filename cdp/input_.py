@@ -33,6 +33,18 @@ class TouchPoint:
     #: Force (default: 1.0).
     force: typing.Optional[float] = None
 
+    #: The normalized tangential pressure, which has a range of [-1,1] (default: 0).
+    tangential_pressure: typing.Optional[float] = None
+
+    #: The plane angle between the Y-Z plane and the plane containing both the stylus axis and the Y axis, in degrees of the range [-90,90], a positive tiltX is to the right (default: 0)
+    tilt_x: typing.Optional[int] = None
+
+    #: The plane angle between the X-Z plane and the plane containing both the stylus axis and the X axis, in degrees of the range [-90,90], a positive tiltY is towards the user (default: 0).
+    tilt_y: typing.Optional[int] = None
+
+    #: The clockwise rotation of a pen stylus around its own major axis, in degrees in the range [0,359] (default: 0).
+    twist: typing.Optional[int] = None
+
     #: Identifier used to track touch sources between events, must be unique within an event.
     id_: typing.Optional[float] = None
 
@@ -48,6 +60,14 @@ class TouchPoint:
             json['rotationAngle'] = self.rotation_angle
         if self.force is not None:
             json['force'] = self.force
+        if self.tangential_pressure is not None:
+            json['tangentialPressure'] = self.tangential_pressure
+        if self.tilt_x is not None:
+            json['tiltX'] = self.tilt_x
+        if self.tilt_y is not None:
+            json['tiltY'] = self.tilt_y
+        if self.twist is not None:
+            json['twist'] = self.twist
         if self.id_ is not None:
             json['id'] = self.id_
         return json
@@ -61,6 +81,10 @@ class TouchPoint:
             radius_y=float(json['radiusY']) if 'radiusY' in json else None,
             rotation_angle=float(json['rotationAngle']) if 'rotationAngle' in json else None,
             force=float(json['force']) if 'force' in json else None,
+            tangential_pressure=float(json['tangentialPressure']) if 'tangentialPressure' in json else None,
+            tilt_x=int(json['tiltX']) if 'tiltX' in json else None,
+            tilt_y=int(json['tiltY']) if 'tiltY' in json else None,
+            twist=int(json['twist']) if 'twist' in json else None,
             id_=float(json['id']) if 'id' in json else None,
         )
 
@@ -75,6 +99,22 @@ class GestureSourceType(enum.Enum):
 
     @classmethod
     def from_json(cls, json: str) -> GestureSourceType:
+        return cls(json)
+
+
+class MouseButton(enum.Enum):
+    NONE = "none"
+    LEFT = "left"
+    MIDDLE = "middle"
+    RIGHT = "right"
+    BACK = "back"
+    FORWARD = "forward"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> MouseButton:
         return cls(json)
 
 
@@ -93,6 +133,101 @@ class TimeSinceEpoch(float):
         return 'TimeSinceEpoch({})'.format(super().__repr__())
 
 
+@dataclass
+class DragDataItem:
+    #: Mime type of the dragged data.
+    mime_type: str
+
+    #: Depending of the value of ``mimeType``, it contains the dragged link,
+    #: text, HTML markup or any other data.
+    data: str
+
+    #: Title associated with a link. Only valid when ``mimeType`` == "text/uri-list".
+    title: typing.Optional[str] = None
+
+    #: Stores the base URL for the contained markup. Only valid when ``mimeType``
+    #: == "text/html".
+    base_url: typing.Optional[str] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['mimeType'] = self.mime_type
+        json['data'] = self.data
+        if self.title is not None:
+            json['title'] = self.title
+        if self.base_url is not None:
+            json['baseURL'] = self.base_url
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> DragDataItem:
+        return cls(
+            mime_type=str(json['mimeType']),
+            data=str(json['data']),
+            title=str(json['title']) if 'title' in json else None,
+            base_url=str(json['baseURL']) if 'baseURL' in json else None,
+        )
+
+
+@dataclass
+class DragData:
+    items: typing.List[DragDataItem]
+
+    #: Bit field representing allowed drag operations. Copy = 1, Link = 2, Move = 16
+    drag_operations_mask: int
+
+    #: List of filenames that should be included when dropping
+    files: typing.Optional[typing.List[str]] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['items'] = [i.to_json() for i in self.items]
+        json['dragOperationsMask'] = self.drag_operations_mask
+        if self.files is not None:
+            json['files'] = [i for i in self.files]
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> DragData:
+        return cls(
+            items=[DragDataItem.from_json(i) for i in json['items']],
+            drag_operations_mask=int(json['dragOperationsMask']),
+            files=[str(i) for i in json['files']] if 'files' in json else None,
+        )
+
+
+def dispatch_drag_event(
+        type_: str,
+        x: float,
+        y: float,
+        data: DragData,
+        modifiers: typing.Optional[int] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    '''
+    Dispatches a drag event into the page.
+
+    **EXPERIMENTAL**
+
+    :param type_: Type of the drag event.
+    :param x: X coordinate of the event relative to the main frame's viewport in CSS pixels.
+    :param y: Y coordinate of the event relative to the main frame's viewport in CSS pixels. 0 refers to the top of the viewport and Y increases as it proceeds towards the bottom of the viewport.
+    :param data:
+    :param modifiers: *(Optional)* Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).
+    '''
+    params: T_JSON_DICT = dict()
+    params['type'] = type_
+    params['x'] = x
+    params['y'] = y
+    params['data'] = data.to_json()
+    if modifiers is not None:
+        params['modifiers'] = modifiers
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Input.dispatchDragEvent',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
 def dispatch_key_event(
         type_: str,
         modifiers: typing.Optional[int] = None,
@@ -107,7 +242,8 @@ def dispatch_key_event(
         auto_repeat: typing.Optional[bool] = None,
         is_keypad: typing.Optional[bool] = None,
         is_system_key: typing.Optional[bool] = None,
-        location: typing.Optional[int] = None
+        location: typing.Optional[int] = None,
+        commands: typing.Optional[typing.List[str]] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Dispatches a key event to the page.
@@ -115,7 +251,7 @@ def dispatch_key_event(
     :param type_: Type of the key event.
     :param modifiers: *(Optional)* Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).
     :param timestamp: *(Optional)* Time at which the event occurred.
-    :param text: *(Optional)* Text as generated by processing a virtual key code with a keyboard layout. Not needed for for ```keyUp```` and ````rawKeyDown``` events (default: "")
+    :param text: *(Optional)* Text as generated by processing a virtual key code with a keyboard layout. Not needed for for ```keyUp```` and ````rawKeyDown```` events (default: "")
     :param unmodified_text: *(Optional)* Text that would have been generated by the keyboard if no modifiers were pressed (except for shift). Useful for shortcut (accelerator) key handling (default: "").
     :param key_identifier: *(Optional)* Unique key identifier (e.g., 'U+0041') (default: "").
     :param code: *(Optional)* Unique DOM defined string value for each physical key (e.g., 'KeyA') (default: "").
@@ -126,6 +262,7 @@ def dispatch_key_event(
     :param is_keypad: *(Optional)* Whether the event was generated from the keypad (default: false).
     :param is_system_key: *(Optional)* Whether the event was a system key event (default: false).
     :param location: *(Optional)* Whether the event was from the left or right side of the keyboard. 1=Left, 2=Right (default: 0).
+    :param commands: **(EXPERIMENTAL)** *(Optional)* Editing commands to send with the key event (e.g., 'selectAll') (default: []). These are related to but not equal the command names used in ````document.execCommand``` and NSStandardKeyBindingResponding. See https://source.chromium.org/chromium/chromium/src/+/master:third_party/blink/renderer/core/editing/commands/editor_command_names.h for valid command names.
     '''
     params: T_JSON_DICT = dict()
     params['type'] = type_
@@ -155,6 +292,8 @@ def dispatch_key_event(
         params['isSystemKey'] = is_system_key
     if location is not None:
         params['location'] = location
+    if commands is not None:
+        params['commands'] = [i for i in commands]
     cmd_dict: T_JSON_DICT = {
         'method': 'Input.dispatchKeyEvent',
         'params': params,
@@ -182,15 +321,55 @@ def insert_text(
     json = yield cmd_dict
 
 
+def ime_set_composition(
+        text: str,
+        selection_start: int,
+        selection_end: int,
+        replacement_start: typing.Optional[int] = None,
+        replacement_end: typing.Optional[int] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    '''
+    This method sets the current candidate text for ime.
+    Use imeCommitComposition to commit the final text.
+    Use imeSetComposition with empty string as text to cancel composition.
+
+    **EXPERIMENTAL**
+
+    :param text: The text to insert
+    :param selection_start: selection start
+    :param selection_end: selection end
+    :param replacement_start: *(Optional)* replacement start
+    :param replacement_end: *(Optional)* replacement end
+    '''
+    params: T_JSON_DICT = dict()
+    params['text'] = text
+    params['selectionStart'] = selection_start
+    params['selectionEnd'] = selection_end
+    if replacement_start is not None:
+        params['replacementStart'] = replacement_start
+    if replacement_end is not None:
+        params['replacementEnd'] = replacement_end
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Input.imeSetComposition',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
 def dispatch_mouse_event(
         type_: str,
         x: float,
         y: float,
         modifiers: typing.Optional[int] = None,
         timestamp: typing.Optional[TimeSinceEpoch] = None,
-        button: typing.Optional[str] = None,
+        button: typing.Optional[MouseButton] = None,
         buttons: typing.Optional[int] = None,
         click_count: typing.Optional[int] = None,
+        force: typing.Optional[float] = None,
+        tangential_pressure: typing.Optional[float] = None,
+        tilt_x: typing.Optional[int] = None,
+        tilt_y: typing.Optional[int] = None,
+        twist: typing.Optional[int] = None,
         delta_x: typing.Optional[float] = None,
         delta_y: typing.Optional[float] = None,
         pointer_type: typing.Optional[str] = None
@@ -206,6 +385,11 @@ def dispatch_mouse_event(
     :param button: *(Optional)* Mouse button (default: "none").
     :param buttons: *(Optional)* A number indicating which buttons are pressed on the mouse when a mouse event is triggered. Left=1, Right=2, Middle=4, Back=8, Forward=16, None=0.
     :param click_count: *(Optional)* Number of times the mouse button was clicked (default: 0).
+    :param force: **(EXPERIMENTAL)** *(Optional)* The normalized pressure, which has a range of [0,1] (default: 0).
+    :param tangential_pressure: **(EXPERIMENTAL)** *(Optional)* The normalized tangential pressure, which has a range of [-1,1] (default: 0).
+    :param tilt_x: **(EXPERIMENTAL)** *(Optional)* The plane angle between the Y-Z plane and the plane containing both the stylus axis and the Y axis, in degrees of the range [-90,90], a positive tiltX is to the right (default: 0).
+    :param tilt_y: **(EXPERIMENTAL)** *(Optional)* The plane angle between the X-Z plane and the plane containing both the stylus axis and the X axis, in degrees of the range [-90,90], a positive tiltY is towards the user (default: 0).
+    :param twist: **(EXPERIMENTAL)** *(Optional)* The clockwise rotation of a pen stylus around its own major axis, in degrees in the range [0,359] (default: 0).
     :param delta_x: *(Optional)* X delta in CSS pixels for mouse wheel event (default: 0).
     :param delta_y: *(Optional)* Y delta in CSS pixels for mouse wheel event (default: 0).
     :param pointer_type: *(Optional)* Pointer type (default: "mouse").
@@ -219,11 +403,21 @@ def dispatch_mouse_event(
     if timestamp is not None:
         params['timestamp'] = timestamp.to_json()
     if button is not None:
-        params['button'] = button
+        params['button'] = button.to_json()
     if buttons is not None:
         params['buttons'] = buttons
     if click_count is not None:
         params['clickCount'] = click_count
+    if force is not None:
+        params['force'] = force
+    if tangential_pressure is not None:
+        params['tangentialPressure'] = tangential_pressure
+    if tilt_x is not None:
+        params['tiltX'] = tilt_x
+    if tilt_y is not None:
+        params['tiltY'] = tilt_y
+    if twist is not None:
+        params['twist'] = twist
     if delta_x is not None:
         params['deltaX'] = delta_x
     if delta_y is not None:
@@ -269,7 +463,7 @@ def emulate_touch_from_mouse_event(
         type_: str,
         x: int,
         y: int,
-        button: str,
+        button: MouseButton,
         timestamp: typing.Optional[TimeSinceEpoch] = None,
         delta_x: typing.Optional[float] = None,
         delta_y: typing.Optional[float] = None,
@@ -284,7 +478,7 @@ def emulate_touch_from_mouse_event(
     :param type_: Type of the mouse event.
     :param x: X coordinate of the mouse pointer in DIP.
     :param y: Y coordinate of the mouse pointer in DIP.
-    :param button: Mouse button.
+    :param button: Mouse button. Only "none", "left", "right" are supported.
     :param timestamp: *(Optional)* Time at which the event occurred (default: current time).
     :param delta_x: *(Optional)* X delta in DIP for mouse wheel event (default: 0).
     :param delta_y: *(Optional)* Y delta in DIP for mouse wheel event (default: 0).
@@ -295,7 +489,7 @@ def emulate_touch_from_mouse_event(
     params['type'] = type_
     params['x'] = x
     params['y'] = y
-    params['button'] = button
+    params['button'] = button.to_json()
     if timestamp is not None:
         params['timestamp'] = timestamp.to_json()
     if delta_x is not None:
@@ -325,6 +519,26 @@ def set_ignore_input_events(
     params['ignore'] = ignore
     cmd_dict: T_JSON_DICT = {
         'method': 'Input.setIgnoreInputEvents',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
+def set_intercept_drags(
+        enabled: bool
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    '''
+    Prevents default drag and drop behavior and instead emits ``Input.dragIntercepted`` events.
+    Drag and drop behavior can be directly controlled via ``Input.dispatchDragEvent``.
+
+    **EXPERIMENTAL**
+
+    :param enabled:
+    '''
+    params: T_JSON_DICT = dict()
+    params['enabled'] = enabled
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Input.setInterceptDrags',
         'params': params,
     }
     json = yield cmd_dict
@@ -457,3 +671,21 @@ def synthesize_tap_gesture(
         'params': params,
     }
     json = yield cmd_dict
+
+
+@event_class('Input.dragIntercepted')
+@dataclass
+class DragIntercepted:
+    '''
+    **EXPERIMENTAL**
+
+    Emitted only when ``Input.setInterceptDrags`` is enabled. Use this data with ``Input.dispatchDragEvent`` to
+    restore normal drag and drop behavior.
+    '''
+    data: DragData
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> DragIntercepted:
+        return cls(
+            data=DragData.from_json(json['data'])
+        )

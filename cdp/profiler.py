@@ -355,8 +355,9 @@ def start() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 def start_precise_coverage(
         call_count: typing.Optional[bool] = None,
-        detailed: typing.Optional[bool] = None
-    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+        detailed: typing.Optional[bool] = None,
+        allow_triggered_updates: typing.Optional[bool] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,float]:
     '''
     Enable precise code coverage. Coverage data for JavaScript executed before enabling precise code
     coverage may be incomplete. Enabling prevents running optimized code and resets execution
@@ -364,17 +365,22 @@ def start_precise_coverage(
 
     :param call_count: *(Optional)* Collect accurate call counts beyond simple 'covered' or 'not covered'.
     :param detailed: *(Optional)* Collect block-based coverage.
+    :param allow_triggered_updates: *(Optional)* Allow the backend to send updates on its own initiative
+    :returns: Monotonically increasing time (in seconds) when the coverage update was taken in the backend.
     '''
     params: T_JSON_DICT = dict()
     if call_count is not None:
         params['callCount'] = call_count
     if detailed is not None:
         params['detailed'] = detailed
+    if allow_triggered_updates is not None:
+        params['allowTriggeredUpdates'] = allow_triggered_updates
     cmd_dict: T_JSON_DICT = {
         'method': 'Profiler.startPreciseCoverage',
         'params': params,
     }
     json = yield cmd_dict
+    return float(json['timestamp'])
 
 
 def start_type_profile() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
@@ -425,18 +431,24 @@ def stop_type_profile() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     json = yield cmd_dict
 
 
-def take_precise_coverage() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[ScriptCoverage]]:
+def take_precise_coverage() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.List[ScriptCoverage], float]]:
     '''
     Collect coverage data for the current isolate, and resets execution counters. Precise code
     coverage needs to have started.
 
-    :returns: Coverage data for the current isolate.
+    :returns: A tuple with the following items:
+
+        0. **result** - Coverage data for the current isolate.
+        1. **timestamp** - Monotonically increasing time (in seconds) when the coverage update was taken in the backend.
     '''
     cmd_dict: T_JSON_DICT = {
         'method': 'Profiler.takePreciseCoverage',
     }
     json = yield cmd_dict
-    return [ScriptCoverage.from_json(i) for i in json['result']]
+    return (
+        [ScriptCoverage.from_json(i) for i in json['result']],
+        float(json['timestamp'])
+    )
 
 
 def take_type_profile() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[ScriptTypeProfile]]:
@@ -492,4 +504,31 @@ class ConsoleProfileStarted:
             id_=str(json['id']),
             location=debugger.Location.from_json(json['location']),
             title=str(json['title']) if 'title' in json else None
+        )
+
+
+@event_class('Profiler.preciseCoverageDeltaUpdate')
+@dataclass
+class PreciseCoverageDeltaUpdate:
+    '''
+    **EXPERIMENTAL**
+
+    Reports coverage delta since the last poll (either from an event like this, or from
+    ``takePreciseCoverage`` for the current isolate. May only be sent if precise code
+    coverage has been started. This event can be trigged by the embedder to, for example,
+    trigger collection of coverage data immediately at a certain point in time.
+    '''
+    #: Monotonically increasing time (in seconds) when the coverage update was taken in the backend.
+    timestamp: float
+    #: Identifier for distinguishing coverage events.
+    occasion: str
+    #: Coverage data for the current isolate.
+    result: typing.List[ScriptCoverage]
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> PreciseCoverageDeltaUpdate:
+        return cls(
+            timestamp=float(json['timestamp']),
+            occasion=str(json['occasion']),
+            result=[ScriptCoverage.from_json(i) for i in json['result']]
         )

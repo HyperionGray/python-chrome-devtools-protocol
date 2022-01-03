@@ -12,19 +12,19 @@ import enum
 import typing
 
 
-class ContextId(str):
+class GraphObjectId(str):
     '''
-    Context's UUID in string
+    An unique ID for a graph object (AudioContext, AudioNode, AudioParam) in Web Audio API
     '''
     def to_json(self) -> str:
         return self
 
     @classmethod
-    def from_json(cls, json: str) -> ContextId:
+    def from_json(cls, json: str) -> GraphObjectId:
         return cls(json)
 
     def __repr__(self):
-        return 'ContextId({})'.format(super().__repr__())
+        return 'GraphObjectId({})'.format(super().__repr__())
 
 
 class ContextType(enum.Enum):
@@ -58,6 +58,82 @@ class ContextState(enum.Enum):
         return cls(json)
 
 
+class NodeType(str):
+    '''
+    Enum of AudioNode types
+    '''
+    def to_json(self) -> str:
+        return self
+
+    @classmethod
+    def from_json(cls, json: str) -> NodeType:
+        return cls(json)
+
+    def __repr__(self):
+        return 'NodeType({})'.format(super().__repr__())
+
+
+class ChannelCountMode(enum.Enum):
+    '''
+    Enum of AudioNode::ChannelCountMode from the spec
+    '''
+    CLAMPED_MAX = "clamped-max"
+    EXPLICIT = "explicit"
+    MAX_ = "max"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> ChannelCountMode:
+        return cls(json)
+
+
+class ChannelInterpretation(enum.Enum):
+    '''
+    Enum of AudioNode::ChannelInterpretation from the spec
+    '''
+    DISCRETE = "discrete"
+    SPEAKERS = "speakers"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> ChannelInterpretation:
+        return cls(json)
+
+
+class ParamType(str):
+    '''
+    Enum of AudioParam types
+    '''
+    def to_json(self) -> str:
+        return self
+
+    @classmethod
+    def from_json(cls, json: str) -> ParamType:
+        return cls(json)
+
+    def __repr__(self):
+        return 'ParamType({})'.format(super().__repr__())
+
+
+class AutomationRate(enum.Enum):
+    '''
+    Enum of AudioParam::AutomationRate from the spec
+    '''
+    A_RATE = "a-rate"
+    K_RATE = "k-rate"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> AutomationRate:
+        return cls(json)
+
+
 @dataclass
 class ContextRealtimeData:
     '''
@@ -66,7 +142,7 @@ class ContextRealtimeData:
     #: The current context time in second in BaseAudioContext.
     current_time: float
 
-    #: The time spent on rendering graph divided by render qunatum duration,
+    #: The time spent on rendering graph divided by render quantum duration,
     #: and multiplied by 100. 100 means the audio renderer reached the full
     #: capacity and glitch may occur.
     render_capacity: float
@@ -100,7 +176,7 @@ class BaseAudioContext:
     '''
     Protocol object for BaseAudioContext
     '''
-    context_id: ContextId
+    context_id: GraphObjectId
 
     context_type: ContextType
 
@@ -132,13 +208,130 @@ class BaseAudioContext:
     @classmethod
     def from_json(cls, json: T_JSON_DICT) -> BaseAudioContext:
         return cls(
-            context_id=ContextId.from_json(json['contextId']),
+            context_id=GraphObjectId.from_json(json['contextId']),
             context_type=ContextType.from_json(json['contextType']),
             context_state=ContextState.from_json(json['contextState']),
             callback_buffer_size=float(json['callbackBufferSize']),
             max_output_channel_count=float(json['maxOutputChannelCount']),
             sample_rate=float(json['sampleRate']),
             realtime_data=ContextRealtimeData.from_json(json['realtimeData']) if 'realtimeData' in json else None,
+        )
+
+
+@dataclass
+class AudioListener:
+    '''
+    Protocol object for AudioListener
+    '''
+    listener_id: GraphObjectId
+
+    context_id: GraphObjectId
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['listenerId'] = self.listener_id.to_json()
+        json['contextId'] = self.context_id.to_json()
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> AudioListener:
+        return cls(
+            listener_id=GraphObjectId.from_json(json['listenerId']),
+            context_id=GraphObjectId.from_json(json['contextId']),
+        )
+
+
+@dataclass
+class AudioNode:
+    '''
+    Protocol object for AudioNode
+    '''
+    node_id: GraphObjectId
+
+    context_id: GraphObjectId
+
+    node_type: NodeType
+
+    number_of_inputs: float
+
+    number_of_outputs: float
+
+    channel_count: float
+
+    channel_count_mode: ChannelCountMode
+
+    channel_interpretation: ChannelInterpretation
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['nodeId'] = self.node_id.to_json()
+        json['contextId'] = self.context_id.to_json()
+        json['nodeType'] = self.node_type.to_json()
+        json['numberOfInputs'] = self.number_of_inputs
+        json['numberOfOutputs'] = self.number_of_outputs
+        json['channelCount'] = self.channel_count
+        json['channelCountMode'] = self.channel_count_mode.to_json()
+        json['channelInterpretation'] = self.channel_interpretation.to_json()
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> AudioNode:
+        return cls(
+            node_id=GraphObjectId.from_json(json['nodeId']),
+            context_id=GraphObjectId.from_json(json['contextId']),
+            node_type=NodeType.from_json(json['nodeType']),
+            number_of_inputs=float(json['numberOfInputs']),
+            number_of_outputs=float(json['numberOfOutputs']),
+            channel_count=float(json['channelCount']),
+            channel_count_mode=ChannelCountMode.from_json(json['channelCountMode']),
+            channel_interpretation=ChannelInterpretation.from_json(json['channelInterpretation']),
+        )
+
+
+@dataclass
+class AudioParam:
+    '''
+    Protocol object for AudioParam
+    '''
+    param_id: GraphObjectId
+
+    node_id: GraphObjectId
+
+    context_id: GraphObjectId
+
+    param_type: ParamType
+
+    rate: AutomationRate
+
+    default_value: float
+
+    min_value: float
+
+    max_value: float
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['paramId'] = self.param_id.to_json()
+        json['nodeId'] = self.node_id.to_json()
+        json['contextId'] = self.context_id.to_json()
+        json['paramType'] = self.param_type.to_json()
+        json['rate'] = self.rate.to_json()
+        json['defaultValue'] = self.default_value
+        json['minValue'] = self.min_value
+        json['maxValue'] = self.max_value
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> AudioParam:
+        return cls(
+            param_id=GraphObjectId.from_json(json['paramId']),
+            node_id=GraphObjectId.from_json(json['nodeId']),
+            context_id=GraphObjectId.from_json(json['contextId']),
+            param_type=ParamType.from_json(json['paramType']),
+            rate=AutomationRate.from_json(json['rate']),
+            default_value=float(json['defaultValue']),
+            min_value=float(json['minValue']),
+            max_value=float(json['maxValue']),
         )
 
 
@@ -163,7 +356,7 @@ def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def get_realtime_data(
-        context_id: ContextId
+        context_id: GraphObjectId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,ContextRealtimeData]:
     '''
     Fetch the realtime data from the registered contexts.
@@ -196,18 +389,18 @@ class ContextCreated:
         )
 
 
-@event_class('WebAudio.contextDestroyed')
+@event_class('WebAudio.contextWillBeDestroyed')
 @dataclass
-class ContextDestroyed:
+class ContextWillBeDestroyed:
     '''
-    Notifies that existing BaseAudioContext has been destroyed.
+    Notifies that an existing BaseAudioContext will be destroyed.
     '''
-    context_id: ContextId
+    context_id: GraphObjectId
 
     @classmethod
-    def from_json(cls, json: T_JSON_DICT) -> ContextDestroyed:
+    def from_json(cls, json: T_JSON_DICT) -> ContextWillBeDestroyed:
         return cls(
-            context_id=ContextId.from_json(json['contextId'])
+            context_id=GraphObjectId.from_json(json['contextId'])
         )
 
 
@@ -223,4 +416,190 @@ class ContextChanged:
     def from_json(cls, json: T_JSON_DICT) -> ContextChanged:
         return cls(
             context=BaseAudioContext.from_json(json['context'])
+        )
+
+
+@event_class('WebAudio.audioListenerCreated')
+@dataclass
+class AudioListenerCreated:
+    '''
+    Notifies that the construction of an AudioListener has finished.
+    '''
+    listener: AudioListener
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> AudioListenerCreated:
+        return cls(
+            listener=AudioListener.from_json(json['listener'])
+        )
+
+
+@event_class('WebAudio.audioListenerWillBeDestroyed')
+@dataclass
+class AudioListenerWillBeDestroyed:
+    '''
+    Notifies that a new AudioListener has been created.
+    '''
+    context_id: GraphObjectId
+    listener_id: GraphObjectId
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> AudioListenerWillBeDestroyed:
+        return cls(
+            context_id=GraphObjectId.from_json(json['contextId']),
+            listener_id=GraphObjectId.from_json(json['listenerId'])
+        )
+
+
+@event_class('WebAudio.audioNodeCreated')
+@dataclass
+class AudioNodeCreated:
+    '''
+    Notifies that a new AudioNode has been created.
+    '''
+    node: AudioNode
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> AudioNodeCreated:
+        return cls(
+            node=AudioNode.from_json(json['node'])
+        )
+
+
+@event_class('WebAudio.audioNodeWillBeDestroyed')
+@dataclass
+class AudioNodeWillBeDestroyed:
+    '''
+    Notifies that an existing AudioNode has been destroyed.
+    '''
+    context_id: GraphObjectId
+    node_id: GraphObjectId
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> AudioNodeWillBeDestroyed:
+        return cls(
+            context_id=GraphObjectId.from_json(json['contextId']),
+            node_id=GraphObjectId.from_json(json['nodeId'])
+        )
+
+
+@event_class('WebAudio.audioParamCreated')
+@dataclass
+class AudioParamCreated:
+    '''
+    Notifies that a new AudioParam has been created.
+    '''
+    param: AudioParam
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> AudioParamCreated:
+        return cls(
+            param=AudioParam.from_json(json['param'])
+        )
+
+
+@event_class('WebAudio.audioParamWillBeDestroyed')
+@dataclass
+class AudioParamWillBeDestroyed:
+    '''
+    Notifies that an existing AudioParam has been destroyed.
+    '''
+    context_id: GraphObjectId
+    node_id: GraphObjectId
+    param_id: GraphObjectId
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> AudioParamWillBeDestroyed:
+        return cls(
+            context_id=GraphObjectId.from_json(json['contextId']),
+            node_id=GraphObjectId.from_json(json['nodeId']),
+            param_id=GraphObjectId.from_json(json['paramId'])
+        )
+
+
+@event_class('WebAudio.nodesConnected')
+@dataclass
+class NodesConnected:
+    '''
+    Notifies that two AudioNodes are connected.
+    '''
+    context_id: GraphObjectId
+    source_id: GraphObjectId
+    destination_id: GraphObjectId
+    source_output_index: typing.Optional[float]
+    destination_input_index: typing.Optional[float]
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> NodesConnected:
+        return cls(
+            context_id=GraphObjectId.from_json(json['contextId']),
+            source_id=GraphObjectId.from_json(json['sourceId']),
+            destination_id=GraphObjectId.from_json(json['destinationId']),
+            source_output_index=float(json['sourceOutputIndex']) if 'sourceOutputIndex' in json else None,
+            destination_input_index=float(json['destinationInputIndex']) if 'destinationInputIndex' in json else None
+        )
+
+
+@event_class('WebAudio.nodesDisconnected')
+@dataclass
+class NodesDisconnected:
+    '''
+    Notifies that AudioNodes are disconnected. The destination can be null, and it means all the outgoing connections from the source are disconnected.
+    '''
+    context_id: GraphObjectId
+    source_id: GraphObjectId
+    destination_id: GraphObjectId
+    source_output_index: typing.Optional[float]
+    destination_input_index: typing.Optional[float]
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> NodesDisconnected:
+        return cls(
+            context_id=GraphObjectId.from_json(json['contextId']),
+            source_id=GraphObjectId.from_json(json['sourceId']),
+            destination_id=GraphObjectId.from_json(json['destinationId']),
+            source_output_index=float(json['sourceOutputIndex']) if 'sourceOutputIndex' in json else None,
+            destination_input_index=float(json['destinationInputIndex']) if 'destinationInputIndex' in json else None
+        )
+
+
+@event_class('WebAudio.nodeParamConnected')
+@dataclass
+class NodeParamConnected:
+    '''
+    Notifies that an AudioNode is connected to an AudioParam.
+    '''
+    context_id: GraphObjectId
+    source_id: GraphObjectId
+    destination_id: GraphObjectId
+    source_output_index: typing.Optional[float]
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> NodeParamConnected:
+        return cls(
+            context_id=GraphObjectId.from_json(json['contextId']),
+            source_id=GraphObjectId.from_json(json['sourceId']),
+            destination_id=GraphObjectId.from_json(json['destinationId']),
+            source_output_index=float(json['sourceOutputIndex']) if 'sourceOutputIndex' in json else None
+        )
+
+
+@event_class('WebAudio.nodeParamDisconnected')
+@dataclass
+class NodeParamDisconnected:
+    '''
+    Notifies that an AudioNode is disconnected to an AudioParam.
+    '''
+    context_id: GraphObjectId
+    source_id: GraphObjectId
+    destination_id: GraphObjectId
+    source_output_index: typing.Optional[float]
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> NodeParamDisconnected:
+        return cls(
+            context_id=GraphObjectId.from_json(json['contextId']),
+            source_id=GraphObjectId.from_json(json['sourceId']),
+            destination_id=GraphObjectId.from_json(json['destinationId']),
+            source_output_index=float(json['sourceOutputIndex']) if 'sourceOutputIndex' in json else None
         )

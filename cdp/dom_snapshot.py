@@ -445,6 +445,9 @@ class DocumentSnapshot:
     #: Document URL that ``Document`` or ``FrameOwner`` node points to.
     document_url: StringIndex
 
+    #: Document title.
+    title: StringIndex
+
     #: Base URL that ``Document`` or ``FrameOwner`` node uses for URL completion.
     base_url: StringIndex
 
@@ -478,9 +481,16 @@ class DocumentSnapshot:
     #: Vertical scroll offset.
     scroll_offset_y: typing.Optional[float] = None
 
+    #: Document content width.
+    content_width: typing.Optional[float] = None
+
+    #: Document content height.
+    content_height: typing.Optional[float] = None
+
     def to_json(self) -> T_JSON_DICT:
         json: T_JSON_DICT = dict()
         json['documentURL'] = self.document_url.to_json()
+        json['title'] = self.title.to_json()
         json['baseURL'] = self.base_url.to_json()
         json['contentLanguage'] = self.content_language.to_json()
         json['encodingName'] = self.encoding_name.to_json()
@@ -494,12 +504,17 @@ class DocumentSnapshot:
             json['scrollOffsetX'] = self.scroll_offset_x
         if self.scroll_offset_y is not None:
             json['scrollOffsetY'] = self.scroll_offset_y
+        if self.content_width is not None:
+            json['contentWidth'] = self.content_width
+        if self.content_height is not None:
+            json['contentHeight'] = self.content_height
         return json
 
     @classmethod
     def from_json(cls, json: T_JSON_DICT) -> DocumentSnapshot:
         return cls(
             document_url=StringIndex.from_json(json['documentURL']),
+            title=StringIndex.from_json(json['title']),
             base_url=StringIndex.from_json(json['baseURL']),
             content_language=StringIndex.from_json(json['contentLanguage']),
             encoding_name=StringIndex.from_json(json['encodingName']),
@@ -511,6 +526,8 @@ class DocumentSnapshot:
             text_boxes=TextBoxSnapshot.from_json(json['textBoxes']),
             scroll_offset_x=float(json['scrollOffsetX']) if 'scrollOffsetX' in json else None,
             scroll_offset_y=float(json['scrollOffsetY']) if 'scrollOffsetY' in json else None,
+            content_width=float(json['contentWidth']) if 'contentWidth' in json else None,
+            content_height=float(json['contentHeight']) if 'contentHeight' in json else None,
         )
 
 
@@ -524,6 +541,9 @@ class NodeTreeSnapshot:
 
     #: ``Node``'s nodeType.
     node_type: typing.Optional[typing.List[int]] = None
+
+    #: Type of the shadow root the ``Node`` is in. String values are equal to the ``ShadowRootType`` enum.
+    shadow_root_type: typing.Optional[RareStringData] = None
 
     #: ``Node``'s nodeName.
     node_name: typing.Optional[typing.List[StringIndex]] = None
@@ -572,6 +592,8 @@ class NodeTreeSnapshot:
             json['parentIndex'] = [i for i in self.parent_index]
         if self.node_type is not None:
             json['nodeType'] = [i for i in self.node_type]
+        if self.shadow_root_type is not None:
+            json['shadowRootType'] = self.shadow_root_type.to_json()
         if self.node_name is not None:
             json['nodeName'] = [i.to_json() for i in self.node_name]
         if self.node_value is not None:
@@ -605,6 +627,7 @@ class NodeTreeSnapshot:
         return cls(
             parent_index=[int(i) for i in json['parentIndex']] if 'parentIndex' in json else None,
             node_type=[int(i) for i in json['nodeType']] if 'nodeType' in json else None,
+            shadow_root_type=RareStringData.from_json(json['shadowRootType']) if 'shadowRootType' in json else None,
             node_name=[StringIndex.from_json(i) for i in json['nodeName']] if 'nodeName' in json else None,
             node_value=[StringIndex.from_json(i) for i in json['nodeValue']] if 'nodeValue' in json else None,
             backend_node_id=[dom.BackendNodeId.from_json(i) for i in json['backendNodeId']] if 'backendNodeId' in json else None,
@@ -641,6 +664,11 @@ class LayoutTreeSnapshot:
     #: Stacking context information.
     stacking_contexts: RareBooleanData
 
+    #: Global paint order index, which is determined by the stacking order of the nodes. Nodes
+    #: that are painted together will have the same index. Only provided if includePaintOrder in
+    #: captureSnapshot was true.
+    paint_orders: typing.Optional[typing.List[int]] = None
+
     #: The offset rect of nodes. Only available when includeDOMRects is set to true
     offset_rects: typing.Optional[typing.List[Rectangle]] = None
 
@@ -650,6 +678,12 @@ class LayoutTreeSnapshot:
     #: The client rect of nodes. Only available when includeDOMRects is set to true
     client_rects: typing.Optional[typing.List[Rectangle]] = None
 
+    #: The list of background colors that are blended with colors of overlapping elements.
+    blended_background_colors: typing.Optional[typing.List[StringIndex]] = None
+
+    #: The list of computed text opacities.
+    text_color_opacities: typing.Optional[typing.List[float]] = None
+
     def to_json(self) -> T_JSON_DICT:
         json: T_JSON_DICT = dict()
         json['nodeIndex'] = [i for i in self.node_index]
@@ -657,12 +691,18 @@ class LayoutTreeSnapshot:
         json['bounds'] = [i.to_json() for i in self.bounds]
         json['text'] = [i.to_json() for i in self.text]
         json['stackingContexts'] = self.stacking_contexts.to_json()
+        if self.paint_orders is not None:
+            json['paintOrders'] = [i for i in self.paint_orders]
         if self.offset_rects is not None:
             json['offsetRects'] = [i.to_json() for i in self.offset_rects]
         if self.scroll_rects is not None:
             json['scrollRects'] = [i.to_json() for i in self.scroll_rects]
         if self.client_rects is not None:
             json['clientRects'] = [i.to_json() for i in self.client_rects]
+        if self.blended_background_colors is not None:
+            json['blendedBackgroundColors'] = [i.to_json() for i in self.blended_background_colors]
+        if self.text_color_opacities is not None:
+            json['textColorOpacities'] = [i for i in self.text_color_opacities]
         return json
 
     @classmethod
@@ -673,9 +713,12 @@ class LayoutTreeSnapshot:
             bounds=[Rectangle.from_json(i) for i in json['bounds']],
             text=[StringIndex.from_json(i) for i in json['text']],
             stacking_contexts=RareBooleanData.from_json(json['stackingContexts']),
+            paint_orders=[int(i) for i in json['paintOrders']] if 'paintOrders' in json else None,
             offset_rects=[Rectangle.from_json(i) for i in json['offsetRects']] if 'offsetRects' in json else None,
             scroll_rects=[Rectangle.from_json(i) for i in json['scrollRects']] if 'scrollRects' in json else None,
             client_rects=[Rectangle.from_json(i) for i in json['clientRects']] if 'clientRects' in json else None,
+            blended_background_colors=[StringIndex.from_json(i) for i in json['blendedBackgroundColors']] if 'blendedBackgroundColors' in json else None,
+            text_color_opacities=[float(i) for i in json['textColorOpacities']] if 'textColorOpacities' in json else None,
         )
 
 
@@ -784,7 +827,10 @@ def get_snapshot(
 
 def capture_snapshot(
         computed_styles: typing.List[str],
-        include_dom_rects: typing.Optional[bool] = None
+        include_paint_order: typing.Optional[bool] = None,
+        include_dom_rects: typing.Optional[bool] = None,
+        include_blended_background_colors: typing.Optional[bool] = None,
+        include_text_color_opacities: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.List[DocumentSnapshot], typing.List[str]]]:
     '''
     Returns a document snapshot, including the full DOM tree of the root node (including iframes,
@@ -793,7 +839,10 @@ def capture_snapshot(
     flattened.
 
     :param computed_styles: Whitelist of computed styles to return.
+    :param include_paint_order: *(Optional)* Whether to include layout object paint orders into the snapshot.
     :param include_dom_rects: *(Optional)* Whether to include DOM rectangles (offsetRects, clientRects, scrollRects) into the snapshot
+    :param include_blended_background_colors: **(EXPERIMENTAL)** *(Optional)* Whether to include blended background colors in the snapshot (default: false). Blended background color is achieved by blending background colors of all elements that overlap with the current element.
+    :param include_text_color_opacities: **(EXPERIMENTAL)** *(Optional)* Whether to include text color opacity in the snapshot (default: false). An element might have the opacity property set that affects the text color of the element. The final text color opacity is computed based on the opacity of all overlapping elements.
     :returns: A tuple with the following items:
 
         0. **documents** - The nodes in the DOM tree. The DOMNode at index 0 corresponds to the root document.
@@ -801,8 +850,14 @@ def capture_snapshot(
     '''
     params: T_JSON_DICT = dict()
     params['computedStyles'] = [i for i in computed_styles]
+    if include_paint_order is not None:
+        params['includePaintOrder'] = include_paint_order
     if include_dom_rects is not None:
         params['includeDOMRects'] = include_dom_rects
+    if include_blended_background_colors is not None:
+        params['includeBlendedBackgroundColors'] = include_blended_background_colors
+    if include_text_color_opacities is not None:
+        params['includeTextColorOpacities'] = include_text_color_opacities
     cmd_dict: T_JSON_DICT = {
         'method': 'DOMSnapshot.captureSnapshot',
         'params': params,

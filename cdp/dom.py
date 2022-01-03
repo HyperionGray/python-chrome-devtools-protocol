@@ -13,6 +13,7 @@ import typing
 
 from . import page
 from . import runtime
+from deprecated.sphinx import deprecated # type: ignore
 
 
 class NodeId(int):
@@ -83,8 +84,13 @@ class PseudoType(enum.Enum):
     FIRST_LETTER = "first-letter"
     BEFORE = "before"
     AFTER = "after"
+    MARKER = "marker"
     BACKDROP = "backdrop"
     SELECTION = "selection"
+    TARGET_TEXT = "target-text"
+    SPELLING_ERROR = "spelling-error"
+    GRAMMAR_ERROR = "grammar-error"
+    HIGHLIGHT = "highlight"
     FIRST_LINE_INHERITED = "first-line-inherited"
     SCROLLBAR = "scrollbar"
     SCROLLBAR_THUMB = "scrollbar-thumb"
@@ -94,6 +100,10 @@ class PseudoType(enum.Enum):
     SCROLLBAR_CORNER = "scrollbar-corner"
     RESIZER = "resizer"
     INPUT_LIST_BUTTON = "input-list-button"
+    TRANSITION = "transition"
+    TRANSITION_CONTAINER = "transition-container"
+    TRANSITION_OLD_CONTENT = "transition-old-content"
+    TRANSITION_NEW_CONTENT = "transition-new-content"
 
     def to_json(self) -> str:
         return self.value
@@ -116,6 +126,22 @@ class ShadowRootType(enum.Enum):
 
     @classmethod
     def from_json(cls, json: str) -> ShadowRootType:
+        return cls(json)
+
+
+class CompatibilityMode(enum.Enum):
+    '''
+    Document compatibility mode.
+    '''
+    QUIRKS_MODE = "QuirksMode"
+    LIMITED_QUIRKS_MODE = "LimitedQuirksMode"
+    NO_QUIRKS_MODE = "NoQuirksMode"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> CompatibilityMode:
         return cls(json)
 
 
@@ -202,7 +228,9 @@ class Node:
     #: Pseudo elements associated with this node.
     pseudo_elements: typing.Optional[typing.List[Node]] = None
 
-    #: Import document for the HTMLImport links.
+    #: Deprecated, as the HTML Imports API has been removed (crbug.com/937746).
+    #: This property used to return the imported document for the HTMLImport links.
+    #: The property is always undefined now.
     imported_document: typing.Optional[Node] = None
 
     #: Distributed nodes for given insertion point.
@@ -210,6 +238,8 @@ class Node:
 
     #: Whether the node is SVG.
     is_svg: typing.Optional[bool] = None
+
+    compatibility_mode: typing.Optional[CompatibilityMode] = None
 
     def to_json(self) -> T_JSON_DICT:
         json: T_JSON_DICT = dict()
@@ -263,6 +293,8 @@ class Node:
             json['distributedNodes'] = [i.to_json() for i in self.distributed_nodes]
         if self.is_svg is not None:
             json['isSVG'] = self.is_svg
+        if self.compatibility_mode is not None:
+            json['compatibilityMode'] = self.compatibility_mode.to_json()
         return json
 
     @classmethod
@@ -296,6 +328,7 @@ class Node:
             imported_document=Node.from_json(json['importedDocument']) if 'importedDocument' in json else None,
             distributed_nodes=[BackendNode.from_json(i) for i in json['distributedNodes']] if 'distributedNodes' in json else None,
             is_svg=bool(json['isSVG']) if 'isSVG' in json else None,
+            compatibility_mode=CompatibilityMode.from_json(json['compatibilityMode']) if 'compatibilityMode' in json else None,
         )
 
 
@@ -466,6 +499,28 @@ class Rect:
         )
 
 
+@dataclass
+class CSSComputedStyleProperty:
+    #: Computed style property name.
+    name: str
+
+    #: Computed style property value.
+    value: str
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['name'] = self.name
+        json['value'] = self.value
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> CSSComputedStyleProperty:
+        return cls(
+            name=str(json['name']),
+            value=str(json['value']),
+        )
+
+
 def collect_class_names_from_subtree(
         node_id: NodeId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[str]]:
@@ -551,6 +606,40 @@ def describe_node(
     }
     json = yield cmd_dict
     return Node.from_json(json['node'])
+
+
+def scroll_into_view_if_needed(
+        node_id: typing.Optional[NodeId] = None,
+        backend_node_id: typing.Optional[BackendNodeId] = None,
+        object_id: typing.Optional[runtime.RemoteObjectId] = None,
+        rect: typing.Optional[Rect] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    '''
+    Scrolls the specified rect of the given node into view if not already visible.
+    Note: exactly one between nodeId, backendNodeId and objectId should be passed
+    to identify the node.
+
+    **EXPERIMENTAL**
+
+    :param node_id: *(Optional)* Identifier of the node.
+    :param backend_node_id: *(Optional)* Identifier of the backend node.
+    :param object_id: *(Optional)* JavaScript object id of the node wrapper.
+    :param rect: *(Optional)* The rect to be scrolled into view, relative to the node's border box, in CSS pixels. When omitted, center of the node will be used, similar to Element.scrollIntoView.
+    '''
+    params: T_JSON_DICT = dict()
+    if node_id is not None:
+        params['nodeId'] = node_id.to_json()
+    if backend_node_id is not None:
+        params['backendNodeId'] = backend_node_id.to_json()
+    if object_id is not None:
+        params['objectId'] = object_id.to_json()
+    if rect is not None:
+        params['rect'] = rect.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.scrollIntoViewIfNeeded',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
 def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
@@ -721,12 +810,17 @@ def get_document(
     return Node.from_json(json['root'])
 
 
+@deprecated(version="1.3")
 def get_flattened_document(
         depth: typing.Optional[int] = None,
         pierce: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[Node]]:
     '''
     Returns the root DOM node (and optionally the subtree) to the caller.
+    Deprecated, as it is not designed to work well with the rest of the DOM agent.
+    Use DOMSnapshot.captureSnapshot instead.
+
+    .. deprecated:: 1.3
 
     :param depth: *(Optional)* The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the entire subtree or provide an integer larger than 0.
     :param pierce: *(Optional)* Whether or not iframes and shadow roots should be traversed when returning the subtree (default is false).
@@ -745,30 +839,61 @@ def get_flattened_document(
     return [Node.from_json(i) for i in json['nodes']]
 
 
+def get_nodes_for_subtree_by_style(
+        node_id: NodeId,
+        computed_styles: typing.List[CSSComputedStyleProperty],
+        pierce: typing.Optional[bool] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[NodeId]]:
+    '''
+    Finds nodes with a given computed style in a subtree.
+
+    **EXPERIMENTAL**
+
+    :param node_id: Node ID pointing to the root of a subtree.
+    :param computed_styles: The style to filter nodes by (includes nodes if any of properties matches).
+    :param pierce: *(Optional)* Whether or not iframes and shadow roots in the same target should be traversed when returning the results (default is false).
+    :returns: Resulting nodes.
+    '''
+    params: T_JSON_DICT = dict()
+    params['nodeId'] = node_id.to_json()
+    params['computedStyles'] = [i.to_json() for i in computed_styles]
+    if pierce is not None:
+        params['pierce'] = pierce
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.getNodesForSubtreeByStyle',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return [NodeId.from_json(i) for i in json['nodeIds']]
+
+
 def get_node_for_location(
         x: int,
         y: int,
-        include_user_agent_shadow_dom: typing.Optional[bool] = None
-    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[BackendNodeId, typing.Optional[NodeId]]]:
+        include_user_agent_shadow_dom: typing.Optional[bool] = None,
+        ignore_pointer_events_none: typing.Optional[bool] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[BackendNodeId, page.FrameId, typing.Optional[NodeId]]]:
     '''
     Returns node id at given location. Depending on whether DOM domain is enabled, nodeId is
     either returned or not.
 
-    **EXPERIMENTAL**
-
     :param x: X coordinate.
     :param y: Y coordinate.
     :param include_user_agent_shadow_dom: *(Optional)* False to skip to the nearest non-UA shadow root ancestor (default: false).
+    :param ignore_pointer_events_none: *(Optional)* Whether to ignore pointer-events: none on elements and hit test them.
     :returns: A tuple with the following items:
 
         0. **backendNodeId** - Resulting node.
-        1. **nodeId** - *(Optional)* Id of the node at given coordinates, only when enabled and requested document.
+        1. **frameId** - Frame this node belongs to.
+        2. **nodeId** - *(Optional)* Id of the node at given coordinates, only when enabled and requested document.
     '''
     params: T_JSON_DICT = dict()
     params['x'] = x
     params['y'] = y
     if include_user_agent_shadow_dom is not None:
         params['includeUserAgentShadowDOM'] = include_user_agent_shadow_dom
+    if ignore_pointer_events_none is not None:
+        params['ignorePointerEventsNone'] = ignore_pointer_events_none
     cmd_dict: T_JSON_DICT = {
         'method': 'DOM.getNodeForLocation',
         'params': params,
@@ -776,6 +901,7 @@ def get_node_for_location(
     json = yield cmd_dict
     return (
         BackendNodeId.from_json(json['backendNodeId']),
+        page.FrameId.from_json(json['frameId']),
         NodeId.from_json(json['nodeId']) if 'nodeId' in json else None
     )
 
@@ -1249,6 +1375,46 @@ def set_file_input_files(
     json = yield cmd_dict
 
 
+def set_node_stack_traces_enabled(
+        enable: bool
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    '''
+    Sets if stack traces should be captured for Nodes. See ``Node.getNodeStackTraces``. Default is disabled.
+
+    **EXPERIMENTAL**
+
+    :param enable: Enable or disable.
+    '''
+    params: T_JSON_DICT = dict()
+    params['enable'] = enable
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.setNodeStackTracesEnabled',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
+def get_node_stack_traces(
+        node_id: NodeId
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Optional[runtime.StackTrace]]:
+    '''
+    Gets stack traces associated with a Node. As of now, only provides stack trace for Node creation.
+
+    **EXPERIMENTAL**
+
+    :param node_id: Id of the node to get stack traces for.
+    :returns: *(Optional)* Creation stack trace, if available.
+    '''
+    params: T_JSON_DICT = dict()
+    params['nodeId'] = node_id.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.getNodeStackTraces',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return runtime.StackTrace.from_json(json['creation']) if 'creation' in json else None
+
+
 def get_file_info(
         object_id: runtime.RemoteObjectId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,str]:
@@ -1392,6 +1558,55 @@ def get_frame_owner(
     )
 
 
+def get_container_for_node(
+        node_id: NodeId,
+        container_name: typing.Optional[str] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Optional[NodeId]]:
+    '''
+    Returns the container of the given node based on container query conditions.
+    If containerName is given, it will find the nearest container with a matching name;
+    otherwise it will find the nearest container regardless of its container name.
+
+    **EXPERIMENTAL**
+
+    :param node_id:
+    :param container_name: *(Optional)*
+    :returns: *(Optional)* The container node for the given node, or null if not found.
+    '''
+    params: T_JSON_DICT = dict()
+    params['nodeId'] = node_id.to_json()
+    if container_name is not None:
+        params['containerName'] = container_name
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.getContainerForNode',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return NodeId.from_json(json['nodeId']) if 'nodeId' in json else None
+
+
+def get_querying_descendants_for_container(
+        node_id: NodeId
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[NodeId]]:
+    '''
+    Returns the descendants of a container query container that have
+    container queries against this container.
+
+    **EXPERIMENTAL**
+
+    :param node_id: Id of the container node to find querying descendants from.
+    :returns: Descendant nodes with container queries against the given container.
+    '''
+    params: T_JSON_DICT = dict()
+    params['nodeId'] = node_id.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.getQueryingDescendantsForContainer',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return [NodeId.from_json(i) for i in json['nodeIds']]
+
+
 @event_class('DOM.attributeModified')
 @dataclass
 class AttributeModified:
@@ -1518,9 +1733,9 @@ class DistributedNodesUpdated:
     '''
     **EXPERIMENTAL**
 
-    Called when distrubution is changed.
+    Called when distribution is changed.
     '''
-    #: Insertion point where distrubuted nodes were updated.
+    #: Insertion point where distributed nodes were updated.
     insertion_point_id: NodeId
     #: Distributed nodes for given insertion point.
     distributed_nodes: typing.List[BackendNode]

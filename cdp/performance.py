@@ -12,6 +12,9 @@ import enum
 import typing
 
 
+from deprecated.sphinx import deprecated # type: ignore
+
+
 @dataclass
 class Metric:
     '''
@@ -47,16 +50,25 @@ def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     json = yield cmd_dict
 
 
-def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+def enable(
+        time_domain: typing.Optional[str] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Enable collecting and reporting metrics.
+
+    :param time_domain: *(Optional)* Time domain to use for collecting and reporting duration metrics.
     '''
+    params: T_JSON_DICT = dict()
+    if time_domain is not None:
+        params['timeDomain'] = time_domain
     cmd_dict: T_JSON_DICT = {
         'method': 'Performance.enable',
+        'params': params,
     }
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 def set_time_domain(
         time_domain: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
@@ -64,6 +76,8 @@ def set_time_domain(
     Sets time domain to use for collecting and reporting duration metrics.
     Note that this must be called before enabling metrics collection. Calling
     this method while metrics collection is enabled returns an error.
+
+    .. deprecated:: 1.3
 
     **EXPERIMENTAL**
 

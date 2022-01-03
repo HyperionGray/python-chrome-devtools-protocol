@@ -117,7 +117,7 @@ class PictureTile:
     #: Offset from owning layer top boundary
     y: float
 
-    #: Base64-encoded snapshot data.
+    #: Base64-encoded snapshot data. (Encoded as a base64 string when passed over JSON)
     picture: str
 
     def to_json(self) -> T_JSON_DICT:
@@ -258,12 +258,15 @@ class PaintProfile(list):
 
 def compositing_reasons(
         layer_id: LayerId
-    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[str]]:
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.List[str], typing.List[str]]]:
     '''
     Provides the reasons why the given layer was composited.
 
     :param layer_id: The id of the layer for which we want to get the reasons it was composited.
-    :returns: A list of strings specifying reasons for the given layer to become composited.
+    :returns: A tuple with the following items:
+
+        0. **compositingReasons** - A list of strings specifying reasons for the given layer to become composited.
+        1. **compositingReasonIds** - A list of strings specifying reason IDs for the given layer to become composited.
     '''
     params: T_JSON_DICT = dict()
     params['layerId'] = layer_id.to_json()
@@ -272,7 +275,10 @@ def compositing_reasons(
         'params': params,
     }
     json = yield cmd_dict
-    return [str(i) for i in json['compositingReasons']]
+    return (
+        [str(i) for i in json['compositingReasons']],
+        [str(i) for i in json['compositingReasonIds']]
+    )
 
 
 def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:

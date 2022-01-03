@@ -11,6 +11,9 @@ from dataclasses import dataclass
 import enum
 import typing
 
+from . import browser
+from . import network
+
 
 class StorageType(enum.Enum):
     '''
@@ -61,6 +64,30 @@ class UsageForType:
         )
 
 
+@dataclass
+class TrustTokens:
+    '''
+    Pair of issuer origin and number of available (signed, but not used) Trust
+    Tokens from that issuer.
+    '''
+    issuer_origin: str
+
+    count: float
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['issuerOrigin'] = self.issuer_origin
+        json['count'] = self.count
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> TrustTokens:
+        return cls(
+            issuer_origin=str(json['issuerOrigin']),
+            count=float(json['count']),
+        )
+
+
 def clear_data_for_origin(
         origin: str,
         storage_types: str
@@ -81,9 +108,68 @@ def clear_data_for_origin(
     json = yield cmd_dict
 
 
+def get_cookies(
+        browser_context_id: typing.Optional[browser.BrowserContextID] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[network.Cookie]]:
+    '''
+    Returns all browser cookies.
+
+    :param browser_context_id: *(Optional)* Browser context to use when called on the browser endpoint.
+    :returns: Array of cookie objects.
+    '''
+    params: T_JSON_DICT = dict()
+    if browser_context_id is not None:
+        params['browserContextId'] = browser_context_id.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Storage.getCookies',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return [network.Cookie.from_json(i) for i in json['cookies']]
+
+
+def set_cookies(
+        cookies: typing.List[network.CookieParam],
+        browser_context_id: typing.Optional[browser.BrowserContextID] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    '''
+    Sets given cookies.
+
+    :param cookies: Cookies to be set.
+    :param browser_context_id: *(Optional)* Browser context to use when called on the browser endpoint.
+    '''
+    params: T_JSON_DICT = dict()
+    params['cookies'] = [i.to_json() for i in cookies]
+    if browser_context_id is not None:
+        params['browserContextId'] = browser_context_id.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Storage.setCookies',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
+def clear_cookies(
+        browser_context_id: typing.Optional[browser.BrowserContextID] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    '''
+    Clears cookies.
+
+    :param browser_context_id: *(Optional)* Browser context to use when called on the browser endpoint.
+    '''
+    params: T_JSON_DICT = dict()
+    if browser_context_id is not None:
+        params['browserContextId'] = browser_context_id.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Storage.clearCookies',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
 def get_usage_and_quota(
         origin: str
-    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[float, float, typing.List[UsageForType]]]:
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[float, float, bool, typing.List[UsageForType]]]:
     '''
     Returns usage and quota in bytes.
 
@@ -92,7 +178,8 @@ def get_usage_and_quota(
 
         0. **usage** - Storage usage (bytes).
         1. **quota** - Storage quota (bytes).
-        2. **usageBreakdown** - Storage usage per type (bytes).
+        2. **overrideActive** - Whether or not the origin has an active storage quota override
+        3. **usageBreakdown** - Storage usage per type (bytes).
     '''
     params: T_JSON_DICT = dict()
     params['origin'] = origin
@@ -104,8 +191,32 @@ def get_usage_and_quota(
     return (
         float(json['usage']),
         float(json['quota']),
+        bool(json['overrideActive']),
         [UsageForType.from_json(i) for i in json['usageBreakdown']]
     )
+
+
+def override_quota_for_origin(
+        origin: str,
+        quota_size: typing.Optional[float] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    '''
+    Override quota for the specified origin
+
+    **EXPERIMENTAL**
+
+    :param origin: Security origin.
+    :param quota_size: *(Optional)* The quota size (in bytes) to override the original quota with. If this is called multiple times, the overridden quota will be equal to the quotaSize provided in the final call. If this is called without specifying a quotaSize, the quota will be reset to the default value for the specified origin. If this is called multiple times with different origins, the override will be maintained for each origin until it is disabled (called without a quotaSize).
+    '''
+    params: T_JSON_DICT = dict()
+    params['origin'] = origin
+    if quota_size is not None:
+        params['quotaSize'] = quota_size
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Storage.overrideQuotaForOrigin',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
 def track_cache_storage_for_origin(
@@ -174,6 +285,44 @@ def untrack_indexed_db_for_origin(
         'params': params,
     }
     json = yield cmd_dict
+
+
+def get_trust_tokens() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[TrustTokens]]:
+    '''
+    Returns the number of stored Trust Tokens per issuer for the
+    current browsing context.
+
+    **EXPERIMENTAL**
+
+    :returns: 
+    '''
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Storage.getTrustTokens',
+    }
+    json = yield cmd_dict
+    return [TrustTokens.from_json(i) for i in json['tokens']]
+
+
+def clear_trust_tokens(
+        issuer_origin: str
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,bool]:
+    '''
+    Removes all Trust Tokens issued by the provided issuerOrigin.
+    Leaves other stored data, including the issuer's Redemption Records, intact.
+
+    **EXPERIMENTAL**
+
+    :param issuer_origin:
+    :returns: True if any tokens were deleted, false otherwise.
+    '''
+    params: T_JSON_DICT = dict()
+    params['issuerOrigin'] = issuer_origin
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Storage.clearTrustTokens',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return bool(json['didDeleteTokens'])
 
 
 @event_class('Storage.cacheStorageContentUpdated')

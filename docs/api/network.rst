@@ -68,12 +68,27 @@ arguments to other commands.
       :undoc-members:
       :exclude-members: from_json, to_json
 
+.. autoclass:: CookiePriority
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: CookieSourceScheme
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
 .. autoclass:: ResourceTiming
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
 
 .. autoclass:: ResourcePriority
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: PostDataEntry
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
@@ -99,6 +114,31 @@ arguments to other commands.
       :exclude-members: from_json, to_json
 
 .. autoclass:: BlockedReason
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: CorsError
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: CorsErrorStatus
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: ServiceWorkerResponseSource
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: TrustTokenParams
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: TrustTokenOperationType
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
@@ -208,6 +248,86 @@ arguments to other commands.
       :undoc-members:
       :exclude-members: from_json, to_json
 
+.. autoclass:: ContentEncoding
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: PrivateNetworkRequestPolicy
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: IPAddressSpace
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: ConnectTiming
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: ClientSecurityState
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: CrossOriginOpenerPolicyValue
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: CrossOriginOpenerPolicyStatus
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: CrossOriginEmbedderPolicyValue
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: CrossOriginEmbedderPolicyStatus
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: SecurityIsolationStatus
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: ReportStatus
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: ReportId
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: ReportingApiReport
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: ReportingApiEndpoint
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: LoadNetworkResourcePageResult
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: LoadNetworkResourceOptions
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
 Commands
 --------
 
@@ -226,6 +346,8 @@ to. For more information, see
 
 .. autofunction:: can_emulate_network_conditions
 
+.. autofunction:: clear_accepted_encodings_override
+
 .. autofunction:: clear_browser_cache
 
 .. autofunction:: clear_browser_cookies
@@ -240,6 +362,8 @@ to. For more information, see
 
 .. autofunction:: enable
 
+.. autofunction:: enable_reporting_api
+
 .. autofunction:: get_all_cookies
 
 .. autofunction:: get_certificate
@@ -252,9 +376,17 @@ to. For more information, see
 
 .. autofunction:: get_response_body_for_interception
 
+.. autofunction:: get_security_isolation_status
+
+.. autofunction:: load_network_resource
+
 .. autofunction:: replay_xhr
 
 .. autofunction:: search_in_response_body
+
+.. autofunction:: set_accepted_encodings
+
+.. autofunction:: set_attach_debug_stack
 
 .. autofunction:: set_blocked_ur_ls
 
@@ -265,8 +397,6 @@ to. For more information, see
 .. autofunction:: set_cookie
 
 .. autofunction:: set_cookies
-
-.. autofunction:: set_data_size_limits_for_test
 
 .. autofunction:: set_extra_http_headers
 
@@ -368,12 +498,67 @@ you use the event's attributes.
       :undoc-members:
       :exclude-members: from_json, to_json
 
+.. autoclass:: WebTransportCreated
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: WebTransportConnectionEstablished
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: WebTransportClosed
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
 .. autoclass:: RequestWillBeSentExtraInfo
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
 
 .. autoclass:: ResponseReceivedExtraInfo
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: TrustTokenOperationDone
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: SubresourceWebBundleMetadataReceived
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: SubresourceWebBundleMetadataError
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: SubresourceWebBundleInnerResponseParsed
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: SubresourceWebBundleInnerResponseError
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: ReportingApiReportAdded
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: ReportingApiReportUpdated
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: ReportingApiEndpointsChangedForOrigin
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
