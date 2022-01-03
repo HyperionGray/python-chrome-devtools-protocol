@@ -2850,9 +2850,9 @@ def enable_reporting_api(
 
 
 def load_network_resource(
-        frame_id: typing.Optional[page.FrameId] = None,
         url: str,
-        options: LoadNetworkResourceOptions
+        options: LoadNetworkResourceOptions,
+        frame_id: typing.Optional[page.FrameId] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,LoadNetworkResourcePageResult]:
     '''
     Fetches the resource and returns the content.

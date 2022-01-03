@@ -596,7 +596,8 @@ class CdpCommand:
         if self.parameters:
             code += '\n'
             code += indent(
-                ',\n'.join(p.generate_code() for p in self.parameters), 8)
+                ',\n'.join([p.generate_code() for p in self.parameters if not p.optional] + [p.generate_code() for p in self.parameters if p.optional]),
+                8)
             code += '\n'
             code += indent(ret, 4)
         else:
