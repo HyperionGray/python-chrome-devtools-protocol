@@ -17,7 +17,7 @@ from . import runtime
 
 
 class AXNodeId(str):
-    '''
+    r'''
     Unique accessibility node identifier.
     '''
     def to_json(self) -> str:
@@ -32,7 +32,7 @@ class AXNodeId(str):
 
 
 class AXValueType(enum.Enum):
-    '''
+    r'''
     Enum of possible property types.
     '''
     BOOLEAN = "boolean"
@@ -62,7 +62,7 @@ class AXValueType(enum.Enum):
 
 
 class AXValueSourceType(enum.Enum):
-    '''
+    r'''
     Enum of possible property sources.
     '''
     ATTRIBUTE = "attribute"
@@ -81,7 +81,7 @@ class AXValueSourceType(enum.Enum):
 
 
 class AXValueNativeSourceType(enum.Enum):
-    '''
+    r'''
     Enum of possible native property sources (as a subtype of a particular AXValueSourceType).
     '''
     DESCRIPTION = "description"
@@ -105,7 +105,7 @@ class AXValueNativeSourceType(enum.Enum):
 
 @dataclass
 class AXValueSource:
-    '''
+    r'''
     A single source for a computed AX property.
     '''
     #: What type of source this is.
@@ -224,7 +224,7 @@ class AXProperty:
 
 @dataclass
 class AXValue:
-    '''
+    r'''
     A single computed AX property.
     '''
     #: The type of this value.
@@ -261,7 +261,7 @@ class AXValue:
 
 
 class AXPropertyName(enum.Enum):
-    '''
+    r'''
     Values of AXProperty name:
     - from 'busy' to 'roledescription': states which apply to every AX node
     - from 'live' to 'root': attributes which apply to nodes in live regions
@@ -319,7 +319,7 @@ class AXPropertyName(enum.Enum):
 
 @dataclass
 class AXNode:
-    '''
+    r'''
     A node in the accessibility tree.
     '''
     #: Unique identifier for this node.
@@ -403,7 +403,7 @@ class AXNode:
 
 
 def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Disables the accessibility domain.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -413,7 +413,7 @@ def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables the accessibility domain which causes ``AXNodeId``'s to remain consistent between method calls.
     This turns on accessibility for the page, which can impact performance until accessibility is disabled.
     '''
@@ -429,7 +429,7 @@ def get_partial_ax_tree(
         object_id: typing.Optional[runtime.RemoteObjectId] = None,
         fetch_relatives: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[AXNode]]:
-    '''
+    r'''
     Fetches the accessibility node and partial accessibility tree for this DOM node, if it exists.
 
     **EXPERIMENTAL**
@@ -462,7 +462,7 @@ def get_full_ax_tree(
         max_depth: typing.Optional[int] = None,
         frame_id: typing.Optional[page.FrameId] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[AXNode]]:
-    '''
+    r'''
     Fetches the entire accessibility tree for the root Document
 
     **EXPERIMENTAL**
@@ -490,7 +490,7 @@ def get_full_ax_tree(
 def get_root_ax_node(
         frame_id: typing.Optional[page.FrameId] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,AXNode]:
-    '''
+    r'''
     Fetches the root node.
     Requires ``enable()`` to have been called previously.
 
@@ -515,7 +515,7 @@ def get_ax_node_and_ancestors(
         backend_node_id: typing.Optional[dom.BackendNodeId] = None,
         object_id: typing.Optional[runtime.RemoteObjectId] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[AXNode]]:
-    '''
+    r'''
     Fetches a node and all ancestors up to and including the root.
     Requires ``enable()`` to have been called previously.
 
@@ -545,7 +545,7 @@ def get_child_ax_nodes(
         id_: AXNodeId,
         frame_id: typing.Optional[page.FrameId] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[AXNode]]:
-    '''
+    r'''
     Fetches a particular accessibility node by AXNodeId.
     Requires ``enable()`` to have been called previously.
 
@@ -574,7 +574,7 @@ def query_ax_tree(
         accessible_name: typing.Optional[str] = None,
         role: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[AXNode]]:
-    '''
+    r'''
     Query a DOM node's accessibility subtree for accessible name and role.
     This command computes the name and role for all nodes in the subtree, including those that are
     ignored for accessibility, and returns those that mactch the specified name and role. If no DOM
@@ -612,7 +612,7 @@ def query_ax_tree(
 @event_class('Accessibility.loadComplete')
 @dataclass
 class LoadComplete:
-    '''
+    r'''
     **EXPERIMENTAL**
 
     The loadComplete event mirrors the load complete event sent by the browser to assistive
@@ -631,7 +631,7 @@ class LoadComplete:
 @event_class('Accessibility.nodesUpdated')
 @dataclass
 class NodesUpdated:
-    '''
+    r'''
     **EXPERIMENTAL**
 
     The nodesUpdated event is sent every time a previously requested node has changed the in tree.

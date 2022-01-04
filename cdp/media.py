@@ -13,7 +13,7 @@ import typing
 
 
 class PlayerId(str):
-    '''
+    r'''
     Players will get an ID that is unique within the agent context.
     '''
     def to_json(self) -> str:
@@ -41,7 +41,7 @@ class Timestamp(float):
 
 @dataclass
 class PlayerMessage:
-    '''
+    r'''
     Have one type per entry in MediaLogRecord::Type
     Corresponds to kMessage
     '''
@@ -74,7 +74,7 @@ class PlayerMessage:
 
 @dataclass
 class PlayerProperty:
-    '''
+    r'''
     Corresponds to kMediaPropertyChange
     '''
     name: str
@@ -97,7 +97,7 @@ class PlayerProperty:
 
 @dataclass
 class PlayerEvent:
-    '''
+    r'''
     Corresponds to kMediaEventTriggered
     '''
     timestamp: Timestamp
@@ -120,7 +120,7 @@ class PlayerEvent:
 
 @dataclass
 class PlayerError:
-    '''
+    r'''
     Corresponds to kMediaError
     '''
     type_: str
@@ -147,7 +147,7 @@ class PlayerError:
 
 
 def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables the Media domain
     '''
     cmd_dict: T_JSON_DICT = {
@@ -157,7 +157,7 @@ def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Disables the Media domain.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -169,7 +169,7 @@ def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 @event_class('Media.playerPropertiesChanged')
 @dataclass
 class PlayerPropertiesChanged:
-    '''
+    r'''
     This can be called multiple times, and can be used to set / override /
     remove player properties. A null propValue indicates removal.
     '''
@@ -187,7 +187,7 @@ class PlayerPropertiesChanged:
 @event_class('Media.playerEventsAdded')
 @dataclass
 class PlayerEventsAdded:
-    '''
+    r'''
     Send events as a list, allowing them to be batched on the browser for less
     congestion. If batched, events must ALWAYS be in chronological order.
     '''
@@ -205,7 +205,7 @@ class PlayerEventsAdded:
 @event_class('Media.playerMessagesLogged')
 @dataclass
 class PlayerMessagesLogged:
-    '''
+    r'''
     Send a list of any messages that need to be delivered.
     '''
     player_id: PlayerId
@@ -222,7 +222,7 @@ class PlayerMessagesLogged:
 @event_class('Media.playerErrorsRaised')
 @dataclass
 class PlayerErrorsRaised:
-    '''
+    r'''
     Send a list of any errors that need to be delivered.
     '''
     player_id: PlayerId
@@ -239,7 +239,7 @@ class PlayerErrorsRaised:
 @event_class('Media.playersCreated')
 @dataclass
 class PlayersCreated:
-    '''
+    r'''
     Called whenever a player is created, or when a new agent joins and receives
     a list of active players. If an agent is restored, it will receive the full
     list of player ids and all events again.

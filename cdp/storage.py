@@ -16,7 +16,7 @@ from . import network
 
 
 class StorageType(enum.Enum):
-    '''
+    r'''
     Enum of possible storage types.
     '''
     APPCACHE = "appcache"
@@ -41,7 +41,7 @@ class StorageType(enum.Enum):
 
 @dataclass
 class UsageForType:
-    '''
+    r'''
     Usage for a storage type.
     '''
     #: Name of storage type.
@@ -66,7 +66,7 @@ class UsageForType:
 
 @dataclass
 class TrustTokens:
-    '''
+    r'''
     Pair of issuer origin and number of available (signed, but not used) Trust
     Tokens from that issuer.
     '''
@@ -92,7 +92,7 @@ def clear_data_for_origin(
         origin: str,
         storage_types: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Clears storage for origin.
 
     :param origin: Security origin.
@@ -111,7 +111,7 @@ def clear_data_for_origin(
 def get_cookies(
         browser_context_id: typing.Optional[browser.BrowserContextID] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[network.Cookie]]:
-    '''
+    r'''
     Returns all browser cookies.
 
     :param browser_context_id: *(Optional)* Browser context to use when called on the browser endpoint.
@@ -132,7 +132,7 @@ def set_cookies(
         cookies: typing.List[network.CookieParam],
         browser_context_id: typing.Optional[browser.BrowserContextID] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Sets given cookies.
 
     :param cookies: Cookies to be set.
@@ -152,7 +152,7 @@ def set_cookies(
 def clear_cookies(
         browser_context_id: typing.Optional[browser.BrowserContextID] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Clears cookies.
 
     :param browser_context_id: *(Optional)* Browser context to use when called on the browser endpoint.
@@ -170,7 +170,7 @@ def clear_cookies(
 def get_usage_and_quota(
         origin: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[float, float, bool, typing.List[UsageForType]]]:
-    '''
+    r'''
     Returns usage and quota in bytes.
 
     :param origin: Security origin.
@@ -200,7 +200,7 @@ def override_quota_for_origin(
         origin: str,
         quota_size: typing.Optional[float] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Override quota for the specified origin
 
     **EXPERIMENTAL**
@@ -222,7 +222,7 @@ def override_quota_for_origin(
 def track_cache_storage_for_origin(
         origin: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Registers origin to be notified when an update occurs to its cache storage list.
 
     :param origin: Security origin.
@@ -239,7 +239,7 @@ def track_cache_storage_for_origin(
 def track_indexed_db_for_origin(
         origin: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Registers origin to be notified when an update occurs to its IndexedDB.
 
     :param origin: Security origin.
@@ -256,7 +256,7 @@ def track_indexed_db_for_origin(
 def untrack_cache_storage_for_origin(
         origin: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Unregisters origin from receiving notifications for cache storage.
 
     :param origin: Security origin.
@@ -273,7 +273,7 @@ def untrack_cache_storage_for_origin(
 def untrack_indexed_db_for_origin(
         origin: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Unregisters origin from receiving notifications for IndexedDB.
 
     :param origin: Security origin.
@@ -288,7 +288,7 @@ def untrack_indexed_db_for_origin(
 
 
 def get_trust_tokens() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[TrustTokens]]:
-    '''
+    r'''
     Returns the number of stored Trust Tokens per issuer for the
     current browsing context.
 
@@ -306,7 +306,7 @@ def get_trust_tokens() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[T
 def clear_trust_tokens(
         issuer_origin: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,bool]:
-    '''
+    r'''
     Removes all Trust Tokens issued by the provided issuerOrigin.
     Leaves other stored data, including the issuer's Redemption Records, intact.
 
@@ -328,7 +328,7 @@ def clear_trust_tokens(
 @event_class('Storage.cacheStorageContentUpdated')
 @dataclass
 class CacheStorageContentUpdated:
-    '''
+    r'''
     A cache's contents have been modified.
     '''
     #: Origin to update.
@@ -347,7 +347,7 @@ class CacheStorageContentUpdated:
 @event_class('Storage.cacheStorageListUpdated')
 @dataclass
 class CacheStorageListUpdated:
-    '''
+    r'''
     A cache has been added/deleted.
     '''
     #: Origin to update.
@@ -363,7 +363,7 @@ class CacheStorageListUpdated:
 @event_class('Storage.indexedDBContentUpdated')
 @dataclass
 class IndexedDBContentUpdated:
-    '''
+    r'''
     The origin's IndexedDB object store has been modified.
     '''
     #: Origin to update.
@@ -385,7 +385,7 @@ class IndexedDBContentUpdated:
 @event_class('Storage.indexedDBListUpdated')
 @dataclass
 class IndexedDBListUpdated:
-    '''
+    r'''
     The origin's IndexedDB database list has been modified.
     '''
     #: Origin to update.

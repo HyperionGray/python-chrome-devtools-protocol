@@ -18,7 +18,7 @@ from . import page
 
 @dataclass
 class LargestContentfulPaint:
-    '''
+    r'''
     See https://github.com/WICG/LargestContentfulPaint and largest_contentful_paint.idl
     '''
     render_time: network.TimeSinceEpoch
@@ -88,7 +88,7 @@ class LayoutShiftAttribution:
 
 @dataclass
 class LayoutShift:
-    '''
+    r'''
     See https://wicg.github.io/layout-instability/#sec-layout-shift and layout_shift.idl
     '''
     #: Score increment produced by this event.
@@ -170,7 +170,7 @@ class TimelineEvent:
 def enable(
         event_types: typing.List[str]
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Previously buffered events would be reported before method returns.
     See also: timelineEventAdded
 
@@ -188,7 +188,7 @@ def enable(
 @event_class('PerformanceTimeline.timelineEventAdded')
 @dataclass
 class TimelineEventAdded:
-    '''
+    r'''
     Sent when a performance timeline event is added. See reportPerformanceTimeline method.
     '''
     event: TimelineEvent

@@ -19,7 +19,7 @@ from deprecated.sphinx import deprecated # type: ignore
 
 @dataclass
 class SourceOrderConfig:
-    '''
+    r'''
     Configuration data for drawing the source order of an elements children.
     '''
     #: the color to outline the givent element in.
@@ -44,7 +44,7 @@ class SourceOrderConfig:
 
 @dataclass
 class GridHighlightConfig:
-    '''
+    r'''
     Configuration data for the highlighting of Grid elements.
     '''
     #: Whether the extension lines from grid cells to the rulers should be shown (default: false).
@@ -179,7 +179,7 @@ class GridHighlightConfig:
 
 @dataclass
 class FlexContainerHighlightConfig:
-    '''
+    r'''
     Configuration data for the highlighting of Flex container elements.
     '''
     #: The style of the container border
@@ -242,7 +242,7 @@ class FlexContainerHighlightConfig:
 
 @dataclass
 class FlexItemHighlightConfig:
-    '''
+    r'''
     Configuration data for the highlighting of Flex item elements.
     '''
     #: Style of the box representing the item's base size
@@ -275,7 +275,7 @@ class FlexItemHighlightConfig:
 
 @dataclass
 class LineStyle:
-    '''
+    r'''
     Style information for drawing a line.
     '''
     #: The color of the line (default: transparent)
@@ -302,7 +302,7 @@ class LineStyle:
 
 @dataclass
 class BoxStyle:
-    '''
+    r'''
     Style information for drawing a box.
     '''
     #: The background color for the box (default: transparent)
@@ -342,7 +342,7 @@ class ContrastAlgorithm(enum.Enum):
 
 @dataclass
 class HighlightConfig:
-    '''
+    r'''
     Configuration data for the highlighting of page elements.
     '''
     #: Whether the node info tooltip should be shown (default: false).
@@ -484,7 +484,7 @@ class ColorFormat(enum.Enum):
 
 @dataclass
 class GridNodeHighlightConfig:
-    '''
+    r'''
     Configurations for Persistent Grid Highlight
     '''
     #: A descriptor for the highlight appearance.
@@ -589,7 +589,7 @@ class ScrollSnapHighlightConfig:
 
 @dataclass
 class HingeConfig:
-    '''
+    r'''
     Configuration for dual screen hinge
     '''
     #: A rectangle represent hinge
@@ -733,7 +733,7 @@ class InspectMode(enum.Enum):
 
 
 def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Disables domain notifications.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -743,7 +743,7 @@ def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables domain notifications.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -759,7 +759,7 @@ def get_highlight_object_for_test(
         color_format: typing.Optional[ColorFormat] = None,
         show_accessibility_info: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
-    '''
+    r'''
     For testing.
 
     :param node_id: Id of the node to get highlight object for.
@@ -790,7 +790,7 @@ def get_highlight_object_for_test(
 def get_grid_highlight_objects_for_test(
         node_ids: typing.List[dom.NodeId]
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
-    '''
+    r'''
     For Persistent Grid testing.
 
     :param node_ids: Ids of the node to get highlight object for.
@@ -809,7 +809,7 @@ def get_grid_highlight_objects_for_test(
 def get_source_order_highlight_object_for_test(
         node_id: dom.NodeId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,dict]:
-    '''
+    r'''
     For Source Order Viewer testing.
 
     :param node_id: Id of the node to highlight.
@@ -826,7 +826,7 @@ def get_source_order_highlight_object_for_test(
 
 
 def hide_highlight() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Hides any highlight.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -841,7 +841,7 @@ def highlight_frame(
         content_color: typing.Optional[dom.RGBA] = None,
         content_outline_color: typing.Optional[dom.RGBA] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Highlights owner element of the frame with given id.
     Deprecated: Doesn't work reliablity and cannot be fixed due to process
     separatation (the owner node might be in a different process). Determine
@@ -873,7 +873,7 @@ def highlight_node(
         object_id: typing.Optional[runtime.RemoteObjectId] = None,
         selector: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Highlights DOM node with given id or with the given JavaScript object wrapper. Either nodeId or
     objectId must be specified.
 
@@ -905,7 +905,7 @@ def highlight_quad(
         color: typing.Optional[dom.RGBA] = None,
         outline_color: typing.Optional[dom.RGBA] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Highlights given quad. Coordinates are absolute with respect to the main frame viewport.
 
     :param quad: Quad to highlight
@@ -933,7 +933,7 @@ def highlight_rect(
         color: typing.Optional[dom.RGBA] = None,
         outline_color: typing.Optional[dom.RGBA] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Highlights given rectangle. Coordinates are absolute with respect to the main frame viewport.
 
     :param x: X coordinate
@@ -965,7 +965,7 @@ def highlight_source_order(
         backend_node_id: typing.Optional[dom.BackendNodeId] = None,
         object_id: typing.Optional[runtime.RemoteObjectId] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Highlights the source order of the children of the DOM node with given id or with the given
     JavaScript object wrapper. Either nodeId or objectId must be specified.
 
@@ -993,7 +993,7 @@ def set_inspect_mode(
         mode: InspectMode,
         highlight_config: typing.Optional[HighlightConfig] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enters the 'inspect' mode. In this mode, elements that user is hovering over are highlighted.
     Backend then generates 'inspectNodeRequested' event upon element selection.
 
@@ -1014,7 +1014,7 @@ def set_inspect_mode(
 def set_show_ad_highlights(
         show: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Highlights owner element of all frames detected to be ads.
 
     :param show: True for showing ad highlights
@@ -1031,7 +1031,7 @@ def set_show_ad_highlights(
 def set_paused_in_debugger_message(
         message: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     :param message: *(Optional)* The message to display, also triggers resume and step over controls.
     '''
     params: T_JSON_DICT = dict()
@@ -1047,7 +1047,7 @@ def set_paused_in_debugger_message(
 def set_show_debug_borders(
         show: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Requests that backend shows debug borders on layers
 
     :param show: True for showing debug borders
@@ -1064,7 +1064,7 @@ def set_show_debug_borders(
 def set_show_fps_counter(
         show: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Requests that backend shows the FPS counter
 
     :param show: True for showing the FPS counter
@@ -1081,7 +1081,7 @@ def set_show_fps_counter(
 def set_show_grid_overlays(
         grid_node_highlight_configs: typing.List[GridNodeHighlightConfig]
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Highlight multiple elements with the CSS Grid overlay.
 
     :param grid_node_highlight_configs: An array of node identifiers and descriptors for the highlight appearance.
@@ -1098,7 +1098,7 @@ def set_show_grid_overlays(
 def set_show_flex_overlays(
         flex_node_highlight_configs: typing.List[FlexNodeHighlightConfig]
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     :param flex_node_highlight_configs: An array of node identifiers and descriptors for the highlight appearance.
     '''
     params: T_JSON_DICT = dict()
@@ -1113,7 +1113,7 @@ def set_show_flex_overlays(
 def set_show_scroll_snap_overlays(
         scroll_snap_highlight_configs: typing.List[ScrollSnapHighlightConfig]
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     :param scroll_snap_highlight_configs: An array of node identifiers and descriptors for the highlight appearance.
     '''
     params: T_JSON_DICT = dict()
@@ -1128,7 +1128,7 @@ def set_show_scroll_snap_overlays(
 def set_show_container_query_overlays(
         container_query_highlight_configs: typing.List[ContainerQueryHighlightConfig]
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     :param container_query_highlight_configs: An array of node identifiers and descriptors for the highlight appearance.
     '''
     params: T_JSON_DICT = dict()
@@ -1143,7 +1143,7 @@ def set_show_container_query_overlays(
 def set_show_paint_rects(
         result: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Requests that backend shows paint rectangles
 
     :param result: True for showing paint rectangles
@@ -1160,7 +1160,7 @@ def set_show_paint_rects(
 def set_show_layout_shift_regions(
         result: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Requests that backend shows layout shift regions
 
     :param result: True for showing layout shift regions
@@ -1177,7 +1177,7 @@ def set_show_layout_shift_regions(
 def set_show_scroll_bottleneck_rects(
         show: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Requests that backend shows scroll bottleneck rects
 
     :param show: True for showing scroll bottleneck rects
@@ -1194,7 +1194,7 @@ def set_show_scroll_bottleneck_rects(
 def set_show_hit_test_borders(
         show: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Requests that backend shows hit-test borders on layers
 
     :param show: True for showing hit-test borders
@@ -1211,7 +1211,7 @@ def set_show_hit_test_borders(
 def set_show_web_vitals(
         show: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Request that backend shows an overlay with web vital metrics.
 
     :param show:
@@ -1228,7 +1228,7 @@ def set_show_web_vitals(
 def set_show_viewport_size_on_resize(
         show: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Paints viewport size upon main frame resize.
 
     :param show: Whether to paint size or not.
@@ -1245,7 +1245,7 @@ def set_show_viewport_size_on_resize(
 def set_show_hinge(
         hinge_config: typing.Optional[HingeConfig] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Add a dual screen device hinge
 
     :param hinge_config: *(Optional)* hinge data, null means hideHinge
@@ -1263,7 +1263,7 @@ def set_show_hinge(
 def set_show_isolated_elements(
         isolated_element_highlight_configs: typing.List[IsolatedElementHighlightConfig]
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Show elements in isolation mode with overlays.
 
     :param isolated_element_highlight_configs: An array of node identifiers and descriptors for the highlight appearance.
@@ -1280,7 +1280,7 @@ def set_show_isolated_elements(
 @event_class('Overlay.inspectNodeRequested')
 @dataclass
 class InspectNodeRequested:
-    '''
+    r'''
     Fired when the node should be inspected. This happens after call to ``setInspectMode`` or when
     user manually inspects an element.
     '''
@@ -1297,7 +1297,7 @@ class InspectNodeRequested:
 @event_class('Overlay.nodeHighlightRequested')
 @dataclass
 class NodeHighlightRequested:
-    '''
+    r'''
     Fired when the node should be highlighted. This happens after call to ``setInspectMode``.
     '''
     node_id: dom.NodeId
@@ -1312,7 +1312,7 @@ class NodeHighlightRequested:
 @event_class('Overlay.screenshotRequested')
 @dataclass
 class ScreenshotRequested:
-    '''
+    r'''
     Fired when user asks to capture screenshot of some area on the page.
     '''
     #: Viewport to capture, in device independent pixels (dip).
@@ -1328,7 +1328,7 @@ class ScreenshotRequested:
 @event_class('Overlay.inspectModeCanceled')
 @dataclass
 class InspectModeCanceled:
-    '''
+    r'''
     Fired when user cancels the inspect mode.
     '''
 

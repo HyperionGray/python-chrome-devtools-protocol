@@ -13,7 +13,7 @@ import typing
 
 
 class DatabaseId(str):
-    '''
+    r'''
     Unique identifier of Database object.
     '''
     def to_json(self) -> str:
@@ -29,7 +29,7 @@ class DatabaseId(str):
 
 @dataclass
 class Database:
-    '''
+    r'''
     Database object.
     '''
     #: Database ID.
@@ -64,7 +64,7 @@ class Database:
 
 @dataclass
 class Error:
-    '''
+    r'''
     Database error.
     '''
     #: Error message.
@@ -88,7 +88,7 @@ class Error:
 
 
 def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Disables database tracking, prevents database events from being sent to the client.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -98,7 +98,7 @@ def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables database tracking, database events will now be delivered to the client.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -111,7 +111,7 @@ def execute_sql(
         database_id: DatabaseId,
         query: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.Optional[typing.List[str]], typing.Optional[typing.List[typing.Any]], typing.Optional[Error]]]:
-    '''
+    r'''
     :param database_id:
     :param query:
     :returns: A tuple with the following items:
@@ -138,7 +138,7 @@ def execute_sql(
 def get_database_table_names(
         database_id: DatabaseId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[str]]:
-    '''
+    r'''
     :param database_id:
     :returns: 
     '''

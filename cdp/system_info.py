@@ -14,7 +14,7 @@ import typing
 
 @dataclass
 class GPUDevice:
-    '''
+    r'''
     Describes a single graphics processor (GPU).
     '''
     #: PCI ID of the GPU vendor, if available; 0 otherwise.
@@ -71,7 +71,7 @@ class GPUDevice:
 
 @dataclass
 class Size:
-    '''
+    r'''
     Describes the width and height dimensions of an entity.
     '''
     #: Width in pixels.
@@ -96,7 +96,7 @@ class Size:
 
 @dataclass
 class VideoDecodeAcceleratorCapability:
-    '''
+    r'''
     Describes a supported video decoding profile with its associated minimum and
     maximum resolutions.
     '''
@@ -127,7 +127,7 @@ class VideoDecodeAcceleratorCapability:
 
 @dataclass
 class VideoEncodeAcceleratorCapability:
-    '''
+    r'''
     Describes a supported video encoding profile with its associated maximum
     resolution and maximum framerate.
     '''
@@ -163,7 +163,7 @@ class VideoEncodeAcceleratorCapability:
 
 
 class SubsamplingFormat(enum.Enum):
-    '''
+    r'''
     YUV subsampling type of the pixels of a given image.
     '''
     YUV420 = "yuv420"
@@ -179,7 +179,7 @@ class SubsamplingFormat(enum.Enum):
 
 
 class ImageType(enum.Enum):
-    '''
+    r'''
     Image format of a given image.
     '''
     JPEG = "jpeg"
@@ -196,7 +196,7 @@ class ImageType(enum.Enum):
 
 @dataclass
 class ImageDecodeAcceleratorCapability:
-    '''
+    r'''
     Describes a supported image decoding profile with its associated minimum and
     maximum resolutions and subsampling.
     '''
@@ -232,7 +232,7 @@ class ImageDecodeAcceleratorCapability:
 
 @dataclass
 class GPUInfo:
-    '''
+    r'''
     Provides information about the GPU(s) on the system.
     '''
     #: The graphics devices on the system. Element 0 is the primary GPU.
@@ -284,7 +284,7 @@ class GPUInfo:
 
 @dataclass
 class ProcessInfo:
-    '''
+    r'''
     Represents process info.
     '''
     #: Specifies process type.
@@ -314,7 +314,7 @@ class ProcessInfo:
 
 
 def get_info() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[GPUInfo, str, str, str]]:
-    '''
+    r'''
     Returns information about the system.
 
     :returns: A tuple with the following items:
@@ -337,7 +337,7 @@ def get_info() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[GPUInfo,
 
 
 def get_process_info() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[ProcessInfo]]:
-    '''
+    r'''
     Returns information about all running processes.
 
     :returns: An array of process info blocks.

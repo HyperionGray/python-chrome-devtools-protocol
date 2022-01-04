@@ -28,7 +28,7 @@ class RegistrationID(str):
 
 @dataclass
 class ServiceWorkerRegistration:
-    '''
+    r'''
     ServiceWorker registration.
     '''
     registration_id: RegistrationID
@@ -85,7 +85,7 @@ class ServiceWorkerVersionStatus(enum.Enum):
 
 @dataclass
 class ServiceWorkerVersion:
-    '''
+    r'''
     ServiceWorker version.
     '''
     version_id: str
@@ -143,7 +143,7 @@ class ServiceWorkerVersion:
 
 @dataclass
 class ServiceWorkerErrorMessage:
-    '''
+    r'''
     ServiceWorker error message.
     '''
     error_message: str
@@ -185,7 +185,7 @@ def deliver_push_message(
         registration_id: RegistrationID,
         data: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     :param origin:
     :param registration_id:
     :param data:
@@ -215,7 +215,7 @@ def dispatch_sync_event(
         tag: str,
         last_chance: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     :param origin:
     :param registration_id:
     :param tag:
@@ -238,7 +238,7 @@ def dispatch_periodic_sync_event(
         registration_id: RegistrationID,
         tag: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     :param origin:
     :param registration_id:
     :param tag:
@@ -265,7 +265,7 @@ def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 def inspect_worker(
         version_id: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     :param version_id:
     '''
     params: T_JSON_DICT = dict()
@@ -280,7 +280,7 @@ def inspect_worker(
 def set_force_update_on_page_load(
         force_update_on_page_load: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     :param force_update_on_page_load:
     '''
     params: T_JSON_DICT = dict()
@@ -295,7 +295,7 @@ def set_force_update_on_page_load(
 def skip_waiting(
         scope_url: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     :param scope_url:
     '''
     params: T_JSON_DICT = dict()
@@ -310,7 +310,7 @@ def skip_waiting(
 def start_worker(
         scope_url: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     :param scope_url:
     '''
     params: T_JSON_DICT = dict()
@@ -333,7 +333,7 @@ def stop_all_workers() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 def stop_worker(
         version_id: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     :param version_id:
     '''
     params: T_JSON_DICT = dict()
@@ -348,7 +348,7 @@ def stop_worker(
 def unregister(
         scope_url: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     :param scope_url:
     '''
     params: T_JSON_DICT = dict()
@@ -363,7 +363,7 @@ def unregister(
 def update_registration(
         scope_url: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     :param scope_url:
     '''
     params: T_JSON_DICT = dict()

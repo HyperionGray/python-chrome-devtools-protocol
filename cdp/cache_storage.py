@@ -13,7 +13,7 @@ import typing
 
 
 class CacheId(str):
-    '''
+    r'''
     Unique identifier of the Cache object.
     '''
     def to_json(self) -> str:
@@ -28,7 +28,7 @@ class CacheId(str):
 
 
 class CachedResponseType(enum.Enum):
-    '''
+    r'''
     type of HTTP response cached
     '''
     BASIC = "basic"
@@ -48,7 +48,7 @@ class CachedResponseType(enum.Enum):
 
 @dataclass
 class DataEntry:
-    '''
+    r'''
     Data entry.
     '''
     #: Request URL.
@@ -103,7 +103,7 @@ class DataEntry:
 
 @dataclass
 class Cache:
-    '''
+    r'''
     Cache identifier.
     '''
     #: An opaque unique id of the cache.
@@ -153,7 +153,7 @@ class Header:
 
 @dataclass
 class CachedResponse:
-    '''
+    r'''
     Cached response
     '''
     #: Entry content, base64-encoded. (Encoded as a base64 string when passed over JSON)
@@ -174,7 +174,7 @@ class CachedResponse:
 def delete_cache(
         cache_id: CacheId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Deletes a cache.
 
     :param cache_id: Id of cache for deletion.
@@ -192,7 +192,7 @@ def delete_entry(
         cache_id: CacheId,
         request: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Deletes a cache entry.
 
     :param cache_id: Id of cache where the entry will be deleted.
@@ -211,7 +211,7 @@ def delete_entry(
 def request_cache_names(
         security_origin: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[Cache]]:
-    '''
+    r'''
     Requests cache names.
 
     :param security_origin: Security origin.
@@ -232,7 +232,7 @@ def request_cached_response(
         request_url: str,
         request_headers: typing.List[Header]
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,CachedResponse]:
-    '''
+    r'''
     Fetches cache entry.
 
     :param cache_id: Id of cache that contains the entry.
@@ -258,7 +258,7 @@ def request_entries(
         page_size: typing.Optional[int] = None,
         path_filter: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.List[DataEntry], float]]:
-    '''
+    r'''
     Requests data from cache.
 
     :param cache_id: ID of cache to get entries from.

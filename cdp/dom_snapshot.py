@@ -19,7 +19,7 @@ from deprecated.sphinx import deprecated # type: ignore
 
 @dataclass
 class DOMNode:
-    '''
+    r'''
     A Node in the DOM tree.
     '''
     #: ``Node``'s nodeType.
@@ -203,7 +203,7 @@ class DOMNode:
 
 @dataclass
 class InlineTextBox:
-    '''
+    r'''
     Details of post layout rendered text positions. The exact layout should not be regarded as
     stable and may change between versions.
     '''
@@ -236,7 +236,7 @@ class InlineTextBox:
 
 @dataclass
 class LayoutTreeNode:
-    '''
+    r'''
     Details of an element in the DOM tree with a LayoutObject.
     '''
     #: The index of the related DOM node in the ``domNodes`` array returned by ``getSnapshot``.
@@ -293,7 +293,7 @@ class LayoutTreeNode:
 
 @dataclass
 class ComputedStyle:
-    '''
+    r'''
     A subset of the full ComputedStyle as defined by the request whitelist.
     '''
     #: Name/value pairs of computed style properties.
@@ -313,7 +313,7 @@ class ComputedStyle:
 
 @dataclass
 class NameValue:
-    '''
+    r'''
     A name/value pair.
     '''
     #: Attribute/property name.
@@ -337,7 +337,7 @@ class NameValue:
 
 
 class StringIndex(int):
-    '''
+    r'''
     Index of the string in the strings table.
     '''
     def to_json(self) -> int:
@@ -352,7 +352,7 @@ class StringIndex(int):
 
 
 class ArrayOfStrings(list):
-    '''
+    r'''
     Index of the string in the strings table.
     '''
     def to_json(self) -> typing.List[StringIndex]:
@@ -368,7 +368,7 @@ class ArrayOfStrings(list):
 
 @dataclass
 class RareStringData:
-    '''
+    r'''
     Data that is only present on rare nodes.
     '''
     index: typing.List[int]
@@ -439,7 +439,7 @@ class Rectangle(list):
 
 @dataclass
 class DocumentSnapshot:
-    '''
+    r'''
     Document snapshot.
     '''
     #: Document URL that ``Document`` or ``FrameOwner`` node points to.
@@ -533,7 +533,7 @@ class DocumentSnapshot:
 
 @dataclass
 class NodeTreeSnapshot:
-    '''
+    r'''
     Table containing nodes.
     '''
     #: Parent node index.
@@ -646,7 +646,7 @@ class NodeTreeSnapshot:
 
 @dataclass
 class LayoutTreeSnapshot:
-    '''
+    r'''
     Table of details of an element in the DOM tree with a LayoutObject.
     '''
     #: Index of the corresponding node in the ``NodeTreeSnapshot`` array returned by ``captureSnapshot``.
@@ -724,7 +724,7 @@ class LayoutTreeSnapshot:
 
 @dataclass
 class TextBoxSnapshot:
-    '''
+    r'''
     Table of details of the post layout rendered text positions. The exact layout should not be regarded as
     stable and may change between versions.
     '''
@@ -761,7 +761,7 @@ class TextBoxSnapshot:
 
 
 def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Disables DOM snapshot agent for the given page.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -771,7 +771,7 @@ def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables DOM snapshot agent for the given page.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -787,7 +787,7 @@ def get_snapshot(
         include_paint_order: typing.Optional[bool] = None,
         include_user_agent_shadow_tree: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.List[DOMNode], typing.List[LayoutTreeNode], typing.List[ComputedStyle]]]:
-    '''
+    r'''
     Returns a document snapshot, including the full DOM tree of the root node (including iframes,
     template contents, and imported documents) in a flattened array, as well as layout and
     white-listed computed style information for the nodes. Shadow DOM in the returned DOM tree is
@@ -832,7 +832,7 @@ def capture_snapshot(
         include_blended_background_colors: typing.Optional[bool] = None,
         include_text_color_opacities: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.List[DocumentSnapshot], typing.List[str]]]:
-    '''
+    r'''
     Returns a document snapshot, including the full DOM tree of the root node (including iframes,
     template contents, and imported documents) in a flattened array, as well as layout and
     white-listed computed style information for the nodes. Shadow DOM in the returned DOM tree is

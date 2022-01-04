@@ -193,7 +193,7 @@ class Credential:
 
 
 def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enable the WebAuthn domain and start intercepting credential storage and
     retrieval with a virtual authenticator.
     '''
@@ -204,7 +204,7 @@ def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Disable the WebAuthn domain.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -216,7 +216,7 @@ def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 def add_virtual_authenticator(
         options: VirtualAuthenticatorOptions
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,AuthenticatorId]:
-    '''
+    r'''
     Creates and adds a virtual authenticator.
 
     :param options:
@@ -235,7 +235,7 @@ def add_virtual_authenticator(
 def remove_virtual_authenticator(
         authenticator_id: AuthenticatorId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Removes the given authenticator.
 
     :param authenticator_id:
@@ -253,7 +253,7 @@ def add_credential(
         authenticator_id: AuthenticatorId,
         credential: Credential
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Adds the credential to the specified authenticator.
 
     :param authenticator_id:
@@ -273,7 +273,7 @@ def get_credential(
         authenticator_id: AuthenticatorId,
         credential_id: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,Credential]:
-    '''
+    r'''
     Returns a single credential stored in the given virtual authenticator that
     matches the credential ID.
 
@@ -295,7 +295,7 @@ def get_credential(
 def get_credentials(
         authenticator_id: AuthenticatorId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[Credential]]:
-    '''
+    r'''
     Returns all the credentials stored in the given virtual authenticator.
 
     :param authenticator_id:
@@ -315,7 +315,7 @@ def remove_credential(
         authenticator_id: AuthenticatorId,
         credential_id: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Removes a credential from the authenticator.
 
     :param authenticator_id:
@@ -334,7 +334,7 @@ def remove_credential(
 def clear_credentials(
         authenticator_id: AuthenticatorId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Clears all the credentials from the specified device.
 
     :param authenticator_id:
@@ -352,7 +352,7 @@ def set_user_verified(
         authenticator_id: AuthenticatorId,
         is_user_verified: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Sets whether User Verification succeeds or fails for an authenticator.
     The default is true.
 
@@ -373,7 +373,7 @@ def set_automatic_presence_simulation(
         authenticator_id: AuthenticatorId,
         enabled: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Sets whether tests of user presence will succeed immediately (if true) or fail to resolve (if false) for an authenticator.
     The default is true.
 

@@ -15,7 +15,7 @@ from . import runtime
 
 
 class StreamHandle(str):
-    '''
+    r'''
     This is either obtained from another method or specified as ``blob:&lt;uuid&gt;`` where
     ``&lt;uuid&gt`` is an UUID of a Blob.
     '''
@@ -33,7 +33,7 @@ class StreamHandle(str):
 def close(
         handle: StreamHandle
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Close the stream, discard any temporary backing storage.
 
     :param handle: Handle of the stream to close.
@@ -52,7 +52,7 @@ def read(
         offset: typing.Optional[int] = None,
         size: typing.Optional[int] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.Optional[bool], str, bool]]:
-    '''
+    r'''
     Read a chunk of the stream
 
     :param handle: Handle of the stream to read.
@@ -85,7 +85,7 @@ def read(
 def resolve_blob(
         object_id: runtime.RemoteObjectId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,str]:
-    '''
+    r'''
     Return UUID of Blob object specified by a remote object id.
 
     :param object_id: Object id of a Blob object wrapper.

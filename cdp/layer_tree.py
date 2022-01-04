@@ -15,7 +15,7 @@ from . import dom
 
 
 class LayerId(str):
-    '''
+    r'''
     Unique Layer identifier.
     '''
     def to_json(self) -> str:
@@ -30,7 +30,7 @@ class LayerId(str):
 
 
 class SnapshotId(str):
-    '''
+    r'''
     Unique snapshot identifier.
     '''
     def to_json(self) -> str:
@@ -46,7 +46,7 @@ class SnapshotId(str):
 
 @dataclass
 class ScrollRect:
-    '''
+    r'''
     Rectangle where scrolling happens on the main thread.
     '''
     #: Rectangle itself.
@@ -71,7 +71,7 @@ class ScrollRect:
 
 @dataclass
 class StickyPositionConstraint:
-    '''
+    r'''
     Sticky position constraints.
     '''
     #: Layout rectangle of the sticky element before being shifted
@@ -108,7 +108,7 @@ class StickyPositionConstraint:
 
 @dataclass
 class PictureTile:
-    '''
+    r'''
     Serialized fragment of layer picture along with its offset within the layer.
     '''
     #: Offset from owning layer left boundary
@@ -138,7 +138,7 @@ class PictureTile:
 
 @dataclass
 class Layer:
-    '''
+    r'''
     Information about a compositing layer.
     '''
     #: The unique id for this layer.
@@ -242,7 +242,7 @@ class Layer:
 
 
 class PaintProfile(list):
-    '''
+    r'''
     Array of timings, one per paint step.
     '''
     def to_json(self) -> typing.List[float]:
@@ -259,7 +259,7 @@ class PaintProfile(list):
 def compositing_reasons(
         layer_id: LayerId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.List[str], typing.List[str]]]:
-    '''
+    r'''
     Provides the reasons why the given layer was composited.
 
     :param layer_id: The id of the layer for which we want to get the reasons it was composited.
@@ -282,7 +282,7 @@ def compositing_reasons(
 
 
 def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Disables compositing tree inspection.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -292,7 +292,7 @@ def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables compositing tree inspection.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -304,7 +304,7 @@ def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 def load_snapshot(
         tiles: typing.List[PictureTile]
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,SnapshotId]:
-    '''
+    r'''
     Returns the snapshot identifier.
 
     :param tiles: An array of tiles composing the snapshot.
@@ -323,7 +323,7 @@ def load_snapshot(
 def make_snapshot(
         layer_id: LayerId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,SnapshotId]:
-    '''
+    r'''
     Returns the layer snapshot identifier.
 
     :param layer_id: The id of the layer.
@@ -345,7 +345,7 @@ def profile_snapshot(
         min_duration: typing.Optional[float] = None,
         clip_rect: typing.Optional[dom.Rect] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[PaintProfile]]:
-    '''
+    r'''
     :param snapshot_id: The id of the layer snapshot.
     :param min_repeat_count: *(Optional)* The maximum number of times to replay the snapshot (1, if not specified).
     :param min_duration: *(Optional)* The minimum duration (in seconds) to replay the snapshot.
@@ -371,7 +371,7 @@ def profile_snapshot(
 def release_snapshot(
         snapshot_id: SnapshotId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Releases layer snapshot captured by the back-end.
 
     :param snapshot_id: The id of the layer snapshot.
@@ -391,7 +391,7 @@ def replay_snapshot(
         to_step: typing.Optional[int] = None,
         scale: typing.Optional[float] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,str]:
-    '''
+    r'''
     Replays the layer snapshot and returns the resulting bitmap.
 
     :param snapshot_id: The id of the layer snapshot.
@@ -419,7 +419,7 @@ def replay_snapshot(
 def snapshot_command_log(
         snapshot_id: SnapshotId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[dict]]:
-    '''
+    r'''
     Replays the layer snapshot and returns canvas log.
 
     :param snapshot_id: The id of the layer snapshot.

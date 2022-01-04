@@ -16,7 +16,7 @@ from deprecated.sphinx import deprecated # type: ignore
 
 
 class CertificateId(int):
-    '''
+    r'''
     An internal certificate ID value.
     '''
     def to_json(self) -> int:
@@ -31,7 +31,7 @@ class CertificateId(int):
 
 
 class MixedContentType(enum.Enum):
-    '''
+    r'''
     A description of mixed content (HTTP resources on HTTPS pages), as defined by
     https://www.w3.org/TR/mixed-content/#categories
     '''
@@ -48,7 +48,7 @@ class MixedContentType(enum.Enum):
 
 
 class SecurityState(enum.Enum):
-    '''
+    r'''
     The security level of a page or resource.
     '''
     UNKNOWN = "unknown"
@@ -68,7 +68,7 @@ class SecurityState(enum.Enum):
 
 @dataclass
 class CertificateSecurityState:
-    '''
+    r'''
     Details about the security state of the page certificate.
     '''
     #: Protocol name (e.g. "TLS 1.2" or "QUIC").
@@ -211,7 +211,7 @@ class SafetyTipInfo:
 
 @dataclass
 class VisibleSecurityState:
-    '''
+    r'''
     Security state information about the page.
     '''
     #: The security level of the page.
@@ -248,7 +248,7 @@ class VisibleSecurityState:
 
 @dataclass
 class SecurityStateExplanation:
-    '''
+    r'''
     An explanation of an factor contributing to the security state.
     '''
     #: Security state representing the severity of the factor being explained.
@@ -299,7 +299,7 @@ class SecurityStateExplanation:
 
 @dataclass
 class InsecureContentStatus:
-    '''
+    r'''
     Information about insecure content on the page.
     '''
     #: Always false.
@@ -348,7 +348,7 @@ class InsecureContentStatus:
 
 
 class CertificateErrorAction(enum.Enum):
-    '''
+    r'''
     The action to take when a certificate error occurs. continue will continue processing the
     request and cancel will cancel the request.
     '''
@@ -364,7 +364,7 @@ class CertificateErrorAction(enum.Enum):
 
 
 def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Disables tracking security state changes.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -374,7 +374,7 @@ def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables tracking security state changes.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -386,7 +386,7 @@ def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 def set_ignore_certificate_errors(
         ignore: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enable/disable whether all certificate errors should be ignored.
 
     **EXPERIMENTAL**
@@ -407,7 +407,7 @@ def handle_certificate_error(
         event_id: int,
         action: CertificateErrorAction
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Handles a certificate error that fired a certificateError event.
 
     .. deprecated:: 1.3
@@ -429,7 +429,7 @@ def handle_certificate_error(
 def set_override_certificate_errors(
         override: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enable/disable overriding certificate errors. If enabled, all certificate error events need to
     be handled by the DevTools client and should be answered with ``handleCertificateError`` commands.
 
@@ -450,7 +450,7 @@ def set_override_certificate_errors(
 @event_class('Security.certificateError')
 @dataclass
 class CertificateError:
-    '''
+    r'''
     There is a certificate error. If overriding certificate errors is enabled, then it should be
     handled with the ``handleCertificateError`` command. Note: this event does not fire if the
     certificate error has been allowed internally. Only one client per target should override
@@ -475,7 +475,7 @@ class CertificateError:
 @event_class('Security.visibleSecurityStateChanged')
 @dataclass
 class VisibleSecurityStateChanged:
-    '''
+    r'''
     **EXPERIMENTAL**
 
     The security state of the page changed.
@@ -494,7 +494,7 @@ class VisibleSecurityStateChanged:
 @event_class('Security.securityStateChanged')
 @dataclass
 class SecurityStateChanged:
-    '''
+    r'''
     The security state of the page changed. No longer being sent.
     '''
     #: Security state.

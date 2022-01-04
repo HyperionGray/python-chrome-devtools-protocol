@@ -17,7 +17,7 @@ from . import runtime
 
 @dataclass
 class LogEntry:
-    '''
+    r'''
     Log entry.
     '''
     #: Log entry source.
@@ -93,7 +93,7 @@ class LogEntry:
 
 @dataclass
 class ViolationSetting:
-    '''
+    r'''
     Violation configuration setting.
     '''
     #: Violation type.
@@ -117,7 +117,7 @@ class ViolationSetting:
 
 
 def clear() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Clears the log.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -127,7 +127,7 @@ def clear() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Disables log domain, prevents further log entries from being reported to the client.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -137,7 +137,7 @@ def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables log domain, sends the entries collected so far to the client by means of the
     ``entryAdded`` notification.
     '''
@@ -150,7 +150,7 @@ def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 def start_violations_report(
         config: typing.List[ViolationSetting]
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     start violation reporting.
 
     :param config: Configuration for violations.
@@ -165,7 +165,7 @@ def start_violations_report(
 
 
 def stop_violations_report() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Stop violation reporting.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -177,7 +177,7 @@ def stop_violations_report() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 @event_class('Log.entryAdded')
 @dataclass
 class EntryAdded:
-    '''
+    r'''
     Issued when new message was logged.
     '''
     #: The entry.

@@ -21,7 +21,7 @@ from deprecated.sphinx import deprecated # type: ignore
 
 
 class FrameId(str):
-    '''
+    r'''
     Unique frame identifier.
     '''
     def to_json(self) -> str:
@@ -36,7 +36,7 @@ class FrameId(str):
 
 
 class AdFrameType(enum.Enum):
-    '''
+    r'''
     Indicates whether a frame has been identified as an ad.
     '''
     NONE = "none"
@@ -66,7 +66,7 @@ class AdFrameExplanation(enum.Enum):
 
 @dataclass
 class AdFrameStatus:
-    '''
+    r'''
     Indicates whether a frame has been identified as an ad and why.
     '''
     ad_frame_type: AdFrameType
@@ -89,7 +89,7 @@ class AdFrameStatus:
 
 
 class SecureContextType(enum.Enum):
-    '''
+    r'''
     Indicates whether the frame is a secure context and why it is the case.
     '''
     SECURE = "Secure"
@@ -106,7 +106,7 @@ class SecureContextType(enum.Enum):
 
 
 class CrossOriginIsolatedContextType(enum.Enum):
-    '''
+    r'''
     Indicates whether the frame is cross-origin isolated and why it is the case.
     '''
     ISOLATED = "Isolated"
@@ -136,7 +136,7 @@ class GatedAPIFeatures(enum.Enum):
 
 
 class PermissionsPolicyFeature(enum.Enum):
-    '''
+    r'''
     All Permissions Policy features. This enum should match the one defined
     in third_party/blink/renderer/core/permissions_policy/permissions_policy_features.json5.
     '''
@@ -213,7 +213,7 @@ class PermissionsPolicyFeature(enum.Enum):
 
 
 class PermissionsPolicyBlockReason(enum.Enum):
-    '''
+    r'''
     Reason for a permissions policy feature to be disabled.
     '''
     HEADER = "Header"
@@ -273,7 +273,7 @@ class PermissionsPolicyFeatureState:
 
 
 class OriginTrialTokenStatus(enum.Enum):
-    '''
+    r'''
     Origin Trial(https://www.chromium.org/blink/origin-trials) support.
     Status for an Origin Trial token.
     '''
@@ -299,7 +299,7 @@ class OriginTrialTokenStatus(enum.Enum):
 
 
 class OriginTrialStatus(enum.Enum):
-    '''
+    r'''
     Status for an Origin Trial.
     '''
     ENABLED = "Enabled"
@@ -416,7 +416,7 @@ class OriginTrial:
 
 @dataclass
 class Frame:
-    '''
+    r'''
     Information about the Frame on the page.
     '''
     #: Frame unique identifier.
@@ -509,7 +509,7 @@ class Frame:
 
 @dataclass
 class FrameResource:
-    '''
+    r'''
     Information about the Resource on the page.
     '''
     #: Resource URL.
@@ -563,7 +563,7 @@ class FrameResource:
 
 @dataclass
 class FrameResourceTree:
-    '''
+    r'''
     Information about the Frame hierarchy along with their cached resources.
     '''
     #: Frame information for this tree item.
@@ -594,7 +594,7 @@ class FrameResourceTree:
 
 @dataclass
 class FrameTree:
-    '''
+    r'''
     Information about the Frame hierarchy.
     '''
     #: Frame information for this tree item.
@@ -619,7 +619,7 @@ class FrameTree:
 
 
 class ScriptIdentifier(str):
-    '''
+    r'''
     Unique script identifier.
     '''
     def to_json(self) -> str:
@@ -634,7 +634,7 @@ class ScriptIdentifier(str):
 
 
 class TransitionType(enum.Enum):
-    '''
+    r'''
     Transition type.
     '''
     LINK = "link"
@@ -661,7 +661,7 @@ class TransitionType(enum.Enum):
 
 @dataclass
 class NavigationEntry:
-    '''
+    r'''
     Navigation history entry.
     '''
     #: Unique id of the navigation history entry.
@@ -701,7 +701,7 @@ class NavigationEntry:
 
 @dataclass
 class ScreencastFrameMetadata:
-    '''
+    r'''
     Screencast frame metadata.
     '''
     #: Top offset in DIP.
@@ -751,7 +751,7 @@ class ScreencastFrameMetadata:
 
 
 class DialogType(enum.Enum):
-    '''
+    r'''
     Javascript dialog type.
     '''
     ALERT = "alert"
@@ -769,7 +769,7 @@ class DialogType(enum.Enum):
 
 @dataclass
 class AppManifestError:
-    '''
+    r'''
     Error while paring app manifest.
     '''
     #: Error message.
@@ -804,7 +804,7 @@ class AppManifestError:
 
 @dataclass
 class AppManifestParsedProperties:
-    '''
+    r'''
     Parsed app manifest properties.
     '''
     #: Computed scope value
@@ -824,7 +824,7 @@ class AppManifestParsedProperties:
 
 @dataclass
 class LayoutViewport:
-    '''
+    r'''
     Layout viewport position and dimensions.
     '''
     #: Horizontal offset relative to the document (CSS pixels).
@@ -859,7 +859,7 @@ class LayoutViewport:
 
 @dataclass
 class VisualViewport:
-    '''
+    r'''
     Visual viewport position, dimensions, and scale.
     '''
     #: Horizontal offset relative to the layout viewport (CSS pixels).
@@ -915,7 +915,7 @@ class VisualViewport:
 
 @dataclass
 class Viewport:
-    '''
+    r'''
     Viewport for capturing screenshot.
     '''
     #: X offset in device independent pixels (dip).
@@ -955,7 +955,7 @@ class Viewport:
 
 @dataclass
 class FontFamilies:
-    '''
+    r'''
     Generic font families collection.
     '''
     #: The standard font-family.
@@ -1012,7 +1012,7 @@ class FontFamilies:
 
 @dataclass
 class FontSizes:
-    '''
+    r'''
     Default font sizes.
     '''
     #: Default standard font size.
@@ -1093,7 +1093,7 @@ class InstallabilityErrorArgument:
 
 @dataclass
 class InstallabilityError:
-    '''
+    r'''
     The installability error
     '''
     #: The error id (e.g. 'manifest-missing-suitable-icon').
@@ -1117,7 +1117,7 @@ class InstallabilityError:
 
 
 class ReferrerPolicy(enum.Enum):
-    '''
+    r'''
     The referring-policy used for the navigation.
     '''
     NO_REFERRER = "noReferrer"
@@ -1139,7 +1139,7 @@ class ReferrerPolicy(enum.Enum):
 
 @dataclass
 class CompilationCacheParams:
-    '''
+    r'''
     Per-script compilation cache parameters for ``Page.produceCompilationCache``
     '''
     #: The URL of the script to produce a compilation cache entry for.
@@ -1165,7 +1165,7 @@ class CompilationCacheParams:
 
 
 class NavigationType(enum.Enum):
-    '''
+    r'''
     The type of a frameNavigated event.
     '''
     NAVIGATION = "Navigation"
@@ -1180,7 +1180,7 @@ class NavigationType(enum.Enum):
 
 
 class BackForwardCacheNotRestoredReason(enum.Enum):
-    '''
+    r'''
     List of not restored reasons for back-forward cache.
     '''
     NOT_MAIN_FRAME = "NotMainFrame"
@@ -1316,7 +1316,7 @@ class BackForwardCacheNotRestoredReason(enum.Enum):
 
 
 class BackForwardCacheNotRestoredReasonType(enum.Enum):
-    '''
+    r'''
     Types of not restored reasons for back-forward cache.
     '''
     SUPPORT_PENDING = "SupportPending"
@@ -1384,7 +1384,7 @@ class BackForwardCacheNotRestoredExplanationTree:
 def add_script_to_evaluate_on_load(
         script_source: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,ScriptIdentifier]:
-    '''
+    r'''
     Deprecated, please use addScriptToEvaluateOnNewDocument instead.
 
     .. deprecated:: 1.3
@@ -1409,7 +1409,7 @@ def add_script_to_evaluate_on_new_document(
         world_name: typing.Optional[str] = None,
         include_command_line_api: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,ScriptIdentifier]:
-    '''
+    r'''
     Evaluates given script in every frame upon creation (before loading frame's scripts).
 
     :param source:
@@ -1432,7 +1432,7 @@ def add_script_to_evaluate_on_new_document(
 
 
 def bring_to_front() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Brings page to front (activates tab).
     '''
     cmd_dict: T_JSON_DICT = {
@@ -1448,7 +1448,7 @@ def capture_screenshot(
         from_surface: typing.Optional[bool] = None,
         capture_beyond_viewport: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,str]:
-    '''
+    r'''
     Capture page screenshot.
 
     :param format_: *(Optional)* Image compression format (defaults to png).
@@ -1480,7 +1480,7 @@ def capture_screenshot(
 def capture_snapshot(
         format_: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,str]:
-    '''
+    r'''
     Returns a snapshot of the page as a string. For MHTML format, the serialization includes
     iframes, shadow DOM, external resources, and element-inline styles.
 
@@ -1502,7 +1502,7 @@ def capture_snapshot(
 
 @deprecated(version="1.3")
 def clear_device_metrics_override() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Clears the overridden device metrics.
 
     .. deprecated:: 1.3
@@ -1517,7 +1517,7 @@ def clear_device_metrics_override() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,
 
 @deprecated(version="1.3")
 def clear_device_orientation_override() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Clears the overridden Device Orientation.
 
     .. deprecated:: 1.3
@@ -1532,7 +1532,7 @@ def clear_device_orientation_override() -> typing.Generator[T_JSON_DICT,T_JSON_D
 
 @deprecated(version="1.3")
 def clear_geolocation_override() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Clears the overridden Geolocation Position and Error.
 
     .. deprecated:: 1.3
@@ -1548,7 +1548,7 @@ def create_isolated_world(
         world_name: typing.Optional[str] = None,
         grant_univeral_access: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,runtime.ExecutionContextId]:
-    '''
+    r'''
     Creates an isolated world for the given frame.
 
     :param frame_id: Id of the frame in which the isolated world should be created.
@@ -1575,7 +1575,7 @@ def delete_cookie(
         cookie_name: str,
         url: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Deletes browser cookie with given name, domain and path.
 
     .. deprecated:: 1.3
@@ -1596,7 +1596,7 @@ def delete_cookie(
 
 
 def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Disables page domain notifications.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -1606,7 +1606,7 @@ def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables page domain notifications.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -1616,7 +1616,7 @@ def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def get_app_manifest() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[str, typing.List[AppManifestError], typing.Optional[str], typing.Optional[AppManifestParsedProperties]]]:
-    '''
+    r'''
 
 
     :returns: A tuple with the following items:
@@ -1639,7 +1639,7 @@ def get_app_manifest() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[
 
 
 def get_installability_errors() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[InstallabilityError]]:
-    '''
+    r'''
 
 
     **EXPERIMENTAL**
@@ -1654,7 +1654,7 @@ def get_installability_errors() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typi
 
 
 def get_manifest_icons() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Optional[str]]:
-    '''
+    r'''
 
 
     **EXPERIMENTAL**
@@ -1669,7 +1669,7 @@ def get_manifest_icons() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Opti
 
 
 def get_app_id() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.Optional[str], typing.Optional[str]]]:
-    '''
+    r'''
     Returns the unique (PWA) app id.
     Only returns values if the feature flag 'WebAppEnableManifestId' is enabled
 
@@ -1692,7 +1692,7 @@ def get_app_id() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing
 
 @deprecated(version="1.3")
 def get_cookies() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[network.Cookie]]:
-    '''
+    r'''
     Returns all browser cookies. Depending on the backend support, will return detailed cookie
     information in the ``cookies`` field.
 
@@ -1710,7 +1710,7 @@ def get_cookies() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[networ
 
 
 def get_frame_tree() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,FrameTree]:
-    '''
+    r'''
     Returns present frame tree structure.
 
     :returns: Present frame tree structure.
@@ -1723,7 +1723,7 @@ def get_frame_tree() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,FrameTree]:
 
 
 def get_layout_metrics() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[LayoutViewport, VisualViewport, dom.Rect, LayoutViewport, VisualViewport, dom.Rect]]:
-    '''
+    r'''
     Returns metrics relating to the layouting of the page, such as viewport bounds/scale.
 
     :returns: A tuple with the following items:
@@ -1750,7 +1750,7 @@ def get_layout_metrics() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tupl
 
 
 def get_navigation_history() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[int, typing.List[NavigationEntry]]]:
-    '''
+    r'''
     Returns navigation history for the current page.
 
     :returns: A tuple with the following items:
@@ -1769,7 +1769,7 @@ def get_navigation_history() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.
 
 
 def reset_navigation_history() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Resets navigation history for the current page.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -1782,7 +1782,7 @@ def get_resource_content(
         frame_id: FrameId,
         url: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[str, bool]]:
-    '''
+    r'''
     Returns content of the given resource.
 
     **EXPERIMENTAL**
@@ -1809,7 +1809,7 @@ def get_resource_content(
 
 
 def get_resource_tree() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,FrameResourceTree]:
-    '''
+    r'''
     Returns present frame / resource tree structure.
 
     **EXPERIMENTAL**
@@ -1827,7 +1827,7 @@ def handle_java_script_dialog(
         accept: bool,
         prompt_text: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Accepts or dismisses a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload).
 
     :param accept: Whether to accept or dismiss the dialog.
@@ -1851,7 +1851,7 @@ def navigate(
         frame_id: typing.Optional[FrameId] = None,
         referrer_policy: typing.Optional[ReferrerPolicy] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[FrameId, typing.Optional[network.LoaderId], typing.Optional[str]]]:
-    '''
+    r'''
     Navigates current page to the given URL.
 
     :param url: URL to navigate the page to.
@@ -1890,7 +1890,7 @@ def navigate(
 def navigate_to_history_entry(
         entry_id: int
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Navigates current page to the given history entry.
 
     :param entry_id: Unique id of the entry to navigate to.
@@ -1922,7 +1922,7 @@ def print_to_pdf(
         prefer_css_page_size: typing.Optional[bool] = None,
         transfer_mode: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[str, typing.Optional[io.StreamHandle]]]:
-    '''
+    r'''
     Print page as PDF.
 
     :param landscape: *(Optional)* Paper orientation. Defaults to false.
@@ -1994,7 +1994,7 @@ def reload(
         ignore_cache: typing.Optional[bool] = None,
         script_to_evaluate_on_load: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Reloads given page optionally ignoring the cache.
 
     :param ignore_cache: *(Optional)* If true, browser cache is ignored (as if the user pressed Shift+refresh).
@@ -2016,7 +2016,7 @@ def reload(
 def remove_script_to_evaluate_on_load(
         identifier: ScriptIdentifier
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Deprecated, please use removeScriptToEvaluateOnNewDocument instead.
 
     .. deprecated:: 1.3
@@ -2037,7 +2037,7 @@ def remove_script_to_evaluate_on_load(
 def remove_script_to_evaluate_on_new_document(
         identifier: ScriptIdentifier
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Removes given script from the list.
 
     :param identifier:
@@ -2054,7 +2054,7 @@ def remove_script_to_evaluate_on_new_document(
 def screencast_frame_ack(
         session_id: int
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Acknowledges that a screencast frame has been received by the frontend.
 
     **EXPERIMENTAL**
@@ -2077,7 +2077,7 @@ def search_in_resource(
         case_sensitive: typing.Optional[bool] = None,
         is_regex: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[debugger.SearchMatch]]:
-    '''
+    r'''
     Searches for given string in resource content.
 
     **EXPERIMENTAL**
@@ -2108,7 +2108,7 @@ def search_in_resource(
 def set_ad_blocking_enabled(
         enabled: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enable Chrome's experimental ad filter on all sites.
 
     **EXPERIMENTAL**
@@ -2127,7 +2127,7 @@ def set_ad_blocking_enabled(
 def set_bypass_csp(
         enabled: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enable page Content Security Policy by-passing.
 
     **EXPERIMENTAL**
@@ -2146,7 +2146,7 @@ def set_bypass_csp(
 def get_permissions_policy_state(
         frame_id: FrameId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[PermissionsPolicyFeatureState]]:
-    '''
+    r'''
     Get Permissions Policy state on given frame.
 
     **EXPERIMENTAL**
@@ -2167,7 +2167,7 @@ def get_permissions_policy_state(
 def get_origin_trials(
         frame_id: FrameId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[OriginTrial]]:
-    '''
+    r'''
     Get Origin Trials on given frame.
 
     **EXPERIMENTAL**
@@ -2200,7 +2200,7 @@ def set_device_metrics_override(
         screen_orientation: typing.Optional[emulation.ScreenOrientation] = None,
         viewport: typing.Optional[Viewport] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Overrides the values of device screen dimensions (window.screen.width, window.screen.height,
     window.innerWidth, window.innerHeight, and "device-width"/"device-height"-related CSS media
     query results).
@@ -2256,7 +2256,7 @@ def set_device_orientation_override(
         beta: float,
         gamma: float
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Overrides the Device Orientation.
 
     .. deprecated:: 1.3
@@ -2281,7 +2281,7 @@ def set_device_orientation_override(
 def set_font_families(
         font_families: FontFamilies
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Set generic font families.
 
     **EXPERIMENTAL**
@@ -2300,7 +2300,7 @@ def set_font_families(
 def set_font_sizes(
         font_sizes: FontSizes
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Set default font sizes.
 
     **EXPERIMENTAL**
@@ -2320,7 +2320,7 @@ def set_document_content(
         frame_id: FrameId,
         html: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Sets given markup as the document's HTML.
 
     :param frame_id: Frame id to set HTML for.
@@ -2341,7 +2341,7 @@ def set_download_behavior(
         behavior: str,
         download_path: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Set the behavior when downloading a file.
 
     .. deprecated:: 1.3
@@ -2368,7 +2368,7 @@ def set_geolocation_override(
         longitude: typing.Optional[float] = None,
         accuracy: typing.Optional[float] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Overrides the Geolocation Position or Error. Omitting any of the parameters emulates position
     unavailable.
 
@@ -2395,7 +2395,7 @@ def set_geolocation_override(
 def set_lifecycle_events_enabled(
         enabled: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Controls whether page will emit lifecycle events.
 
     **EXPERIMENTAL**
@@ -2416,7 +2416,7 @@ def set_touch_emulation_enabled(
         enabled: bool,
         configuration: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Toggles mouse event-based touch event emulation.
 
     .. deprecated:: 1.3
@@ -2444,7 +2444,7 @@ def start_screencast(
         max_height: typing.Optional[int] = None,
         every_nth_frame: typing.Optional[int] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Starts sending each frame using the ``screencastFrame`` event.
 
     **EXPERIMENTAL**
@@ -2474,7 +2474,7 @@ def start_screencast(
 
 
 def stop_loading() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Force the page stop all navigations and pending resource fetches.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -2484,7 +2484,7 @@ def stop_loading() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def crash() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Crashes renderer on the IO thread, generates minidumps.
 
     **EXPERIMENTAL**
@@ -2496,7 +2496,7 @@ def crash() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def close() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Tries to close page, running its beforeunload hooks, if any.
 
     **EXPERIMENTAL**
@@ -2510,7 +2510,7 @@ def close() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 def set_web_lifecycle_state(
         state: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Tries to update the web lifecycle state of the page.
     It will transition the page to the given state according to:
     https://github.com/WICG/web-lifecycle/
@@ -2529,7 +2529,7 @@ def set_web_lifecycle_state(
 
 
 def stop_screencast() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Stops sending each frame in the ``screencastFrame``.
 
     **EXPERIMENTAL**
@@ -2543,7 +2543,7 @@ def stop_screencast() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 def produce_compilation_cache(
         scripts: typing.List[CompilationCacheParams]
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Requests backend to produce compilation cache for the specified scripts.
     ``scripts`` are appeneded to the list of scripts for which the cache
     would be produced. The list may be reset during page navigation.
@@ -2568,7 +2568,7 @@ def add_compilation_cache(
         url: str,
         data: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Seeds compilation cache for given url. Compilation cache does not survive
     cross-process navigation.
 
@@ -2588,7 +2588,7 @@ def add_compilation_cache(
 
 
 def clear_compilation_cache() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Clears seeded compilation cache.
 
     **EXPERIMENTAL**
@@ -2602,7 +2602,7 @@ def clear_compilation_cache() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 def set_spc_transaction_mode(
         mode: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Sets the Secure Payment Confirmation transaction mode.
     https://w3c.github.io/secure-payment-confirmation/#sctn-automation-set-spc-transaction-mode
 
@@ -2623,7 +2623,7 @@ def generate_test_report(
         message: str,
         group: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Generates a report for testing.
 
     **EXPERIMENTAL**
@@ -2643,7 +2643,7 @@ def generate_test_report(
 
 
 def wait_for_debugger() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Pauses page execution. Can be resumed using generic Runtime.runIfWaitingForDebugger.
 
     **EXPERIMENTAL**
@@ -2657,7 +2657,7 @@ def wait_for_debugger() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 def set_intercept_file_chooser_dialog(
         enabled: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Intercept file chooser requests and transfer control to protocol clients.
     When file chooser interception is enabled, native file chooser dialog is not shown.
     Instead, a protocol event ``Page.fileChooserOpened`` is emitted.
@@ -2690,7 +2690,7 @@ class DomContentEventFired:
 @event_class('Page.fileChooserOpened')
 @dataclass
 class FileChooserOpened:
-    '''
+    r'''
     Emitted only when ``page.interceptFileChooser`` is enabled.
     '''
     #: Id of the frame containing input node.
@@ -2712,7 +2712,7 @@ class FileChooserOpened:
 @event_class('Page.frameAttached')
 @dataclass
 class FrameAttached:
-    '''
+    r'''
     Fired when frame has been attached to its parent.
     '''
     #: Id of the frame that has been attached.
@@ -2735,7 +2735,7 @@ class FrameAttached:
 @event_class('Page.frameClearedScheduledNavigation')
 @dataclass
 class FrameClearedScheduledNavigation:
-    '''
+    r'''
     Fired when frame no longer has a scheduled navigation.
     '''
     #: Id of the frame that has cleared its scheduled navigation.
@@ -2751,7 +2751,7 @@ class FrameClearedScheduledNavigation:
 @event_class('Page.frameDetached')
 @dataclass
 class FrameDetached:
-    '''
+    r'''
     Fired when frame has been detached from its parent.
     '''
     #: Id of the frame that has been detached.
@@ -2769,7 +2769,7 @@ class FrameDetached:
 @event_class('Page.frameNavigated')
 @dataclass
 class FrameNavigated:
-    '''
+    r'''
     Fired once navigation of the frame has completed. Frame is now associated with the new loader.
     '''
     #: Frame object.
@@ -2787,7 +2787,7 @@ class FrameNavigated:
 @event_class('Page.documentOpened')
 @dataclass
 class DocumentOpened:
-    '''
+    r'''
     **EXPERIMENTAL**
 
     Fired when opening document to write to.
@@ -2805,7 +2805,7 @@ class DocumentOpened:
 @event_class('Page.frameResized')
 @dataclass
 class FrameResized:
-    '''
+    r'''
     **EXPERIMENTAL**
 
 
@@ -2822,7 +2822,7 @@ class FrameResized:
 @event_class('Page.frameRequestedNavigation')
 @dataclass
 class FrameRequestedNavigation:
-    '''
+    r'''
     **EXPERIMENTAL**
 
     Fired when a renderer-initiated navigation is requested.
@@ -2851,7 +2851,7 @@ class FrameRequestedNavigation:
 @event_class('Page.frameScheduledNavigation')
 @dataclass
 class FrameScheduledNavigation:
-    '''
+    r'''
     Fired when frame schedules a potential navigation.
     '''
     #: Id of the frame that has scheduled a navigation.
@@ -2877,7 +2877,7 @@ class FrameScheduledNavigation:
 @event_class('Page.frameStartedLoading')
 @dataclass
 class FrameStartedLoading:
-    '''
+    r'''
     **EXPERIMENTAL**
 
     Fired when frame has started loading.
@@ -2895,7 +2895,7 @@ class FrameStartedLoading:
 @event_class('Page.frameStoppedLoading')
 @dataclass
 class FrameStoppedLoading:
-    '''
+    r'''
     **EXPERIMENTAL**
 
     Fired when frame has stopped loading.
@@ -2914,7 +2914,7 @@ class FrameStoppedLoading:
 @event_class('Page.downloadWillBegin')
 @dataclass
 class DownloadWillBegin:
-    '''
+    r'''
     **EXPERIMENTAL**
 
     Fired when page is about to start a download.
@@ -2943,7 +2943,7 @@ class DownloadWillBegin:
 @event_class('Page.downloadProgress')
 @dataclass
 class DownloadProgress:
-    '''
+    r'''
     **EXPERIMENTAL**
 
     Fired when download makes progress. Last call has ``done`` == true.
@@ -2971,7 +2971,7 @@ class DownloadProgress:
 @event_class('Page.interstitialHidden')
 @dataclass
 class InterstitialHidden:
-    '''
+    r'''
     Fired when interstitial page was hidden
     '''
 
@@ -2986,7 +2986,7 @@ class InterstitialHidden:
 @event_class('Page.interstitialShown')
 @dataclass
 class InterstitialShown:
-    '''
+    r'''
     Fired when interstitial page was shown
     '''
 
@@ -3001,7 +3001,7 @@ class InterstitialShown:
 @event_class('Page.javascriptDialogClosed')
 @dataclass
 class JavascriptDialogClosed:
-    '''
+    r'''
     Fired when a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload) has been
     closed.
     '''
@@ -3021,7 +3021,7 @@ class JavascriptDialogClosed:
 @event_class('Page.javascriptDialogOpening')
 @dataclass
 class JavascriptDialogOpening:
-    '''
+    r'''
     Fired when a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload) is about to
     open.
     '''
@@ -3052,7 +3052,7 @@ class JavascriptDialogOpening:
 @event_class('Page.lifecycleEvent')
 @dataclass
 class LifecycleEvent:
-    '''
+    r'''
     Fired for top level page lifecycle events such as navigation, load, paint, etc.
     '''
     #: Id of the frame.
@@ -3075,7 +3075,7 @@ class LifecycleEvent:
 @event_class('Page.backForwardCacheNotUsed')
 @dataclass
 class BackForwardCacheNotUsed:
-    '''
+    r'''
     **EXPERIMENTAL**
 
     Fired for failed bfcache history navigations if BackForwardCache feature is enabled. Do
@@ -3117,7 +3117,7 @@ class LoadEventFired:
 @event_class('Page.navigatedWithinDocument')
 @dataclass
 class NavigatedWithinDocument:
-    '''
+    r'''
     **EXPERIMENTAL**
 
     Fired when same-document navigation happens, e.g. due to history API usage or anchor navigation.
@@ -3138,7 +3138,7 @@ class NavigatedWithinDocument:
 @event_class('Page.screencastFrame')
 @dataclass
 class ScreencastFrame:
-    '''
+    r'''
     **EXPERIMENTAL**
 
     Compressed image data requested by the ``startScreencast``.
@@ -3162,7 +3162,7 @@ class ScreencastFrame:
 @event_class('Page.screencastVisibilityChanged')
 @dataclass
 class ScreencastVisibilityChanged:
-    '''
+    r'''
     **EXPERIMENTAL**
 
     Fired when the page with currently enabled screencast was shown or hidden .
@@ -3180,7 +3180,7 @@ class ScreencastVisibilityChanged:
 @event_class('Page.windowOpen')
 @dataclass
 class WindowOpen:
-    '''
+    r'''
     Fired when a new window is going to be opened, via window.open(), link click, form submission,
     etc.
     '''
@@ -3206,7 +3206,7 @@ class WindowOpen:
 @event_class('Page.compilationCacheProduced')
 @dataclass
 class CompilationCacheProduced:
-    '''
+    r'''
     **EXPERIMENTAL**
 
     Issued for every compilation cache generated. Is only available

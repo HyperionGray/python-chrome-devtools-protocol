@@ -90,7 +90,7 @@ def docstring(description: typing.Optional[str]) -> str:
         return ''
 
     description = escape_backticks(description)
-    return dedent("'''\n{}\n'''").format(description)
+    return dedent("r'''\n{}\n'''").format(description)
 
 
 def is_builtin(name: str) -> bool:

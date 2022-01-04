@@ -28,7 +28,7 @@ class StyleSheetId(str):
 
 
 class StyleSheetOrigin(enum.Enum):
-    '''
+    r'''
     Stylesheet type: "injected" for stylesheets injected via extension, "user-agent" for user-agent
     stylesheets, "inspector" for stylesheets created by the inspector (i.e. those holding the "via
     inspector" rules), "regular" for regular stylesheets.
@@ -48,7 +48,7 @@ class StyleSheetOrigin(enum.Enum):
 
 @dataclass
 class PseudoElementMatches:
-    '''
+    r'''
     CSS rule collection for a single pseudo style.
     '''
     #: Pseudo element type.
@@ -73,7 +73,7 @@ class PseudoElementMatches:
 
 @dataclass
 class InheritedStyleEntry:
-    '''
+    r'''
     Inherited CSS rule collection from ancestor node.
     '''
     #: Matches of CSS rules matching the ancestor node in the style inheritance chain.
@@ -99,7 +99,7 @@ class InheritedStyleEntry:
 
 @dataclass
 class RuleMatch:
-    '''
+    r'''
     Match data for a CSS rule.
     '''
     #: CSS rule in the match.
@@ -124,7 +124,7 @@ class RuleMatch:
 
 @dataclass
 class Value:
-    '''
+    r'''
     Data for a simple selector (these are delimited by commas in a selector list).
     '''
     #: Value text.
@@ -150,7 +150,7 @@ class Value:
 
 @dataclass
 class SelectorList:
-    '''
+    r'''
     Selector list data.
     '''
     #: Selectors in the list.
@@ -175,7 +175,7 @@ class SelectorList:
 
 @dataclass
 class CSSStyleSheetHeader:
-    '''
+    r'''
     CSS stylesheet metainformation.
     '''
     #: The stylesheet identifier.
@@ -285,7 +285,7 @@ class CSSStyleSheetHeader:
 
 @dataclass
 class CSSRule:
-    '''
+    r'''
     CSS rule representation.
     '''
     #: Rule selector data.
@@ -336,7 +336,7 @@ class CSSRule:
 
 @dataclass
 class RuleUsage:
-    '''
+    r'''
     CSS coverage information.
     '''
     #: The css style sheet identifier (absent for user agent stylesheet and user-specified
@@ -372,7 +372,7 @@ class RuleUsage:
 
 @dataclass
 class SourceRange:
-    '''
+    r'''
     Text range within a resource. All numbers are zero-based.
     '''
     #: Start line of range.
@@ -457,7 +457,7 @@ class CSSComputedStyleProperty:
 
 @dataclass
 class CSSStyle:
-    '''
+    r'''
     CSS style representation.
     '''
     #: CSS properties in the style.
@@ -501,7 +501,7 @@ class CSSStyle:
 
 @dataclass
 class CSSProperty:
-    '''
+    r'''
     CSS property declaration data.
     '''
     #: The property name.
@@ -562,7 +562,7 @@ class CSSProperty:
 
 @dataclass
 class CSSMedia:
-    '''
+    r'''
     CSS media rule descriptor.
     '''
     #: Media query text.
@@ -615,7 +615,7 @@ class CSSMedia:
 
 @dataclass
 class MediaQuery:
-    '''
+    r'''
     Media query descriptor.
     '''
     #: Array of media query expressions.
@@ -640,7 +640,7 @@ class MediaQuery:
 
 @dataclass
 class MediaQueryExpression:
-    '''
+    r'''
     Media query expression descriptor.
     '''
     #: Media query expression value.
@@ -682,7 +682,7 @@ class MediaQueryExpression:
 
 @dataclass
 class CSSContainerQuery:
-    '''
+    r'''
     CSS container query rule descriptor.
     '''
     #: Container query text.
@@ -721,7 +721,7 @@ class CSSContainerQuery:
 
 @dataclass
 class PlatformFontUsage:
-    '''
+    r'''
     Information about amount of glyphs that were rendered with given font.
     '''
     #: Font's family name reported by platform.
@@ -751,7 +751,7 @@ class PlatformFontUsage:
 
 @dataclass
 class FontVariationAxis:
-    '''
+    r'''
     Information about font variation axes for variable fonts
     '''
     #: The font-variation-setting tag (a.k.a. "axis tag").
@@ -791,7 +791,7 @@ class FontVariationAxis:
 
 @dataclass
 class FontFace:
-    '''
+    r'''
     Properties of a web font: https://www.w3.org/TR/2008/REC-CSS2-20080411/fonts.html#font-descriptions
     and additional information such as platformFontFamily and fontVariationAxes.
     '''
@@ -853,7 +853,7 @@ class FontFace:
 
 @dataclass
 class CSSKeyframesRule:
-    '''
+    r'''
     CSS keyframes rule representation.
     '''
     #: Animation name.
@@ -878,7 +878,7 @@ class CSSKeyframesRule:
 
 @dataclass
 class CSSKeyframeRule:
-    '''
+    r'''
     CSS keyframe rule representation.
     '''
     #: Parent stylesheet's origin.
@@ -915,7 +915,7 @@ class CSSKeyframeRule:
 
 @dataclass
 class StyleDeclarationEdit:
-    '''
+    r'''
     A descriptor of operation to mutate style declaration text.
     '''
     #: The css style sheet identifier.
@@ -948,7 +948,7 @@ def add_rule(
         rule_text: str,
         location: SourceRange
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,CSSRule]:
-    '''
+    r'''
     Inserts a new rule with the given ``ruleText`` in a stylesheet with given ``styleSheetId``, at the
     position specified by ``location``.
 
@@ -972,7 +972,7 @@ def add_rule(
 def collect_class_names(
         style_sheet_id: StyleSheetId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[str]]:
-    '''
+    r'''
     Returns all class names from specified stylesheet.
 
     :param style_sheet_id:
@@ -991,7 +991,7 @@ def collect_class_names(
 def create_style_sheet(
         frame_id: page.FrameId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,StyleSheetId]:
-    '''
+    r'''
     Creates a new special "via-inspector" stylesheet in the frame with given ``frameId``.
 
     :param frame_id: Identifier of the frame where "via-inspector" stylesheet should be created.
@@ -1008,7 +1008,7 @@ def create_style_sheet(
 
 
 def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Disables the CSS agent for the given page.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -1018,7 +1018,7 @@ def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables the CSS agent for the given page. Clients should not assume that the CSS agent has been
     enabled until the result of this command is received.
     '''
@@ -1032,7 +1032,7 @@ def force_pseudo_state(
         node_id: dom.NodeId,
         forced_pseudo_classes: typing.List[str]
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Ensures that the given node will have specified pseudo-classes whenever its style is computed by
     the browser.
 
@@ -1052,7 +1052,7 @@ def force_pseudo_state(
 def get_background_colors(
         node_id: dom.NodeId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.Optional[typing.List[str]], typing.Optional[str], typing.Optional[str]]]:
-    '''
+    r'''
     :param node_id: Id of the node to get background colors for.
     :returns: A tuple with the following items:
 
@@ -1077,7 +1077,7 @@ def get_background_colors(
 def get_computed_style_for_node(
         node_id: dom.NodeId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[CSSComputedStyleProperty]]:
-    '''
+    r'''
     Returns the computed style for a DOM node identified by ``nodeId``.
 
     :param node_id:
@@ -1096,7 +1096,7 @@ def get_computed_style_for_node(
 def get_inline_styles_for_node(
         node_id: dom.NodeId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.Optional[CSSStyle], typing.Optional[CSSStyle]]]:
-    '''
+    r'''
     Returns the styles defined inline (explicitly in the "style" attribute and implicitly, using DOM
     attributes) for a DOM node identified by ``nodeId``.
 
@@ -1122,7 +1122,7 @@ def get_inline_styles_for_node(
 def get_matched_styles_for_node(
         node_id: dom.NodeId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.Optional[CSSStyle], typing.Optional[CSSStyle], typing.Optional[typing.List[RuleMatch]], typing.Optional[typing.List[PseudoElementMatches]], typing.Optional[typing.List[InheritedStyleEntry]], typing.Optional[typing.List[CSSKeyframesRule]]]]:
-    '''
+    r'''
     Returns requested styles for a DOM node identified by ``nodeId``.
 
     :param node_id:
@@ -1153,7 +1153,7 @@ def get_matched_styles_for_node(
 
 
 def get_media_queries() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[CSSMedia]]:
-    '''
+    r'''
     Returns all media queries parsed by the rendering engine.
 
     :returns: 
@@ -1168,7 +1168,7 @@ def get_media_queries() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[
 def get_platform_fonts_for_node(
         node_id: dom.NodeId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[PlatformFontUsage]]:
-    '''
+    r'''
     Requests information about platform fonts which we used to render child TextNodes in the given
     node.
 
@@ -1188,7 +1188,7 @@ def get_platform_fonts_for_node(
 def get_style_sheet_text(
         style_sheet_id: StyleSheetId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,str]:
-    '''
+    r'''
     Returns the current textual content for a stylesheet.
 
     :param style_sheet_id:
@@ -1207,7 +1207,7 @@ def get_style_sheet_text(
 def track_computed_style_updates(
         properties_to_track: typing.List[CSSComputedStyleProperty]
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Starts tracking the given computed styles for updates. The specified array of properties
     replaces the one previously specified. Pass empty array to disable tracking.
     Use takeComputedStyleUpdates to retrieve the list of nodes that had properties modified.
@@ -1229,7 +1229,7 @@ def track_computed_style_updates(
 
 
 def take_computed_style_updates() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[dom.NodeId]]:
-    '''
+    r'''
     Polls the next batch of computed style updates.
 
     **EXPERIMENTAL**
@@ -1248,7 +1248,7 @@ def set_effective_property_value_for_node(
         property_name: str,
         value: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Find a rule with the given active property for the given node and set the new value for this
     property
 
@@ -1272,7 +1272,7 @@ def set_keyframe_key(
         range_: SourceRange,
         key_text: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,Value]:
-    '''
+    r'''
     Modifies the keyframe rule key text.
 
     :param style_sheet_id:
@@ -1297,7 +1297,7 @@ def set_media_text(
         range_: SourceRange,
         text: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,CSSMedia]:
-    '''
+    r'''
     Modifies the rule selector.
 
     :param style_sheet_id:
@@ -1322,7 +1322,7 @@ def set_container_query_text(
         range_: SourceRange,
         text: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,CSSContainerQuery]:
-    '''
+    r'''
     Modifies the expression of a container query.
 
     **EXPERIMENTAL**
@@ -1349,7 +1349,7 @@ def set_rule_selector(
         range_: SourceRange,
         selector: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,SelectorList]:
-    '''
+    r'''
     Modifies the rule selector.
 
     :param style_sheet_id:
@@ -1373,7 +1373,7 @@ def set_style_sheet_text(
         style_sheet_id: StyleSheetId,
         text: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Optional[str]]:
-    '''
+    r'''
     Sets the new stylesheet text.
 
     :param style_sheet_id:
@@ -1394,7 +1394,7 @@ def set_style_sheet_text(
 def set_style_texts(
         edits: typing.List[StyleDeclarationEdit]
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[CSSStyle]]:
-    '''
+    r'''
     Applies specified style edits one after another in the given order.
 
     :param edits:
@@ -1411,7 +1411,7 @@ def set_style_texts(
 
 
 def start_rule_usage_tracking() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables the selector recording.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -1421,7 +1421,7 @@ def start_rule_usage_tracking() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None
 
 
 def stop_rule_usage_tracking() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[RuleUsage]]:
-    '''
+    r'''
     Stop tracking rule usage and return the list of rules that were used since last call to
     ``takeCoverageDelta`` (or since start of coverage instrumentation)
 
@@ -1435,7 +1435,7 @@ def stop_rule_usage_tracking() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typin
 
 
 def take_coverage_delta() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.List[RuleUsage], float]]:
-    '''
+    r'''
     Obtain list of rules that became used since last call to this method (or since start of coverage
     instrumentation)
 
@@ -1457,7 +1457,7 @@ def take_coverage_delta() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tup
 def set_local_fonts_enabled(
         enabled: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables/disables rendering of local CSS fonts (enabled by default).
 
     **EXPERIMENTAL**
@@ -1476,7 +1476,7 @@ def set_local_fonts_enabled(
 @event_class('CSS.fontsUpdated')
 @dataclass
 class FontsUpdated:
-    '''
+    r'''
     Fires whenever a web font is updated.  A non-empty font parameter indicates a successfully loaded
     web font
     '''
@@ -1493,7 +1493,7 @@ class FontsUpdated:
 @event_class('CSS.mediaQueryResultChanged')
 @dataclass
 class MediaQueryResultChanged:
-    '''
+    r'''
     Fires whenever a MediaQuery result changes (for example, after a browser window has been
     resized.) The current implementation considers only viewport-dependent media features.
     '''
@@ -1509,7 +1509,7 @@ class MediaQueryResultChanged:
 @event_class('CSS.styleSheetAdded')
 @dataclass
 class StyleSheetAdded:
-    '''
+    r'''
     Fired whenever an active document stylesheet is added.
     '''
     #: Added stylesheet metainfo.
@@ -1525,7 +1525,7 @@ class StyleSheetAdded:
 @event_class('CSS.styleSheetChanged')
 @dataclass
 class StyleSheetChanged:
-    '''
+    r'''
     Fired whenever a stylesheet is changed as a result of the client operation.
     '''
     style_sheet_id: StyleSheetId
@@ -1540,7 +1540,7 @@ class StyleSheetChanged:
 @event_class('CSS.styleSheetRemoved')
 @dataclass
 class StyleSheetRemoved:
-    '''
+    r'''
     Fired whenever an active document stylesheet is removed.
     '''
     #: Identifier of the removed stylesheet.

@@ -19,7 +19,7 @@ from deprecated.sphinx import deprecated # type: ignore
 
 @dataclass
 class ScreenOrientation:
-    '''
+    r'''
     Screen orientation.
     '''
     #: Orientation type.
@@ -93,7 +93,7 @@ class MediaFeature:
 
 
 class VirtualTimePolicy(enum.Enum):
-    '''
+    r'''
     advance: If the scheduler runs out of immediate work, the virtual time base may fast forward to
     allow the next delayed task (if any) to run; pause: The virtual time base may not advance;
     pauseIfNetworkFetchesPending: The virtual time base may not advance if there are any pending
@@ -113,7 +113,7 @@ class VirtualTimePolicy(enum.Enum):
 
 @dataclass
 class UserAgentBrandVersion:
-    '''
+    r'''
     Used to specify User Agent Cient Hints to emulate. See https://wicg.github.io/ua-client-hints
     '''
     brand: str
@@ -136,7 +136,7 @@ class UserAgentBrandVersion:
 
 @dataclass
 class UserAgentMetadata:
-    '''
+    r'''
     Used to specify User Agent Cient Hints to emulate. See https://wicg.github.io/ua-client-hints
     Missing optional values will be filled in by the target with what it would normally use.
     '''
@@ -186,7 +186,7 @@ class UserAgentMetadata:
 
 
 class DisabledImageType(enum.Enum):
-    '''
+    r'''
     Enum of image types that can be disabled.
     '''
     AVIF = "avif"
@@ -202,7 +202,7 @@ class DisabledImageType(enum.Enum):
 
 
 def can_emulate() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,bool]:
-    '''
+    r'''
     Tells whether emulation is supported.
 
     :returns: True if emulation is supported.
@@ -215,7 +215,7 @@ def can_emulate() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,bool]:
 
 
 def clear_device_metrics_override() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Clears the overridden device metrics.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -225,7 +225,7 @@ def clear_device_metrics_override() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,
 
 
 def clear_geolocation_override() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Clears the overridden Geolocation Position and Error.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -235,7 +235,7 @@ def clear_geolocation_override() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,Non
 
 
 def reset_page_scale_factor() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Requests that page scale factor is reset to initial values.
 
     **EXPERIMENTAL**
@@ -249,7 +249,7 @@ def reset_page_scale_factor() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 def set_focus_emulation_enabled(
         enabled: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables or disables simulating a focused and active page.
 
     **EXPERIMENTAL**
@@ -268,7 +268,7 @@ def set_focus_emulation_enabled(
 def set_auto_dark_mode_override(
         enabled: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Automatically render all web contents using a dark theme.
 
     **EXPERIMENTAL**
@@ -288,7 +288,7 @@ def set_auto_dark_mode_override(
 def set_cpu_throttling_rate(
         rate: float
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables CPU throttling to emulate slow CPUs.
 
     **EXPERIMENTAL**
@@ -307,7 +307,7 @@ def set_cpu_throttling_rate(
 def set_default_background_color_override(
         color: typing.Optional[dom.RGBA] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Sets or clears an override of the default background color of the frame. This override is used
     if the content does not specify one.
 
@@ -338,7 +338,7 @@ def set_device_metrics_override(
         viewport: typing.Optional[page.Viewport] = None,
         display_feature: typing.Optional[DisplayFeature] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Overrides the values of device screen dimensions (window.screen.width, window.screen.height,
     window.innerWidth, window.innerHeight, and "device-width"/"device-height"-related CSS media
     query results).
@@ -390,7 +390,7 @@ def set_device_metrics_override(
 def set_scrollbars_hidden(
         hidden: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
 
 
     **EXPERIMENTAL**
@@ -409,7 +409,7 @@ def set_scrollbars_hidden(
 def set_document_cookie_disabled(
         disabled: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
 
 
     **EXPERIMENTAL**
@@ -429,7 +429,7 @@ def set_emit_touch_events_for_mouse(
         enabled: bool,
         configuration: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
 
 
     **EXPERIMENTAL**
@@ -452,7 +452,7 @@ def set_emulated_media(
         media: typing.Optional[str] = None,
         features: typing.Optional[typing.List[MediaFeature]] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Emulates the given media type or media feature for CSS media queries.
 
     :param media: *(Optional)* Media type to emulate. Empty string disables the override.
@@ -473,7 +473,7 @@ def set_emulated_media(
 def set_emulated_vision_deficiency(
         type_: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Emulates the given vision deficiency.
 
     **EXPERIMENTAL**
@@ -494,7 +494,7 @@ def set_geolocation_override(
         longitude: typing.Optional[float] = None,
         accuracy: typing.Optional[float] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Overrides the Geolocation Position or Error. Omitting any of the parameters emulates position
     unavailable.
 
@@ -520,7 +520,7 @@ def set_idle_override(
         is_user_active: bool,
         is_screen_unlocked: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Overrides the Idle state.
 
     **EXPERIMENTAL**
@@ -539,7 +539,7 @@ def set_idle_override(
 
 
 def clear_idle_override() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Clears Idle state overrides.
 
     **EXPERIMENTAL**
@@ -554,7 +554,7 @@ def clear_idle_override() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 def set_navigator_overrides(
         platform: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Overrides value returned by the javascript navigator object.
 
     .. deprecated:: 1.3
@@ -575,7 +575,7 @@ def set_navigator_overrides(
 def set_page_scale_factor(
         page_scale_factor: float
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Sets a specified page scale factor.
 
     **EXPERIMENTAL**
@@ -594,7 +594,7 @@ def set_page_scale_factor(
 def set_script_execution_disabled(
         value: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Switches script execution in the page.
 
     :param value: Whether script execution should be disabled in the page.
@@ -612,7 +612,7 @@ def set_touch_emulation_enabled(
         enabled: bool,
         max_touch_points: typing.Optional[int] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables touch on platforms which do not support them.
 
     :param enabled: Whether the touch event emulation should be enabled.
@@ -636,7 +636,7 @@ def set_virtual_time_policy(
         wait_for_navigation: typing.Optional[bool] = None,
         initial_virtual_time: typing.Optional[network.TimeSinceEpoch] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,float]:
-    '''
+    r'''
     Turns on virtual time for all frames (replacing real-time with a synthetic time source) and sets
     the current virtual time policy.  Note this supersedes any previous time budget.
 
@@ -670,7 +670,7 @@ def set_virtual_time_policy(
 def set_locale_override(
         locale: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Overrides default host system locale with the specified one.
 
     **EXPERIMENTAL**
@@ -690,7 +690,7 @@ def set_locale_override(
 def set_timezone_override(
         timezone_id: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Overrides default host system timezone with the specified one.
 
     **EXPERIMENTAL**
@@ -711,7 +711,7 @@ def set_visible_size(
         width: int,
         height: int
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Resizes the frame/viewport of the page. Note that this does not affect the frame's container
     (e.g. browser window). Can be used to produce screenshots of the specified size. Not supported
     on Android.
@@ -736,7 +736,7 @@ def set_visible_size(
 def set_disabled_image_types(
         image_types: typing.List[DisabledImageType]
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
 
 
     **EXPERIMENTAL**
@@ -758,7 +758,7 @@ def set_user_agent_override(
         platform: typing.Optional[str] = None,
         user_agent_metadata: typing.Optional[UserAgentMetadata] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Allows overriding user agent with the given string.
 
     :param user_agent: User agent to use.
@@ -784,7 +784,7 @@ def set_user_agent_override(
 @event_class('Emulation.virtualTimeBudgetExpired')
 @dataclass
 class VirtualTimeBudgetExpired:
-    '''
+    r'''
     **EXPERIMENTAL**
 
     Notification sent after the virtual time budget for the current VirtualTimePolicy has run out.

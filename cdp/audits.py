@@ -19,7 +19,7 @@ from . import runtime
 
 @dataclass
 class AffectedCookie:
-    '''
+    r'''
     Information about a cookie that is affected by an inspector issue.
     '''
     #: The following three properties uniquely identify a cookie
@@ -47,7 +47,7 @@ class AffectedCookie:
 
 @dataclass
 class AffectedRequest:
-    '''
+    r'''
     Information about a request that is affected by an inspector issue.
     '''
     #: The unique request id.
@@ -72,7 +72,7 @@ class AffectedRequest:
 
 @dataclass
 class AffectedFrame:
-    '''
+    r'''
     Information about the frame affected by an inspector issue.
     '''
     frame_id: page.FrameId
@@ -137,7 +137,7 @@ class SameSiteCookieOperation(enum.Enum):
 
 @dataclass
 class SameSiteCookieIssueDetails:
-    '''
+    r'''
     This information is currently necessary, as the front-end has a difficult
     time finding a specific cookie. With this, we can convey specific error
     information without the cookie.
@@ -294,7 +294,7 @@ class MixedContentIssueDetails:
 
 
 class BlockedByResponseReason(enum.Enum):
-    '''
+    r'''
     Enum indicating the reason a response has been blocked. These reasons are
     refinements of the net error BLOCKED_BY_RESPONSE.
     '''
@@ -314,7 +314,7 @@ class BlockedByResponseReason(enum.Enum):
 
 @dataclass
 class BlockedByResponseIssueDetails:
-    '''
+    r'''
     Details for a request that has been blocked with the BLOCKED_BY_RESPONSE
     code. Currently only used for COEP/COOP, but may be extended to include
     some CSP errors in the future.
@@ -504,7 +504,7 @@ class SharedArrayBufferIssueType(enum.Enum):
 
 @dataclass
 class SharedArrayBufferIssueDetails:
-    '''
+    r'''
     Details for a issue arising from an SAB being instantiated in, or
     transferred to a context that is not cross-origin isolated.
     '''
@@ -625,7 +625,7 @@ class LowTextContrastIssueDetails:
 
 @dataclass
 class CorsIssueDetails:
-    '''
+    r'''
     Details for a CORS related issue, e.g. a warning or error related to
     CORS RFC1918 enforcement.
     '''
@@ -695,7 +695,7 @@ class AttributionReportingIssueType(enum.Enum):
 
 @dataclass
 class AttributionReportingIssueDetails:
-    '''
+    r'''
     Details for issues around "Attribution Reporting API" usage.
     Explainer: https://github.com/WICG/conversion-measurement-api
     '''
@@ -735,7 +735,7 @@ class AttributionReportingIssueDetails:
 
 @dataclass
 class QuirksModeIssueDetails:
-    '''
+    r'''
     Details for issues about documents in Quirks Mode
     or Limited Quirks Mode that affects page layouting.
     '''
@@ -833,7 +833,7 @@ class GenericIssueErrorType(enum.Enum):
 
 @dataclass
 class GenericIssueDetails:
-    '''
+    r'''
     Depending on the concrete errorType, different properties are set.
     '''
     #: Issues with the same errorType are aggregated in the frontend.
@@ -858,7 +858,7 @@ class GenericIssueDetails:
 
 @dataclass
 class DeprecationIssueDetails:
-    '''
+    r'''
     This issue tracks information needed to print a deprecation message.
     The formatting is inherited from the old console.log version, see more at:
     https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/core/frame/deprecation.cc
@@ -908,7 +908,7 @@ class ClientHintIssueReason(enum.Enum):
 
 @dataclass
 class ClientHintIssueDetails:
-    '''
+    r'''
     This issue tracks client hints related issues. It's used to deprecate old
     features, encourage the use of new ones, and provide general guidance.
     '''
@@ -931,7 +931,7 @@ class ClientHintIssueDetails:
 
 
 class InspectorIssueCode(enum.Enum):
-    '''
+    r'''
     A unique identifier for the type of issue. Each type may use one of the
     optional fields in InspectorIssueDetails to convey more specific
     information about the kind of issue.
@@ -963,7 +963,7 @@ class InspectorIssueCode(enum.Enum):
 
 @dataclass
 class InspectorIssueDetails:
-    '''
+    r'''
     This struct holds a list of optional fields with additional information
     specific to the kind of issue. When adding a new issue code, please also
     add a new optional field to this type.
@@ -1059,7 +1059,7 @@ class InspectorIssueDetails:
 
 
 class IssueId(str):
-    '''
+    r'''
     A unique id for a DevTools inspector issue. Allows other entities (e.g.
     exceptions, CDP message, console messages, etc.) to reference an issue.
     '''
@@ -1076,7 +1076,7 @@ class IssueId(str):
 
 @dataclass
 class InspectorIssue:
-    '''
+    r'''
     An inspector issue reported from the back-end.
     '''
     code: InspectorIssueCode
@@ -1110,7 +1110,7 @@ def get_encoded_response(
         quality: typing.Optional[float] = None,
         size_only: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.Optional[str], int, int]]:
-    '''
+    r'''
     Returns the response body and size if it were re-encoded with the specified settings. Only
     applies to images.
 
@@ -1144,7 +1144,7 @@ def get_encoded_response(
 
 
 def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Disables issues domain, prevents further issues from being reported to the client.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -1154,7 +1154,7 @@ def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables issues domain, sends the issues collected so far to the client by means of the
     ``issueAdded`` event.
     '''
@@ -1167,7 +1167,7 @@ def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 def check_contrast(
         report_aaa: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Runs the contrast check for the target page. Found issues are reported
     using Audits.issueAdded event.
 

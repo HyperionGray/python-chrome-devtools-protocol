@@ -16,7 +16,7 @@ from deprecated.sphinx import deprecated # type: ignore
 
 
 class BreakpointId(str):
-    '''
+    r'''
     Breakpoint identifier.
     '''
     def to_json(self) -> str:
@@ -31,7 +31,7 @@ class BreakpointId(str):
 
 
 class CallFrameId(str):
-    '''
+    r'''
     Call frame identifier.
     '''
     def to_json(self) -> str:
@@ -47,7 +47,7 @@ class CallFrameId(str):
 
 @dataclass
 class Location:
-    '''
+    r'''
     Location in the source code.
     '''
     #: Script identifier as reported in the ``Debugger.scriptParsed``.
@@ -78,7 +78,7 @@ class Location:
 
 @dataclass
 class ScriptPosition:
-    '''
+    r'''
     Location in the source code.
     '''
     line_number: int
@@ -101,7 +101,7 @@ class ScriptPosition:
 
 @dataclass
 class LocationRange:
-    '''
+    r'''
     Location range within one script.
     '''
     script_id: runtime.ScriptId
@@ -128,7 +128,7 @@ class LocationRange:
 
 @dataclass
 class CallFrame:
-    '''
+    r'''
     JavaScript call frame. Array of call frames form the call stack.
     '''
     #: Call frame identifier. This identifier is only valid while the virtual machine is paused.
@@ -185,7 +185,7 @@ class CallFrame:
 
 @dataclass
 class Scope:
-    '''
+    r'''
     Scope description.
     '''
     #: Scope type.
@@ -229,7 +229,7 @@ class Scope:
 
 @dataclass
 class SearchMatch:
-    '''
+    r'''
     Search match for resource.
     '''
     #: Line number in resource content.
@@ -286,7 +286,7 @@ class BreakLocation:
 
 
 class ScriptLanguage(enum.Enum):
-    '''
+    r'''
     Enum of possible script languages.
     '''
     JAVA_SCRIPT = "JavaScript"
@@ -302,7 +302,7 @@ class ScriptLanguage(enum.Enum):
 
 @dataclass
 class DebugSymbols:
-    '''
+    r'''
     Debug symbols available for a wasm script.
     '''
     #: Type of the debug symbols.
@@ -330,7 +330,7 @@ def continue_to_location(
         location: Location,
         target_call_frames: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Continues execution until specific location is reached.
 
     :param location: Location to continue to.
@@ -348,7 +348,7 @@ def continue_to_location(
 
 
 def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Disables debugger for given page.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -360,7 +360,7 @@ def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 def enable(
         max_scripts_cache_size: typing.Optional[float] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,runtime.UniqueDebuggerId]:
-    '''
+    r'''
     Enables debugger for the given page. Clients should not assume that the debugging has been
     enabled until the result for this command is received.
 
@@ -389,7 +389,7 @@ def evaluate_on_call_frame(
         throw_on_side_effect: typing.Optional[bool] = None,
         timeout: typing.Optional[runtime.TimeDelta] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[runtime.RemoteObject, typing.Optional[runtime.ExceptionDetails]]]:
-    '''
+    r'''
     Evaluates expression on a given call frame.
 
     :param call_frame_id: Call frame identifier to evaluate on.
@@ -439,7 +439,7 @@ def get_possible_breakpoints(
         end: typing.Optional[Location] = None,
         restrict_to_function: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[BreakLocation]]:
-    '''
+    r'''
     Returns possible locations for breakpoint. scriptId in start and end range locations should be
     the same.
 
@@ -465,7 +465,7 @@ def get_possible_breakpoints(
 def get_script_source(
         script_id: runtime.ScriptId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[str, typing.Optional[str]]]:
-    '''
+    r'''
     Returns source for the script with given id.
 
     :param script_id: Id of the script to get source for.
@@ -491,7 +491,7 @@ def get_script_source(
 def get_wasm_bytecode(
         script_id: runtime.ScriptId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,str]:
-    '''
+    r'''
     This command is deprecated. Use getScriptSource instead.
 
     .. deprecated:: 1.3
@@ -512,7 +512,7 @@ def get_wasm_bytecode(
 def get_stack_trace(
         stack_trace_id: runtime.StackTraceId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,runtime.StackTrace]:
-    '''
+    r'''
     Returns stack trace with given ``stackTraceId``.
 
     **EXPERIMENTAL**
@@ -531,7 +531,7 @@ def get_stack_trace(
 
 
 def pause() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Stops on the next JavaScript statement.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -544,7 +544,7 @@ def pause() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 def pause_on_async_call(
         parent_stack_trace_id: runtime.StackTraceId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
 
 
     .. deprecated:: 1.3
@@ -565,7 +565,7 @@ def pause_on_async_call(
 def remove_breakpoint(
         breakpoint_id: BreakpointId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Removes JavaScript breakpoint.
 
     :param breakpoint_id:
@@ -583,7 +583,7 @@ def remove_breakpoint(
 def restart_frame(
         call_frame_id: CallFrameId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.List[CallFrame], typing.Optional[runtime.StackTrace], typing.Optional[runtime.StackTraceId]]]:
-    '''
+    r'''
     Restarts particular call frame from the beginning.
 
     .. deprecated:: 1.3
@@ -612,7 +612,7 @@ def restart_frame(
 def resume(
         terminate_on_resume: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Resumes JavaScript execution.
 
     :param terminate_on_resume: *(Optional)* Set to true to terminate execution upon resuming execution. In contrast to Runtime.terminateExecution, this will allows to execute further JavaScript (i.e. via evaluation) until execution of the paused code is actually resumed, at which point termination is triggered. If execution is currently not paused, this parameter has no effect.
@@ -633,7 +633,7 @@ def search_in_content(
         case_sensitive: typing.Optional[bool] = None,
         is_regex: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[SearchMatch]]:
-    '''
+    r'''
     Searches for given string in script content.
 
     :param script_id: Id of the script to search in.
@@ -660,7 +660,7 @@ def search_in_content(
 def set_async_call_stack_depth(
         max_depth: int
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables or disables async call stacks tracking.
 
     :param max_depth: Maximum depth of async call stacks. Setting to ```0``` will effectively disable collecting async call stacks (default).
@@ -677,7 +677,7 @@ def set_async_call_stack_depth(
 def set_blackbox_patterns(
         patterns: typing.List[str]
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Replace previous blackbox patterns with passed ones. Forces backend to skip stepping/pausing in
     scripts with url matching one of the patterns. VM will try to leave blackboxed script by
     performing 'step in' several times, finally resorting to 'step out' if unsuccessful.
@@ -699,7 +699,7 @@ def set_blackboxed_ranges(
         script_id: runtime.ScriptId,
         positions: typing.List[ScriptPosition]
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Makes backend skip steps in the script in blackboxed ranges. VM will try leave blacklisted
     scripts by performing 'step in' several times, finally resorting to 'step out' if unsuccessful.
     Positions array contains positions where blackbox state is changed. First interval isn't
@@ -724,7 +724,7 @@ def set_breakpoint(
         location: Location,
         condition: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[BreakpointId, Location]]:
-    '''
+    r'''
     Sets JavaScript breakpoint at a given location.
 
     :param location: Location to set breakpoint in.
@@ -752,7 +752,7 @@ def set_breakpoint(
 def set_instrumentation_breakpoint(
         instrumentation: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,BreakpointId]:
-    '''
+    r'''
     Sets instrumentation breakpoint.
 
     :param instrumentation: Instrumentation name.
@@ -776,7 +776,7 @@ def set_breakpoint_by_url(
         column_number: typing.Optional[int] = None,
         condition: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[BreakpointId, typing.List[Location]]]:
-    '''
+    r'''
     Sets JavaScript breakpoint at given location specified either by URL or URL regex. Once this
     command is issued, all existing parsed scripts will have breakpoints resolved and returned in
     ``locations`` property. Further matching script parsing will result in subsequent
@@ -820,7 +820,7 @@ def set_breakpoint_on_function_call(
         object_id: runtime.RemoteObjectId,
         condition: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,BreakpointId]:
-    '''
+    r'''
     Sets JavaScript breakpoint before each call to the given function.
     If another function was created from the same source as a given one,
     calling it will also trigger the breakpoint.
@@ -846,7 +846,7 @@ def set_breakpoint_on_function_call(
 def set_breakpoints_active(
         active: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Activates / deactivates all breakpoints on the page.
 
     :param active: New value for breakpoints active state.
@@ -863,7 +863,7 @@ def set_breakpoints_active(
 def set_pause_on_exceptions(
         state: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Defines pause on exceptions state. Can be set to stop on all exceptions, uncaught exceptions or
     no exceptions. Initial pause on exceptions state is ``none``.
 
@@ -881,7 +881,7 @@ def set_pause_on_exceptions(
 def set_return_value(
         new_value: runtime.CallArgument
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Changes return value in top frame. Available only at return break position.
 
     **EXPERIMENTAL**
@@ -902,7 +902,7 @@ def set_script_source(
         script_source: str,
         dry_run: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.Optional[typing.List[CallFrame]], typing.Optional[bool], typing.Optional[runtime.StackTrace], typing.Optional[runtime.StackTraceId], typing.Optional[runtime.ExceptionDetails]]]:
-    '''
+    r'''
     Edits JavaScript source live.
 
     :param script_id: Id of the script to edit.
@@ -938,7 +938,7 @@ def set_script_source(
 def set_skip_all_pauses(
         skip: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Makes page not interrupt on any pauses (breakpoint, exception, dom exception etc).
 
     :param skip: New value for skip pauses state.
@@ -958,7 +958,7 @@ def set_variable_value(
         new_value: runtime.CallArgument,
         call_frame_id: CallFrameId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Changes value of variable in a callframe. Object-based scopes are not supported and must be
     mutated manually.
 
@@ -983,7 +983,7 @@ def step_into(
         break_on_async_call: typing.Optional[bool] = None,
         skip_list: typing.Optional[typing.List[LocationRange]] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Steps into the function call.
 
     :param break_on_async_call: **(EXPERIMENTAL)** *(Optional)* Debugger will pause on the execution of the first async task which was scheduled before next pause.
@@ -1002,7 +1002,7 @@ def step_into(
 
 
 def step_out() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Steps out of the function call.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -1014,7 +1014,7 @@ def step_out() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 def step_over(
         skip_list: typing.Optional[typing.List[LocationRange]] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Steps over the statement.
 
     :param skip_list: **(EXPERIMENTAL)** *(Optional)* The skipList specifies location ranges that should be skipped on step over.
@@ -1032,7 +1032,7 @@ def step_over(
 @event_class('Debugger.breakpointResolved')
 @dataclass
 class BreakpointResolved:
-    '''
+    r'''
     Fired when breakpoint is resolved to an actual script and location.
     '''
     #: Breakpoint unique identifier.
@@ -1051,7 +1051,7 @@ class BreakpointResolved:
 @event_class('Debugger.paused')
 @dataclass
 class Paused:
-    '''
+    r'''
     Fired when the virtual machine stopped on breakpoint or exception or any other stop criteria.
     '''
     #: Call stack the virtual machine stopped on.
@@ -1085,7 +1085,7 @@ class Paused:
 @event_class('Debugger.resumed')
 @dataclass
 class Resumed:
-    '''
+    r'''
     Fired when the virtual machine resumed execution.
     '''
 
@@ -1100,7 +1100,7 @@ class Resumed:
 @event_class('Debugger.scriptFailedToParse')
 @dataclass
 class ScriptFailedToParse:
-    '''
+    r'''
     Fired when virtual machine fails to parse the script.
     '''
     #: Identifier of the script parsed.
@@ -1164,7 +1164,7 @@ class ScriptFailedToParse:
 @event_class('Debugger.scriptParsed')
 @dataclass
 class ScriptParsed:
-    '''
+    r'''
     Fired when virtual machine parses script. This event is also fired for all known and uncollected
     scripts upon enabling debugger.
     '''

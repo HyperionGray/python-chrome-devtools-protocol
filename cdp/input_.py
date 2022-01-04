@@ -119,7 +119,7 @@ class MouseButton(enum.Enum):
 
 
 class TimeSinceEpoch(float):
-    '''
+    r'''
     UTC time in seconds, counted from January 1, 1970.
     '''
     def to_json(self) -> float:
@@ -203,7 +203,7 @@ def dispatch_drag_event(
         data: DragData,
         modifiers: typing.Optional[int] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Dispatches a drag event into the page.
 
     **EXPERIMENTAL**
@@ -245,7 +245,7 @@ def dispatch_key_event(
         location: typing.Optional[int] = None,
         commands: typing.Optional[typing.List[str]] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Dispatches a key event to the page.
 
     :param type_: Type of the key event.
@@ -304,7 +304,7 @@ def dispatch_key_event(
 def insert_text(
         text: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     This method emulates inserting text that doesn't come from a key press,
     for example an emoji keyboard or an IME.
 
@@ -328,7 +328,7 @@ def ime_set_composition(
         replacement_start: typing.Optional[int] = None,
         replacement_end: typing.Optional[int] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     This method sets the current candidate text for ime.
     Use imeCommitComposition to commit the final text.
     Use imeSetComposition with empty string as text to cancel composition.
@@ -374,7 +374,7 @@ def dispatch_mouse_event(
         delta_y: typing.Optional[float] = None,
         pointer_type: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Dispatches a mouse event to the page.
 
     :param type_: Type of the mouse event.
@@ -437,7 +437,7 @@ def dispatch_touch_event(
         modifiers: typing.Optional[int] = None,
         timestamp: typing.Optional[TimeSinceEpoch] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Dispatches a touch event to the page.
 
     :param type_: Type of the touch event. TouchEnd and TouchCancel must not contain any touch points, while TouchStart and TouchMove must contains at least one.
@@ -470,7 +470,7 @@ def emulate_touch_from_mouse_event(
         modifiers: typing.Optional[int] = None,
         click_count: typing.Optional[int] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Emulates touch event from the mouse event parameters.
 
     **EXPERIMENTAL**
@@ -510,7 +510,7 @@ def emulate_touch_from_mouse_event(
 def set_ignore_input_events(
         ignore: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Ignores input events (useful while auditing page).
 
     :param ignore: Ignores input events processing when set to true.
@@ -527,7 +527,7 @@ def set_ignore_input_events(
 def set_intercept_drags(
         enabled: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Prevents default drag and drop behavior and instead emits ``Input.dragIntercepted`` events.
     Drag and drop behavior can be directly controlled via ``Input.dispatchDragEvent``.
 
@@ -551,7 +551,7 @@ def synthesize_pinch_gesture(
         relative_speed: typing.Optional[int] = None,
         gesture_source_type: typing.Optional[GestureSourceType] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Synthesizes a pinch gesture over a time period by issuing appropriate touch events.
 
     **EXPERIMENTAL**
@@ -591,7 +591,7 @@ def synthesize_scroll_gesture(
         repeat_delay_ms: typing.Optional[int] = None,
         interaction_marker_name: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Synthesizes a scroll gesture over a time period by issuing appropriate touch events.
 
     **EXPERIMENTAL**
@@ -646,7 +646,7 @@ def synthesize_tap_gesture(
         tap_count: typing.Optional[int] = None,
         gesture_source_type: typing.Optional[GestureSourceType] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Synthesizes a tap gesture over a time period by issuing appropriate touch events.
 
     **EXPERIMENTAL**
@@ -676,7 +676,7 @@ def synthesize_tap_gesture(
 @event_class('Input.dragIntercepted')
 @dataclass
 class DragIntercepted:
-    '''
+    r'''
     **EXPERIMENTAL**
 
     Emitted only when ``Input.setInterceptDrags`` is enabled. Use this data with ``Input.dispatchDragEvent`` to

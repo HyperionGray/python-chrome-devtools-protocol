@@ -17,7 +17,7 @@ from . import page
 
 
 class RequestId(str):
-    '''
+    r'''
     Unique request identifier.
     '''
     def to_json(self) -> str:
@@ -32,7 +32,7 @@ class RequestId(str):
 
 
 class RequestStage(enum.Enum):
-    '''
+    r'''
     Stages of the request to handle. Request will intercept before the request is
     sent. Response will intercept after the response is received (but before response
     body is received).
@@ -81,7 +81,7 @@ class RequestPattern:
 
 @dataclass
 class HeaderEntry:
-    '''
+    r'''
     Response HTTP header entry
     '''
     name: str
@@ -104,7 +104,7 @@ class HeaderEntry:
 
 @dataclass
 class AuthChallenge:
-    '''
+    r'''
     Authorization challenge for HTTP status code 401 or 407.
     '''
     #: Origin of the challenger.
@@ -140,7 +140,7 @@ class AuthChallenge:
 
 @dataclass
 class AuthChallengeResponse:
-    '''
+    r'''
     Response to an AuthChallenge.
     '''
     #: The decision on what to do in response to the authorization challenge.  Default means
@@ -175,7 +175,7 @@ class AuthChallengeResponse:
 
 
 def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Disables the fetch domain.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -188,7 +188,7 @@ def enable(
         patterns: typing.Optional[typing.List[RequestPattern]] = None,
         handle_auth_requests: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables issuing of requestPaused events. A request will be paused until client
     calls one of failRequest, fulfillRequest or continueRequest/continueWithAuth.
 
@@ -211,7 +211,7 @@ def fail_request(
         request_id: RequestId,
         error_reason: network.ErrorReason
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Causes the request to fail with specified reason.
 
     :param request_id: An id the client received in requestPaused event.
@@ -235,7 +235,7 @@ def fulfill_request(
         body: typing.Optional[str] = None,
         response_phrase: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Provides response to the request.
 
     :param request_id: An id the client received in requestPaused event.
@@ -271,7 +271,7 @@ def continue_request(
         headers: typing.Optional[typing.List[HeaderEntry]] = None,
         intercept_response: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Continues the request, optionally modifying some of its parameters.
 
     :param request_id: An id the client received in requestPaused event.
@@ -304,7 +304,7 @@ def continue_with_auth(
         request_id: RequestId,
         auth_challenge_response: AuthChallengeResponse
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Continues a request supplying authChallengeResponse following authRequired event.
 
     :param request_id: An id the client received in authRequired event.
@@ -327,7 +327,7 @@ def continue_response(
         response_headers: typing.Optional[typing.List[HeaderEntry]] = None,
         binary_response_headers: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Continues loading of the paused response, optionally modifying the
     response headers. If either responseCode or headers are modified, all of them
     must be present.
@@ -360,7 +360,7 @@ def continue_response(
 def get_response_body(
         request_id: RequestId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[str, bool]]:
-    '''
+    r'''
     Causes the body of the response to be received from the server and
     returned as a single string. May only be issued for a request that
     is paused in the Response stage and is mutually exclusive with
@@ -390,7 +390,7 @@ def get_response_body(
 def take_response_body_as_stream(
         request_id: RequestId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,io.StreamHandle]:
-    '''
+    r'''
     Returns a handle to the stream representing the response body.
     The request must be paused in the HeadersReceived stage.
     Note that after this command the request can't be continued
@@ -418,7 +418,7 @@ def take_response_body_as_stream(
 @event_class('Fetch.requestPaused')
 @dataclass
 class RequestPaused:
-    '''
+    r'''
     Issued when the domain is enabled and the request URL matches the
     specified filter. The request is paused until the client responds
     with one of continueRequest, failRequest or fulfillRequest.
@@ -464,7 +464,7 @@ class RequestPaused:
 @event_class('Fetch.authRequired')
 @dataclass
 class AuthRequired:
-    '''
+    r'''
     Issued when the domain is enabled with handleAuthRequests set to true.
     The request is paused until client responds with continueWithAuth.
     '''

@@ -13,7 +13,7 @@ import typing
 
 
 class GraphObjectId(str):
-    '''
+    r'''
     An unique ID for a graph object (AudioContext, AudioNode, AudioParam) in Web Audio API
     '''
     def to_json(self) -> str:
@@ -28,7 +28,7 @@ class GraphObjectId(str):
 
 
 class ContextType(enum.Enum):
-    '''
+    r'''
     Enum of BaseAudioContext types
     '''
     REALTIME = "realtime"
@@ -43,7 +43,7 @@ class ContextType(enum.Enum):
 
 
 class ContextState(enum.Enum):
-    '''
+    r'''
     Enum of AudioContextState from the spec
     '''
     SUSPENDED = "suspended"
@@ -59,7 +59,7 @@ class ContextState(enum.Enum):
 
 
 class NodeType(str):
-    '''
+    r'''
     Enum of AudioNode types
     '''
     def to_json(self) -> str:
@@ -74,7 +74,7 @@ class NodeType(str):
 
 
 class ChannelCountMode(enum.Enum):
-    '''
+    r'''
     Enum of AudioNode::ChannelCountMode from the spec
     '''
     CLAMPED_MAX = "clamped-max"
@@ -90,7 +90,7 @@ class ChannelCountMode(enum.Enum):
 
 
 class ChannelInterpretation(enum.Enum):
-    '''
+    r'''
     Enum of AudioNode::ChannelInterpretation from the spec
     '''
     DISCRETE = "discrete"
@@ -105,7 +105,7 @@ class ChannelInterpretation(enum.Enum):
 
 
 class ParamType(str):
-    '''
+    r'''
     Enum of AudioParam types
     '''
     def to_json(self) -> str:
@@ -120,7 +120,7 @@ class ParamType(str):
 
 
 class AutomationRate(enum.Enum):
-    '''
+    r'''
     Enum of AudioParam::AutomationRate from the spec
     '''
     A_RATE = "a-rate"
@@ -136,7 +136,7 @@ class AutomationRate(enum.Enum):
 
 @dataclass
 class ContextRealtimeData:
-    '''
+    r'''
     Fields in AudioContext that change in real-time.
     '''
     #: The current context time in second in BaseAudioContext.
@@ -173,7 +173,7 @@ class ContextRealtimeData:
 
 @dataclass
 class BaseAudioContext:
-    '''
+    r'''
     Protocol object for BaseAudioContext
     '''
     context_id: GraphObjectId
@@ -220,7 +220,7 @@ class BaseAudioContext:
 
 @dataclass
 class AudioListener:
-    '''
+    r'''
     Protocol object for AudioListener
     '''
     listener_id: GraphObjectId
@@ -243,7 +243,7 @@ class AudioListener:
 
 @dataclass
 class AudioNode:
-    '''
+    r'''
     Protocol object for AudioNode
     '''
     node_id: GraphObjectId
@@ -290,7 +290,7 @@ class AudioNode:
 
 @dataclass
 class AudioParam:
-    '''
+    r'''
     Protocol object for AudioParam
     '''
     param_id: GraphObjectId
@@ -336,7 +336,7 @@ class AudioParam:
 
 
 def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables the WebAudio domain and starts sending context lifetime events.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -346,7 +346,7 @@ def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Disables the WebAudio domain.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -358,7 +358,7 @@ def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 def get_realtime_data(
         context_id: GraphObjectId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,ContextRealtimeData]:
-    '''
+    r'''
     Fetch the realtime data from the registered contexts.
 
     :param context_id:
@@ -377,7 +377,7 @@ def get_realtime_data(
 @event_class('WebAudio.contextCreated')
 @dataclass
 class ContextCreated:
-    '''
+    r'''
     Notifies that a new BaseAudioContext has been created.
     '''
     context: BaseAudioContext
@@ -392,7 +392,7 @@ class ContextCreated:
 @event_class('WebAudio.contextWillBeDestroyed')
 @dataclass
 class ContextWillBeDestroyed:
-    '''
+    r'''
     Notifies that an existing BaseAudioContext will be destroyed.
     '''
     context_id: GraphObjectId
@@ -407,7 +407,7 @@ class ContextWillBeDestroyed:
 @event_class('WebAudio.contextChanged')
 @dataclass
 class ContextChanged:
-    '''
+    r'''
     Notifies that existing BaseAudioContext has changed some properties (id stays the same)..
     '''
     context: BaseAudioContext
@@ -422,7 +422,7 @@ class ContextChanged:
 @event_class('WebAudio.audioListenerCreated')
 @dataclass
 class AudioListenerCreated:
-    '''
+    r'''
     Notifies that the construction of an AudioListener has finished.
     '''
     listener: AudioListener
@@ -437,7 +437,7 @@ class AudioListenerCreated:
 @event_class('WebAudio.audioListenerWillBeDestroyed')
 @dataclass
 class AudioListenerWillBeDestroyed:
-    '''
+    r'''
     Notifies that a new AudioListener has been created.
     '''
     context_id: GraphObjectId
@@ -454,7 +454,7 @@ class AudioListenerWillBeDestroyed:
 @event_class('WebAudio.audioNodeCreated')
 @dataclass
 class AudioNodeCreated:
-    '''
+    r'''
     Notifies that a new AudioNode has been created.
     '''
     node: AudioNode
@@ -469,7 +469,7 @@ class AudioNodeCreated:
 @event_class('WebAudio.audioNodeWillBeDestroyed')
 @dataclass
 class AudioNodeWillBeDestroyed:
-    '''
+    r'''
     Notifies that an existing AudioNode has been destroyed.
     '''
     context_id: GraphObjectId
@@ -486,7 +486,7 @@ class AudioNodeWillBeDestroyed:
 @event_class('WebAudio.audioParamCreated')
 @dataclass
 class AudioParamCreated:
-    '''
+    r'''
     Notifies that a new AudioParam has been created.
     '''
     param: AudioParam
@@ -501,7 +501,7 @@ class AudioParamCreated:
 @event_class('WebAudio.audioParamWillBeDestroyed')
 @dataclass
 class AudioParamWillBeDestroyed:
-    '''
+    r'''
     Notifies that an existing AudioParam has been destroyed.
     '''
     context_id: GraphObjectId
@@ -520,7 +520,7 @@ class AudioParamWillBeDestroyed:
 @event_class('WebAudio.nodesConnected')
 @dataclass
 class NodesConnected:
-    '''
+    r'''
     Notifies that two AudioNodes are connected.
     '''
     context_id: GraphObjectId
@@ -543,7 +543,7 @@ class NodesConnected:
 @event_class('WebAudio.nodesDisconnected')
 @dataclass
 class NodesDisconnected:
-    '''
+    r'''
     Notifies that AudioNodes are disconnected. The destination can be null, and it means all the outgoing connections from the source are disconnected.
     '''
     context_id: GraphObjectId
@@ -566,7 +566,7 @@ class NodesDisconnected:
 @event_class('WebAudio.nodeParamConnected')
 @dataclass
 class NodeParamConnected:
-    '''
+    r'''
     Notifies that an AudioNode is connected to an AudioParam.
     '''
     context_id: GraphObjectId
@@ -587,7 +587,7 @@ class NodeParamConnected:
 @event_class('WebAudio.nodeParamDisconnected')
 @dataclass
 class NodeParamDisconnected:
-    '''
+    r'''
     Notifies that an AudioNode is disconnected to an AudioParam.
     '''
     context_id: GraphObjectId

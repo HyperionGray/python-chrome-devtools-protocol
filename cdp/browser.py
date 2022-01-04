@@ -40,7 +40,7 @@ class WindowID(int):
 
 
 class WindowState(enum.Enum):
-    '''
+    r'''
     The state of the browser window.
     '''
     NORMAL = "normal"
@@ -58,7 +58,7 @@ class WindowState(enum.Enum):
 
 @dataclass
 class Bounds:
-    '''
+    r'''
     Browser window bounds information
     '''
     #: The offset from the left edge of the screen to the window in pixels.
@@ -149,7 +149,7 @@ class PermissionSetting(enum.Enum):
 
 @dataclass
 class PermissionDescriptor:
-    '''
+    r'''
     Definition of PermissionDescriptor defined in the Permissions API:
     https://w3c.github.io/permissions/#dictdef-permissiondescriptor.
     '''
@@ -195,7 +195,7 @@ class PermissionDescriptor:
 
 
 class BrowserCommandId(enum.Enum):
-    '''
+    r'''
     Browser command ids used by executeBrowserCommand.
     '''
     OPEN_TAB_SEARCH = "openTabSearch"
@@ -211,7 +211,7 @@ class BrowserCommandId(enum.Enum):
 
 @dataclass
 class Bucket:
-    '''
+    r'''
     Chrome histogram bucket.
     '''
     #: Minimum value (inclusive).
@@ -241,7 +241,7 @@ class Bucket:
 
 @dataclass
 class Histogram:
-    '''
+    r'''
     Chrome histogram.
     '''
     #: Name.
@@ -280,7 +280,7 @@ def set_permission(
         origin: typing.Optional[str] = None,
         browser_context_id: typing.Optional[BrowserContextID] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Set permission settings for given origin.
 
     **EXPERIMENTAL**
@@ -309,7 +309,7 @@ def grant_permissions(
         origin: typing.Optional[str] = None,
         browser_context_id: typing.Optional[BrowserContextID] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Grant specific permissions to the given origin and reject all others.
 
     **EXPERIMENTAL**
@@ -334,7 +334,7 @@ def grant_permissions(
 def reset_permissions(
         browser_context_id: typing.Optional[BrowserContextID] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Reset all permission management for all origins.
 
     **EXPERIMENTAL**
@@ -357,7 +357,7 @@ def set_download_behavior(
         download_path: typing.Optional[str] = None,
         events_enabled: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Set the behavior when downloading a file.
 
     **EXPERIMENTAL**
@@ -386,7 +386,7 @@ def cancel_download(
         guid: str,
         browser_context_id: typing.Optional[BrowserContextID] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Cancel a download if in progress
 
     **EXPERIMENTAL**
@@ -406,7 +406,7 @@ def cancel_download(
 
 
 def close() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Close browser gracefully.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -416,7 +416,7 @@ def close() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def crash() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Crashes browser on the main thread.
 
     **EXPERIMENTAL**
@@ -428,7 +428,7 @@ def crash() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def crash_gpu_process() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Crashes GPU process.
 
     **EXPERIMENTAL**
@@ -440,7 +440,7 @@ def crash_gpu_process() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def get_version() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[str, str, str, str, str]]:
-    '''
+    r'''
     Returns version information.
 
     :returns: A tuple with the following items:
@@ -465,7 +465,7 @@ def get_version() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[str, 
 
 
 def get_browser_command_line() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[str]]:
-    '''
+    r'''
     Returns the command line switches for the browser process if, and only if
     --enable-automation is on the commandline.
 
@@ -484,7 +484,7 @@ def get_histograms(
         query: typing.Optional[str] = None,
         delta: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[Histogram]]:
-    '''
+    r'''
     Get Chrome histograms.
 
     **EXPERIMENTAL**
@@ -510,7 +510,7 @@ def get_histogram(
         name: str,
         delta: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,Histogram]:
-    '''
+    r'''
     Get a Chrome histogram by name.
 
     **EXPERIMENTAL**
@@ -534,7 +534,7 @@ def get_histogram(
 def get_window_bounds(
         window_id: WindowID
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,Bounds]:
-    '''
+    r'''
     Get position and size of the browser window.
 
     **EXPERIMENTAL**
@@ -555,7 +555,7 @@ def get_window_bounds(
 def get_window_for_target(
         target_id: typing.Optional[target.TargetID] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[WindowID, Bounds]]:
-    '''
+    r'''
     Get the browser window that contains the devtools target.
 
     **EXPERIMENTAL**
@@ -584,7 +584,7 @@ def set_window_bounds(
         window_id: WindowID,
         bounds: Bounds
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Set position and/or size of the browser window.
 
     **EXPERIMENTAL**
@@ -606,7 +606,7 @@ def set_dock_tile(
         badge_label: typing.Optional[str] = None,
         image: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Set dock tile details, platform-specific.
 
     **EXPERIMENTAL**
@@ -629,7 +629,7 @@ def set_dock_tile(
 def execute_browser_command(
         command_id: BrowserCommandId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Invoke custom browser commands used by telemetry.
 
     **EXPERIMENTAL**
@@ -648,7 +648,7 @@ def execute_browser_command(
 @event_class('Browser.downloadWillBegin')
 @dataclass
 class DownloadWillBegin:
-    '''
+    r'''
     **EXPERIMENTAL**
 
     Fired when page is about to start a download.
@@ -675,7 +675,7 @@ class DownloadWillBegin:
 @event_class('Browser.downloadProgress')
 @dataclass
 class DownloadProgress:
-    '''
+    r'''
     **EXPERIMENTAL**
 
     Fired when download makes progress. Last call has ``done`` == true.

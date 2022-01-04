@@ -15,7 +15,7 @@ import typing
 def set_instrumentation_breakpoint(
         event_name: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Sets breakpoint on particular native event.
 
     :param event_name: Instrumentation name to stop on.
@@ -32,7 +32,7 @@ def set_instrumentation_breakpoint(
 def remove_instrumentation_breakpoint(
         event_name: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Removes breakpoint on particular native event.
 
     :param event_name: Instrumentation name to stop on.

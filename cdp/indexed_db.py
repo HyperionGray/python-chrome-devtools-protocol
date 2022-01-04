@@ -16,7 +16,7 @@ from . import runtime
 
 @dataclass
 class DatabaseWithObjectStores:
-    '''
+    r'''
     Database with an array of object stores.
     '''
     #: Database name.
@@ -47,7 +47,7 @@ class DatabaseWithObjectStores:
 
 @dataclass
 class ObjectStore:
-    '''
+    r'''
     Object store.
     '''
     #: Object store name.
@@ -82,7 +82,7 @@ class ObjectStore:
 
 @dataclass
 class ObjectStoreIndex:
-    '''
+    r'''
     Object store index.
     '''
     #: Index name.
@@ -117,7 +117,7 @@ class ObjectStoreIndex:
 
 @dataclass
 class Key:
-    '''
+    r'''
     Key.
     '''
     #: Key type.
@@ -161,7 +161,7 @@ class Key:
 
 @dataclass
 class KeyRange:
-    '''
+    r'''
     Key range.
     '''
     #: If true lower bound is open.
@@ -198,7 +198,7 @@ class KeyRange:
 
 @dataclass
 class DataEntry:
-    '''
+    r'''
     Data entry.
     '''
     #: Key object.
@@ -228,7 +228,7 @@ class DataEntry:
 
 @dataclass
 class KeyPath:
-    '''
+    r'''
     Key path.
     '''
     #: Key path type.
@@ -263,7 +263,7 @@ def clear_object_store(
         database_name: str,
         object_store_name: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Clears all entries from an object store.
 
     :param security_origin: Security origin.
@@ -285,7 +285,7 @@ def delete_database(
         security_origin: str,
         database_name: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Deletes a database.
 
     :param security_origin: Security origin.
@@ -307,7 +307,7 @@ def delete_object_store_entries(
         object_store_name: str,
         key_range: KeyRange
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Delete a range of entries from an object store
 
     :param security_origin:
@@ -328,7 +328,7 @@ def delete_object_store_entries(
 
 
 def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Disables events from backend.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -338,7 +338,7 @@ def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables events from backend.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -356,7 +356,7 @@ def request_data(
         page_size: int,
         key_range: typing.Optional[KeyRange] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.List[DataEntry], bool]]:
-    '''
+    r'''
     Requests data from object store or index.
 
     :param security_origin: Security origin.
@@ -396,7 +396,7 @@ def get_metadata(
         database_name: str,
         object_store_name: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[float, float]]:
-    '''
+    r'''
     Gets metadata of an object store
 
     :param security_origin: Security origin.
@@ -426,7 +426,7 @@ def request_database(
         security_origin: str,
         database_name: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,DatabaseWithObjectStores]:
-    '''
+    r'''
     Requests database with given name in given frame.
 
     :param security_origin: Security origin.
@@ -447,7 +447,7 @@ def request_database(
 def request_database_names(
         security_origin: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[str]]:
-    '''
+    r'''
     Requests database names for given security origin.
 
     :param security_origin: Security origin.

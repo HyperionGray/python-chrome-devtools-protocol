@@ -15,7 +15,7 @@ from . import io
 
 
 class MemoryDumpConfig(dict):
-    '''
+    r'''
     Configuration for memory dump. Used only when "memory-infra" category is enabled.
     '''
     def to_json(self) -> dict:
@@ -90,7 +90,7 @@ class TraceConfig:
 
 
 class StreamFormat(enum.Enum):
-    '''
+    r'''
     Data format of a trace. Can be either the legacy JSON format or the
     protocol buffer format. Note that the JSON format will be deprecated soon.
     '''
@@ -106,7 +106,7 @@ class StreamFormat(enum.Enum):
 
 
 class StreamCompression(enum.Enum):
-    '''
+    r'''
     Compression type to use for traces returned via streams.
     '''
     NONE = "none"
@@ -121,7 +121,7 @@ class StreamCompression(enum.Enum):
 
 
 class MemoryDumpLevelOfDetail(enum.Enum):
-    '''
+    r'''
     Details exposed when memory request explicitly declared.
     Keep consistent with memory_dump_request_args.h and
     memory_instrumentation.mojom
@@ -139,7 +139,7 @@ class MemoryDumpLevelOfDetail(enum.Enum):
 
 
 class TracingBackend(enum.Enum):
-    '''
+    r'''
     Backend type to use for tracing. ``chrome`` uses the Chrome-integrated
     tracing service and is supported on all platforms. ``system`` is only
     supported on Chrome OS and uses the Perfetto system tracing service.
@@ -159,7 +159,7 @@ class TracingBackend(enum.Enum):
 
 
 def end() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Stop trace events collection.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -169,7 +169,7 @@ def end() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def get_categories() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[str]]:
-    '''
+    r'''
     Gets supported tracing categories.
 
     :returns: A list of supported tracing categories.
@@ -184,7 +184,7 @@ def get_categories() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[str
 def record_clock_sync_marker(
         sync_id: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Record a clock sync marker in the trace.
 
     :param sync_id: The ID of this clock sync marker
@@ -202,7 +202,7 @@ def request_memory_dump(
         deterministic: typing.Optional[bool] = None,
         level_of_detail: typing.Optional[MemoryDumpLevelOfDetail] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[str, bool]]:
-    '''
+    r'''
     Request a global memory dump.
 
     :param deterministic: *(Optional)* Enables more deterministic results by forcing garbage collection
@@ -239,7 +239,7 @@ def start(
         perfetto_config: typing.Optional[str] = None,
         tracing_backend: typing.Optional[TracingBackend] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Start trace events collection.
 
     :param categories: **(DEPRECATED)** *(Optional)* Category/tag filter
@@ -302,7 +302,7 @@ class BufferUsage:
 @event_class('Tracing.dataCollected')
 @dataclass
 class DataCollected:
-    '''
+    r'''
     Contains an bucket of collected trace events. When tracing is stopped collected events will be
     send as a sequence of dataCollected events followed by tracingComplete event.
     '''
@@ -318,7 +318,7 @@ class DataCollected:
 @event_class('Tracing.tracingComplete')
 @dataclass
 class TracingComplete:
-    '''
+    r'''
     Signals that tracing is stopped and there is no trace buffers pending flush, all data were
     delivered via dataCollected events.
     '''

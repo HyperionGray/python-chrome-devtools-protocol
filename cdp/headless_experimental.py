@@ -17,7 +17,7 @@ from deprecated.sphinx import deprecated # type: ignore
 
 @dataclass
 class ScreenshotParams:
-    '''
+    r'''
     Encoding options for a screenshot.
     '''
     #: Image compression format (defaults to png).
@@ -48,7 +48,7 @@ def begin_frame(
         no_display_updates: typing.Optional[bool] = None,
         screenshot: typing.Optional[ScreenshotParams] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[bool, typing.Optional[str]]]:
-    '''
+    r'''
     Sends a BeginFrame to the target and returns when the frame was completed. Optionally captures a
     screenshot from the resulting frame. Requires that the target was created with enabled
     BeginFrameControl. Designed for use with --run-all-compositor-stages-before-draw, see also
@@ -84,7 +84,7 @@ def begin_frame(
 
 
 def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Disables headless events for the target.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -94,7 +94,7 @@ def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables headless events for the target.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -107,7 +107,7 @@ def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 @event_class('HeadlessExperimental.needsBeginFramesChanged')
 @dataclass
 class NeedsBeginFramesChanged:
-    '''
+    r'''
     Issued when the target starts or stops needing BeginFrames.
     Deprecated. Issue beginFrame unconditionally instead and use result from
     beginFrame to detect whether the frames were suppressed.

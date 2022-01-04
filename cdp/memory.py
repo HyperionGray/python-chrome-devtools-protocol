@@ -13,7 +13,7 @@ import typing
 
 
 class PressureLevel(enum.Enum):
-    '''
+    r'''
     Memory pressure level.
     '''
     MODERATE = "moderate"
@@ -29,7 +29,7 @@ class PressureLevel(enum.Enum):
 
 @dataclass
 class SamplingProfileNode:
-    '''
+    r'''
     Heap profile sample.
     '''
     #: Size of the sampled allocation.
@@ -59,7 +59,7 @@ class SamplingProfileNode:
 
 @dataclass
 class SamplingProfile:
-    '''
+    r'''
     Array of heap profile samples.
     '''
     samples: typing.List[SamplingProfileNode]
@@ -82,7 +82,7 @@ class SamplingProfile:
 
 @dataclass
 class Module:
-    '''
+    r'''
     Executable module information
     '''
     #: Name of the module.
@@ -117,7 +117,7 @@ class Module:
 
 
 def get_dom_counters() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[int, int, int]]:
-    '''
+    r'''
 
 
     :returns: A tuple with the following items:
@@ -146,7 +146,7 @@ def prepare_for_leak_detection() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,Non
 
 
 def forcibly_purge_java_script_memory() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Simulate OomIntervention by purging V8 memory.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -158,7 +158,7 @@ def forcibly_purge_java_script_memory() -> typing.Generator[T_JSON_DICT,T_JSON_D
 def set_pressure_notifications_suppressed(
         suppressed: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enable/disable suppressing memory pressure notifications in all processes.
 
     :param suppressed: If true, memory pressure notifications will be suppressed.
@@ -175,7 +175,7 @@ def set_pressure_notifications_suppressed(
 def simulate_pressure_notification(
         level: PressureLevel
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Simulate a memory pressure notification in all processes.
 
     :param level: Memory pressure level of the notification.
@@ -193,7 +193,7 @@ def start_sampling(
         sampling_interval: typing.Optional[int] = None,
         suppress_randomness: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Start collecting native memory profile.
 
     :param sampling_interval: *(Optional)* Average number of bytes between samples.
@@ -212,7 +212,7 @@ def start_sampling(
 
 
 def stop_sampling() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Stop collecting native memory profile.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -222,7 +222,7 @@ def stop_sampling() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def get_all_time_sampling_profile() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,SamplingProfile]:
-    '''
+    r'''
     Retrieve native memory allocations profile
     collected since renderer process startup.
 
@@ -236,7 +236,7 @@ def get_all_time_sampling_profile() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,
 
 
 def get_browser_sampling_profile() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,SamplingProfile]:
-    '''
+    r'''
     Retrieve native memory allocations profile
     collected since browser process startup.
 
@@ -250,7 +250,7 @@ def get_browser_sampling_profile() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,S
 
 
 def get_sampling_profile() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,SamplingProfile]:
-    '''
+    r'''
     Retrieve native memory allocations profile collected since last
     ``startSampling`` call.
 

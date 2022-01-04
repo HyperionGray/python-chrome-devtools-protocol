@@ -21,7 +21,7 @@ from deprecated.sphinx import deprecated # type: ignore
 
 
 class ResourceType(enum.Enum):
-    '''
+    r'''
     Resource type as it was perceived by the rendering engine.
     '''
     DOCUMENT = "Document"
@@ -51,7 +51,7 @@ class ResourceType(enum.Enum):
 
 
 class LoaderId(str):
-    '''
+    r'''
     Unique loader identifier.
     '''
     def to_json(self) -> str:
@@ -66,7 +66,7 @@ class LoaderId(str):
 
 
 class RequestId(str):
-    '''
+    r'''
     Unique request identifier.
     '''
     def to_json(self) -> str:
@@ -81,7 +81,7 @@ class RequestId(str):
 
 
 class InterceptionId(str):
-    '''
+    r'''
     Unique intercepted request identifier.
     '''
     def to_json(self) -> str:
@@ -96,7 +96,7 @@ class InterceptionId(str):
 
 
 class ErrorReason(enum.Enum):
-    '''
+    r'''
     Network level fetch failure reason.
     '''
     FAILED = "Failed"
@@ -123,7 +123,7 @@ class ErrorReason(enum.Enum):
 
 
 class TimeSinceEpoch(float):
-    '''
+    r'''
     UTC time in seconds, counted from January 1, 1970.
     '''
     def to_json(self) -> float:
@@ -138,7 +138,7 @@ class TimeSinceEpoch(float):
 
 
 class MonotonicTime(float):
-    '''
+    r'''
     Monotonically increasing time in seconds since an arbitrary point in the past.
     '''
     def to_json(self) -> float:
@@ -153,7 +153,7 @@ class MonotonicTime(float):
 
 
 class Headers(dict):
-    '''
+    r'''
     Request / response headers as keys / values of JSON object.
     '''
     def to_json(self) -> dict:
@@ -168,7 +168,7 @@ class Headers(dict):
 
 
 class ConnectionType(enum.Enum):
-    '''
+    r'''
     The underlying connection technology that the browser is supposedly using.
     '''
     NONE = "none"
@@ -190,7 +190,7 @@ class ConnectionType(enum.Enum):
 
 
 class CookieSameSite(enum.Enum):
-    '''
+    r'''
     Represents the cookie's 'SameSite' status:
     https://tools.ietf.org/html/draft-west-first-party-cookies
     '''
@@ -207,7 +207,7 @@ class CookieSameSite(enum.Enum):
 
 
 class CookiePriority(enum.Enum):
-    '''
+    r'''
     Represents the cookie's 'Priority' status:
     https://tools.ietf.org/html/draft-west-cookie-priority-00
     '''
@@ -224,7 +224,7 @@ class CookiePriority(enum.Enum):
 
 
 class CookieSourceScheme(enum.Enum):
-    '''
+    r'''
     Represents the source scheme of the origin that originally set the cookie.
     A value of "Unset" allows protocol clients to emulate legacy cookie scope for the scheme.
     This is a temporary ability and it will be removed in the future.
@@ -243,7 +243,7 @@ class CookieSourceScheme(enum.Enum):
 
 @dataclass
 class ResourceTiming:
-    '''
+    r'''
     Timing information for the request.
     '''
     #: Timing's requestTime is a baseline in seconds, while the other numbers are ticks in
@@ -348,7 +348,7 @@ class ResourceTiming:
 
 
 class ResourcePriority(enum.Enum):
-    '''
+    r'''
     Loading priority of a resource request.
     '''
     VERY_LOW = "VeryLow"
@@ -367,7 +367,7 @@ class ResourcePriority(enum.Enum):
 
 @dataclass
 class PostDataEntry:
-    '''
+    r'''
     Post data entry for HTTP request
     '''
     bytes_: typing.Optional[str] = None
@@ -387,7 +387,7 @@ class PostDataEntry:
 
 @dataclass
 class Request:
-    '''
+    r'''
     HTTP request data.
     '''
     #: Request URL (without fragment).
@@ -477,7 +477,7 @@ class Request:
 
 @dataclass
 class SignedCertificateTimestamp:
-    '''
+    r'''
     Details of a signed certificate timestamp (SCT).
     '''
     #: Validation status.
@@ -533,7 +533,7 @@ class SignedCertificateTimestamp:
 
 @dataclass
 class SecurityDetails:
-    '''
+    r'''
     Security details about a request.
     '''
     #: Protocol name (e.g. "TLS 1.2" or "QUIC").
@@ -614,7 +614,7 @@ class SecurityDetails:
 
 
 class CertificateTransparencyCompliance(enum.Enum):
-    '''
+    r'''
     Whether the request complied with Certificate Transparency policy.
     '''
     UNKNOWN = "unknown"
@@ -630,7 +630,7 @@ class CertificateTransparencyCompliance(enum.Enum):
 
 
 class BlockedReason(enum.Enum):
-    '''
+    r'''
     The reason why request was blocked.
     '''
     OTHER = "other"
@@ -655,7 +655,7 @@ class BlockedReason(enum.Enum):
 
 
 class CorsError(enum.Enum):
-    '''
+    r'''
     The reason why request was blocked.
     '''
     DISALLOWED_BY_MODE = "DisallowedByMode"
@@ -718,7 +718,7 @@ class CorsErrorStatus:
 
 
 class ServiceWorkerResponseSource(enum.Enum):
-    '''
+    r'''
     Source of serviceworker response.
     '''
     CACHE_STORAGE = "cache-storage"
@@ -736,7 +736,7 @@ class ServiceWorkerResponseSource(enum.Enum):
 
 @dataclass
 class TrustTokenParams:
-    '''
+    r'''
     Determines what type of Trust Token operation is executed and
     depending on the type, some additional parameters. The values
     are specified in third_party/blink/renderer/core/fetch/trust_token.idl.
@@ -783,7 +783,7 @@ class TrustTokenOperationType(enum.Enum):
 
 @dataclass
 class Response:
-    '''
+    r'''
     HTTP response data.
     '''
     #: Response URL. This URL can be different from CachedResource.url in case of redirect.
@@ -927,7 +927,7 @@ class Response:
 
 @dataclass
 class WebSocketRequest:
-    '''
+    r'''
     WebSocket request data.
     '''
     #: HTTP request headers.
@@ -947,7 +947,7 @@ class WebSocketRequest:
 
 @dataclass
 class WebSocketResponse:
-    '''
+    r'''
     WebSocket response data.
     '''
     #: HTTP response status code.
@@ -995,7 +995,7 @@ class WebSocketResponse:
 
 @dataclass
 class WebSocketFrame:
-    '''
+    r'''
     WebSocket message data. This represents an entire WebSocket message, not just a fragmented frame as the name suggests.
     '''
     #: WebSocket message opcode.
@@ -1027,7 +1027,7 @@ class WebSocketFrame:
 
 @dataclass
 class CachedResource:
-    '''
+    r'''
     Information about the cached resource.
     '''
     #: Resource URL. This is the url of the original network request.
@@ -1063,7 +1063,7 @@ class CachedResource:
 
 @dataclass
 class Initiator:
-    '''
+    r'''
     Information about the request initiator.
     '''
     #: Type of this initiator.
@@ -1115,7 +1115,7 @@ class Initiator:
 
 @dataclass
 class Cookie:
-    '''
+    r'''
     Cookie object
     '''
     #: Cookie name.
@@ -1215,7 +1215,7 @@ class Cookie:
 
 
 class SetCookieBlockedReason(enum.Enum):
-    '''
+    r'''
     Types of reasons why a cookie may not be stored from a response.
     '''
     SECURE_ONLY = "SecureOnly"
@@ -1246,7 +1246,7 @@ class SetCookieBlockedReason(enum.Enum):
 
 
 class CookieBlockedReason(enum.Enum):
-    '''
+    r'''
     Types of reasons why a cookie may not be sent with a request.
     '''
     SECURE_ONLY = "SecureOnly"
@@ -1274,7 +1274,7 @@ class CookieBlockedReason(enum.Enum):
 
 @dataclass
 class BlockedSetCookieWithReason:
-    '''
+    r'''
     A cookie which was not stored from a response with the corresponding reason.
     '''
     #: The reason(s) this cookie was blocked.
@@ -1308,7 +1308,7 @@ class BlockedSetCookieWithReason:
 
 @dataclass
 class BlockedCookieWithReason:
-    '''
+    r'''
     A cookie with was not sent with a request with the corresponding reason.
     '''
     #: The reason(s) the cookie was blocked.
@@ -1333,7 +1333,7 @@ class BlockedCookieWithReason:
 
 @dataclass
 class CookieParam:
-    '''
+    r'''
     Cookie parameter object
     '''
     #: Cookie name.
@@ -1435,7 +1435,7 @@ class CookieParam:
 
 @dataclass
 class AuthChallenge:
-    '''
+    r'''
     Authorization challenge for HTTP status code 401 or 407.
     '''
     #: Origin of the challenger.
@@ -1471,7 +1471,7 @@ class AuthChallenge:
 
 @dataclass
 class AuthChallengeResponse:
-    '''
+    r'''
     Response to an AuthChallenge.
     '''
     #: The decision on what to do in response to the authorization challenge.  Default means
@@ -1506,7 +1506,7 @@ class AuthChallengeResponse:
 
 
 class InterceptionStage(enum.Enum):
-    '''
+    r'''
     Stages of the interception to begin intercepting. Request will intercept before the request is
     sent. Response will intercept after the response is received.
     '''
@@ -1523,7 +1523,7 @@ class InterceptionStage(enum.Enum):
 
 @dataclass
 class RequestPattern:
-    '''
+    r'''
     Request pattern for interception.
     '''
     #: Wildcards (``'*'`` -> zero or more, ``'?'`` -> exactly one) are allowed. Escape character is
@@ -1557,7 +1557,7 @@ class RequestPattern:
 
 @dataclass
 class SignedExchangeSignature:
-    '''
+    r'''
     Information about a signed exchange signature.
     https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#rfc.section.3.1
     '''
@@ -1621,7 +1621,7 @@ class SignedExchangeSignature:
 
 @dataclass
 class SignedExchangeHeader:
-    '''
+    r'''
     Information about a signed exchange header.
     https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#cbor-representation
     '''
@@ -1661,7 +1661,7 @@ class SignedExchangeHeader:
 
 
 class SignedExchangeErrorField(enum.Enum):
-    '''
+    r'''
     Field type for a signed exchange related error.
     '''
     SIGNATURE_SIG = "signatureSig"
@@ -1681,7 +1681,7 @@ class SignedExchangeErrorField(enum.Enum):
 
 @dataclass
 class SignedExchangeError:
-    '''
+    r'''
     Information about a signed exchange response.
     '''
     #: Error message.
@@ -1713,7 +1713,7 @@ class SignedExchangeError:
 
 @dataclass
 class SignedExchangeInfo:
-    '''
+    r'''
     Information about a signed exchange response.
     '''
     #: The outer response of signed HTTP exchange which was received from network.
@@ -1750,7 +1750,7 @@ class SignedExchangeInfo:
 
 
 class ContentEncoding(enum.Enum):
-    '''
+    r'''
     List of content encodings supported by the backend.
     '''
     DEFLATE = "deflate"
@@ -1947,7 +1947,7 @@ class SecurityIsolationStatus:
 
 
 class ReportStatus(enum.Enum):
-    '''
+    r'''
     The status of a Reporting API report.
     '''
     QUEUED = "Queued"
@@ -1977,7 +1977,7 @@ class ReportId(str):
 
 @dataclass
 class ReportingApiReport:
-    '''
+    r'''
     An object representing a report generated by the Reporting API.
     '''
     id_: ReportId
@@ -2056,7 +2056,7 @@ class ReportingApiEndpoint:
 
 @dataclass
 class LoadNetworkResourcePageResult:
-    '''
+    r'''
     An object providing the result of a network resource load.
     '''
     success: bool
@@ -2103,7 +2103,7 @@ class LoadNetworkResourcePageResult:
 
 @dataclass
 class LoadNetworkResourceOptions:
-    '''
+    r'''
     An options object that may be extended later to better support CORS,
     CORB and streaming.
     '''
@@ -2128,7 +2128,7 @@ class LoadNetworkResourceOptions:
 def set_accepted_encodings(
         encodings: typing.List[ContentEncoding]
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Sets a list of content encodings that will be accepted. Empty list means no encoding is accepted.
 
     **EXPERIMENTAL**
@@ -2145,7 +2145,7 @@ def set_accepted_encodings(
 
 
 def clear_accepted_encodings_override() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Clears accepted encodings set by setAcceptedEncodings
 
     **EXPERIMENTAL**
@@ -2158,7 +2158,7 @@ def clear_accepted_encodings_override() -> typing.Generator[T_JSON_DICT,T_JSON_D
 
 @deprecated(version="1.3")
 def can_clear_browser_cache() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,bool]:
-    '''
+    r'''
     Tells whether clearing browser cache is supported.
 
     .. deprecated:: 1.3
@@ -2174,7 +2174,7 @@ def can_clear_browser_cache() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,bool]:
 
 @deprecated(version="1.3")
 def can_clear_browser_cookies() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,bool]:
-    '''
+    r'''
     Tells whether clearing browser cookies is supported.
 
     .. deprecated:: 1.3
@@ -2190,7 +2190,7 @@ def can_clear_browser_cookies() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,bool
 
 @deprecated(version="1.3")
 def can_emulate_network_conditions() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,bool]:
-    '''
+    r'''
     Tells whether emulation of network conditions is supported.
 
     .. deprecated:: 1.3
@@ -2205,7 +2205,7 @@ def can_emulate_network_conditions() -> typing.Generator[T_JSON_DICT,T_JSON_DICT
 
 
 def clear_browser_cache() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Clears browser cache.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -2215,7 +2215,7 @@ def clear_browser_cache() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def clear_browser_cookies() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Clears browser cookies.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -2235,7 +2235,7 @@ def continue_intercepted_request(
         headers: typing.Optional[Headers] = None,
         auth_challenge_response: typing.Optional[AuthChallengeResponse] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Response to Network.requestIntercepted which either modifies the request to continue with any
     modifications, or blocks it, or completes it with the provided response bytes. If a network
     fetch occurs as a result which encounters a redirect an additional Network.requestIntercepted
@@ -2284,7 +2284,7 @@ def delete_cookies(
         domain: typing.Optional[str] = None,
         path: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Deletes browser cookies with matching name and url or domain/path pair.
 
     :param name: Name of the cookies to remove.
@@ -2308,7 +2308,7 @@ def delete_cookies(
 
 
 def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Disables network tracking, prevents network events from being sent to the client.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -2324,7 +2324,7 @@ def emulate_network_conditions(
         upload_throughput: float,
         connection_type: typing.Optional[ConnectionType] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Activates emulation of network conditions.
 
     :param offline: True to emulate internet disconnection.
@@ -2352,7 +2352,7 @@ def enable(
         max_resource_buffer_size: typing.Optional[int] = None,
         max_post_data_size: typing.Optional[int] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables network tracking, network events will now be delivered to the client.
 
     :param max_total_buffer_size: **(EXPERIMENTAL)** *(Optional)* Buffer size in bytes to use when preserving network payloads (XHRs, etc).
@@ -2374,7 +2374,7 @@ def enable(
 
 
 def get_all_cookies() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[Cookie]]:
-    '''
+    r'''
     Returns all browser cookies. Depending on the backend support, will return detailed cookie
     information in the ``cookies`` field.
 
@@ -2390,7 +2390,7 @@ def get_all_cookies() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[Co
 def get_certificate(
         origin: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[str]]:
-    '''
+    r'''
     Returns the DER-encoded certificate.
 
     **EXPERIMENTAL**
@@ -2411,7 +2411,7 @@ def get_certificate(
 def get_cookies(
         urls: typing.Optional[typing.List[str]] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[Cookie]]:
-    '''
+    r'''
     Returns all browser cookies for the current URL. Depending on the backend support, will return
     detailed cookie information in the ``cookies`` field.
 
@@ -2432,7 +2432,7 @@ def get_cookies(
 def get_response_body(
         request_id: RequestId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[str, bool]]:
-    '''
+    r'''
     Returns content served for the given request.
 
     :param request_id: Identifier of the network request to get content for.
@@ -2457,7 +2457,7 @@ def get_response_body(
 def get_request_post_data(
         request_id: RequestId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,str]:
-    '''
+    r'''
     Returns post data sent with the request. Returns an error when no data was sent with the request.
 
     :param request_id: Identifier of the network request to get content for.
@@ -2476,7 +2476,7 @@ def get_request_post_data(
 def get_response_body_for_interception(
         interception_id: InterceptionId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[str, bool]]:
-    '''
+    r'''
     Returns content served for the given currently intercepted request.
 
     **EXPERIMENTAL**
@@ -2503,7 +2503,7 @@ def get_response_body_for_interception(
 def take_response_body_for_interception_as_stream(
         interception_id: InterceptionId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,io.StreamHandle]:
-    '''
+    r'''
     Returns a handle to the stream representing the response body. Note that after this command,
     the intercepted request can't be continued as is -- you either need to cancel it or to provide
     the response body. The stream only supports sequential read, IO.read will fail if the position
@@ -2527,7 +2527,7 @@ def take_response_body_for_interception_as_stream(
 def replay_xhr(
         request_id: RequestId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     This method sends a new XMLHttpRequest which is identical to the original one. The following
     parameters should be identical: method, url, async, request body, extra headers, withCredentials
     attribute, user, password.
@@ -2551,7 +2551,7 @@ def search_in_response_body(
         case_sensitive: typing.Optional[bool] = None,
         is_regex: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[debugger.SearchMatch]]:
-    '''
+    r'''
     Searches for given string in response content.
 
     **EXPERIMENTAL**
@@ -2580,7 +2580,7 @@ def search_in_response_body(
 def set_blocked_ur_ls(
         urls: typing.List[str]
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Blocks URLs from loading.
 
     **EXPERIMENTAL**
@@ -2599,7 +2599,7 @@ def set_blocked_ur_ls(
 def set_bypass_service_worker(
         bypass: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Toggles ignoring of service worker for each request.
 
     **EXPERIMENTAL**
@@ -2618,7 +2618,7 @@ def set_bypass_service_worker(
 def set_cache_disabled(
         cache_disabled: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Toggles ignoring cache for each request. If ``true``, cache will not be used.
 
     :param cache_disabled: Cache disabled state.
@@ -2648,7 +2648,7 @@ def set_cookie(
         source_port: typing.Optional[int] = None,
         partition_key: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,bool]:
-    '''
+    r'''
     Sets a cookie with the given cookie data; may overwrite equivalent cookies if they exist.
 
     :param name: Cookie name.
@@ -2705,7 +2705,7 @@ def set_cookie(
 def set_cookies(
         cookies: typing.List[CookieParam]
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Sets given cookies.
 
     :param cookies: Cookies to be set.
@@ -2722,7 +2722,7 @@ def set_cookies(
 def set_extra_http_headers(
         headers: Headers
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Specifies whether to always send extra HTTP headers with the requests from this page.
 
     :param headers: Map with extra HTTP headers.
@@ -2739,7 +2739,7 @@ def set_extra_http_headers(
 def set_attach_debug_stack(
         enabled: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Specifies whether to attach a page script stack id in requests
 
     **EXPERIMENTAL**
@@ -2759,7 +2759,7 @@ def set_attach_debug_stack(
 def set_request_interception(
         patterns: typing.List[RequestPattern]
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Sets the requests to intercept that match the provided patterns and optionally resource types.
     Deprecated, please use Fetch.enable instead.
 
@@ -2784,7 +2784,7 @@ def set_user_agent_override(
         platform: typing.Optional[str] = None,
         user_agent_metadata: typing.Optional[emulation.UserAgentMetadata] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Allows overriding user agent with the given string.
 
     :param user_agent: User agent to use.
@@ -2810,7 +2810,7 @@ def set_user_agent_override(
 def get_security_isolation_status(
         frame_id: typing.Optional[page.FrameId] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,SecurityIsolationStatus]:
-    '''
+    r'''
     Returns information about the COEP/COOP isolation status.
 
     **EXPERIMENTAL**
@@ -2832,7 +2832,7 @@ def get_security_isolation_status(
 def enable_reporting_api(
         enable: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables tracking for the Reporting API, events generated by the Reporting API will now be delivered to the client.
     Enabling triggers 'reportingApiReportAdded' for all existing reports.
 
@@ -2854,7 +2854,7 @@ def load_network_resource(
         options: LoadNetworkResourceOptions,
         frame_id: typing.Optional[page.FrameId] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,LoadNetworkResourcePageResult]:
-    '''
+    r'''
     Fetches the resource and returns the content.
 
     **EXPERIMENTAL**
@@ -2880,7 +2880,7 @@ def load_network_resource(
 @event_class('Network.dataReceived')
 @dataclass
 class DataReceived:
-    '''
+    r'''
     Fired when data chunk was received over the network.
     '''
     #: Request identifier.
@@ -2905,7 +2905,7 @@ class DataReceived:
 @event_class('Network.eventSourceMessageReceived')
 @dataclass
 class EventSourceMessageReceived:
-    '''
+    r'''
     Fired when EventSource message is received.
     '''
     #: Request identifier.
@@ -2933,7 +2933,7 @@ class EventSourceMessageReceived:
 @event_class('Network.loadingFailed')
 @dataclass
 class LoadingFailed:
-    '''
+    r'''
     Fired when HTTP request has failed to load.
     '''
     #: Request identifier.
@@ -2967,7 +2967,7 @@ class LoadingFailed:
 @event_class('Network.loadingFinished')
 @dataclass
 class LoadingFinished:
-    '''
+    r'''
     Fired when HTTP request has finished loading.
     '''
     #: Request identifier.
@@ -2994,7 +2994,7 @@ class LoadingFinished:
 @event_class('Network.requestIntercepted')
 @dataclass
 class RequestIntercepted:
-    '''
+    r'''
     **EXPERIMENTAL**
 
     Details of an intercepted HTTP request, which must be either allowed, blocked, modified or
@@ -3054,7 +3054,7 @@ class RequestIntercepted:
 @event_class('Network.requestServedFromCache')
 @dataclass
 class RequestServedFromCache:
-    '''
+    r'''
     Fired if request ended up loading from cache.
     '''
     #: Request identifier.
@@ -3070,7 +3070,7 @@ class RequestServedFromCache:
 @event_class('Network.requestWillBeSent')
 @dataclass
 class RequestWillBeSent:
-    '''
+    r'''
     Fired when page is about to send HTTP request.
     '''
     #: Request identifier.
@@ -3121,7 +3121,7 @@ class RequestWillBeSent:
 @event_class('Network.resourceChangedPriority')
 @dataclass
 class ResourceChangedPriority:
-    '''
+    r'''
     **EXPERIMENTAL**
 
     Fired when resource loading priority is changed
@@ -3145,7 +3145,7 @@ class ResourceChangedPriority:
 @event_class('Network.signedExchangeReceived')
 @dataclass
 class SignedExchangeReceived:
-    '''
+    r'''
     **EXPERIMENTAL**
 
     Fired when a signed exchange was received over the network
@@ -3166,7 +3166,7 @@ class SignedExchangeReceived:
 @event_class('Network.responseReceived')
 @dataclass
 class ResponseReceived:
-    '''
+    r'''
     Fired when HTTP response is available.
     '''
     #: Request identifier.
@@ -3201,7 +3201,7 @@ class ResponseReceived:
 @event_class('Network.webSocketClosed')
 @dataclass
 class WebSocketClosed:
-    '''
+    r'''
     Fired when WebSocket is closed.
     '''
     #: Request identifier.
@@ -3220,7 +3220,7 @@ class WebSocketClosed:
 @event_class('Network.webSocketCreated')
 @dataclass
 class WebSocketCreated:
-    '''
+    r'''
     Fired upon WebSocket creation.
     '''
     #: Request identifier.
@@ -3242,7 +3242,7 @@ class WebSocketCreated:
 @event_class('Network.webSocketFrameError')
 @dataclass
 class WebSocketFrameError:
-    '''
+    r'''
     Fired when WebSocket message error occurs.
     '''
     #: Request identifier.
@@ -3264,7 +3264,7 @@ class WebSocketFrameError:
 @event_class('Network.webSocketFrameReceived')
 @dataclass
 class WebSocketFrameReceived:
-    '''
+    r'''
     Fired when WebSocket message is received.
     '''
     #: Request identifier.
@@ -3286,7 +3286,7 @@ class WebSocketFrameReceived:
 @event_class('Network.webSocketFrameSent')
 @dataclass
 class WebSocketFrameSent:
-    '''
+    r'''
     Fired when WebSocket message is sent.
     '''
     #: Request identifier.
@@ -3308,7 +3308,7 @@ class WebSocketFrameSent:
 @event_class('Network.webSocketHandshakeResponseReceived')
 @dataclass
 class WebSocketHandshakeResponseReceived:
-    '''
+    r'''
     Fired when WebSocket handshake response becomes available.
     '''
     #: Request identifier.
@@ -3330,7 +3330,7 @@ class WebSocketHandshakeResponseReceived:
 @event_class('Network.webSocketWillSendHandshakeRequest')
 @dataclass
 class WebSocketWillSendHandshakeRequest:
-    '''
+    r'''
     Fired when WebSocket is about to initiate handshake.
     '''
     #: Request identifier.
@@ -3355,7 +3355,7 @@ class WebSocketWillSendHandshakeRequest:
 @event_class('Network.webTransportCreated')
 @dataclass
 class WebTransportCreated:
-    '''
+    r'''
     Fired upon WebTransport creation.
     '''
     #: WebTransport identifier.
@@ -3380,7 +3380,7 @@ class WebTransportCreated:
 @event_class('Network.webTransportConnectionEstablished')
 @dataclass
 class WebTransportConnectionEstablished:
-    '''
+    r'''
     Fired when WebTransport handshake is finished.
     '''
     #: WebTransport identifier.
@@ -3399,7 +3399,7 @@ class WebTransportConnectionEstablished:
 @event_class('Network.webTransportClosed')
 @dataclass
 class WebTransportClosed:
-    '''
+    r'''
     Fired when WebTransport is disposed.
     '''
     #: WebTransport identifier.
@@ -3418,7 +3418,7 @@ class WebTransportClosed:
 @event_class('Network.requestWillBeSentExtraInfo')
 @dataclass
 class RequestWillBeSentExtraInfo:
-    '''
+    r'''
     **EXPERIMENTAL**
 
     Fired when additional information about a requestWillBeSent event is available from the
@@ -3452,7 +3452,7 @@ class RequestWillBeSentExtraInfo:
 @event_class('Network.responseReceivedExtraInfo')
 @dataclass
 class ResponseReceivedExtraInfo:
-    '''
+    r'''
     **EXPERIMENTAL**
 
     Fired when additional information about a responseReceived event is available from the network
@@ -3493,7 +3493,7 @@ class ResponseReceivedExtraInfo:
 @event_class('Network.trustTokenOperationDone')
 @dataclass
 class TrustTokenOperationDone:
-    '''
+    r'''
     **EXPERIMENTAL**
 
     Fired exactly once for each Trust Token operation. Depending on
@@ -3530,7 +3530,7 @@ class TrustTokenOperationDone:
 @event_class('Network.subresourceWebBundleMetadataReceived')
 @dataclass
 class SubresourceWebBundleMetadataReceived:
-    '''
+    r'''
     **EXPERIMENTAL**
 
     Fired once when parsing the .wbn file has succeeded.
@@ -3552,7 +3552,7 @@ class SubresourceWebBundleMetadataReceived:
 @event_class('Network.subresourceWebBundleMetadataError')
 @dataclass
 class SubresourceWebBundleMetadataError:
-    '''
+    r'''
     **EXPERIMENTAL**
 
     Fired once when parsing the .wbn file has failed.
@@ -3573,7 +3573,7 @@ class SubresourceWebBundleMetadataError:
 @event_class('Network.subresourceWebBundleInnerResponseParsed')
 @dataclass
 class SubresourceWebBundleInnerResponseParsed:
-    '''
+    r'''
     **EXPERIMENTAL**
 
     Fired when handling requests for resources within a .wbn file.
@@ -3600,7 +3600,7 @@ class SubresourceWebBundleInnerResponseParsed:
 @event_class('Network.subresourceWebBundleInnerResponseError')
 @dataclass
 class SubresourceWebBundleInnerResponseError:
-    '''
+    r'''
     **EXPERIMENTAL**
 
     Fired when request for resources within a .wbn file failed.
@@ -3629,7 +3629,7 @@ class SubresourceWebBundleInnerResponseError:
 @event_class('Network.reportingApiReportAdded')
 @dataclass
 class ReportingApiReportAdded:
-    '''
+    r'''
     **EXPERIMENTAL**
 
     Is sent whenever a new report is added.
@@ -3647,7 +3647,7 @@ class ReportingApiReportAdded:
 @event_class('Network.reportingApiReportUpdated')
 @dataclass
 class ReportingApiReportUpdated:
-    '''
+    r'''
     **EXPERIMENTAL**
 
 
@@ -3664,7 +3664,7 @@ class ReportingApiReportUpdated:
 @event_class('Network.reportingApiEndpointsChangedForOrigin')
 @dataclass
 class ReportingApiEndpointsChangedForOrigin:
-    '''
+    r'''
     **EXPERIMENTAL**
 
 
