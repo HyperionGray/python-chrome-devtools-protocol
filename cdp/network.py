@@ -3090,7 +3090,7 @@ class RequestWillBeSent:
     #: In the case that redirectResponse is populated, this flag indicates whether
     #: requestWillBeSentExtraInfo and responseReceivedExtraInfo events will be or were emitted
     #: for the request which was just redirected.
-    redirect_has_extra_info: bool
+    redirect_has_extra_info: typing.Optional[bool]
     #: Redirect response data.
     redirect_response: typing.Optional[Response]
     #: Type of this resource.
@@ -3110,7 +3110,7 @@ class RequestWillBeSent:
             timestamp=MonotonicTime.from_json(json['timestamp']),
             wall_time=TimeSinceEpoch.from_json(json['wallTime']),
             initiator=Initiator.from_json(json['initiator']),
-            redirect_has_extra_info=bool(json['redirectHasExtraInfo']),
+            redirect_has_extra_info=bool(json['redirectHasExtraInfo']) if 'redirectHasExtraInfo' in json else None,
             redirect_response=Response.from_json(json['redirectResponse']) if 'redirectResponse' in json else None,
             type_=ResourceType.from_json(json['type']) if 'type' in json else None,
             frame_id=page.FrameId.from_json(json['frameId']) if 'frameId' in json else None,
@@ -3181,7 +3181,7 @@ class ResponseReceived:
     response: Response
     #: Indicates whether requestWillBeSentExtraInfo and responseReceivedExtraInfo events will be
     #: or were emitted for this request.
-    has_extra_info: bool
+    has_extra_info: typing.Optional[bool]
     #: Frame identifier.
     frame_id: typing.Optional[page.FrameId]
 
@@ -3193,7 +3193,7 @@ class ResponseReceived:
             timestamp=MonotonicTime.from_json(json['timestamp']),
             type_=ResourceType.from_json(json['type']),
             response=Response.from_json(json['response']),
-            has_extra_info=bool(json['hasExtraInfo']),
+            has_extra_info=bool(json['hasExtraInfo']) if 'hasExtraInfo' in json else None,
             frame_id=page.FrameId.from_json(json['frameId']) if 'frameId' in json else None
         )
 
