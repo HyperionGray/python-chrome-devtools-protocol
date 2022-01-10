@@ -13,7 +13,7 @@ import typing
 
 
 def clear_device_orientation_override() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Clears the overridden Device Orientation.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -27,7 +27,7 @@ def set_device_orientation_override(
         beta: float,
         gamma: float
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Overrides the Device Orientation.
 
     :param alpha: Mock alpha

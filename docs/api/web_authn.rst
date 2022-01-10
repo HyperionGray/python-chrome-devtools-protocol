@@ -30,6 +30,11 @@ arguments to other commands.
       :undoc-members:
       :exclude-members: from_json, to_json
 
+.. autoclass:: Ctap2Version
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
 .. autoclass:: AuthenticatorTransport
       :members:
       :undoc-members:
@@ -67,9 +72,15 @@ to. For more information, see
 
 .. autofunction:: enable
 
+.. autofunction:: get_credential
+
 .. autofunction:: get_credentials
 
+.. autofunction:: remove_credential
+
 .. autofunction:: remove_virtual_authenticator
+
+.. autofunction:: set_automatic_presence_simulation
 
 .. autofunction:: set_user_verified
 

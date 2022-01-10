@@ -13,7 +13,7 @@ import typing
 
 
 class ScriptId(str):
-    '''
+    r'''
     Unique script identifier.
     '''
     def to_json(self) -> str:
@@ -28,7 +28,7 @@ class ScriptId(str):
 
 
 class RemoteObjectId(str):
-    '''
+    r'''
     Unique object identifier.
     '''
     def to_json(self) -> str:
@@ -43,7 +43,7 @@ class RemoteObjectId(str):
 
 
 class UnserializableValue(str):
-    '''
+    r'''
     Primitive value which cannot be JSON-stringified. Includes values ``-0``, ``NaN``, ``Infinity``,
     ``-Infinity``, and bigint literals.
     '''
@@ -60,13 +60,15 @@ class UnserializableValue(str):
 
 @dataclass
 class RemoteObject:
-    '''
+    r'''
     Mirror object referencing original JavaScript object.
     '''
     #: Object type.
     type_: str
 
     #: Object subtype hint. Specified for ``object`` type values only.
+    #: NOTE: If you change anything here, make sure to also update
+    #: ``subtype`` in ``ObjectPreview`` and ``PropertyPreview`` below.
     subtype: typing.Optional[str] = None
 
     #: Object class (constructor) name. Specified for ``object`` type values only.
@@ -154,7 +156,7 @@ class CustomPreview:
 
 @dataclass
 class ObjectPreview:
-    '''
+    r'''
     Object containing abbreviated remote object value.
     '''
     #: Object type.
@@ -265,7 +267,7 @@ class EntryPreview:
 
 @dataclass
 class PropertyDescriptor:
-    '''
+    r'''
     Object property descriptor.
     '''
     #: Property name or symbol description.
@@ -341,7 +343,7 @@ class PropertyDescriptor:
 
 @dataclass
 class InternalPropertyDescriptor:
-    '''
+    r'''
     Object internal property descriptor. This property isn't normally visible in JavaScript code.
     '''
     #: Conventional property name.
@@ -367,32 +369,47 @@ class InternalPropertyDescriptor:
 
 @dataclass
 class PrivatePropertyDescriptor:
-    '''
+    r'''
     Object private field descriptor.
     '''
     #: Private property name.
     name: str
 
     #: The value associated with the private property.
-    value: RemoteObject
+    value: typing.Optional[RemoteObject] = None
+
+    #: A function which serves as a getter for the private property,
+    #: or ``undefined`` if there is no getter (accessor descriptors only).
+    get: typing.Optional[RemoteObject] = None
+
+    #: A function which serves as a setter for the private property,
+    #: or ``undefined`` if there is no setter (accessor descriptors only).
+    set_: typing.Optional[RemoteObject] = None
 
     def to_json(self) -> T_JSON_DICT:
         json: T_JSON_DICT = dict()
         json['name'] = self.name
-        json['value'] = self.value.to_json()
+        if self.value is not None:
+            json['value'] = self.value.to_json()
+        if self.get is not None:
+            json['get'] = self.get.to_json()
+        if self.set_ is not None:
+            json['set'] = self.set_.to_json()
         return json
 
     @classmethod
     def from_json(cls, json: T_JSON_DICT) -> PrivatePropertyDescriptor:
         return cls(
             name=str(json['name']),
-            value=RemoteObject.from_json(json['value']),
+            value=RemoteObject.from_json(json['value']) if 'value' in json else None,
+            get=RemoteObject.from_json(json['get']) if 'get' in json else None,
+            set_=RemoteObject.from_json(json['set']) if 'set' in json else None,
         )
 
 
 @dataclass
 class CallArgument:
-    '''
+    r'''
     Represents function call argument. Either remote object id ``objectId``, primitive ``value``,
     unserializable primitive value or neither of (for undefined) them should be specified.
     '''
@@ -425,7 +442,7 @@ class CallArgument:
 
 
 class ExecutionContextId(int):
-    '''
+    r'''
     Id of an execution context.
     '''
     def to_json(self) -> int:
@@ -441,7 +458,7 @@ class ExecutionContextId(int):
 
 @dataclass
 class ExecutionContextDescription:
-    '''
+    r'''
     Description of an isolated world.
     '''
     #: Unique id of the execution context. It can be used to specify in which execution context
@@ -454,6 +471,11 @@ class ExecutionContextDescription:
     #: Human readable name describing given context.
     name: str
 
+    #: A system-unique execution context identifier. Unlike the id, this is unique across
+    #: multiple processes, so can be reliably used to identify specific context while backend
+    #: performs a cross-process navigation.
+    unique_id: str
+
     #: Embedder-specific auxiliary data.
     aux_data: typing.Optional[dict] = None
 
@@ -462,6 +484,7 @@ class ExecutionContextDescription:
         json['id'] = self.id_.to_json()
         json['origin'] = self.origin
         json['name'] = self.name
+        json['uniqueId'] = self.unique_id
         if self.aux_data is not None:
             json['auxData'] = self.aux_data
         return json
@@ -472,13 +495,14 @@ class ExecutionContextDescription:
             id_=ExecutionContextId.from_json(json['id']),
             origin=str(json['origin']),
             name=str(json['name']),
+            unique_id=str(json['uniqueId']),
             aux_data=dict(json['auxData']) if 'auxData' in json else None,
         )
 
 
 @dataclass
 class ExceptionDetails:
-    '''
+    r'''
     Detailed information about exception (or error) that was thrown during script compilation or
     execution.
     '''
@@ -509,6 +533,11 @@ class ExceptionDetails:
     #: Identifier of the context where exception happened.
     execution_context_id: typing.Optional[ExecutionContextId] = None
 
+    #: Dictionary with entries of meta data that the client associated
+    #: with this exception, such as information about associated network
+    #: requests, etc.
+    exception_meta_data: typing.Optional[dict] = None
+
     def to_json(self) -> T_JSON_DICT:
         json: T_JSON_DICT = dict()
         json['exceptionId'] = self.exception_id
@@ -525,6 +554,8 @@ class ExceptionDetails:
             json['exception'] = self.exception.to_json()
         if self.execution_context_id is not None:
             json['executionContextId'] = self.execution_context_id.to_json()
+        if self.exception_meta_data is not None:
+            json['exceptionMetaData'] = self.exception_meta_data
         return json
 
     @classmethod
@@ -539,11 +570,12 @@ class ExceptionDetails:
             stack_trace=StackTrace.from_json(json['stackTrace']) if 'stackTrace' in json else None,
             exception=RemoteObject.from_json(json['exception']) if 'exception' in json else None,
             execution_context_id=ExecutionContextId.from_json(json['executionContextId']) if 'executionContextId' in json else None,
+            exception_meta_data=dict(json['exceptionMetaData']) if 'exceptionMetaData' in json else None,
         )
 
 
 class Timestamp(float):
-    '''
+    r'''
     Number of milliseconds since epoch.
     '''
     def to_json(self) -> float:
@@ -558,7 +590,7 @@ class Timestamp(float):
 
 
 class TimeDelta(float):
-    '''
+    r'''
     Number of milliseconds.
     '''
     def to_json(self) -> float:
@@ -574,7 +606,7 @@ class TimeDelta(float):
 
 @dataclass
 class CallFrame:
-    '''
+    r'''
     Stack entry for runtime errors and assertions.
     '''
     #: JavaScript function name.
@@ -614,7 +646,7 @@ class CallFrame:
 
 @dataclass
 class StackTrace:
-    '''
+    r'''
     Call frames for assertions or error messages.
     '''
     #: JavaScript function name.
@@ -652,7 +684,7 @@ class StackTrace:
 
 
 class UniqueDebuggerId(str):
-    '''
+    r'''
     Unique identifier of current debugger.
     '''
     def to_json(self) -> str:
@@ -668,7 +700,7 @@ class UniqueDebuggerId(str):
 
 @dataclass
 class StackTraceId:
-    '''
+    r'''
     If ``debuggerId`` is set stack trace comes from another debugger and can be resolved there. This
     allows to track cross-debugger calls. See ``Runtime.StackTrace`` and ``Debugger.paused`` for usages.
     '''
@@ -696,7 +728,7 @@ def await_promise(
         return_by_value: typing.Optional[bool] = None,
         generate_preview: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[RemoteObject, typing.Optional[ExceptionDetails]]]:
-    '''
+    r'''
     Add handler to promise with given promise object id.
 
     :param promise_object_id: Identifier of the promise.
@@ -734,9 +766,10 @@ def call_function_on(
         user_gesture: typing.Optional[bool] = None,
         await_promise: typing.Optional[bool] = None,
         execution_context_id: typing.Optional[ExecutionContextId] = None,
-        object_group: typing.Optional[str] = None
+        object_group: typing.Optional[str] = None,
+        throw_on_side_effect: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[RemoteObject, typing.Optional[ExceptionDetails]]]:
-    '''
+    r'''
     Calls function with given declaration on the given object. Object group of the result is
     inherited from the target object.
 
@@ -750,6 +783,7 @@ def call_function_on(
     :param await_promise: *(Optional)* Whether execution should ````await``` for resulting value and return once awaited promise is resolved.
     :param execution_context_id: *(Optional)* Specifies execution context which global object will be used to call function on. Either executionContextId or objectId should be specified.
     :param object_group: *(Optional)* Symbolic group name that can be used to release multiple objects. If objectGroup is not specified and objectId is, objectGroup will be inherited from object.
+    :param throw_on_side_effect: **(EXPERIMENTAL)** *(Optional)* Whether to throw an exception if side effect cannot be ruled out during evaluation.
     :returns: A tuple with the following items:
 
         0. **result** - Call result.
@@ -775,6 +809,8 @@ def call_function_on(
         params['executionContextId'] = execution_context_id.to_json()
     if object_group is not None:
         params['objectGroup'] = object_group
+    if throw_on_side_effect is not None:
+        params['throwOnSideEffect'] = throw_on_side_effect
     cmd_dict: T_JSON_DICT = {
         'method': 'Runtime.callFunctionOn',
         'params': params,
@@ -792,7 +828,7 @@ def compile_script(
         persist_script: bool,
         execution_context_id: typing.Optional[ExecutionContextId] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.Optional[ScriptId], typing.Optional[ExceptionDetails]]]:
-    '''
+    r'''
     Compiles expression.
 
     :param expression: Expression to compile.
@@ -822,7 +858,7 @@ def compile_script(
 
 
 def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Disables reporting of execution contexts creation.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -832,7 +868,7 @@ def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def discard_console_entries() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Discards collected exceptions and console API calls.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -842,7 +878,7 @@ def discard_console_entries() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables reporting of execution contexts creation by means of ``executionContextCreated`` event.
     When the reporting gets enabled the event will be sent immediately for each existing execution
     context.
@@ -864,22 +900,30 @@ def evaluate(
         user_gesture: typing.Optional[bool] = None,
         await_promise: typing.Optional[bool] = None,
         throw_on_side_effect: typing.Optional[bool] = None,
-        timeout: typing.Optional[TimeDelta] = None
+        timeout: typing.Optional[TimeDelta] = None,
+        disable_breaks: typing.Optional[bool] = None,
+        repl_mode: typing.Optional[bool] = None,
+        allow_unsafe_eval_blocked_by_csp: typing.Optional[bool] = None,
+        unique_context_id: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[RemoteObject, typing.Optional[ExceptionDetails]]]:
-    '''
+    r'''
     Evaluates expression on global object.
 
     :param expression: Expression to evaluate.
     :param object_group: *(Optional)* Symbolic group name that can be used to release multiple objects.
     :param include_command_line_api: *(Optional)* Determines whether Command Line API should be available during the evaluation.
     :param silent: *(Optional)* In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides ```setPauseOnException```` state.
-    :param context_id: *(Optional)* Specifies in which execution context to perform evaluation. If the parameter is omitted the evaluation will be performed in the context of the inspected page.
+    :param context_id: *(Optional)* Specifies in which execution context to perform evaluation. If the parameter is omitted the evaluation will be performed in the context of the inspected page. This is mutually exclusive with ````uniqueContextId````, which offers an alternative way to identify the execution context that is more reliable in a multi-process environment.
     :param return_by_value: *(Optional)* Whether the result is expected to be a JSON object that should be sent by value.
     :param generate_preview: **(EXPERIMENTAL)** *(Optional)* Whether preview should be generated for the result.
     :param user_gesture: *(Optional)* Whether execution should be treated as initiated by user in the UI.
-    :param await_promise: *(Optional)* Whether execution should ````await``` for resulting value and return once awaited promise is resolved.
-    :param throw_on_side_effect: **(EXPERIMENTAL)** *(Optional)* Whether to throw an exception if side effect cannot be ruled out during evaluation.
+    :param await_promise: *(Optional)* Whether execution should ````await```` for resulting value and return once awaited promise is resolved.
+    :param throw_on_side_effect: **(EXPERIMENTAL)** *(Optional)* Whether to throw an exception if side effect cannot be ruled out during evaluation. This implies ````disableBreaks```` below.
     :param timeout: **(EXPERIMENTAL)** *(Optional)* Terminate execution after timing out (number of milliseconds).
+    :param disable_breaks: **(EXPERIMENTAL)** *(Optional)* Disable breakpoints during execution.
+    :param repl_mode: **(EXPERIMENTAL)** *(Optional)* Setting this flag to true enables ````let```` re-declaration and top-level ````await````. Note that ````let```` variables can only be re-declared if they originate from ````replMode```` themselves.
+    :param allow_unsafe_eval_blocked_by_csp: **(EXPERIMENTAL)** *(Optional)* The Content Security Policy (CSP) for the target might block 'unsafe-eval' which includes eval(), Function(), setTimeout() and setInterval() when called with non-callable arguments. This flag bypasses CSP for this evaluation and allows unsafe-eval. Defaults to true.
+    :param unique_context_id: **(EXPERIMENTAL)** *(Optional)* An alternative way to specify the execution context to evaluate in. Compared to contextId that may be reused across processes, this is guaranteed to be system-unique, so it can be used to prevent accidental evaluation of the expression in context different than intended (e.g. as a result of navigation across process boundaries). This is mutually exclusive with ````contextId```.
     :returns: A tuple with the following items:
 
         0. **result** - Evaluation result.
@@ -907,6 +951,14 @@ def evaluate(
         params['throwOnSideEffect'] = throw_on_side_effect
     if timeout is not None:
         params['timeout'] = timeout.to_json()
+    if disable_breaks is not None:
+        params['disableBreaks'] = disable_breaks
+    if repl_mode is not None:
+        params['replMode'] = repl_mode
+    if allow_unsafe_eval_blocked_by_csp is not None:
+        params['allowUnsafeEvalBlockedByCSP'] = allow_unsafe_eval_blocked_by_csp
+    if unique_context_id is not None:
+        params['uniqueContextId'] = unique_context_id
     cmd_dict: T_JSON_DICT = {
         'method': 'Runtime.evaluate',
         'params': params,
@@ -919,7 +971,7 @@ def evaluate(
 
 
 def get_isolate_id() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,str]:
-    '''
+    r'''
     Returns the isolate id.
 
     **EXPERIMENTAL**
@@ -934,7 +986,7 @@ def get_isolate_id() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,str]:
 
 
 def get_heap_usage() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[float, float]]:
-    '''
+    r'''
     Returns the JavaScript heap usage.
     It is the total usage of the corresponding isolate not scoped to a particular Runtime.
 
@@ -959,9 +1011,10 @@ def get_properties(
         object_id: RemoteObjectId,
         own_properties: typing.Optional[bool] = None,
         accessor_properties_only: typing.Optional[bool] = None,
-        generate_preview: typing.Optional[bool] = None
+        generate_preview: typing.Optional[bool] = None,
+        non_indexed_properties_only: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.List[PropertyDescriptor], typing.Optional[typing.List[InternalPropertyDescriptor]], typing.Optional[typing.List[PrivatePropertyDescriptor]], typing.Optional[ExceptionDetails]]]:
-    '''
+    r'''
     Returns properties of a given object. Object group of the result is inherited from the target
     object.
 
@@ -969,6 +1022,7 @@ def get_properties(
     :param own_properties: *(Optional)* If true, returns properties belonging only to the element itself, not to its prototype chain.
     :param accessor_properties_only: **(EXPERIMENTAL)** *(Optional)* If true, returns accessor properties (with getter/setter) only; internal properties are not returned either.
     :param generate_preview: **(EXPERIMENTAL)** *(Optional)* Whether preview should be generated for the results.
+    :param non_indexed_properties_only: **(EXPERIMENTAL)** *(Optional)* If true, returns non-indexed properties only.
     :returns: A tuple with the following items:
 
         0. **result** - Object properties.
@@ -984,6 +1038,8 @@ def get_properties(
         params['accessorPropertiesOnly'] = accessor_properties_only
     if generate_preview is not None:
         params['generatePreview'] = generate_preview
+    if non_indexed_properties_only is not None:
+        params['nonIndexedPropertiesOnly'] = non_indexed_properties_only
     cmd_dict: T_JSON_DICT = {
         'method': 'Runtime.getProperties',
         'params': params,
@@ -1000,7 +1056,7 @@ def get_properties(
 def global_lexical_scope_names(
         execution_context_id: typing.Optional[ExecutionContextId] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[str]]:
-    '''
+    r'''
     Returns all let, const and class variables from global scope.
 
     :param execution_context_id: *(Optional)* Specifies in which execution context to lookup global scope variables.
@@ -1021,7 +1077,7 @@ def query_objects(
         prototype_object_id: RemoteObjectId,
         object_group: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,RemoteObject]:
-    '''
+    r'''
     :param prototype_object_id: Identifier of the prototype to return objects for.
     :param object_group: *(Optional)* Symbolic group name that can be used to release the results.
     :returns: Array with objects.
@@ -1041,7 +1097,7 @@ def query_objects(
 def release_object(
         object_id: RemoteObjectId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Releases remote object with given id.
 
     :param object_id: Identifier of the object to release.
@@ -1058,7 +1114,7 @@ def release_object(
 def release_object_group(
         object_group: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Releases all remote objects that belong to a given group.
 
     :param object_group: Symbolic object group name.
@@ -1073,7 +1129,7 @@ def release_object_group(
 
 
 def run_if_waiting_for_debugger() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Tells inspected instance to run if it was waiting for debugger to attach.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -1092,7 +1148,7 @@ def run_script(
         generate_preview: typing.Optional[bool] = None,
         await_promise: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[RemoteObject, typing.Optional[ExceptionDetails]]]:
-    '''
+    r'''
     Runs script with given id in a given context.
 
     :param script_id: Id of the script to run.
@@ -1138,7 +1194,7 @@ def run_script(
 def set_async_call_stack_depth(
         max_depth: int
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables or disables async call stacks tracking.
 
     :param max_depth: Maximum depth of async call stacks. Setting to ```0``` will effectively disable collecting async call stacks (default).
@@ -1155,7 +1211,7 @@ def set_async_call_stack_depth(
 def set_custom_object_formatter_enabled(
         enabled: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
 
 
     **EXPERIMENTAL**
@@ -1174,7 +1230,7 @@ def set_custom_object_formatter_enabled(
 def set_max_call_stack_size_to_capture(
         size: int
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
 
 
     **EXPERIMENTAL**
@@ -1191,7 +1247,7 @@ def set_max_call_stack_size_to_capture(
 
 
 def terminate_execution() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Terminate current or next JavaScript execution.
     Will cancel the termination when the outer-most script execution ends.
 
@@ -1205,14 +1261,13 @@ def terminate_execution() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 def add_binding(
         name: str,
-        execution_context_id: typing.Optional[ExecutionContextId] = None
+        execution_context_id: typing.Optional[ExecutionContextId] = None,
+        execution_context_name: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     If executionContextId is empty, adds binding with the given name on the
     global objects of all inspected contexts, including those created later,
     bindings survive reloads.
-    If executionContextId is specified, adds binding only on global object of
-    given execution context.
     Binding function takes exactly one argument, this argument should be string,
     in case of any other input, function throws an exception.
     Each binding function call produces Runtime.bindingCalled notification.
@@ -1220,12 +1275,15 @@ def add_binding(
     **EXPERIMENTAL**
 
     :param name:
-    :param execution_context_id: *(Optional)*
+    :param execution_context_id: **(DEPRECATED)** *(Optional)* If specified, the binding would only be exposed to the specified execution context. If omitted and ```executionContextName```` is not set, the binding is exposed to all execution contexts of the target. This parameter is mutually exclusive with ````executionContextName````. Deprecated in favor of ````executionContextName```` due to an unclear use case and bugs in implementation (crbug.com/1169639). ````executionContextId```` will be removed in the future.
+    :param execution_context_name: **(EXPERIMENTAL)** *(Optional)* If specified, the binding is exposed to the executionContext with matching name, even for contexts created after the binding is added. See also ````ExecutionContext.name```` and ````worldName```` parameter to ````Page.addScriptToEvaluateOnNewDocument````. This parameter is mutually exclusive with ````executionContextId```.
     '''
     params: T_JSON_DICT = dict()
     params['name'] = name
     if execution_context_id is not None:
         params['executionContextId'] = execution_context_id.to_json()
+    if execution_context_name is not None:
+        params['executionContextName'] = execution_context_name
     cmd_dict: T_JSON_DICT = {
         'method': 'Runtime.addBinding',
         'params': params,
@@ -1236,7 +1294,7 @@ def add_binding(
 def remove_binding(
         name: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     This method does not remove binding function from global object but
     unsubscribes current runtime agent from Runtime.bindingCalled notifications.
 
@@ -1256,7 +1314,7 @@ def remove_binding(
 @event_class('Runtime.bindingCalled')
 @dataclass
 class BindingCalled:
-    '''
+    r'''
     **EXPERIMENTAL**
 
     Notification is issued every time when binding is called.
@@ -1278,7 +1336,7 @@ class BindingCalled:
 @event_class('Runtime.consoleAPICalled')
 @dataclass
 class ConsoleAPICalled:
-    '''
+    r'''
     Issued when console API was called.
     '''
     #: Type of the call.
@@ -1313,7 +1371,7 @@ class ConsoleAPICalled:
 @event_class('Runtime.exceptionRevoked')
 @dataclass
 class ExceptionRevoked:
-    '''
+    r'''
     Issued when unhandled exception was revoked.
     '''
     #: Reason describing why exception was revoked.
@@ -1332,7 +1390,7 @@ class ExceptionRevoked:
 @event_class('Runtime.exceptionThrown')
 @dataclass
 class ExceptionThrown:
-    '''
+    r'''
     Issued when exception was thrown and unhandled.
     '''
     #: Timestamp of the exception.
@@ -1350,7 +1408,7 @@ class ExceptionThrown:
 @event_class('Runtime.executionContextCreated')
 @dataclass
 class ExecutionContextCreated:
-    '''
+    r'''
     Issued when new execution context is created.
     '''
     #: A newly created execution context.
@@ -1366,7 +1424,7 @@ class ExecutionContextCreated:
 @event_class('Runtime.executionContextDestroyed')
 @dataclass
 class ExecutionContextDestroyed:
-    '''
+    r'''
     Issued when execution context is destroyed.
     '''
     #: Id of the destroyed context
@@ -1382,7 +1440,7 @@ class ExecutionContextDestroyed:
 @event_class('Runtime.executionContextsCleared')
 @dataclass
 class ExecutionContextsCleared:
-    '''
+    r'''
     Issued when all executionContexts were cleared in browser
     '''
 
@@ -1397,16 +1455,19 @@ class ExecutionContextsCleared:
 @event_class('Runtime.inspectRequested')
 @dataclass
 class InspectRequested:
-    '''
+    r'''
     Issued when object should be inspected (for example, as a result of inspect() command line API
     call).
     '''
     object_: RemoteObject
     hints: dict
+    #: Identifier of the context where the call was made.
+    execution_context_id: typing.Optional[ExecutionContextId]
 
     @classmethod
     def from_json(cls, json: T_JSON_DICT) -> InspectRequested:
         return cls(
             object_=RemoteObject.from_json(json['object']),
-            hints=dict(json['hints'])
+            hints=dict(json['hints']),
+            execution_context_id=ExecutionContextId.from_json(json['executionContextId']) if 'executionContextId' in json else None
         )

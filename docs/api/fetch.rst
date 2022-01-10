@@ -3,8 +3,6 @@ Fetch
 
 A domain for letting clients substitute browser's network layer with client code.
 
-*This CDP domain is experimental.*
-
 .. module:: cdp.fetch
 
 * Types_
@@ -62,6 +60,8 @@ to. For more information, see
 :ref:`Getting Started: Commands <getting-started-commands>`.
 
 .. autofunction:: continue_request
+
+.. autofunction:: continue_response
 
 .. autofunction:: continue_with_auth
 

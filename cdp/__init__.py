@@ -7,7 +7,6 @@ import cdp.util
 
 import cdp.accessibility
 import cdp.animation
-import cdp.application_cache
 import cdp.audits
 import cdp.background_service
 import cdp.browser
@@ -23,6 +22,7 @@ import cdp.database
 import cdp.debugger
 import cdp.device_orientation
 import cdp.emulation
+import cdp.event_breakpoints
 import cdp.fetch
 import cdp.headless_experimental
 import cdp.heap_profiler
@@ -32,11 +32,13 @@ import cdp.input_
 import cdp.inspector
 import cdp.layer_tree
 import cdp.log
+import cdp.media
 import cdp.memory
 import cdp.network
 import cdp.overlay
 import cdp.page
 import cdp.performance
+import cdp.performance_timeline
 import cdp.profiler
 import cdp.runtime
 import cdp.schema

@@ -14,7 +14,7 @@ import typing
 
 @dataclass
 class StorageId:
-    '''
+    r'''
     DOM Storage identifier.
     '''
     #: Security origin for the storage.
@@ -38,7 +38,7 @@ class StorageId:
 
 
 class Item(list):
-    '''
+    r'''
     DOM Storage item.
     '''
     def to_json(self) -> typing.List[str]:
@@ -55,7 +55,7 @@ class Item(list):
 def clear(
         storage_id: StorageId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     :param storage_id:
     '''
     params: T_JSON_DICT = dict()
@@ -68,7 +68,7 @@ def clear(
 
 
 def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Disables storage tracking, prevents storage events from being sent to the client.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -78,7 +78,7 @@ def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables storage tracking, storage events will now be delivered to the client.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -90,7 +90,7 @@ def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 def get_dom_storage_items(
         storage_id: StorageId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[Item]]:
-    '''
+    r'''
     :param storage_id:
     :returns: 
     '''
@@ -108,7 +108,7 @@ def remove_dom_storage_item(
         storage_id: StorageId,
         key: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     :param storage_id:
     :param key:
     '''
@@ -127,7 +127,7 @@ def set_dom_storage_item(
         key: str,
         value: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     :param storage_id:
     :param key:
     :param value:

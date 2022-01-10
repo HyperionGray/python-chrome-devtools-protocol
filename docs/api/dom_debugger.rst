@@ -23,6 +23,11 @@ arguments to other commands.
       :undoc-members:
       :exclude-members: from_json, to_json
 
+.. autoclass:: CSPViolationType
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
 .. autoclass:: EventListener
       :members:
       :undoc-members:
@@ -49,6 +54,8 @@ to. For more information, see
 .. autofunction:: remove_instrumentation_breakpoint
 
 .. autofunction:: remove_xhr_breakpoint
+
+.. autofunction:: set_break_on_csp_violation
 
 .. autofunction:: set_dom_breakpoint
 

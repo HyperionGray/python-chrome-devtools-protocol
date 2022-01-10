@@ -25,7 +25,7 @@ def test_docstring():
        "widgets\n- from 'activedescendant' to 'owns' - relationships " \
        "between elements other than parent/child/sibling."
     expected = dedent("""\
-        '''
+        r'''
         Values of AXProperty name:
         - from 'busy' to 'roledescription': states which apply to every AX node
         - from 'live' to 'root': attributes which apply to nodes in live regions
@@ -40,8 +40,18 @@ def test_docstring():
 def test_escape_docstring():
     description =  'Escape a `Backtick` and some `Backtick`s.'
     expected = dedent("""\
-        '''
+        r'''
         Escape a ``Backtick`` and some ``Backtick``'s.
+        '''""")
+    actual = docstring(description)
+    assert expected == actual
+
+
+def test_escape_zero_char():
+    description = r'String is terminated by \0 character'
+    expected = dedent("""\
+        r'''
+        String is terminated by \\0 character
         '''""")
     actual = docstring(description)
     assert expected == actual
@@ -55,7 +65,7 @@ def test_cdp_primitive_type():
     }
     expected = dedent("""\
         class AXNodeId(str):
-            '''
+            r'''
             Unique accessibility node identifier.
             '''
             def to_json(self) -> str:
@@ -84,7 +94,7 @@ def test_cdp_array_of_primitive_type():
     }
     expected = dedent("""\
         class ArrayOfStrings(list):
-            '''
+            r'''
             Index of the string in the strings table.
             '''
             def to_json(self) -> typing.List[StringIndex]:
@@ -118,7 +128,7 @@ def test_cdp_enum_type():
     }
     expected = dedent("""\
         class AXValueSourceType(enum.Enum):
-            '''
+            r'''
             Enum of possible property sources.
             '''
             ATTRIBUTE = "attribute"
@@ -180,7 +190,7 @@ def test_cdp_class_type():
     expected = dedent("""\
         @dataclass
         class AXValue:
-            '''
+            r'''
             A single computed AX property.
             '''
             #: The type of this value.
@@ -269,7 +279,7 @@ def test_cdp_command():
                 object_id: typing.Optional[runtime.RemoteObjectId] = None,
                 fetch_relatives: typing.Optional[bool] = None
             ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[AXNode]]:
-            '''
+            r'''
             Fetches the accessibility node and partial accessibility tree for this DOM node, if it exists.
 
             **EXPERIMENTAL**
@@ -308,7 +318,7 @@ def test_cdp_command_no_params_or_returns():
     }
     expected = dedent("""\
         def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-            '''
+            r'''
             Disables the accessibility domain.
             '''
             cmd_dict: T_JSON_DICT = {
@@ -344,7 +354,7 @@ def test_cdp_command_return_primitive():
         def get_current_time(
                 id_: str
             ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,float]:
-            '''
+            r'''
             Returns the current time of the an animation.
 
             :param id_: Id of animation.
@@ -382,7 +392,7 @@ def test_cdp_command_return_array_of_primitive():
     }
     expected = dedent("""\
         def get_browser_command_line() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[str]]:
-            '''
+            r'''
             Returns the command line switches for the browser process if, and only if
             --enable-automation is on the commandline.
 
@@ -420,7 +430,7 @@ def test_cdp_command_array_of_primitive_parameter():
         def release_animations(
                 animations: typing.List[str]
             ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-            '''
+            r'''
             Releases a set of animations to no longer be manipulated.
 
             :param animations: List of animation ids to seek.
@@ -461,7 +471,7 @@ def test_cdp_command_ref_parameter():
         def resolve_animation(
                 animation_id: str
             ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,runtime.RemoteObject]:
-            '''
+            r'''
             Gets the remote object of the Animation.
 
             :param animation_id: Animation id.
@@ -540,7 +550,7 @@ def test_cdp_command_multiple_return():
                 quality: typing.Optional[float] = None,
                 size_only: typing.Optional[bool] = None
             ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.Optional[str], int, int]]:
-            '''
+            r'''
             Returns the response body and size if it were re-encoded with the specified settings. Only
             applies to images.
 
@@ -608,7 +618,7 @@ def test_cdp_command_array_of_ref_parameter():
                 permissions: typing.List[PermissionType],
                 browser_context_id: typing.Optional[target.BrowserContextID] = None
             ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-            '''
+            r'''
             Grant specific permissions to the given origin and reject all others.
 
             **EXPERIMENTAL**
@@ -652,7 +662,7 @@ def test_cdp_event():
         @event_class('BackgroundService.recordingStateChanged')
         @dataclass
         class RecordingStateChanged:
-            '''
+            r'''
             Called when the recording state for the service has been updated.
             '''
             is_recording: bool
@@ -704,7 +714,7 @@ def test_cdp_event_parameter_docs():
         @event_class('Page.windowOpen')
         @dataclass
         class WindowOpen:
-            '''
+            r'''
             Fired when a new window is going to be opened, via window.open(), link click, form submission,
             etc.
             '''

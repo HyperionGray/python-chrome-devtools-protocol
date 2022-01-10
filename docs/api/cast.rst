@@ -43,6 +43,8 @@ to. For more information, see
 
 .. autofunction:: set_sink_to_use
 
+.. autofunction:: start_desktop_mirroring
+
 .. autofunction:: start_tab_mirroring
 
 .. autofunction:: stop_casting
