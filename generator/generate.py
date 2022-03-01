@@ -123,6 +123,12 @@ def ref_to_python(ref: str) -> str:
     return f"{ref}"
 
 
+def ref_to_python_domain(ref: str, domain: str) -> str:
+    if ref.startswith(domain + '.'):
+        return ref_to_python(ref[len(domain)+1:])
+    return ref_to_python(ref)
+
+
 class CdpPrimitiveType(Enum):
     ''' All of the CDP types that map directly to a Python type. '''
     boolean = 'bool'
@@ -173,6 +179,7 @@ class CdpProperty:
     optional: bool
     experimental: bool
     deprecated: bool
+    domain: str
 
     @property
     def py_name(self) -> str:
@@ -184,14 +191,14 @@ class CdpProperty:
         ''' This property's Python type annotation. '''
         if self.items:
             if self.items.ref:
-                py_ref = ref_to_python(self.items.ref)
+                py_ref = ref_to_python_domain(self.items.ref, self.domain)
                 ann = "typing.List[{}]".format(py_ref)
             else:
                 ann = 'typing.List[{}]'.format(
                     CdpPrimitiveType.get_annotation(self.items.type))
         else:
             if self.ref:
-                py_ref = ref_to_python(self.ref)
+                py_ref = ref_to_python_domain(self.ref, self.domain)
                 ann = py_ref
             else:
                 ann = CdpPrimitiveType.get_annotation(
@@ -201,7 +208,7 @@ class CdpProperty:
         return ann
 
     @classmethod
-    def from_json(cls, property) -> 'CdpProperty':
+    def from_json(cls, property, domain: str) -> 'CdpProperty':
         ''' Instantiate a CDP property from a JSON object. '''
         return cls(
             property['name'],
@@ -213,6 +220,7 @@ class CdpProperty:
             property.get('optional', False),
             property.get('experimental', False),
             property.get('deprecated', False),
+            domain
         )
 
     def generate_decl(self) -> str:
@@ -253,14 +261,14 @@ class CdpProperty:
         ``dict_``. '''
         if self.items:
             if self.items.ref:
-                py_ref = ref_to_python(self.items.ref)
+                py_ref = ref_to_python_domain(self.items.ref, self.domain)
                 expr = f"[{py_ref}.from_json(i) for i in {dict_}['{self.name}']]"
             else:
                 cons = CdpPrimitiveType.get_constructor(self.items.type, 'i')
                 expr = f"[{cons} for i in {dict_}['{self.name}']]"
         else:
             if self.ref:
-                py_ref = ref_to_python(self.ref)
+                py_ref = ref_to_python_domain(self.ref, self.domain)
                 expr = f"{py_ref}.from_json({dict_}['{self.name}'])"
             else:
                 expr = CdpPrimitiveType.get_constructor(self.type,
@@ -281,7 +289,7 @@ class CdpType:
     properties: typing.List[CdpProperty]
 
     @classmethod
-    def from_json(cls, type_) -> 'CdpType':
+    def from_json(cls, type_, domain: str) -> 'CdpType':
         ''' Instantiate a CDP type from a JSON object. '''
         return cls(
             type_['id'],
@@ -289,7 +297,7 @@ class CdpType:
             type_['type'],
             CdpItems.from_json(type_['items']) if 'items' in type_ else None,
             type_.get('enum'),
-            [CdpProperty.from_json(p) for p in type_.get('properties', list())],
+            [CdpProperty.from_json(p, domain) for p in type_.get('properties', list())],
         )
 
     def generate_code(self) -> str:
@@ -568,9 +576,9 @@ class CdpCommand:
             command.get('description'),
             command.get('experimental', False),
             command.get('deprecated', False),
-            [typing.cast(CdpParameter, CdpParameter.from_json(p)) for p in parameters],
-            [typing.cast(CdpReturn, CdpReturn.from_json(r)) for r in returns],
-            domain,
+            [typing.cast(CdpParameter, CdpParameter.from_json(p, domain)) for p in parameters],
+            [typing.cast(CdpReturn, CdpReturn.from_json(r, domain)) for r in returns],
+            domain
         )
 
     def generate_code(self) -> str:
@@ -594,11 +602,12 @@ class CdpCommand:
         code += f'def {self.py_name}('
         ret = f') -> {ret_type}:\n'
         if self.parameters:
+            sorted_params = sorted(self.parameters, key=lambda param: 1 if param.optional else 0)
             code += '\n'
             code += indent(
-                ',\n'.join(p.generate_code() for p in self.parameters), 8)
+                ',\n'.join(p.generate_code() for p in sorted_params), 8)
             code += '\n'
-            code += indent(ret, 4)
+            code += indent(ret, 4) 
         else:
             code += ret
 
@@ -690,7 +699,7 @@ class CdpEvent:
             json.get('description'),
             json.get('deprecated', False),
             json.get('experimental', False),
-            [typing.cast(CdpParameter, CdpParameter.from_json(p))
+            [typing.cast(CdpParameter, CdpParameter.from_json(p, domain))
                 for p in json.get('parameters', list())],
             domain
         )
@@ -773,7 +782,7 @@ class CdpDomain:
             domain.get('description'),
             domain.get('experimental', False),
             domain.get('dependencies', list()),
-            [CdpType.from_json(type) for type in types],
+            [CdpType.from_json(type, domain_name) for type in types],
             [CdpCommand.from_json(command, domain_name)
                 for command in commands],
             [CdpEvent.from_json(event, domain_name) for event in events]

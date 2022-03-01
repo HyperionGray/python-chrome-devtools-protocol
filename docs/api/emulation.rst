@@ -22,7 +22,32 @@ arguments to other commands.
       :undoc-members:
       :exclude-members: from_json, to_json
 
+.. autoclass:: DisplayFeature
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: MediaFeature
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
 .. autoclass:: VirtualTimePolicy
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: UserAgentBrandVersion
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: UserAgentMetadata
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: DisabledImageType
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
@@ -45,7 +70,11 @@ to. For more information, see
 
 .. autofunction:: clear_geolocation_override
 
+.. autofunction:: clear_idle_override
+
 .. autofunction:: reset_page_scale_factor
+
+.. autofunction:: set_auto_dark_mode_override
 
 .. autofunction:: set_cpu_throttling_rate
 
@@ -53,15 +82,23 @@ to. For more information, see
 
 .. autofunction:: set_device_metrics_override
 
+.. autofunction:: set_disabled_image_types
+
 .. autofunction:: set_document_cookie_disabled
 
 .. autofunction:: set_emit_touch_events_for_mouse
 
 .. autofunction:: set_emulated_media
 
+.. autofunction:: set_emulated_vision_deficiency
+
 .. autofunction:: set_focus_emulation_enabled
 
 .. autofunction:: set_geolocation_override
+
+.. autofunction:: set_idle_override
+
+.. autofunction:: set_locale_override
 
 .. autofunction:: set_navigator_overrides
 

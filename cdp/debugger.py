@@ -12,6 +12,7 @@ import enum
 import typing
 
 from . import runtime
+from deprecated.sphinx import deprecated # type: ignore
 
 
 class BreakpointId(str):
@@ -95,6 +96,33 @@ class ScriptPosition:
         return cls(
             line_number=int(json['lineNumber']),
             column_number=int(json['columnNumber']),
+        )
+
+
+@dataclass
+class LocationRange:
+    '''
+    Location range within one script.
+    '''
+    script_id: runtime.ScriptId
+
+    start: ScriptPosition
+
+    end: ScriptPosition
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['scriptId'] = self.script_id.to_json()
+        json['start'] = self.start.to_json()
+        json['end'] = self.end.to_json()
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> LocationRange:
+        return cls(
+            script_id=runtime.ScriptId.from_json(json['scriptId']),
+            start=ScriptPosition.from_json(json['start']),
+            end=ScriptPosition.from_json(json['end']),
         )
 
 
@@ -257,6 +285,47 @@ class BreakLocation:
         )
 
 
+class ScriptLanguage(enum.Enum):
+    '''
+    Enum of possible script languages.
+    '''
+    JAVA_SCRIPT = "JavaScript"
+    WEB_ASSEMBLY = "WebAssembly"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> ScriptLanguage:
+        return cls(json)
+
+
+@dataclass
+class DebugSymbols:
+    '''
+    Debug symbols available for a wasm script.
+    '''
+    #: Type of the debug symbols.
+    type_: str
+
+    #: URL of the external symbol source.
+    external_url: typing.Optional[str] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['type'] = self.type_
+        if self.external_url is not None:
+            json['externalURL'] = self.external_url
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> DebugSymbols:
+        return cls(
+            type_=str(json['type']),
+            external_url=str(json['externalURL']) if 'externalURL' in json else None,
+        )
+
+
 def continue_to_location(
         location: Location,
         target_call_frames: typing.Optional[str] = None
@@ -295,7 +364,7 @@ def enable(
     Enables debugger for the given page. Clients should not assume that the debugging has been
     enabled until the result for this command is received.
 
-    :param max_scripts_cache_size: **(EXPERIMENTAL)** *(Optional)* The maximum size in bytes of collected scripts (not referenced by other heap objects) the debugger can hold. Puts no limit if paramter is omitted.
+    :param max_scripts_cache_size: **(EXPERIMENTAL)** *(Optional)* The maximum size in bytes of collected scripts (not referenced by other heap objects) the debugger can hold. Puts no limit if parameter is omitted.
     :returns: Unique identifier of the debugger.
     '''
     params: T_JSON_DICT = dict()
@@ -395,12 +464,15 @@ def get_possible_breakpoints(
 
 def get_script_source(
         script_id: runtime.ScriptId
-    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,str]:
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[str, typing.Optional[str]]]:
     '''
     Returns source for the script with given id.
 
     :param script_id: Id of the script to get source for.
-    :returns: Script source.
+    :returns: A tuple with the following items:
+
+        0. **scriptSource** - Script source (empty in case of Wasm bytecode).
+        1. **bytecode** - *(Optional)* Wasm bytecode. (Encoded as a base64 string when passed over JSON)
     '''
     params: T_JSON_DICT = dict()
     params['scriptId'] = script_id.to_json()
@@ -409,7 +481,32 @@ def get_script_source(
         'params': params,
     }
     json = yield cmd_dict
-    return str(json['scriptSource'])
+    return (
+        str(json['scriptSource']),
+        str(json['bytecode']) if 'bytecode' in json else None
+    )
+
+
+@deprecated(version="1.3")
+def get_wasm_bytecode(
+        script_id: runtime.ScriptId
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,str]:
+    '''
+    This command is deprecated. Use getScriptSource instead.
+
+    .. deprecated:: 1.3
+
+    :param script_id: Id of the Wasm script to get source for.
+    :returns: Script source. (Encoded as a base64 string when passed over JSON)
+    '''
+    params: T_JSON_DICT = dict()
+    params['scriptId'] = script_id.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Debugger.getWasmBytecode',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return str(json['bytecode'])
 
 
 def get_stack_trace(
@@ -443,11 +540,14 @@ def pause() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 def pause_on_async_call(
         parent_stack_trace_id: runtime.StackTraceId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
 
+
+    .. deprecated:: 1.3
 
     **EXPERIMENTAL**
 
@@ -479,11 +579,14 @@ def remove_breakpoint(
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 def restart_frame(
         call_frame_id: CallFrameId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.List[CallFrame], typing.Optional[runtime.StackTrace], typing.Optional[runtime.StackTraceId]]]:
     '''
     Restarts particular call frame from the beginning.
+
+    .. deprecated:: 1.3
 
     :param call_frame_id: Call frame identifier to evaluate on.
     :returns: A tuple with the following items:
@@ -506,12 +609,20 @@ def restart_frame(
     )
 
 
-def resume() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+def resume(
+        terminate_on_resume: typing.Optional[bool] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Resumes JavaScript execution.
+
+    :param terminate_on_resume: *(Optional)* Set to true to terminate execution upon resuming execution. In contrast to Runtime.terminateExecution, this will allows to execute further JavaScript (i.e. via evaluation) until execution of the paused code is actually resumed, at which point termination is triggered. If execution is currently not paused, this parameter has no effect.
     '''
+    params: T_JSON_DICT = dict()
+    if terminate_on_resume is not None:
+        params['terminateOnResume'] = terminate_on_resume
     cmd_dict: T_JSON_DICT = {
         'method': 'Debugger.resume',
+        'params': params,
     }
     json = yield cmd_dict
 
@@ -869,16 +980,20 @@ def set_variable_value(
 
 
 def step_into(
-        break_on_async_call: typing.Optional[bool] = None
+        break_on_async_call: typing.Optional[bool] = None,
+        skip_list: typing.Optional[typing.List[LocationRange]] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Steps into the function call.
 
-    :param break_on_async_call: **(EXPERIMENTAL)** *(Optional)* Debugger will issue additional Debugger.paused notification if any async task is scheduled before next pause.
+    :param break_on_async_call: **(EXPERIMENTAL)** *(Optional)* Debugger will pause on the execution of the first async task which was scheduled before next pause.
+    :param skip_list: **(EXPERIMENTAL)** *(Optional)* The skipList specifies location ranges that should be skipped on step into.
     '''
     params: T_JSON_DICT = dict()
     if break_on_async_call is not None:
         params['breakOnAsyncCall'] = break_on_async_call
+    if skip_list is not None:
+        params['skipList'] = [i.to_json() for i in skip_list]
     cmd_dict: T_JSON_DICT = {
         'method': 'Debugger.stepInto',
         'params': params,
@@ -896,12 +1011,20 @@ def step_out() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     json = yield cmd_dict
 
 
-def step_over() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+def step_over(
+        skip_list: typing.Optional[typing.List[LocationRange]] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Steps over the statement.
+
+    :param skip_list: **(EXPERIMENTAL)** *(Optional)* The skipList specifies location ranges that should be skipped on step over.
     '''
+    params: T_JSON_DICT = dict()
+    if skip_list is not None:
+        params['skipList'] = [i.to_json() for i in skip_list]
     cmd_dict: T_JSON_DICT = {
         'method': 'Debugger.stepOver',
+        'params': params,
     }
     json = yield cmd_dict
 
@@ -943,8 +1066,7 @@ class Paused:
     async_stack_trace: typing.Optional[runtime.StackTrace]
     #: Async stack trace, if any.
     async_stack_trace_id: typing.Optional[runtime.StackTraceId]
-    #: Just scheduled async call will have this stack trace as parent stack during async execution.
-    #: This field is available only after ``Debugger.stepInto`` call with ``breakOnAsynCall`` flag.
+    #: Never present, will be removed.
     async_call_stack_trace_id: typing.Optional[runtime.StackTraceId]
 
     @classmethod
@@ -1009,6 +1131,12 @@ class ScriptFailedToParse:
     length: typing.Optional[int]
     #: JavaScript top stack frame of where the script parsed event was triggered if available.
     stack_trace: typing.Optional[runtime.StackTrace]
+    #: If the scriptLanguage is WebAssembly, the code section offset in the module.
+    code_offset: typing.Optional[int]
+    #: The language of the script.
+    script_language: typing.Optional[ScriptLanguage]
+    #: The name the embedder supplied for this script.
+    embedder_name: typing.Optional[str]
 
     @classmethod
     def from_json(cls, json: T_JSON_DICT) -> ScriptFailedToParse:
@@ -1026,7 +1154,10 @@ class ScriptFailedToParse:
             has_source_url=bool(json['hasSourceURL']) if 'hasSourceURL' in json else None,
             is_module=bool(json['isModule']) if 'isModule' in json else None,
             length=int(json['length']) if 'length' in json else None,
-            stack_trace=runtime.StackTrace.from_json(json['stackTrace']) if 'stackTrace' in json else None
+            stack_trace=runtime.StackTrace.from_json(json['stackTrace']) if 'stackTrace' in json else None,
+            code_offset=int(json['codeOffset']) if 'codeOffset' in json else None,
+            script_language=ScriptLanguage.from_json(json['scriptLanguage']) if 'scriptLanguage' in json else None,
+            embedder_name=str(json['embedderName']) if 'embedderName' in json else None
         )
 
 
@@ -1067,6 +1198,14 @@ class ScriptParsed:
     length: typing.Optional[int]
     #: JavaScript top stack frame of where the script parsed event was triggered if available.
     stack_trace: typing.Optional[runtime.StackTrace]
+    #: If the scriptLanguage is WebAssembly, the code section offset in the module.
+    code_offset: typing.Optional[int]
+    #: The language of the script.
+    script_language: typing.Optional[ScriptLanguage]
+    #: If the scriptLanguage is WebASsembly, the source of debug symbols for the module.
+    debug_symbols: typing.Optional[DebugSymbols]
+    #: The name the embedder supplied for this script.
+    embedder_name: typing.Optional[str]
 
     @classmethod
     def from_json(cls, json: T_JSON_DICT) -> ScriptParsed:
@@ -1085,5 +1224,9 @@ class ScriptParsed:
             has_source_url=bool(json['hasSourceURL']) if 'hasSourceURL' in json else None,
             is_module=bool(json['isModule']) if 'isModule' in json else None,
             length=int(json['length']) if 'length' in json else None,
-            stack_trace=runtime.StackTrace.from_json(json['stackTrace']) if 'stackTrace' in json else None
+            stack_trace=runtime.StackTrace.from_json(json['stackTrace']) if 'stackTrace' in json else None,
+            code_offset=int(json['codeOffset']) if 'codeOffset' in json else None,
+            script_language=ScriptLanguage.from_json(json['scriptLanguage']) if 'scriptLanguage' in json else None,
+            debug_symbols=DebugSymbols.from_json(json['debugSymbols']) if 'debugSymbols' in json else None,
+            embedder_name=str(json['embedderName']) if 'embedderName' in json else None
         )

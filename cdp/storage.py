@@ -11,6 +11,9 @@ from dataclasses import dataclass
 import enum
 import typing
 
+from . import browser
+from . import network
+
 
 class StorageType(enum.Enum):
     '''
@@ -25,6 +28,7 @@ class StorageType(enum.Enum):
     WEBSQL = "websql"
     SERVICE_WORKERS = "service_workers"
     CACHE_STORAGE = "cache_storage"
+    INTEREST_GROUPS = "interest_groups"
     ALL_ = "all"
     OTHER = "other"
 
@@ -61,6 +65,140 @@ class UsageForType:
         )
 
 
+@dataclass
+class TrustTokens:
+    '''
+    Pair of issuer origin and number of available (signed, but not used) Trust
+    Tokens from that issuer.
+    '''
+    issuer_origin: str
+
+    count: float
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['issuerOrigin'] = self.issuer_origin
+        json['count'] = self.count
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> TrustTokens:
+        return cls(
+            issuer_origin=str(json['issuerOrigin']),
+            count=float(json['count']),
+        )
+
+
+class InterestGroupAccessType(enum.Enum):
+    '''
+    Enum of interest group access types.
+    '''
+    JOIN = "join"
+    LEAVE = "leave"
+    UPDATE = "update"
+    BID = "bid"
+    WIN = "win"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> InterestGroupAccessType:
+        return cls(json)
+
+
+@dataclass
+class InterestGroupAd:
+    '''
+    Ad advertising element inside an interest group.
+    '''
+    render_url: str
+
+    metadata: typing.Optional[str] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['renderUrl'] = self.render_url
+        if self.metadata is not None:
+            json['metadata'] = self.metadata
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> InterestGroupAd:
+        return cls(
+            render_url=str(json['renderUrl']),
+            metadata=str(json['metadata']) if 'metadata' in json else None,
+        )
+
+
+@dataclass
+class InterestGroupDetails:
+    '''
+    The full details of an interest group.
+    '''
+    owner_origin: str
+
+    name: str
+
+    expiration_time: network.TimeSinceEpoch
+
+    joining_origin: str
+
+    trusted_bidding_signals_keys: typing.List[str]
+
+    ads: typing.List[InterestGroupAd]
+
+    ad_components: typing.List[InterestGroupAd]
+
+    bidding_url: typing.Optional[str] = None
+
+    bidding_wasm_helper_url: typing.Optional[str] = None
+
+    update_url: typing.Optional[str] = None
+
+    trusted_bidding_signals_url: typing.Optional[str] = None
+
+    user_bidding_signals: typing.Optional[str] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['ownerOrigin'] = self.owner_origin
+        json['name'] = self.name
+        json['expirationTime'] = self.expiration_time.to_json()
+        json['joiningOrigin'] = self.joining_origin
+        json['trustedBiddingSignalsKeys'] = [i for i in self.trusted_bidding_signals_keys]
+        json['ads'] = [i.to_json() for i in self.ads]
+        json['adComponents'] = [i.to_json() for i in self.ad_components]
+        if self.bidding_url is not None:
+            json['biddingUrl'] = self.bidding_url
+        if self.bidding_wasm_helper_url is not None:
+            json['biddingWasmHelperUrl'] = self.bidding_wasm_helper_url
+        if self.update_url is not None:
+            json['updateUrl'] = self.update_url
+        if self.trusted_bidding_signals_url is not None:
+            json['trustedBiddingSignalsUrl'] = self.trusted_bidding_signals_url
+        if self.user_bidding_signals is not None:
+            json['userBiddingSignals'] = self.user_bidding_signals
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> InterestGroupDetails:
+        return cls(
+            owner_origin=str(json['ownerOrigin']),
+            name=str(json['name']),
+            expiration_time=network.TimeSinceEpoch.from_json(json['expirationTime']),
+            joining_origin=str(json['joiningOrigin']),
+            trusted_bidding_signals_keys=[str(i) for i in json['trustedBiddingSignalsKeys']],
+            ads=[InterestGroupAd.from_json(i) for i in json['ads']],
+            ad_components=[InterestGroupAd.from_json(i) for i in json['adComponents']],
+            bidding_url=str(json['biddingUrl']) if 'biddingUrl' in json else None,
+            bidding_wasm_helper_url=str(json['biddingWasmHelperUrl']) if 'biddingWasmHelperUrl' in json else None,
+            update_url=str(json['updateUrl']) if 'updateUrl' in json else None,
+            trusted_bidding_signals_url=str(json['trustedBiddingSignalsUrl']) if 'trustedBiddingSignalsUrl' in json else None,
+            user_bidding_signals=str(json['userBiddingSignals']) if 'userBiddingSignals' in json else None,
+        )
+
+
 def clear_data_for_origin(
         origin: str,
         storage_types: str
@@ -81,9 +219,68 @@ def clear_data_for_origin(
     json = yield cmd_dict
 
 
+def get_cookies(
+        browser_context_id: typing.Optional[browser.BrowserContextID] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[network.Cookie]]:
+    '''
+    Returns all browser cookies.
+
+    :param browser_context_id: *(Optional)* Browser context to use when called on the browser endpoint.
+    :returns: Array of cookie objects.
+    '''
+    params: T_JSON_DICT = dict()
+    if browser_context_id is not None:
+        params['browserContextId'] = browser_context_id.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Storage.getCookies',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return [network.Cookie.from_json(i) for i in json['cookies']]
+
+
+def set_cookies(
+        cookies: typing.List[network.CookieParam],
+        browser_context_id: typing.Optional[browser.BrowserContextID] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    '''
+    Sets given cookies.
+
+    :param cookies: Cookies to be set.
+    :param browser_context_id: *(Optional)* Browser context to use when called on the browser endpoint.
+    '''
+    params: T_JSON_DICT = dict()
+    params['cookies'] = [i.to_json() for i in cookies]
+    if browser_context_id is not None:
+        params['browserContextId'] = browser_context_id.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Storage.setCookies',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
+def clear_cookies(
+        browser_context_id: typing.Optional[browser.BrowserContextID] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    '''
+    Clears cookies.
+
+    :param browser_context_id: *(Optional)* Browser context to use when called on the browser endpoint.
+    '''
+    params: T_JSON_DICT = dict()
+    if browser_context_id is not None:
+        params['browserContextId'] = browser_context_id.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Storage.clearCookies',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
 def get_usage_and_quota(
         origin: str
-    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[float, float, typing.List[UsageForType]]]:
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[float, float, bool, typing.List[UsageForType]]]:
     '''
     Returns usage and quota in bytes.
 
@@ -92,7 +289,8 @@ def get_usage_and_quota(
 
         0. **usage** - Storage usage (bytes).
         1. **quota** - Storage quota (bytes).
-        2. **usageBreakdown** - Storage usage per type (bytes).
+        2. **overrideActive** - Whether or not the origin has an active storage quota override
+        3. **usageBreakdown** - Storage usage per type (bytes).
     '''
     params: T_JSON_DICT = dict()
     params['origin'] = origin
@@ -104,8 +302,32 @@ def get_usage_and_quota(
     return (
         float(json['usage']),
         float(json['quota']),
+        bool(json['overrideActive']),
         [UsageForType.from_json(i) for i in json['usageBreakdown']]
     )
+
+
+def override_quota_for_origin(
+        origin: str,
+        quota_size: typing.Optional[float] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    '''
+    Override quota for the specified origin
+
+    **EXPERIMENTAL**
+
+    :param origin: Security origin.
+    :param quota_size: *(Optional)* The quota size (in bytes) to override the original quota with. If this is called multiple times, the overridden quota will be equal to the quotaSize provided in the final call. If this is called without specifying a quotaSize, the quota will be reset to the default value for the specified origin. If this is called multiple times with different origins, the override will be maintained for each origin until it is disabled (called without a quotaSize).
+    '''
+    params: T_JSON_DICT = dict()
+    params['origin'] = origin
+    if quota_size is not None:
+        params['quotaSize'] = quota_size
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Storage.overrideQuotaForOrigin',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
 def track_cache_storage_for_origin(
@@ -171,6 +393,87 @@ def untrack_indexed_db_for_origin(
     params['origin'] = origin
     cmd_dict: T_JSON_DICT = {
         'method': 'Storage.untrackIndexedDBForOrigin',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
+def get_trust_tokens() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[TrustTokens]]:
+    '''
+    Returns the number of stored Trust Tokens per issuer for the
+    current browsing context.
+
+    **EXPERIMENTAL**
+
+    :returns: 
+    '''
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Storage.getTrustTokens',
+    }
+    json = yield cmd_dict
+    return [TrustTokens.from_json(i) for i in json['tokens']]
+
+
+def clear_trust_tokens(
+        issuer_origin: str
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,bool]:
+    '''
+    Removes all Trust Tokens issued by the provided issuerOrigin.
+    Leaves other stored data, including the issuer's Redemption Records, intact.
+
+    **EXPERIMENTAL**
+
+    :param issuer_origin:
+    :returns: True if any tokens were deleted, false otherwise.
+    '''
+    params: T_JSON_DICT = dict()
+    params['issuerOrigin'] = issuer_origin
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Storage.clearTrustTokens',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return bool(json['didDeleteTokens'])
+
+
+def get_interest_group_details(
+        owner_origin: str,
+        name: str
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,InterestGroupDetails]:
+    '''
+    Gets details for a named interest group.
+
+    **EXPERIMENTAL**
+
+    :param owner_origin:
+    :param name:
+    :returns: 
+    '''
+    params: T_JSON_DICT = dict()
+    params['ownerOrigin'] = owner_origin
+    params['name'] = name
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Storage.getInterestGroupDetails',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return InterestGroupDetails.from_json(json['details'])
+
+
+def set_interest_group_tracking(
+        enable: bool
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    '''
+    Enables/Disables issuing of interestGroupAccessed events.
+
+    **EXPERIMENTAL**
+
+    :param enable:
+    '''
+    params: T_JSON_DICT = dict()
+    params['enable'] = enable
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Storage.setInterestGroupTracking',
         'params': params,
     }
     json = yield cmd_dict
@@ -246,4 +549,25 @@ class IndexedDBListUpdated:
     def from_json(cls, json: T_JSON_DICT) -> IndexedDBListUpdated:
         return cls(
             origin=str(json['origin'])
+        )
+
+
+@event_class('Storage.interestGroupAccessed')
+@dataclass
+class InterestGroupAccessed:
+    '''
+    One of the interest groups was accessed by the associated page.
+    '''
+    access_time: network.TimeSinceEpoch
+    type_: InterestGroupAccessType
+    owner_origin: str
+    name: str
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> InterestGroupAccessed:
+        return cls(
+            access_time=network.TimeSinceEpoch.from_json(json['accessTime']),
+            type_=InterestGroupAccessType.from_json(json['type']),
+            owner_origin=str(json['ownerOrigin']),
+            name=str(json['name'])
         )

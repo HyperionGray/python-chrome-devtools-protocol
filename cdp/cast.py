@@ -89,6 +89,23 @@ def set_sink_to_use(
     json = yield cmd_dict
 
 
+def start_desktop_mirroring(
+        sink_name: str
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    '''
+    Starts mirroring the desktop to the sink.
+
+    :param sink_name:
+    '''
+    params: T_JSON_DICT = dict()
+    params['sinkName'] = sink_name
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Cast.startDesktopMirroring',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
 def start_tab_mirroring(
         sink_name: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:

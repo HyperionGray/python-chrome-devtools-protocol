@@ -83,11 +83,31 @@ to. For more information, see
 
 .. autofunction:: enable
 
+.. autofunction:: get_ax_node_and_ancestors
+
+.. autofunction:: get_child_ax_nodes
+
 .. autofunction:: get_full_ax_tree
 
 .. autofunction:: get_partial_ax_tree
 
+.. autofunction:: get_root_ax_node
+
+.. autofunction:: query_ax_tree
+
 Events
 ------
 
-*There are no events in this module.*
+Generally, you do not need to instantiate CDP events
+yourself. Instead, the API creates events for you and then
+you use the event's attributes.
+
+.. autoclass:: LoadComplete
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: NodesUpdated
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json

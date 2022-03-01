@@ -114,7 +114,22 @@ arguments to other commands.
       :undoc-members:
       :exclude-members: from_json, to_json
 
+.. autoclass:: CSSContainerQuery
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: CSSSupports
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
 .. autoclass:: PlatformFontUsage
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: FontVariationAxis
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
@@ -177,9 +192,13 @@ to. For more information, see
 
 .. autofunction:: get_style_sheet_text
 
+.. autofunction:: set_container_query_text
+
 .. autofunction:: set_effective_property_value_for_node
 
 .. autofunction:: set_keyframe_key
+
+.. autofunction:: set_local_fonts_enabled
 
 .. autofunction:: set_media_text
 
@@ -189,11 +208,17 @@ to. For more information, see
 
 .. autofunction:: set_style_texts
 
+.. autofunction:: set_supports_text
+
 .. autofunction:: start_rule_usage_tracking
 
 .. autofunction:: stop_rule_usage_tracking
 
+.. autofunction:: take_computed_style_updates
+
 .. autofunction:: take_coverage_delta
+
+.. autofunction:: track_computed_style_updates
 
 Events
 ------

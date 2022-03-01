@@ -27,6 +27,26 @@ arguments to other commands.
       :undoc-members:
       :exclude-members: from_json, to_json
 
+.. autoclass:: TrustTokens
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: InterestGroupAccessType
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: InterestGroupAd
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: InterestGroupDetails
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
 Commands
 --------
 
@@ -39,9 +59,25 @@ commands, and ``z`` is the return type you should pay attention
 to. For more information, see
 :ref:`Getting Started: Commands <getting-started-commands>`.
 
+.. autofunction:: clear_cookies
+
 .. autofunction:: clear_data_for_origin
 
+.. autofunction:: clear_trust_tokens
+
+.. autofunction:: get_cookies
+
+.. autofunction:: get_interest_group_details
+
+.. autofunction:: get_trust_tokens
+
 .. autofunction:: get_usage_and_quota
+
+.. autofunction:: override_quota_for_origin
+
+.. autofunction:: set_cookies
+
+.. autofunction:: set_interest_group_tracking
 
 .. autofunction:: track_cache_storage_for_origin
 
@@ -74,6 +110,11 @@ you use the event's attributes.
       :exclude-members: from_json, to_json
 
 .. autoclass:: IndexedDBListUpdated
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: InterestGroupAccessed
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json

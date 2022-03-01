@@ -156,7 +156,7 @@ class CachedResponse:
     '''
     Cached response
     '''
-    #: Entry content, base64-encoded.
+    #: Entry content, base64-encoded. (Encoded as a base64 string when passed over JSON)
     body: str
 
     def to_json(self) -> T_JSON_DICT:
@@ -254,16 +254,16 @@ def request_cached_response(
 
 def request_entries(
         cache_id: CacheId,
-        skip_count: int,
-        page_size: int,
+        skip_count: typing.Optional[int] = None,
+        page_size: typing.Optional[int] = None,
         path_filter: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.List[DataEntry], float]]:
     '''
     Requests data from cache.
 
     :param cache_id: ID of cache to get entries from.
-    :param skip_count: Number of records to skip.
-    :param page_size: Number of records to fetch.
+    :param skip_count: *(Optional)* Number of records to skip.
+    :param page_size: *(Optional)* Number of records to fetch.
     :param path_filter: *(Optional)* If present, only return the entries containing this substring in the path
     :returns: A tuple with the following items:
 
@@ -272,8 +272,10 @@ def request_entries(
     '''
     params: T_JSON_DICT = dict()
     params['cacheId'] = cache_id.to_json()
-    params['skipCount'] = skip_count
-    params['pageSize'] = page_size
+    if skip_count is not None:
+        params['skipCount'] = skip_count
+    if page_size is not None:
+        params['pageSize'] = page_size
     if path_filter is not None:
         params['pathFilter'] = path_filter
     cmd_dict: T_JSON_DICT = {
