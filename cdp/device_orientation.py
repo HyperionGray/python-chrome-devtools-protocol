@@ -6,10 +6,10 @@
 # CDP domain: DeviceOrientation (experimental)
 
 from __future__ import annotations
-from cdp.util import event_class, T_JSON_DICT
-from dataclasses import dataclass
 import enum
 import typing
+from dataclasses import dataclass
+from .util import event_class, T_JSON_DICT
 
 
 def clear_device_orientation_override() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:

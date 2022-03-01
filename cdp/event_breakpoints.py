@@ -6,10 +6,10 @@
 # CDP domain: EventBreakpoints (experimental)
 
 from __future__ import annotations
-from cdp.util import event_class, T_JSON_DICT
-from dataclasses import dataclass
 import enum
 import typing
+from dataclasses import dataclass
+from .util import event_class, T_JSON_DICT
 
 
 def set_instrumentation_breakpoint(

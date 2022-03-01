@@ -32,10 +32,10 @@ MODULE_HEADER = '''{}
 # CDP domain: {{}}{{}}
 
 from __future__ import annotations
-from cdp.util import event_class, T_JSON_DICT
-from dataclasses import dataclass
 import enum
 import typing
+from dataclasses import dataclass
+from .util import event_class, T_JSON_DICT
 
 '''.format(SHARED_HEADER)
 
