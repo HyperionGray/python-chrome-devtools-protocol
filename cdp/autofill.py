@@ -94,7 +94,7 @@ class Address:
 def trigger(
         field_id: dom.BackendNodeId,
         frame_id: typing.Optional[page.FrameId] = None,
-        card: CreditCard
+        card: CreditCard = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Trigger autofill on a form identified by the fieldId.
