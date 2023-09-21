@@ -35,6 +35,12 @@ class GPUDevice:
     #: String description of the GPU driver version.
     driver_version: str
 
+    #: Sub sys ID of the GPU, only available on Windows.
+    sub_sys_id: typing.Optional[float] = None
+
+    #: Revision of the GPU, only available on Windows.
+    revision: typing.Optional[float] = None
+
     def to_json(self) -> T_JSON_DICT:
         json: T_JSON_DICT = dict()
         json['vendorId'] = self.vendor_id
@@ -43,6 +49,10 @@ class GPUDevice:
         json['deviceString'] = self.device_string
         json['driverVendor'] = self.driver_vendor
         json['driverVersion'] = self.driver_version
+        if self.sub_sys_id is not None:
+            json['subSysId'] = self.sub_sys_id
+        if self.revision is not None:
+            json['revision'] = self.revision
         return json
 
     @classmethod
@@ -54,6 +64,8 @@ class GPUDevice:
             device_string=str(json['deviceString']),
             driver_vendor=str(json['driverVendor']),
             driver_version=str(json['driverVersion']),
+            sub_sys_id=float(json['subSysId']) if 'subSysId' in json else None,
+            revision=float(json['revision']) if 'revision' in json else None,
         )
 
 
@@ -166,6 +178,22 @@ class SubsamplingFormat(enum.Enum):
         return cls(json)
 
 
+class ImageType(enum.Enum):
+    '''
+    Image format of a given image.
+    '''
+    JPEG = "jpeg"
+    WEBP = "webp"
+    UNKNOWN = "unknown"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> ImageType:
+        return cls(json)
+
+
 @dataclass
 class ImageDecodeAcceleratorCapability:
     '''
@@ -173,7 +201,7 @@ class ImageDecodeAcceleratorCapability:
     maximum resolutions and subsampling.
     '''
     #: Image coded, e.g. Jpeg.
-    image_type: str
+    image_type: ImageType
 
     #: Maximum supported dimensions of the image in pixels.
     max_dimensions: Size
@@ -186,7 +214,7 @@ class ImageDecodeAcceleratorCapability:
 
     def to_json(self) -> T_JSON_DICT:
         json: T_JSON_DICT = dict()
-        json['imageType'] = self.image_type
+        json['imageType'] = self.image_type.to_json()
         json['maxDimensions'] = self.max_dimensions.to_json()
         json['minDimensions'] = self.min_dimensions.to_json()
         json['subsamplings'] = [i.to_json() for i in self.subsamplings]
@@ -195,7 +223,7 @@ class ImageDecodeAcceleratorCapability:
     @classmethod
     def from_json(cls, json: T_JSON_DICT) -> ImageDecodeAcceleratorCapability:
         return cls(
-            image_type=str(json['imageType']),
+            image_type=ImageType.from_json(json['imageType']),
             max_dimensions=Size.from_json(json['maxDimensions']),
             min_dimensions=Size.from_json(json['minDimensions']),
             subsamplings=[SubsamplingFormat.from_json(i) for i in json['subsamplings']],
@@ -306,6 +334,25 @@ def get_info() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[GPUInfo,
         str(json['modelVersion']),
         str(json['commandLine'])
     )
+
+
+def get_feature_state(
+        feature_state: str
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,bool]:
+    '''
+    Returns information about the feature state.
+
+    :param feature_state:
+    :returns: 
+    '''
+    params: T_JSON_DICT = dict()
+    params['featureState'] = feature_state
+    cmd_dict: T_JSON_DICT = {
+        'method': 'SystemInfo.getFeatureState',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return bool(json['featureEnabled'])
 
 
 def get_process_info() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[ProcessInfo]]:

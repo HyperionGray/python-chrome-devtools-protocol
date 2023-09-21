@@ -34,6 +34,10 @@ class TraceConfig:
     #: Controls how the trace buffer stores data.
     record_mode: typing.Optional[str] = None
 
+    #: Size of the trace buffer in kilobytes. If not specified or zero is passed, a default value
+    #: of 200 MB would be used.
+    trace_buffer_size_in_kb: typing.Optional[float] = None
+
     #: Turns on JavaScript stack sampling.
     enable_sampling: typing.Optional[bool] = None
 
@@ -59,6 +63,8 @@ class TraceConfig:
         json: T_JSON_DICT = dict()
         if self.record_mode is not None:
             json['recordMode'] = self.record_mode
+        if self.trace_buffer_size_in_kb is not None:
+            json['traceBufferSizeInKb'] = self.trace_buffer_size_in_kb
         if self.enable_sampling is not None:
             json['enableSampling'] = self.enable_sampling
         if self.enable_systrace is not None:
@@ -79,6 +85,7 @@ class TraceConfig:
     def from_json(cls, json: T_JSON_DICT) -> TraceConfig:
         return cls(
             record_mode=str(json['recordMode']) if 'recordMode' in json else None,
+            trace_buffer_size_in_kb=float(json['traceBufferSizeInKb']) if 'traceBufferSizeInKb' in json else None,
             enable_sampling=bool(json['enableSampling']) if 'enableSampling' in json else None,
             enable_systrace=bool(json['enableSystrace']) if 'enableSystrace' in json else None,
             enable_argument_filter=bool(json['enableArgumentFilter']) if 'enableArgumentFilter' in json else None,
@@ -117,6 +124,44 @@ class StreamCompression(enum.Enum):
 
     @classmethod
     def from_json(cls, json: str) -> StreamCompression:
+        return cls(json)
+
+
+class MemoryDumpLevelOfDetail(enum.Enum):
+    '''
+    Details exposed when memory request explicitly declared.
+    Keep consistent with memory_dump_request_args.h and
+    memory_instrumentation.mojom
+    '''
+    BACKGROUND = "background"
+    LIGHT = "light"
+    DETAILED = "detailed"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> MemoryDumpLevelOfDetail:
+        return cls(json)
+
+
+class TracingBackend(enum.Enum):
+    '''
+    Backend type to use for tracing. ``chrome`` uses the Chrome-integrated
+    tracing service and is supported on all platforms. ``system`` is only
+    supported on Chrome OS and uses the Perfetto system tracing service.
+    ``auto`` chooses ``system`` when the perfettoConfig provided to Tracing.start
+    specifies at least one non-Chrome data source; otherwise uses ``chrome``.
+    '''
+    AUTO = "auto"
+    CHROME = "chrome"
+    SYSTEM = "system"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> TracingBackend:
         return cls(json)
 
 
@@ -160,17 +205,28 @@ def record_clock_sync_marker(
     json = yield cmd_dict
 
 
-def request_memory_dump() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[str, bool]]:
+def request_memory_dump(
+        deterministic: typing.Optional[bool] = None,
+        level_of_detail: typing.Optional[MemoryDumpLevelOfDetail] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[str, bool]]:
     '''
     Request a global memory dump.
 
+    :param deterministic: *(Optional)* Enables more deterministic results by forcing garbage collection
+    :param level_of_detail: *(Optional)* Specifies level of details in memory dump. Defaults to "detailed".
     :returns: A tuple with the following items:
 
         0. **dumpGuid** - GUID of the resulting global memory dump.
         1. **success** - True iff the global memory dump succeeded.
     '''
+    params: T_JSON_DICT = dict()
+    if deterministic is not None:
+        params['deterministic'] = deterministic
+    if level_of_detail is not None:
+        params['levelOfDetail'] = level_of_detail.to_json()
     cmd_dict: T_JSON_DICT = {
         'method': 'Tracing.requestMemoryDump',
+        'params': params,
     }
     json = yield cmd_dict
     return (
@@ -186,7 +242,9 @@ def start(
         transfer_mode: typing.Optional[str] = None,
         stream_format: typing.Optional[StreamFormat] = None,
         stream_compression: typing.Optional[StreamCompression] = None,
-        trace_config: typing.Optional[TraceConfig] = None
+        trace_config: typing.Optional[TraceConfig] = None,
+        perfetto_config: typing.Optional[bytes] = None,
+        tracing_backend: typing.Optional[TracingBackend] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Start trace events collection.
@@ -196,8 +254,10 @@ def start(
     :param buffer_usage_reporting_interval: *(Optional)* If set, the agent will issue bufferUsage events at this interval, specified in milliseconds
     :param transfer_mode: *(Optional)* Whether to report trace events as series of dataCollected events or to save trace to a stream (defaults to ```ReportEvents````).
     :param stream_format: *(Optional)* Trace data format to use. This only applies when using ````ReturnAsStream```` transfer mode (defaults to ````json````).
-    :param stream_compression: *(Optional)* Compression format to use. This only applies when using ````ReturnAsStream```` transfer mode (defaults to ````none```)
+    :param stream_compression: *(Optional)* Compression format to use. This only applies when using ````ReturnAsStream```` transfer mode (defaults to ````none````)
     :param trace_config: *(Optional)*
+    :param perfetto_config: *(Optional)* Base64-encoded serialized perfetto.protos.TraceConfig protobuf message When specified, the parameters ````categories````, ````options````, ````traceConfig```` are ignored.
+    :param tracing_backend: *(Optional)* Backend type (defaults to ````auto```)
     '''
     params: T_JSON_DICT = dict()
     if categories is not None:
@@ -214,6 +274,10 @@ def start(
         params['streamCompression'] = stream_compression.to_json()
     if trace_config is not None:
         params['traceConfig'] = trace_config.to_json()
+    if perfetto_config is not None:
+        params['perfettoConfig'] = perfetto_config
+    if tracing_backend is not None:
+        params['tracingBackend'] = tracing_backend.to_json()
     cmd_dict: T_JSON_DICT = {
         'method': 'Tracing.start',
         'params': params,
@@ -246,8 +310,8 @@ class BufferUsage:
 @dataclass
 class DataCollected:
     '''
-    Contains an bucket of collected trace events. When tracing is stopped collected events will be
-    send as a sequence of dataCollected events followed by tracingComplete event.
+    Contains a bucket of collected trace events. When tracing is stopped collected events will be
+    sent as a sequence of dataCollected events followed by tracingComplete event.
     '''
     value: typing.List[dict]
 

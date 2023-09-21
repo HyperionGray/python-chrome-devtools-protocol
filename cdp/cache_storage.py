@@ -11,6 +11,8 @@ from dataclasses import dataclass
 import enum
 import typing
 
+from . import storage
+
 
 class CacheId(str):
     '''
@@ -112,14 +114,23 @@ class Cache:
     #: Security origin of the cache.
     security_origin: str
 
+    #: Storage key of the cache.
+    storage_key: str
+
     #: The name of the cache.
     cache_name: str
+
+    #: Storage bucket of the cache.
+    storage_bucket: typing.Optional[storage.StorageBucket] = None
 
     def to_json(self) -> T_JSON_DICT:
         json: T_JSON_DICT = dict()
         json['cacheId'] = self.cache_id.to_json()
         json['securityOrigin'] = self.security_origin
+        json['storageKey'] = self.storage_key
         json['cacheName'] = self.cache_name
+        if self.storage_bucket is not None:
+            json['storageBucket'] = self.storage_bucket.to_json()
         return json
 
     @classmethod
@@ -127,7 +138,9 @@ class Cache:
         return cls(
             cache_id=CacheId.from_json(json['cacheId']),
             security_origin=str(json['securityOrigin']),
+            storage_key=str(json['storageKey']),
             cache_name=str(json['cacheName']),
+            storage_bucket=storage.StorageBucket.from_json(json['storageBucket']) if 'storageBucket' in json else None,
         )
 
 
@@ -157,7 +170,7 @@ class CachedResponse:
     Cached response
     '''
     #: Entry content, base64-encoded.
-    body: str
+    body: bytes
 
     def to_json(self) -> T_JSON_DICT:
         json: T_JSON_DICT = dict()
@@ -167,7 +180,7 @@ class CachedResponse:
     @classmethod
     def from_json(cls, json: T_JSON_DICT) -> CachedResponse:
         return cls(
-            body=str(json['body']),
+            body=bytes(json['body']),
         )
 
 
@@ -209,16 +222,25 @@ def delete_entry(
 
 
 def request_cache_names(
-        security_origin: str
+        security_origin: typing.Optional[str] = None,
+        storage_key: typing.Optional[str] = None,
+        storage_bucket: typing.Optional[storage.StorageBucket] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[Cache]]:
     '''
     Requests cache names.
 
-    :param security_origin: Security origin.
+    :param security_origin: *(Optional)* At least and at most one of securityOrigin, storageKey, storageBucket must be specified. Security origin.
+    :param storage_key: *(Optional)* Storage key.
+    :param storage_bucket: *(Optional)* Storage bucket. If not specified, it uses the default bucket.
     :returns: Caches for the security origin.
     '''
     params: T_JSON_DICT = dict()
-    params['securityOrigin'] = security_origin
+    if security_origin is not None:
+        params['securityOrigin'] = security_origin
+    if storage_key is not None:
+        params['storageKey'] = storage_key
+    if storage_bucket is not None:
+        params['storageBucket'] = storage_bucket.to_json()
     cmd_dict: T_JSON_DICT = {
         'method': 'CacheStorage.requestCacheNames',
         'params': params,
@@ -254,16 +276,16 @@ def request_cached_response(
 
 def request_entries(
         cache_id: CacheId,
-        skip_count: int,
-        page_size: int,
+        skip_count: typing.Optional[int] = None,
+        page_size: typing.Optional[int] = None,
         path_filter: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.List[DataEntry], float]]:
     '''
     Requests data from cache.
 
     :param cache_id: ID of cache to get entries from.
-    :param skip_count: Number of records to skip.
-    :param page_size: Number of records to fetch.
+    :param skip_count: *(Optional)* Number of records to skip.
+    :param page_size: *(Optional)* Number of records to fetch.
     :param path_filter: *(Optional)* If present, only return the entries containing this substring in the path
     :returns: A tuple with the following items:
 
@@ -272,8 +294,10 @@ def request_entries(
     '''
     params: T_JSON_DICT = dict()
     params['cacheId'] = cache_id.to_json()
-    params['skipCount'] = skip_count
-    params['pageSize'] = page_size
+    if skip_count is not None:
+        params['skipCount'] = skip_count
+    if page_size is not None:
+        params['pageSize'] = page_size
     if path_filter is not None:
         params['pathFilter'] = path_filter
     cmd_dict: T_JSON_DICT = {

@@ -16,7 +16,7 @@ from . import runtime
 
 class StreamHandle(str):
     '''
-    This is either obtained from another method or specifed as ``blob:&lt;uuid&gt;`` where
+    This is either obtained from another method or specified as ``blob:&lt;uuid&gt;`` where
     ``&lt;uuid&gt`` is an UUID of a Blob.
     '''
     def to_json(self) -> str:
@@ -62,7 +62,7 @@ def read(
 
         0. **base64Encoded** - *(Optional)* Set if the data is base64-encoded
         1. **data** - Data that were read.
-        2. **eof** - Set if the end-of-file condition occured while reading.
+        2. **eof** - Set if the end-of-file condition occurred while reading.
     '''
     params: T_JSON_DICT = dict()
     params['handle'] = handle.to_json()
