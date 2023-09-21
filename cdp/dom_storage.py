@@ -12,28 +12,47 @@ import enum
 import typing
 
 
+class SerializedStorageKey(str):
+    def to_json(self) -> str:
+        return self
+
+    @classmethod
+    def from_json(cls, json: str) -> SerializedStorageKey:
+        return cls(json)
+
+    def __repr__(self):
+        return 'SerializedStorageKey({})'.format(super().__repr__())
+
+
 @dataclass
 class StorageId:
     '''
     DOM Storage identifier.
     '''
-    #: Security origin for the storage.
-    security_origin: str
-
     #: Whether the storage is local storage (not session storage).
     is_local_storage: bool
 
+    #: Security origin for the storage.
+    security_origin: typing.Optional[str] = None
+
+    #: Represents a key by which DOM Storage keys its CachedStorageAreas
+    storage_key: typing.Optional[SerializedStorageKey] = None
+
     def to_json(self) -> T_JSON_DICT:
         json: T_JSON_DICT = dict()
-        json['securityOrigin'] = self.security_origin
         json['isLocalStorage'] = self.is_local_storage
+        if self.security_origin is not None:
+            json['securityOrigin'] = self.security_origin
+        if self.storage_key is not None:
+            json['storageKey'] = self.storage_key.to_json()
         return json
 
     @classmethod
     def from_json(cls, json: T_JSON_DICT) -> StorageId:
         return cls(
-            security_origin=str(json['securityOrigin']),
             is_local_storage=bool(json['isLocalStorage']),
+            security_origin=str(json['securityOrigin']) if 'securityOrigin' in json else None,
+            storage_key=SerializedStorageKey.from_json(json['storageKey']) if 'storageKey' in json else None,
         )
 
 

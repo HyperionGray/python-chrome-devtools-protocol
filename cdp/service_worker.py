@@ -233,6 +233,27 @@ def dispatch_sync_event(
     json = yield cmd_dict
 
 
+def dispatch_periodic_sync_event(
+        origin: str,
+        registration_id: RegistrationID,
+        tag: str
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    '''
+    :param origin:
+    :param registration_id:
+    :param tag:
+    '''
+    params: T_JSON_DICT = dict()
+    params['origin'] = origin
+    params['registrationId'] = registration_id.to_json()
+    params['tag'] = tag
+    cmd_dict: T_JSON_DICT = {
+        'method': 'ServiceWorker.dispatchPeriodicSyncEvent',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
 def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
     cmd_dict: T_JSON_DICT = {
