@@ -263,8 +263,8 @@ def clear_object_store(
         security_origin: typing.Optional[str] = None,
         storage_key: typing.Optional[str] = None,
         storage_bucket: typing.Optional[storage.StorageBucket] = None,
-        database_name: str,
-        object_store_name: str
+        database_name: str = None,
+        object_store_name: str = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Clears all entries from an object store.
@@ -295,7 +295,7 @@ def delete_database(
         security_origin: typing.Optional[str] = None,
         storage_key: typing.Optional[str] = None,
         storage_bucket: typing.Optional[storage.StorageBucket] = None,
-        database_name: str
+        database_name: str = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Deletes a database.
@@ -324,9 +324,9 @@ def delete_object_store_entries(
         security_origin: typing.Optional[str] = None,
         storage_key: typing.Optional[str] = None,
         storage_bucket: typing.Optional[storage.StorageBucket] = None,
-        database_name: str,
-        object_store_name: str,
-        key_range: KeyRange
+        database_name: str = None,
+        object_store_name: str = None,
+        key_range: KeyRange = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     Delete a range of entries from an object store
@@ -379,11 +379,11 @@ def request_data(
         security_origin: typing.Optional[str] = None,
         storage_key: typing.Optional[str] = None,
         storage_bucket: typing.Optional[storage.StorageBucket] = None,
-        database_name: str,
-        object_store_name: str,
-        index_name: str,
-        skip_count: int,
-        page_size: int,
+        database_name: str = None,
+        object_store_name: str = None,
+        index_name: str = None,
+        skip_count: int = None,
+        page_size: int = None,
         key_range: typing.Optional[KeyRange] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.List[DataEntry], bool]]:
     '''
@@ -432,8 +432,8 @@ def get_metadata(
         security_origin: typing.Optional[str] = None,
         storage_key: typing.Optional[str] = None,
         storage_bucket: typing.Optional[storage.StorageBucket] = None,
-        database_name: str,
-        object_store_name: str
+        database_name: str = None,
+        object_store_name: str = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[float, float]]:
     '''
     Gets metadata of an object store.
@@ -472,7 +472,7 @@ def request_database(
         security_origin: typing.Optional[str] = None,
         storage_key: typing.Optional[str] = None,
         storage_bucket: typing.Optional[storage.StorageBucket] = None,
-        database_name: str
+        database_name: str = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,DatabaseWithObjectStores]:
     '''
     Requests database with given name in given frame.
