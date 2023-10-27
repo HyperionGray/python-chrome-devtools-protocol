@@ -387,7 +387,7 @@ class PostDataEntry:
     @classmethod
     def from_json(cls, json: T_JSON_DICT) -> PostDataEntry:
         return cls(
-            bytes_=bytes(json['bytes']) if 'bytes' in json else None,
+            bytes_=json['bytes'] if 'bytes' in json else None,
         )
 
 
