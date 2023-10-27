@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "chrome-devtools-protocol"
 packages = [{include = "cdp"}]
-version = "0.5.2"
+version = "0.5.3"
 description = "Python type wrappers for Chrome DevTools Protocol (CDP)"
 authors = ["Mark E. Haase <mehaase@gmail.com>", "Brian Mackintosh <bcmackintosh@gmail.com>"]
 license = "MIT"
