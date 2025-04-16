@@ -14,7 +14,7 @@ import typing
 
 @dataclass
 class Domain:
-    '''
+    r'''
     Description of the protocol domain.
     '''
     #: Domain name.
@@ -38,7 +38,7 @@ class Domain:
 
 
 def get_domains() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[Domain]]:
-    '''
+    r'''
     Returns supported domains.
 
     :returns: List of supported domains.

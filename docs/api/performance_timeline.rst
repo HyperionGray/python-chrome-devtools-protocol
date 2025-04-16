@@ -1,9 +1,12 @@
-ApplicationCache
-================
+PerformanceTimeline
+===================
+
+Reporting of performance timeline events, as specified in
+https://w3c.github.io/performance-timeline/#dom-performanceobserver.
 
 *This CDP domain is experimental.*
 
-.. module:: cdp.application_cache
+.. module:: cdp.performance_timeline
 
 * Types_
 * Commands_
@@ -17,17 +20,22 @@ yourself. Instead, the API creates objects for you as return
 values from commands, and then you can use those objects as
 arguments to other commands.
 
-.. autoclass:: ApplicationCacheResource
+.. autoclass:: LargestContentfulPaint
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
 
-.. autoclass:: ApplicationCache
+.. autoclass:: LayoutShiftAttribution
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
 
-.. autoclass:: FrameWithManifest
+.. autoclass:: LayoutShift
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: TimelineEvent
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
@@ -46,12 +54,6 @@ to. For more information, see
 
 .. autofunction:: enable
 
-.. autofunction:: get_application_cache_for_frame
-
-.. autofunction:: get_frames_with_manifests
-
-.. autofunction:: get_manifest_for_frame
-
 Events
 ------
 
@@ -59,12 +61,7 @@ Generally, you do not need to instantiate CDP events
 yourself. Instead, the API creates events for you and then
 you use the event's attributes.
 
-.. autoclass:: ApplicationCacheStatusUpdated
-      :members:
-      :undoc-members:
-      :exclude-members: from_json, to_json
-
-.. autoclass:: NetworkStateUpdated
+.. autoclass:: TimelineEventAdded
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json

@@ -20,7 +20,7 @@ yourself. Instead, the API creates objects for you as return
 values from commands, and then you can use those objects as
 arguments to other commands.
 
-.. autoclass:: ContextId
+.. autoclass:: GraphObjectId
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
@@ -35,12 +35,52 @@ arguments to other commands.
       :undoc-members:
       :exclude-members: from_json, to_json
 
+.. autoclass:: NodeType
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: ChannelCountMode
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: ChannelInterpretation
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: ParamType
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: AutomationRate
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
 .. autoclass:: ContextRealtimeData
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
 
 .. autoclass:: BaseAudioContext
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: AudioListener
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: AudioNode
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: AudioParam
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
@@ -75,12 +115,62 @@ you use the event's attributes.
       :undoc-members:
       :exclude-members: from_json, to_json
 
-.. autoclass:: ContextDestroyed
+.. autoclass:: ContextWillBeDestroyed
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
 
 .. autoclass:: ContextChanged
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: AudioListenerCreated
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: AudioListenerWillBeDestroyed
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: AudioNodeCreated
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: AudioNodeWillBeDestroyed
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: AudioParamCreated
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: AudioParamWillBeDestroyed
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: NodesConnected
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: NodesDisconnected
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: NodeParamConnected
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: NodeParamDisconnected
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json

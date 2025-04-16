@@ -36,6 +36,18 @@ class AuthenticatorProtocol(enum.Enum):
         return cls(json)
 
 
+class Ctap2Version(enum.Enum):
+    CTAP2_0 = "ctap2_0"
+    CTAP2_1 = "ctap2_1"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> Ctap2Version:
+        return cls(json)
+
+
 class AuthenticatorTransport(enum.Enum):
     USB = "usb"
     NFC = "nfc"
@@ -57,22 +69,58 @@ class VirtualAuthenticatorOptions:
 
     transport: AuthenticatorTransport
 
-    has_resident_key: bool
+    #: Defaults to ctap2_0. Ignored if ``protocol`` == u2f.
+    ctap2_version: typing.Optional[Ctap2Version] = None
 
-    has_user_verification: bool
+    #: Defaults to false.
+    has_resident_key: typing.Optional[bool] = None
+
+    #: Defaults to false.
+    has_user_verification: typing.Optional[bool] = None
+
+    #: If set to true, the authenticator will support the largeBlob extension.
+    #: https://w3c.github.io/webauthn#largeBlob
+    #: Defaults to false.
+    has_large_blob: typing.Optional[bool] = None
+
+    #: If set to true, the authenticator will support the credBlob extension.
+    #: https://fidoalliance.org/specs/fido-v2.1-rd-20201208/fido-client-to-authenticator-protocol-v2.1-rd-20201208.html#sctn-credBlob-extension
+    #: Defaults to false.
+    has_cred_blob: typing.Optional[bool] = None
+
+    #: If set to true, the authenticator will support the minPinLength extension.
+    #: https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-20210615.html#sctn-minpinlength-extension
+    #: Defaults to false.
+    has_min_pin_length: typing.Optional[bool] = None
 
     #: If set to true, tests of user presence will succeed immediately.
     #: Otherwise, they will not be resolved. Defaults to true.
     automatic_presence_simulation: typing.Optional[bool] = None
 
+    #: Sets whether User Verification succeeds or fails for an authenticator.
+    #: Defaults to false.
+    is_user_verified: typing.Optional[bool] = None
+
     def to_json(self) -> T_JSON_DICT:
         json: T_JSON_DICT = dict()
         json['protocol'] = self.protocol.to_json()
         json['transport'] = self.transport.to_json()
-        json['hasResidentKey'] = self.has_resident_key
-        json['hasUserVerification'] = self.has_user_verification
+        if self.ctap2_version is not None:
+            json['ctap2Version'] = self.ctap2_version.to_json()
+        if self.has_resident_key is not None:
+            json['hasResidentKey'] = self.has_resident_key
+        if self.has_user_verification is not None:
+            json['hasUserVerification'] = self.has_user_verification
+        if self.has_large_blob is not None:
+            json['hasLargeBlob'] = self.has_large_blob
+        if self.has_cred_blob is not None:
+            json['hasCredBlob'] = self.has_cred_blob
+        if self.has_min_pin_length is not None:
+            json['hasMinPinLength'] = self.has_min_pin_length
         if self.automatic_presence_simulation is not None:
             json['automaticPresenceSimulation'] = self.automatic_presence_simulation
+        if self.is_user_verified is not None:
+            json['isUserVerified'] = self.is_user_verified
         return json
 
     @classmethod
@@ -80,9 +128,14 @@ class VirtualAuthenticatorOptions:
         return cls(
             protocol=AuthenticatorProtocol.from_json(json['protocol']),
             transport=AuthenticatorTransport.from_json(json['transport']),
-            has_resident_key=bool(json['hasResidentKey']),
-            has_user_verification=bool(json['hasUserVerification']),
+            ctap2_version=Ctap2Version.from_json(json['ctap2Version']) if 'ctap2Version' in json else None,
+            has_resident_key=bool(json['hasResidentKey']) if 'hasResidentKey' in json else None,
+            has_user_verification=bool(json['hasUserVerification']) if 'hasUserVerification' in json else None,
+            has_large_blob=bool(json['hasLargeBlob']) if 'hasLargeBlob' in json else None,
+            has_cred_blob=bool(json['hasCredBlob']) if 'hasCredBlob' in json else None,
+            has_min_pin_length=bool(json['hasMinPinLength']) if 'hasMinPinLength' in json else None,
             automatic_presence_simulation=bool(json['automaticPresenceSimulation']) if 'automaticPresenceSimulation' in json else None,
+            is_user_verified=bool(json['isUserVerified']) if 'isUserVerified' in json else None,
         )
 
 
@@ -90,12 +143,9 @@ class VirtualAuthenticatorOptions:
 class Credential:
     credential_id: str
 
-    #: SHA-256 hash of the Relying Party ID the credential is scoped to. Must
-    #: be 32 bytes long.
-    #: See https://w3c.github.io/webauthn/#rpidhash
-    rp_id_hash: str
+    is_resident_credential: bool
 
-    #: The private key in PKCS#8 format.
+    #: The ECDSA P-256 private key in PKCS#8 format. (Encoded as a base64 string when passed over JSON)
     private_key: str
 
     #: Signature counter. This is incremented by one for each successful
@@ -103,26 +153,47 @@ class Credential:
     #: See https://w3c.github.io/webauthn/#signature-counter
     sign_count: int
 
+    #: Relying Party ID the credential is scoped to. Must be set when adding a
+    #: credential.
+    rp_id: typing.Optional[str] = None
+
+    #: An opaque byte sequence with a maximum size of 64 bytes mapping the
+    #: credential to a specific user. (Encoded as a base64 string when passed over JSON)
+    user_handle: typing.Optional[str] = None
+
+    #: The large blob associated with the credential.
+    #: See https://w3c.github.io/webauthn/#sctn-large-blob-extension (Encoded as a base64 string when passed over JSON)
+    large_blob: typing.Optional[str] = None
+
     def to_json(self) -> T_JSON_DICT:
         json: T_JSON_DICT = dict()
         json['credentialId'] = self.credential_id
-        json['rpIdHash'] = self.rp_id_hash
+        json['isResidentCredential'] = self.is_resident_credential
         json['privateKey'] = self.private_key
         json['signCount'] = self.sign_count
+        if self.rp_id is not None:
+            json['rpId'] = self.rp_id
+        if self.user_handle is not None:
+            json['userHandle'] = self.user_handle
+        if self.large_blob is not None:
+            json['largeBlob'] = self.large_blob
         return json
 
     @classmethod
     def from_json(cls, json: T_JSON_DICT) -> Credential:
         return cls(
             credential_id=str(json['credentialId']),
-            rp_id_hash=str(json['rpIdHash']),
+            is_resident_credential=bool(json['isResidentCredential']),
             private_key=str(json['privateKey']),
             sign_count=int(json['signCount']),
+            rp_id=str(json['rpId']) if 'rpId' in json else None,
+            user_handle=str(json['userHandle']) if 'userHandle' in json else None,
+            large_blob=str(json['largeBlob']) if 'largeBlob' in json else None,
         )
 
 
 def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enable the WebAuthn domain and start intercepting credential storage and
     retrieval with a virtual authenticator.
     '''
@@ -133,7 +204,7 @@ def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Disable the WebAuthn domain.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -145,7 +216,7 @@ def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 def add_virtual_authenticator(
         options: VirtualAuthenticatorOptions
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,AuthenticatorId]:
-    '''
+    r'''
     Creates and adds a virtual authenticator.
 
     :param options:
@@ -164,7 +235,7 @@ def add_virtual_authenticator(
 def remove_virtual_authenticator(
         authenticator_id: AuthenticatorId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Removes the given authenticator.
 
     :param authenticator_id:
@@ -182,7 +253,7 @@ def add_credential(
         authenticator_id: AuthenticatorId,
         credential: Credential
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Adds the credential to the specified authenticator.
 
     :param authenticator_id:
@@ -198,10 +269,33 @@ def add_credential(
     json = yield cmd_dict
 
 
+def get_credential(
+        authenticator_id: AuthenticatorId,
+        credential_id: str
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,Credential]:
+    r'''
+    Returns a single credential stored in the given virtual authenticator that
+    matches the credential ID.
+
+    :param authenticator_id:
+    :param credential_id:
+    :returns: 
+    '''
+    params: T_JSON_DICT = dict()
+    params['authenticatorId'] = authenticator_id.to_json()
+    params['credentialId'] = credential_id
+    cmd_dict: T_JSON_DICT = {
+        'method': 'WebAuthn.getCredential',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return Credential.from_json(json['credential'])
+
+
 def get_credentials(
         authenticator_id: AuthenticatorId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[Credential]]:
-    '''
+    r'''
     Returns all the credentials stored in the given virtual authenticator.
 
     :param authenticator_id:
@@ -217,10 +311,30 @@ def get_credentials(
     return [Credential.from_json(i) for i in json['credentials']]
 
 
+def remove_credential(
+        authenticator_id: AuthenticatorId,
+        credential_id: str
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    r'''
+    Removes a credential from the authenticator.
+
+    :param authenticator_id:
+    :param credential_id:
+    '''
+    params: T_JSON_DICT = dict()
+    params['authenticatorId'] = authenticator_id.to_json()
+    params['credentialId'] = credential_id
+    cmd_dict: T_JSON_DICT = {
+        'method': 'WebAuthn.removeCredential',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
 def clear_credentials(
         authenticator_id: AuthenticatorId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Clears all the credentials from the specified device.
 
     :param authenticator_id:
@@ -238,7 +352,7 @@ def set_user_verified(
         authenticator_id: AuthenticatorId,
         is_user_verified: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Sets whether User Verification succeeds or fails for an authenticator.
     The default is true.
 
@@ -250,6 +364,27 @@ def set_user_verified(
     params['isUserVerified'] = is_user_verified
     cmd_dict: T_JSON_DICT = {
         'method': 'WebAuthn.setUserVerified',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
+def set_automatic_presence_simulation(
+        authenticator_id: AuthenticatorId,
+        enabled: bool
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    r'''
+    Sets whether tests of user presence will succeed immediately (if true) or fail to resolve (if false) for an authenticator.
+    The default is true.
+
+    :param authenticator_id:
+    :param enabled:
+    '''
+    params: T_JSON_DICT = dict()
+    params['authenticatorId'] = authenticator_id.to_json()
+    params['enabled'] = enabled
+    cmd_dict: T_JSON_DICT = {
+        'method': 'WebAuthn.setAutomaticPresenceSimulation',
         'params': params,
     }
     json = yield cmd_dict

@@ -27,11 +27,6 @@ arguments to other commands.
       :undoc-members:
       :exclude-members: from_json, to_json
 
-.. autoclass:: BrowserContextID
-      :members:
-      :undoc-members:
-      :exclude-members: from_json, to_json
-
 .. autoclass:: TargetInfo
       :members:
       :undoc-members:
@@ -59,6 +54,8 @@ to. For more information, see
 .. autofunction:: attach_to_browser_target
 
 .. autofunction:: attach_to_target
+
+.. autofunction:: auto_attach_related
 
 .. autofunction:: close_target
 

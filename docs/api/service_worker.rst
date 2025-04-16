@@ -63,6 +63,8 @@ to. For more information, see
 
 .. autofunction:: disable
 
+.. autofunction:: dispatch_periodic_sync_event
+
 .. autofunction:: dispatch_sync_event
 
 .. autofunction:: enable

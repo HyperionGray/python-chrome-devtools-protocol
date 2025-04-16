@@ -32,6 +32,26 @@ arguments to other commands.
       :undoc-members:
       :exclude-members: from_json, to_json
 
+.. autoclass:: CertificateSecurityState
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: SafetyTipStatus
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: SafetyTipInfo
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: VisibleSecurityState
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
 .. autoclass:: SecurityStateExplanation
       :members:
       :undoc-members:
@@ -77,6 +97,11 @@ yourself. Instead, the API creates events for you and then
 you use the event's attributes.
 
 .. autoclass:: CertificateError
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: VisibleSecurityStateChanged
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json

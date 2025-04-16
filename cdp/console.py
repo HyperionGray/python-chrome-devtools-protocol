@@ -14,7 +14,7 @@ import typing
 
 @dataclass
 class ConsoleMessage:
-    '''
+    r'''
     Console message.
     '''
     #: Message source.
@@ -61,7 +61,7 @@ class ConsoleMessage:
 
 
 def clear_messages() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Does nothing.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -71,7 +71,7 @@ def clear_messages() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Disables console domain, prevents further console messages from being reported to the client.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -81,7 +81,7 @@ def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables console domain, sends the messages collected so far to the client by means of the
     ``messageAdded`` notification.
     '''
@@ -94,7 +94,7 @@ def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 @event_class('Console.messageAdded')
 @dataclass
 class MessageAdded:
-    '''
+    r'''
     Issued when new console message is added.
     '''
     #: Console message that has been added.

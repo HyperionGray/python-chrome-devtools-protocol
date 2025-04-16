@@ -17,6 +17,11 @@ yourself. Instead, the API creates objects for you as return
 values from commands, and then you can use those objects as
 arguments to other commands.
 
+.. autoclass:: BrowserContextID
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
 .. autoclass:: WindowID
       :members:
       :undoc-members:
@@ -33,6 +38,21 @@ arguments to other commands.
       :exclude-members: from_json, to_json
 
 .. autoclass:: PermissionType
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: PermissionSetting
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: PermissionDescriptor
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: BrowserCommandId
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
@@ -59,11 +79,15 @@ commands, and ``z`` is the return type you should pay attention
 to. For more information, see
 :ref:`Getting Started: Commands <getting-started-commands>`.
 
+.. autofunction:: cancel_download
+
 .. autofunction:: close
 
 .. autofunction:: crash
 
 .. autofunction:: crash_gpu_process
+
+.. autofunction:: execute_browser_command
 
 .. autofunction:: get_browser_command_line
 
@@ -83,9 +107,25 @@ to. For more information, see
 
 .. autofunction:: set_dock_tile
 
+.. autofunction:: set_download_behavior
+
+.. autofunction:: set_permission
+
 .. autofunction:: set_window_bounds
 
 Events
 ------
 
-*There are no events in this module.*
+Generally, you do not need to instantiate CDP events
+yourself. Instead, the API creates events for you and then
+you use the event's attributes.
+
+.. autoclass:: DownloadWillBegin
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: DownloadProgress
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json

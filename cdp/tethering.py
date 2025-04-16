@@ -15,7 +15,7 @@ import typing
 def bind(
         port: int
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Request browser port binding.
 
     :param port: Port number to bind.
@@ -32,7 +32,7 @@ def bind(
 def unbind(
         port: int
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Request browser port unbinding.
 
     :param port: Port number to unbind.
@@ -49,7 +49,7 @@ def unbind(
 @event_class('Tethering.accepted')
 @dataclass
 class Accepted:
-    '''
+    r'''
     Informs that port was successfully bound and got a specified connection id.
     '''
     #: Port number that was successfully bound.

@@ -15,7 +15,7 @@ from . import runtime
 
 
 class HeapSnapshotObjectId(str):
-    '''
+    r'''
     Heap snapshot object id.
     '''
     def to_json(self) -> str:
@@ -31,7 +31,7 @@ class HeapSnapshotObjectId(str):
 
 @dataclass
 class SamplingHeapProfileNode:
-    '''
+    r'''
     Sampling Heap Profile node. Holds callsite information, allocation statistics and child nodes.
     '''
     #: Function location.
@@ -66,7 +66,7 @@ class SamplingHeapProfileNode:
 
 @dataclass
 class SamplingHeapProfileSample:
-    '''
+    r'''
     A single sample from a sampling profile.
     '''
     #: Allocation size in bytes attributed to the sample.
@@ -97,7 +97,7 @@ class SamplingHeapProfileSample:
 
 @dataclass
 class SamplingHeapProfile:
-    '''
+    r'''
     Sampling profile.
     '''
     head: SamplingHeapProfileNode
@@ -121,7 +121,7 @@ class SamplingHeapProfile:
 def add_inspected_heap_object(
         heap_object_id: HeapSnapshotObjectId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables console to refer to the node with given id via $x (see Command Line API for more details
     $x functions).
 
@@ -163,7 +163,7 @@ def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 def get_heap_object_id(
         object_id: runtime.RemoteObjectId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,HeapSnapshotObjectId]:
-    '''
+    r'''
     :param object_id: Identifier of the object to get heap object id for.
     :returns: Id of the heap snapshot object corresponding to the passed remote object id.
     '''
@@ -181,7 +181,7 @@ def get_object_by_heap_object_id(
         object_id: HeapSnapshotObjectId,
         object_group: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,runtime.RemoteObject]:
-    '''
+    r'''
     :param object_id:
     :param object_group: *(Optional)* Symbolic group name that can be used to release multiple objects.
     :returns: Evaluation result.
@@ -199,7 +199,7 @@ def get_object_by_heap_object_id(
 
 
 def get_sampling_profile() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,SamplingHeapProfile]:
-    '''
+    r'''
 
 
     :returns: Return the sampling profile being collected.
@@ -214,7 +214,7 @@ def get_sampling_profile() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,SamplingH
 def start_sampling(
         sampling_interval: typing.Optional[float] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     :param sampling_interval: *(Optional)* Average sample interval in bytes. Poisson distribution is used for the intervals. The default value is 32768 bytes.
     '''
     params: T_JSON_DICT = dict()
@@ -230,7 +230,7 @@ def start_sampling(
 def start_tracking_heap_objects(
         track_allocations: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     :param track_allocations: *(Optional)*
     '''
     params: T_JSON_DICT = dict()
@@ -244,7 +244,7 @@ def start_tracking_heap_objects(
 
 
 def stop_sampling() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,SamplingHeapProfile]:
-    '''
+    r'''
 
 
     :returns: Recorded sampling heap profile.
@@ -257,14 +257,22 @@ def stop_sampling() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,SamplingHeapProf
 
 
 def stop_tracking_heap_objects(
-        report_progress: typing.Optional[bool] = None
+        report_progress: typing.Optional[bool] = None,
+        treat_global_objects_as_roots: typing.Optional[bool] = None,
+        capture_numeric_value: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     :param report_progress: *(Optional)* If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken when the tracking is stopped.
+    :param treat_global_objects_as_roots: *(Optional)*
+    :param capture_numeric_value: *(Optional)* If true, numerical values are included in the snapshot
     '''
     params: T_JSON_DICT = dict()
     if report_progress is not None:
         params['reportProgress'] = report_progress
+    if treat_global_objects_as_roots is not None:
+        params['treatGlobalObjectsAsRoots'] = treat_global_objects_as_roots
+    if capture_numeric_value is not None:
+        params['captureNumericValue'] = capture_numeric_value
     cmd_dict: T_JSON_DICT = {
         'method': 'HeapProfiler.stopTrackingHeapObjects',
         'params': params,
@@ -273,14 +281,22 @@ def stop_tracking_heap_objects(
 
 
 def take_heap_snapshot(
-        report_progress: typing.Optional[bool] = None
+        report_progress: typing.Optional[bool] = None,
+        treat_global_objects_as_roots: typing.Optional[bool] = None,
+        capture_numeric_value: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     :param report_progress: *(Optional)* If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken.
+    :param treat_global_objects_as_roots: *(Optional)* If true, a raw snapshot without artificial roots will be generated
+    :param capture_numeric_value: *(Optional)* If true, numerical values are included in the snapshot
     '''
     params: T_JSON_DICT = dict()
     if report_progress is not None:
         params['reportProgress'] = report_progress
+    if treat_global_objects_as_roots is not None:
+        params['treatGlobalObjectsAsRoots'] = treat_global_objects_as_roots
+    if capture_numeric_value is not None:
+        params['captureNumericValue'] = capture_numeric_value
     cmd_dict: T_JSON_DICT = {
         'method': 'HeapProfiler.takeHeapSnapshot',
         'params': params,
@@ -303,7 +319,7 @@ class AddHeapSnapshotChunk:
 @event_class('HeapProfiler.heapStatsUpdate')
 @dataclass
 class HeapStatsUpdate:
-    '''
+    r'''
     If heap objects tracking has been started then backend may send update for one or more fragments
     '''
     #: An array of triplets. Each triplet describes a fragment. The first integer is the fragment
@@ -321,7 +337,7 @@ class HeapStatsUpdate:
 @event_class('HeapProfiler.lastSeenObjectId')
 @dataclass
 class LastSeenObjectId:
-    '''
+    r'''
     If heap objects tracking has been started then backend regularly sends a current value for last
     seen object id and corresponding timestamp. If the were changes in the heap since last event
     then one or more heapStatsUpdate events will be sent before a new lastSeenObjectId event.

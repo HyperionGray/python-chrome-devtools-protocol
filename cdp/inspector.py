@@ -13,7 +13,7 @@ import typing
 
 
 def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Disables inspector domain notifications.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -23,7 +23,7 @@ def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables inspector domain notifications.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -35,7 +35,7 @@ def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 @event_class('Inspector.detached')
 @dataclass
 class Detached:
-    '''
+    r'''
     Fired when remote debugging connection is about to be terminated. Contains detach reason.
     '''
     #: The reason why connection has been terminated.
@@ -51,7 +51,7 @@ class Detached:
 @event_class('Inspector.targetCrashed')
 @dataclass
 class TargetCrashed:
-    '''
+    r'''
     Fired when debugging target has crashed
     '''
 
@@ -66,7 +66,7 @@ class TargetCrashed:
 @event_class('Inspector.targetReloadedAfterCrash')
 @dataclass
 class TargetReloadedAfterCrash:
-    '''
+    r'''
     Fired when debugging target has reloaded after crash
     '''
 

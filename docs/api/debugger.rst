@@ -38,6 +38,11 @@ arguments to other commands.
       :undoc-members:
       :exclude-members: from_json, to_json
 
+.. autoclass:: LocationRange
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
 .. autoclass:: CallFrame
       :members:
       :undoc-members:
@@ -54,6 +59,16 @@ arguments to other commands.
       :exclude-members: from_json, to_json
 
 .. autoclass:: BreakLocation
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: ScriptLanguage
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: DebugSymbols
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
@@ -83,6 +98,8 @@ to. For more information, see
 .. autofunction:: get_script_source
 
 .. autofunction:: get_stack_trace
+
+.. autofunction:: get_wasm_bytecode
 
 .. autofunction:: pause
 

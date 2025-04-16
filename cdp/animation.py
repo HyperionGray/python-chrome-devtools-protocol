@@ -17,7 +17,7 @@ from . import runtime
 
 @dataclass
 class Animation:
-    '''
+    r'''
     Animation instance.
     '''
     #: ``Animation``'s id.
@@ -85,7 +85,7 @@ class Animation:
 
 @dataclass
 class AnimationEffect:
-    '''
+    r'''
     AnimationEffect instance
     '''
     #: ``AnimationEffect``'s delay.
@@ -152,7 +152,7 @@ class AnimationEffect:
 
 @dataclass
 class KeyframesRule:
-    '''
+    r'''
     Keyframes Rule
     '''
     #: List of animation keyframes.
@@ -178,7 +178,7 @@ class KeyframesRule:
 
 @dataclass
 class KeyframeStyle:
-    '''
+    r'''
     Keyframe Style
     '''
     #: Keyframe's time offset.
@@ -202,7 +202,7 @@ class KeyframeStyle:
 
 
 def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Disables animation domain notifications.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -212,7 +212,7 @@ def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables animation domain notifications.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -224,7 +224,7 @@ def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 def get_current_time(
         id_: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,float]:
-    '''
+    r'''
     Returns the current time of the an animation.
 
     :param id_: Id of animation.
@@ -241,7 +241,7 @@ def get_current_time(
 
 
 def get_playback_rate() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,float]:
-    '''
+    r'''
     Gets the playback rate of the document timeline.
 
     :returns: Playback rate for animations on page.
@@ -256,7 +256,7 @@ def get_playback_rate() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,float]:
 def release_animations(
         animations: typing.List[str]
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Releases a set of animations to no longer be manipulated.
 
     :param animations: List of animation ids to seek.
@@ -273,7 +273,7 @@ def release_animations(
 def resolve_animation(
         animation_id: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,runtime.RemoteObject]:
-    '''
+    r'''
     Gets the remote object of the Animation.
 
     :param animation_id: Animation id.
@@ -293,7 +293,7 @@ def seek_animations(
         animations: typing.List[str],
         current_time: float
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Seek a set of animations to a particular time within each animation.
 
     :param animations: List of animation ids to seek.
@@ -313,7 +313,7 @@ def set_paused(
         animations: typing.List[str],
         paused: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Sets the paused state of a set of animations.
 
     :param animations: Animations to set the pause state of.
@@ -332,7 +332,7 @@ def set_paused(
 def set_playback_rate(
         playback_rate: float
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Sets the playback rate of the document timeline.
 
     :param playback_rate: Playback rate for animations on page
@@ -351,7 +351,7 @@ def set_timing(
         duration: float,
         delay: float
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Sets the timing of an animation node.
 
     :param animation_id: Animation id.
@@ -372,7 +372,7 @@ def set_timing(
 @event_class('Animation.animationCanceled')
 @dataclass
 class AnimationCanceled:
-    '''
+    r'''
     Event for when an animation has been cancelled.
     '''
     #: Id of the animation that was cancelled.
@@ -388,7 +388,7 @@ class AnimationCanceled:
 @event_class('Animation.animationCreated')
 @dataclass
 class AnimationCreated:
-    '''
+    r'''
     Event for each animation that has been created.
     '''
     #: Id of the animation that was created.
@@ -404,7 +404,7 @@ class AnimationCreated:
 @event_class('Animation.animationStarted')
 @dataclass
 class AnimationStarted:
-    '''
+    r'''
     Event for animation that has been started.
     '''
     #: Animation that was started.
