@@ -617,6 +617,7 @@ class ClientNavigationReason(enum.Enum):
     META_TAG_REFRESH = "metaTagRefresh"
     PAGE_BLOCK_INTERSTITIAL = "pageBlockInterstitial"
     RELOAD = "reload"
+    ANCHOR_CLICK = "anchorClick"
 
     def to_json(self) -> str:
         return self.value
