@@ -14,7 +14,7 @@ import typing
 
 @dataclass
 class GPUDevice:
-    '''
+    r'''
     Describes a single graphics processor (GPU).
     '''
     #: PCI ID of the GPU vendor, if available; 0 otherwise.
@@ -35,6 +35,12 @@ class GPUDevice:
     #: String description of the GPU driver version.
     driver_version: str
 
+    #: Sub sys ID of the GPU, only available on Windows.
+    sub_sys_id: typing.Optional[float] = None
+
+    #: Revision of the GPU, only available on Windows.
+    revision: typing.Optional[float] = None
+
     def to_json(self) -> T_JSON_DICT:
         json: T_JSON_DICT = dict()
         json['vendorId'] = self.vendor_id
@@ -43,6 +49,10 @@ class GPUDevice:
         json['deviceString'] = self.device_string
         json['driverVendor'] = self.driver_vendor
         json['driverVersion'] = self.driver_version
+        if self.sub_sys_id is not None:
+            json['subSysId'] = self.sub_sys_id
+        if self.revision is not None:
+            json['revision'] = self.revision
         return json
 
     @classmethod
@@ -54,12 +64,14 @@ class GPUDevice:
             device_string=str(json['deviceString']),
             driver_vendor=str(json['driverVendor']),
             driver_version=str(json['driverVersion']),
+            sub_sys_id=float(json['subSysId']) if 'subSysId' in json else None,
+            revision=float(json['revision']) if 'revision' in json else None,
         )
 
 
 @dataclass
 class Size:
-    '''
+    r'''
     Describes the width and height dimensions of an entity.
     '''
     #: Width in pixels.
@@ -84,7 +96,7 @@ class Size:
 
 @dataclass
 class VideoDecodeAcceleratorCapability:
-    '''
+    r'''
     Describes a supported video decoding profile with its associated minimum and
     maximum resolutions.
     '''
@@ -115,7 +127,7 @@ class VideoDecodeAcceleratorCapability:
 
 @dataclass
 class VideoEncodeAcceleratorCapability:
-    '''
+    r'''
     Describes a supported video encoding profile with its associated maximum
     resolution and maximum framerate.
     '''
@@ -151,7 +163,7 @@ class VideoEncodeAcceleratorCapability:
 
 
 class SubsamplingFormat(enum.Enum):
-    '''
+    r'''
     YUV subsampling type of the pixels of a given image.
     '''
     YUV420 = "yuv420"
@@ -166,14 +178,30 @@ class SubsamplingFormat(enum.Enum):
         return cls(json)
 
 
+class ImageType(enum.Enum):
+    r'''
+    Image format of a given image.
+    '''
+    JPEG = "jpeg"
+    WEBP = "webp"
+    UNKNOWN = "unknown"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> ImageType:
+        return cls(json)
+
+
 @dataclass
 class ImageDecodeAcceleratorCapability:
-    '''
+    r'''
     Describes a supported image decoding profile with its associated minimum and
     maximum resolutions and subsampling.
     '''
     #: Image coded, e.g. Jpeg.
-    image_type: str
+    image_type: ImageType
 
     #: Maximum supported dimensions of the image in pixels.
     max_dimensions: Size
@@ -186,7 +214,7 @@ class ImageDecodeAcceleratorCapability:
 
     def to_json(self) -> T_JSON_DICT:
         json: T_JSON_DICT = dict()
-        json['imageType'] = self.image_type
+        json['imageType'] = self.image_type.to_json()
         json['maxDimensions'] = self.max_dimensions.to_json()
         json['minDimensions'] = self.min_dimensions.to_json()
         json['subsamplings'] = [i.to_json() for i in self.subsamplings]
@@ -195,7 +223,7 @@ class ImageDecodeAcceleratorCapability:
     @classmethod
     def from_json(cls, json: T_JSON_DICT) -> ImageDecodeAcceleratorCapability:
         return cls(
-            image_type=str(json['imageType']),
+            image_type=ImageType.from_json(json['imageType']),
             max_dimensions=Size.from_json(json['maxDimensions']),
             min_dimensions=Size.from_json(json['minDimensions']),
             subsamplings=[SubsamplingFormat.from_json(i) for i in json['subsamplings']],
@@ -204,7 +232,7 @@ class ImageDecodeAcceleratorCapability:
 
 @dataclass
 class GPUInfo:
-    '''
+    r'''
     Provides information about the GPU(s) on the system.
     '''
     #: The graphics devices on the system. Element 0 is the primary GPU.
@@ -256,7 +284,7 @@ class GPUInfo:
 
 @dataclass
 class ProcessInfo:
-    '''
+    r'''
     Represents process info.
     '''
     #: Specifies process type.
@@ -286,7 +314,7 @@ class ProcessInfo:
 
 
 def get_info() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[GPUInfo, str, str, str]]:
-    '''
+    r'''
     Returns information about the system.
 
     :returns: A tuple with the following items:
@@ -309,7 +337,7 @@ def get_info() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[GPUInfo,
 
 
 def get_process_info() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[ProcessInfo]]:
-    '''
+    r'''
     Returns information about all running processes.
 
     :returns: An array of process info blocks.

@@ -11,7 +11,20 @@ from dataclasses import dataclass
 import enum
 import typing
 
+from . import page
 from . import target
+
+
+class BrowserContextID(str):
+    def to_json(self) -> str:
+        return self
+
+    @classmethod
+    def from_json(cls, json: str) -> BrowserContextID:
+        return cls(json)
+
+    def __repr__(self):
+        return 'BrowserContextID({})'.format(super().__repr__())
 
 
 class WindowID(int):
@@ -27,7 +40,7 @@ class WindowID(int):
 
 
 class WindowState(enum.Enum):
-    '''
+    r'''
     The state of the browser window.
     '''
     NORMAL = "normal"
@@ -45,7 +58,7 @@ class WindowState(enum.Enum):
 
 @dataclass
 class Bounds:
-    '''
+    r'''
     Browser window bounds information
     '''
     #: The offset from the left edge of the screen to the window in pixels.
@@ -93,19 +106,22 @@ class PermissionType(enum.Enum):
     AUDIO_CAPTURE = "audioCapture"
     BACKGROUND_SYNC = "backgroundSync"
     BACKGROUND_FETCH = "backgroundFetch"
-    CLIPBOARD_READ = "clipboardRead"
-    CLIPBOARD_WRITE = "clipboardWrite"
+    CLIPBOARD_READ_WRITE = "clipboardReadWrite"
+    CLIPBOARD_SANITIZED_WRITE = "clipboardSanitizedWrite"
+    DISPLAY_CAPTURE = "displayCapture"
     DURABLE_STORAGE = "durableStorage"
     FLASH = "flash"
     GEOLOCATION = "geolocation"
     MIDI = "midi"
     MIDI_SYSEX = "midiSysex"
+    NFC = "nfc"
     NOTIFICATIONS = "notifications"
     PAYMENT_HANDLER = "paymentHandler"
     PERIODIC_BACKGROUND_SYNC = "periodicBackgroundSync"
     PROTECTED_MEDIA_IDENTIFIER = "protectedMediaIdentifier"
     SENSORS = "sensors"
     VIDEO_CAPTURE = "videoCapture"
+    VIDEO_CAPTURE_PAN_TILT_ZOOM = "videoCapturePanTiltZoom"
     IDLE_DETECTION = "idleDetection"
     WAKE_LOCK_SCREEN = "wakeLockScreen"
     WAKE_LOCK_SYSTEM = "wakeLockSystem"
@@ -118,9 +134,84 @@ class PermissionType(enum.Enum):
         return cls(json)
 
 
+class PermissionSetting(enum.Enum):
+    GRANTED = "granted"
+    DENIED = "denied"
+    PROMPT = "prompt"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> PermissionSetting:
+        return cls(json)
+
+
+@dataclass
+class PermissionDescriptor:
+    r'''
+    Definition of PermissionDescriptor defined in the Permissions API:
+    https://w3c.github.io/permissions/#dictdef-permissiondescriptor.
+    '''
+    #: Name of permission.
+    #: See https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/permissions/permission_descriptor.idl for valid permission names.
+    name: str
+
+    #: For "midi" permission, may also specify sysex control.
+    sysex: typing.Optional[bool] = None
+
+    #: For "push" permission, may specify userVisibleOnly.
+    #: Note that userVisibleOnly = true is the only currently supported type.
+    user_visible_only: typing.Optional[bool] = None
+
+    #: For "clipboard" permission, may specify allowWithoutSanitization.
+    allow_without_sanitization: typing.Optional[bool] = None
+
+    #: For "camera" permission, may specify panTiltZoom.
+    pan_tilt_zoom: typing.Optional[bool] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['name'] = self.name
+        if self.sysex is not None:
+            json['sysex'] = self.sysex
+        if self.user_visible_only is not None:
+            json['userVisibleOnly'] = self.user_visible_only
+        if self.allow_without_sanitization is not None:
+            json['allowWithoutSanitization'] = self.allow_without_sanitization
+        if self.pan_tilt_zoom is not None:
+            json['panTiltZoom'] = self.pan_tilt_zoom
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> PermissionDescriptor:
+        return cls(
+            name=str(json['name']),
+            sysex=bool(json['sysex']) if 'sysex' in json else None,
+            user_visible_only=bool(json['userVisibleOnly']) if 'userVisibleOnly' in json else None,
+            allow_without_sanitization=bool(json['allowWithoutSanitization']) if 'allowWithoutSanitization' in json else None,
+            pan_tilt_zoom=bool(json['panTiltZoom']) if 'panTiltZoom' in json else None,
+        )
+
+
+class BrowserCommandId(enum.Enum):
+    r'''
+    Browser command ids used by executeBrowserCommand.
+    '''
+    OPEN_TAB_SEARCH = "openTabSearch"
+    CLOSE_TAB_SEARCH = "closeTabSearch"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> BrowserCommandId:
+        return cls(json)
+
+
 @dataclass
 class Bucket:
-    '''
+    r'''
     Chrome histogram bucket.
     '''
     #: Minimum value (inclusive).
@@ -150,7 +241,7 @@ class Bucket:
 
 @dataclass
 class Histogram:
-    '''
+    r'''
     Chrome histogram.
     '''
     #: Name.
@@ -183,23 +274,54 @@ class Histogram:
         )
 
 
-def grant_permissions(
-        origin: str,
-        permissions: typing.List[PermissionType],
-        browser_context_id: typing.Optional[target.BrowserContextID] = None
+def set_permission(
+        permission: PermissionDescriptor,
+        setting: PermissionSetting,
+        origin: typing.Optional[str] = None,
+        browser_context_id: typing.Optional[BrowserContextID] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    r'''
+    Set permission settings for given origin.
+
+    **EXPERIMENTAL**
+
+    :param permission: Descriptor of permission to override.
+    :param setting: Setting of the permission.
+    :param origin: *(Optional)* Origin the permission applies to, all origins if not specified.
+    :param browser_context_id: *(Optional)* Context to override. When omitted, default browser context is used.
     '''
+    params: T_JSON_DICT = dict()
+    params['permission'] = permission.to_json()
+    params['setting'] = setting.to_json()
+    if origin is not None:
+        params['origin'] = origin
+    if browser_context_id is not None:
+        params['browserContextId'] = browser_context_id.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Browser.setPermission',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
+def grant_permissions(
+        permissions: typing.List[PermissionType],
+        origin: typing.Optional[str] = None,
+        browser_context_id: typing.Optional[BrowserContextID] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    r'''
     Grant specific permissions to the given origin and reject all others.
 
     **EXPERIMENTAL**
 
-    :param origin:
     :param permissions:
+    :param origin: *(Optional)* Origin the permission applies to, all origins if not specified.
     :param browser_context_id: *(Optional)* BrowserContext to override permissions. When omitted, default browser context is used.
     '''
     params: T_JSON_DICT = dict()
-    params['origin'] = origin
     params['permissions'] = [i.to_json() for i in permissions]
+    if origin is not None:
+        params['origin'] = origin
     if browser_context_id is not None:
         params['browserContextId'] = browser_context_id.to_json()
     cmd_dict: T_JSON_DICT = {
@@ -210,9 +332,9 @@ def grant_permissions(
 
 
 def reset_permissions(
-        browser_context_id: typing.Optional[target.BrowserContextID] = None
+        browser_context_id: typing.Optional[BrowserContextID] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Reset all permission management for all origins.
 
     **EXPERIMENTAL**
@@ -229,8 +351,62 @@ def reset_permissions(
     json = yield cmd_dict
 
 
-def close() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+def set_download_behavior(
+        behavior: str,
+        browser_context_id: typing.Optional[BrowserContextID] = None,
+        download_path: typing.Optional[str] = None,
+        events_enabled: typing.Optional[bool] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    r'''
+    Set the behavior when downloading a file.
+
+    **EXPERIMENTAL**
+
+    :param behavior: Whether to allow all or deny all download requests, or use default Chrome behavior if available (otherwise deny). ``allowAndName`` allows download and names files according to their dowmload guids.
+    :param browser_context_id: *(Optional)* BrowserContext to set download behavior. When omitted, default browser context is used.
+    :param download_path: *(Optional)* The default path to save downloaded files to. This is required if behavior is set to 'allow' or 'allowAndName'.
+    :param events_enabled: *(Optional)* Whether to emit download events (defaults to false).
     '''
+    params: T_JSON_DICT = dict()
+    params['behavior'] = behavior
+    if browser_context_id is not None:
+        params['browserContextId'] = browser_context_id.to_json()
+    if download_path is not None:
+        params['downloadPath'] = download_path
+    if events_enabled is not None:
+        params['eventsEnabled'] = events_enabled
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Browser.setDownloadBehavior',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
+def cancel_download(
+        guid: str,
+        browser_context_id: typing.Optional[BrowserContextID] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    r'''
+    Cancel a download if in progress
+
+    **EXPERIMENTAL**
+
+    :param guid: Global unique identifier of the download.
+    :param browser_context_id: *(Optional)* BrowserContext to perform the action in. When omitted, default browser context is used.
+    '''
+    params: T_JSON_DICT = dict()
+    params['guid'] = guid
+    if browser_context_id is not None:
+        params['browserContextId'] = browser_context_id.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Browser.cancelDownload',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
+def close() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    r'''
     Close browser gracefully.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -240,7 +416,7 @@ def close() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def crash() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Crashes browser on the main thread.
 
     **EXPERIMENTAL**
@@ -252,7 +428,7 @@ def crash() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def crash_gpu_process() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Crashes GPU process.
 
     **EXPERIMENTAL**
@@ -264,7 +440,7 @@ def crash_gpu_process() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def get_version() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[str, str, str, str, str]]:
-    '''
+    r'''
     Returns version information.
 
     :returns: A tuple with the following items:
@@ -289,7 +465,7 @@ def get_version() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[str, 
 
 
 def get_browser_command_line() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[str]]:
-    '''
+    r'''
     Returns the command line switches for the browser process if, and only if
     --enable-automation is on the commandline.
 
@@ -308,7 +484,7 @@ def get_histograms(
         query: typing.Optional[str] = None,
         delta: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[Histogram]]:
-    '''
+    r'''
     Get Chrome histograms.
 
     **EXPERIMENTAL**
@@ -334,7 +510,7 @@ def get_histogram(
         name: str,
         delta: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,Histogram]:
-    '''
+    r'''
     Get a Chrome histogram by name.
 
     **EXPERIMENTAL**
@@ -358,7 +534,7 @@ def get_histogram(
 def get_window_bounds(
         window_id: WindowID
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,Bounds]:
-    '''
+    r'''
     Get position and size of the browser window.
 
     **EXPERIMENTAL**
@@ -379,7 +555,7 @@ def get_window_bounds(
 def get_window_for_target(
         target_id: typing.Optional[target.TargetID] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[WindowID, Bounds]]:
-    '''
+    r'''
     Get the browser window that contains the devtools target.
 
     **EXPERIMENTAL**
@@ -408,7 +584,7 @@ def set_window_bounds(
         window_id: WindowID,
         bounds: Bounds
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Set position and/or size of the browser window.
 
     **EXPERIMENTAL**
@@ -430,13 +606,13 @@ def set_dock_tile(
         badge_label: typing.Optional[str] = None,
         image: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Set dock tile details, platform-specific.
 
     **EXPERIMENTAL**
 
     :param badge_label: *(Optional)*
-    :param image: *(Optional)* Png encoded image.
+    :param image: *(Optional)* Png encoded image. (Encoded as a base64 string when passed over JSON)
     '''
     params: T_JSON_DICT = dict()
     if badge_label is not None:
@@ -448,3 +624,76 @@ def set_dock_tile(
         'params': params,
     }
     json = yield cmd_dict
+
+
+def execute_browser_command(
+        command_id: BrowserCommandId
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    r'''
+    Invoke custom browser commands used by telemetry.
+
+    **EXPERIMENTAL**
+
+    :param command_id:
+    '''
+    params: T_JSON_DICT = dict()
+    params['commandId'] = command_id.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Browser.executeBrowserCommand',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
+@event_class('Browser.downloadWillBegin')
+@dataclass
+class DownloadWillBegin:
+    r'''
+    **EXPERIMENTAL**
+
+    Fired when page is about to start a download.
+    '''
+    #: Id of the frame that caused the download to begin.
+    frame_id: page.FrameId
+    #: Global unique identifier of the download.
+    guid: str
+    #: URL of the resource being downloaded.
+    url: str
+    #: Suggested file name of the resource (the actual name of the file saved on disk may differ).
+    suggested_filename: str
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> DownloadWillBegin:
+        return cls(
+            frame_id=page.FrameId.from_json(json['frameId']),
+            guid=str(json['guid']),
+            url=str(json['url']),
+            suggested_filename=str(json['suggestedFilename'])
+        )
+
+
+@event_class('Browser.downloadProgress')
+@dataclass
+class DownloadProgress:
+    r'''
+    **EXPERIMENTAL**
+
+    Fired when download makes progress. Last call has ``done`` == true.
+    '''
+    #: Global unique identifier of the download.
+    guid: str
+    #: Total expected bytes to download.
+    total_bytes: float
+    #: Total bytes received.
+    received_bytes: float
+    #: Download status.
+    state: str
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> DownloadProgress:
+        return cls(
+            guid=str(json['guid']),
+            total_bytes=float(json['totalBytes']),
+            received_bytes=float(json['receivedBytes']),
+            state=str(json['state'])
+        )

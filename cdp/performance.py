@@ -12,9 +12,12 @@ import enum
 import typing
 
 
+from deprecated.sphinx import deprecated # type: ignore
+
+
 @dataclass
 class Metric:
-    '''
+    r'''
     Run-time execution metric.
     '''
     #: Metric name.
@@ -38,7 +41,7 @@ class Metric:
 
 
 def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Disable collecting and reporting metrics.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -47,23 +50,34 @@ def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     json = yield cmd_dict
 
 
-def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+def enable(
+        time_domain: typing.Optional[str] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    r'''
     Enable collecting and reporting metrics.
+
+    :param time_domain: *(Optional)* Time domain to use for collecting and reporting duration metrics.
     '''
+    params: T_JSON_DICT = dict()
+    if time_domain is not None:
+        params['timeDomain'] = time_domain
     cmd_dict: T_JSON_DICT = {
         'method': 'Performance.enable',
+        'params': params,
     }
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 def set_time_domain(
         time_domain: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Sets time domain to use for collecting and reporting duration metrics.
     Note that this must be called before enabling metrics collection. Calling
     this method while metrics collection is enabled returns an error.
+
+    .. deprecated:: 1.3
 
     **EXPERIMENTAL**
 
@@ -79,7 +93,7 @@ def set_time_domain(
 
 
 def get_metrics() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[Metric]]:
-    '''
+    r'''
     Retrieve current values of run-time metrics.
 
     :returns: Current values for run-time metrics.
@@ -94,7 +108,7 @@ def get_metrics() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[Metric
 @event_class('Performance.metrics')
 @dataclass
 class Metrics:
-    '''
+    r'''
     Current values of the metrics.
     '''
     #: Current values of the metrics.

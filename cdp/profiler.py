@@ -17,7 +17,7 @@ from . import runtime
 
 @dataclass
 class ProfileNode:
-    '''
+    r'''
     Profile node. Holds callsite information, execution statistics and child nodes.
     '''
     #: Unique id of the node.
@@ -67,7 +67,7 @@ class ProfileNode:
 
 @dataclass
 class Profile:
-    '''
+    r'''
     Profile.
     '''
     #: The list of profile nodes. First item is the root node.
@@ -110,7 +110,7 @@ class Profile:
 
 @dataclass
 class PositionTickInfo:
-    '''
+    r'''
     Specifies a number of samples attributed to a certain source position.
     '''
     #: Source line number (1-based).
@@ -135,7 +135,7 @@ class PositionTickInfo:
 
 @dataclass
 class CoverageRange:
-    '''
+    r'''
     Coverage data for a source range.
     '''
     #: JavaScript script source offset for the range start.
@@ -165,7 +165,7 @@ class CoverageRange:
 
 @dataclass
 class FunctionCoverage:
-    '''
+    r'''
     Coverage data for a JavaScript function.
     '''
     #: JavaScript function name.
@@ -195,7 +195,7 @@ class FunctionCoverage:
 
 @dataclass
 class ScriptCoverage:
-    '''
+    r'''
     Coverage data for a JavaScript script.
     '''
     #: JavaScript script id.
@@ -225,7 +225,7 @@ class ScriptCoverage:
 
 @dataclass
 class TypeObject:
-    '''
+    r'''
     Describes a type collected during runtime.
     '''
     #: Name of a type collected with type profiling.
@@ -245,7 +245,7 @@ class TypeObject:
 
 @dataclass
 class TypeProfileEntry:
-    '''
+    r'''
     Source offset and types for a parameter or return value.
     '''
     #: Source offset of the parameter or end of function for return values.
@@ -270,7 +270,7 @@ class TypeProfileEntry:
 
 @dataclass
 class ScriptTypeProfile:
-    '''
+    r'''
     Type profile data collected during runtime for a JavaScript script.
     '''
     #: JavaScript script id.
@@ -315,7 +315,7 @@ def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def get_best_effort_coverage() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[ScriptCoverage]]:
-    '''
+    r'''
     Collect coverage data for the current isolate. The coverage data may be incomplete due to
     garbage collection.
 
@@ -331,7 +331,7 @@ def get_best_effort_coverage() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typin
 def set_sampling_interval(
         interval: int
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Changes CPU profiler sampling interval. Must be called before CPU profiles recording started.
 
     :param interval: New sampling interval in microseconds.
@@ -355,30 +355,36 @@ def start() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 def start_precise_coverage(
         call_count: typing.Optional[bool] = None,
-        detailed: typing.Optional[bool] = None
-    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+        detailed: typing.Optional[bool] = None,
+        allow_triggered_updates: typing.Optional[bool] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,float]:
+    r'''
     Enable precise code coverage. Coverage data for JavaScript executed before enabling precise code
     coverage may be incomplete. Enabling prevents running optimized code and resets execution
     counters.
 
     :param call_count: *(Optional)* Collect accurate call counts beyond simple 'covered' or 'not covered'.
     :param detailed: *(Optional)* Collect block-based coverage.
+    :param allow_triggered_updates: *(Optional)* Allow the backend to send updates on its own initiative
+    :returns: Monotonically increasing time (in seconds) when the coverage update was taken in the backend.
     '''
     params: T_JSON_DICT = dict()
     if call_count is not None:
         params['callCount'] = call_count
     if detailed is not None:
         params['detailed'] = detailed
+    if allow_triggered_updates is not None:
+        params['allowTriggeredUpdates'] = allow_triggered_updates
     cmd_dict: T_JSON_DICT = {
         'method': 'Profiler.startPreciseCoverage',
         'params': params,
     }
     json = yield cmd_dict
+    return float(json['timestamp'])
 
 
 def start_type_profile() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enable type profile.
 
     **EXPERIMENTAL**
@@ -390,7 +396,7 @@ def start_type_profile() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def stop() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,Profile]:
-    '''
+    r'''
 
 
     :returns: Recorded profile.
@@ -403,7 +409,7 @@ def stop() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,Profile]:
 
 
 def stop_precise_coverage() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Disable precise code coverage. Disabling releases unnecessary execution count records and allows
     executing optimized code.
     '''
@@ -414,7 +420,7 @@ def stop_precise_coverage() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def stop_type_profile() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Disable type profile. Disabling releases type profile data collected so far.
 
     **EXPERIMENTAL**
@@ -425,22 +431,28 @@ def stop_type_profile() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     json = yield cmd_dict
 
 
-def take_precise_coverage() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[ScriptCoverage]]:
-    '''
+def take_precise_coverage() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.List[ScriptCoverage], float]]:
+    r'''
     Collect coverage data for the current isolate, and resets execution counters. Precise code
     coverage needs to have started.
 
-    :returns: Coverage data for the current isolate.
+    :returns: A tuple with the following items:
+
+        0. **result** - Coverage data for the current isolate.
+        1. **timestamp** - Monotonically increasing time (in seconds) when the coverage update was taken in the backend.
     '''
     cmd_dict: T_JSON_DICT = {
         'method': 'Profiler.takePreciseCoverage',
     }
     json = yield cmd_dict
-    return [ScriptCoverage.from_json(i) for i in json['result']]
+    return (
+        [ScriptCoverage.from_json(i) for i in json['result']],
+        float(json['timestamp'])
+    )
 
 
 def take_type_profile() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[ScriptTypeProfile]]:
-    '''
+    r'''
     Collect type profile.
 
     **EXPERIMENTAL**
@@ -477,7 +489,7 @@ class ConsoleProfileFinished:
 @event_class('Profiler.consoleProfileStarted')
 @dataclass
 class ConsoleProfileStarted:
-    '''
+    r'''
     Sent when new profile recording is started using console.profile() call.
     '''
     id_: str
@@ -492,4 +504,31 @@ class ConsoleProfileStarted:
             id_=str(json['id']),
             location=debugger.Location.from_json(json['location']),
             title=str(json['title']) if 'title' in json else None
+        )
+
+
+@event_class('Profiler.preciseCoverageDeltaUpdate')
+@dataclass
+class PreciseCoverageDeltaUpdate:
+    r'''
+    **EXPERIMENTAL**
+
+    Reports coverage delta since the last poll (either from an event like this, or from
+    ``takePreciseCoverage`` for the current isolate. May only be sent if precise code
+    coverage has been started. This event can be trigged by the embedder to, for example,
+    trigger collection of coverage data immediately at a certain point in time.
+    '''
+    #: Monotonically increasing time (in seconds) when the coverage update was taken in the backend.
+    timestamp: float
+    #: Identifier for distinguishing coverage events.
+    occasion: str
+    #: Coverage data for the current isolate.
+    result: typing.List[ScriptCoverage]
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> PreciseCoverageDeltaUpdate:
+        return cls(
+            timestamp=float(json['timestamp']),
+            occasion=str(json['occasion']),
+            result=[ScriptCoverage.from_json(i) for i in json['result']]
         )

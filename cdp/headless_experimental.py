@@ -12,9 +12,12 @@ import enum
 import typing
 
 
+from deprecated.sphinx import deprecated # type: ignore
+
+
 @dataclass
 class ScreenshotParams:
-    '''
+    r'''
     Encoding options for a screenshot.
     '''
     #: Image compression format (defaults to png).
@@ -45,7 +48,7 @@ def begin_frame(
         no_display_updates: typing.Optional[bool] = None,
         screenshot: typing.Optional[ScreenshotParams] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[bool, typing.Optional[str]]]:
-    '''
+    r'''
     Sends a BeginFrame to the target and returns when the frame was completed. Optionally captures a
     screenshot from the resulting frame. Requires that the target was created with enabled
     BeginFrameControl. Designed for use with --run-all-compositor-stages-before-draw, see also
@@ -58,7 +61,7 @@ def begin_frame(
     :returns: A tuple with the following items:
 
         0. **hasDamage** - Whether the BeginFrame resulted in damage and, thus, a new frame was committed to the display. Reported for diagnostic uses, may be removed in the future.
-        1. **screenshotData** - *(Optional)* Base64-encoded image data of the screenshot, if one was requested and successfully taken.
+        1. **screenshotData** - *(Optional)* Base64-encoded image data of the screenshot, if one was requested and successfully taken. (Encoded as a base64 string when passed over JSON)
     '''
     params: T_JSON_DICT = dict()
     if frame_time_ticks is not None:
@@ -81,7 +84,7 @@ def begin_frame(
 
 
 def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Disables headless events for the target.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -91,7 +94,7 @@ def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables headless events for the target.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -100,11 +103,14 @@ def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 @event_class('HeadlessExperimental.needsBeginFramesChanged')
 @dataclass
 class NeedsBeginFramesChanged:
-    '''
+    r'''
     Issued when the target starts or stops needing BeginFrames.
+    Deprecated. Issue beginFrame unconditionally instead and use result from
+    beginFrame to detect whether the frames were suppressed.
     '''
     #: True if BeginFrames are needed, false otherwise.
     needs_begin_frames: bool

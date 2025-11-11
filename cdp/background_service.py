@@ -16,7 +16,7 @@ from . import service_worker
 
 
 class ServiceName(enum.Enum):
-    '''
+    r'''
     The Background Service that will be associated with the commands/events.
     Every Background Service operates independently, but they share the same
     API.
@@ -26,6 +26,7 @@ class ServiceName(enum.Enum):
     PUSH_MESSAGING = "pushMessaging"
     NOTIFICATIONS = "notifications"
     PAYMENT_HANDLER = "paymentHandler"
+    PERIODIC_BACKGROUND_SYNC = "periodicBackgroundSync"
 
     def to_json(self) -> str:
         return self.value
@@ -37,7 +38,7 @@ class ServiceName(enum.Enum):
 
 @dataclass
 class EventMetadata:
-    '''
+    r'''
     A key-value pair for additional event information to pass along.
     '''
     key: str
@@ -108,7 +109,7 @@ class BackgroundServiceEvent:
 def start_observing(
         service: ServiceName
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables event updates for the service.
 
     :param service:
@@ -125,7 +126,7 @@ def start_observing(
 def stop_observing(
         service: ServiceName
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Disables event updates for the service.
 
     :param service:
@@ -143,7 +144,7 @@ def set_recording(
         should_record: bool,
         service: ServiceName
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Set the recording state for the service.
 
     :param should_record:
@@ -162,7 +163,7 @@ def set_recording(
 def clear_events(
         service: ServiceName
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Clears all stored data for the service.
 
     :param service:
@@ -179,7 +180,7 @@ def clear_events(
 @event_class('BackgroundService.recordingStateChanged')
 @dataclass
 class RecordingStateChanged:
-    '''
+    r'''
     Called when the recording state for the service has been updated.
     '''
     is_recording: bool
@@ -196,7 +197,7 @@ class RecordingStateChanged:
 @event_class('BackgroundService.backgroundServiceEventReceived')
 @dataclass
 class BackgroundServiceEventReceived:
-    '''
+    r'''
     Called with all existing backgroundServiceEvents when enabled, and all new
     events afterwards if enabled and recording.
     '''

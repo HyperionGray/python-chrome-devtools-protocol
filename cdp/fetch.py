@@ -3,7 +3,7 @@
 # This file is generated from the CDP specification. If you need to make
 # changes, edit the generator and regenerate all of the modules.
 #
-# CDP domain: Fetch (experimental)
+# CDP domain: Fetch
 
 from __future__ import annotations
 from cdp.util import event_class, T_JSON_DICT
@@ -17,7 +17,7 @@ from . import page
 
 
 class RequestId(str):
-    '''
+    r'''
     Unique request identifier.
     '''
     def to_json(self) -> str:
@@ -32,10 +32,10 @@ class RequestId(str):
 
 
 class RequestStage(enum.Enum):
-    '''
+    r'''
     Stages of the request to handle. Request will intercept before the request is
     sent. Response will intercept after the response is received (but before response
-    body is received.
+    body is received).
     '''
     REQUEST = "Request"
     RESPONSE = "Response"
@@ -50,14 +50,14 @@ class RequestStage(enum.Enum):
 
 @dataclass
 class RequestPattern:
-    #: Wildcards ('*' -> zero or more, '?' -> exactly one) are allowed. Escape character is
-    #: backslash. Omitting is equivalent to "*".
+    #: Wildcards (``'*'`` -> zero or more, ``'?'`` -> exactly one) are allowed. Escape character is
+    #: backslash. Omitting is equivalent to ``"*"``.
     url_pattern: typing.Optional[str] = None
 
     #: If set, only requests for matching resource types will be intercepted.
     resource_type: typing.Optional[network.ResourceType] = None
 
-    #: Stage at wich to begin intercepting requests. Default is Request.
+    #: Stage at which to begin intercepting requests. Default is Request.
     request_stage: typing.Optional[RequestStage] = None
 
     def to_json(self) -> T_JSON_DICT:
@@ -81,7 +81,7 @@ class RequestPattern:
 
 @dataclass
 class HeaderEntry:
-    '''
+    r'''
     Response HTTP header entry
     '''
     name: str
@@ -104,7 +104,7 @@ class HeaderEntry:
 
 @dataclass
 class AuthChallenge:
-    '''
+    r'''
     Authorization challenge for HTTP status code 401 or 407.
     '''
     #: Origin of the challenger.
@@ -140,7 +140,7 @@ class AuthChallenge:
 
 @dataclass
 class AuthChallengeResponse:
-    '''
+    r'''
     Response to an AuthChallenge.
     '''
     #: The decision on what to do in response to the authorization challenge.  Default means
@@ -175,7 +175,7 @@ class AuthChallengeResponse:
 
 
 def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Disables the fetch domain.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -188,7 +188,7 @@ def enable(
         patterns: typing.Optional[typing.List[RequestPattern]] = None,
         handle_auth_requests: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables issuing of requestPaused events. A request will be paused until client
     calls one of failRequest, fulfillRequest or continueRequest/continueWithAuth.
 
@@ -211,7 +211,7 @@ def fail_request(
         request_id: RequestId,
         error_reason: network.ErrorReason
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Causes the request to fail with specified reason.
 
     :param request_id: An id the client received in requestPaused event.
@@ -230,23 +230,28 @@ def fail_request(
 def fulfill_request(
         request_id: RequestId,
         response_code: int,
-        response_headers: typing.List[HeaderEntry],
+        response_headers: typing.Optional[typing.List[HeaderEntry]] = None,
+        binary_response_headers: typing.Optional[str] = None,
         body: typing.Optional[str] = None,
         response_phrase: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Provides response to the request.
 
     :param request_id: An id the client received in requestPaused event.
     :param response_code: An HTTP response code.
-    :param response_headers: Response headers.
-    :param body: *(Optional)* A response body.
-    :param response_phrase: *(Optional)* A textual representation of responseCode. If absent, a standard phrase mathcing responseCode is used.
+    :param response_headers: *(Optional)* Response headers.
+    :param binary_response_headers: *(Optional)* Alternative way of specifying response headers as a \0-separated series of name: value pairs. Prefer the above method unless you need to represent some non-UTF8 values that can't be transmitted over the protocol as text. (Encoded as a base64 string when passed over JSON)
+    :param body: *(Optional)* A response body. If absent, original response body will be used if the request is intercepted at the response stage and empty body will be used if the request is intercepted at the request stage. (Encoded as a base64 string when passed over JSON)
+    :param response_phrase: *(Optional)* A textual representation of responseCode. If absent, a standard phrase matching responseCode is used.
     '''
     params: T_JSON_DICT = dict()
     params['requestId'] = request_id.to_json()
     params['responseCode'] = response_code
-    params['responseHeaders'] = [i.to_json() for i in response_headers]
+    if response_headers is not None:
+        params['responseHeaders'] = [i.to_json() for i in response_headers]
+    if binary_response_headers is not None:
+        params['binaryResponseHeaders'] = binary_response_headers
     if body is not None:
         params['body'] = body
     if response_phrase is not None:
@@ -263,16 +268,18 @@ def continue_request(
         url: typing.Optional[str] = None,
         method: typing.Optional[str] = None,
         post_data: typing.Optional[str] = None,
-        headers: typing.Optional[typing.List[HeaderEntry]] = None
+        headers: typing.Optional[typing.List[HeaderEntry]] = None,
+        intercept_response: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Continues the request, optionally modifying some of its parameters.
 
     :param request_id: An id the client received in requestPaused event.
     :param url: *(Optional)* If set, the request url will be modified in a way that's not observable by page.
     :param method: *(Optional)* If set, the request method is overridden.
-    :param post_data: *(Optional)* If set, overrides the post data in the request.
-    :param headers: *(Optional)* If set, overrides the request headrts.
+    :param post_data: *(Optional)* If set, overrides the post data in the request. (Encoded as a base64 string when passed over JSON)
+    :param headers: *(Optional)* If set, overrides the request headers.
+    :param intercept_response: **(EXPERIMENTAL)** *(Optional)* If set, overrides response interception behavior for this request.
     '''
     params: T_JSON_DICT = dict()
     params['requestId'] = request_id.to_json()
@@ -284,6 +291,8 @@ def continue_request(
         params['postData'] = post_data
     if headers is not None:
         params['headers'] = [i.to_json() for i in headers]
+    if intercept_response is not None:
+        params['interceptResponse'] = intercept_response
     cmd_dict: T_JSON_DICT = {
         'method': 'Fetch.continueRequest',
         'params': params,
@@ -295,7 +304,7 @@ def continue_with_auth(
         request_id: RequestId,
         auth_challenge_response: AuthChallengeResponse
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Continues a request supplying authChallengeResponse following authRequired event.
 
     :param request_id: An id the client received in authRequired event.
@@ -311,10 +320,47 @@ def continue_with_auth(
     json = yield cmd_dict
 
 
+def continue_response(
+        request_id: RequestId,
+        response_code: typing.Optional[int] = None,
+        response_phrase: typing.Optional[str] = None,
+        response_headers: typing.Optional[typing.List[HeaderEntry]] = None,
+        binary_response_headers: typing.Optional[str] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    r'''
+    Continues loading of the paused response, optionally modifying the
+    response headers. If either responseCode or headers are modified, all of them
+    must be present.
+
+    **EXPERIMENTAL**
+
+    :param request_id: An id the client received in requestPaused event.
+    :param response_code: *(Optional)* An HTTP response code. If absent, original response code will be used.
+    :param response_phrase: *(Optional)* A textual representation of responseCode. If absent, a standard phrase matching responseCode is used.
+    :param response_headers: *(Optional)* Response headers. If absent, original response headers will be used.
+    :param binary_response_headers: *(Optional)* Alternative way of specifying response headers as a \0-separated series of name: value pairs. Prefer the above method unless you need to represent some non-UTF8 values that can't be transmitted over the protocol as text. (Encoded as a base64 string when passed over JSON)
+    '''
+    params: T_JSON_DICT = dict()
+    params['requestId'] = request_id.to_json()
+    if response_code is not None:
+        params['responseCode'] = response_code
+    if response_phrase is not None:
+        params['responsePhrase'] = response_phrase
+    if response_headers is not None:
+        params['responseHeaders'] = [i.to_json() for i in response_headers]
+    if binary_response_headers is not None:
+        params['binaryResponseHeaders'] = binary_response_headers
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Fetch.continueResponse',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
 def get_response_body(
         request_id: RequestId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[str, bool]]:
-    '''
+    r'''
     Causes the body of the response to be received from the server and
     returned as a single string. May only be issued for a request that
     is paused in the Response stage and is mutually exclusive with
@@ -344,7 +390,7 @@ def get_response_body(
 def take_response_body_as_stream(
         request_id: RequestId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,io.StreamHandle]:
-    '''
+    r'''
     Returns a handle to the stream representing the response body.
     The request must be paused in the HeadersReceived stage.
     Note that after this command the request can't be continued
@@ -372,7 +418,7 @@ def take_response_body_as_stream(
 @event_class('Fetch.requestPaused')
 @dataclass
 class RequestPaused:
-    '''
+    r'''
     Issued when the domain is enabled and the request URL matches the
     specified filter. The request is paused until the client responds
     with one of continueRequest, failRequest or fulfillRequest.
@@ -392,6 +438,8 @@ class RequestPaused:
     response_error_reason: typing.Optional[network.ErrorReason]
     #: Response code if intercepted at response stage.
     response_status_code: typing.Optional[int]
+    #: Response status text if intercepted at response stage.
+    response_status_text: typing.Optional[str]
     #: Response headers if intercepted at the response stage.
     response_headers: typing.Optional[typing.List[HeaderEntry]]
     #: If the intercepted request had a corresponding Network.requestWillBeSent event fired for it,
@@ -407,6 +455,7 @@ class RequestPaused:
             resource_type=network.ResourceType.from_json(json['resourceType']),
             response_error_reason=network.ErrorReason.from_json(json['responseErrorReason']) if 'responseErrorReason' in json else None,
             response_status_code=int(json['responseStatusCode']) if 'responseStatusCode' in json else None,
+            response_status_text=str(json['responseStatusText']) if 'responseStatusText' in json else None,
             response_headers=[HeaderEntry.from_json(i) for i in json['responseHeaders']] if 'responseHeaders' in json else None,
             network_id=RequestId.from_json(json['networkId']) if 'networkId' in json else None
         )
@@ -415,7 +464,7 @@ class RequestPaused:
 @event_class('Fetch.authRequired')
 @dataclass
 class AuthRequired:
-    '''
+    r'''
     Issued when the domain is enabled with handleAuthRequests set to true.
     The request is paused until client responds with continueWithAuth.
     '''

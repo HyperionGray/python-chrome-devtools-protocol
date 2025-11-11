@@ -13,7 +13,7 @@ import typing
 
 
 class CacheId(str):
-    '''
+    r'''
     Unique identifier of the Cache object.
     '''
     def to_json(self) -> str:
@@ -28,7 +28,7 @@ class CacheId(str):
 
 
 class CachedResponseType(enum.Enum):
-    '''
+    r'''
     type of HTTP response cached
     '''
     BASIC = "basic"
@@ -48,7 +48,7 @@ class CachedResponseType(enum.Enum):
 
 @dataclass
 class DataEntry:
-    '''
+    r'''
     Data entry.
     '''
     #: Request URL.
@@ -103,7 +103,7 @@ class DataEntry:
 
 @dataclass
 class Cache:
-    '''
+    r'''
     Cache identifier.
     '''
     #: An opaque unique id of the cache.
@@ -153,10 +153,10 @@ class Header:
 
 @dataclass
 class CachedResponse:
-    '''
+    r'''
     Cached response
     '''
-    #: Entry content, base64-encoded.
+    #: Entry content, base64-encoded. (Encoded as a base64 string when passed over JSON)
     body: str
 
     def to_json(self) -> T_JSON_DICT:
@@ -174,7 +174,7 @@ class CachedResponse:
 def delete_cache(
         cache_id: CacheId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Deletes a cache.
 
     :param cache_id: Id of cache for deletion.
@@ -192,7 +192,7 @@ def delete_entry(
         cache_id: CacheId,
         request: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Deletes a cache entry.
 
     :param cache_id: Id of cache where the entry will be deleted.
@@ -211,7 +211,7 @@ def delete_entry(
 def request_cache_names(
         security_origin: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[Cache]]:
-    '''
+    r'''
     Requests cache names.
 
     :param security_origin: Security origin.
@@ -232,7 +232,7 @@ def request_cached_response(
         request_url: str,
         request_headers: typing.List[Header]
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,CachedResponse]:
-    '''
+    r'''
     Fetches cache entry.
 
     :param cache_id: Id of cache that contains the entry.
@@ -254,16 +254,16 @@ def request_cached_response(
 
 def request_entries(
         cache_id: CacheId,
-        skip_count: int,
-        page_size: int,
+        skip_count: typing.Optional[int] = None,
+        page_size: typing.Optional[int] = None,
         path_filter: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.List[DataEntry], float]]:
-    '''
+    r'''
     Requests data from cache.
 
     :param cache_id: ID of cache to get entries from.
-    :param skip_count: Number of records to skip.
-    :param page_size: Number of records to fetch.
+    :param skip_count: *(Optional)* Number of records to skip.
+    :param page_size: *(Optional)* Number of records to fetch.
     :param path_filter: *(Optional)* If present, only return the entries containing this substring in the path
     :returns: A tuple with the following items:
 
@@ -272,8 +272,10 @@ def request_entries(
     '''
     params: T_JSON_DICT = dict()
     params['cacheId'] = cache_id.to_json()
-    params['skipCount'] = skip_count
-    params['pageSize'] = page_size
+    if skip_count is not None:
+        params['skipCount'] = skip_count
+    if page_size is not None:
+        params['pageSize'] = page_size
     if path_filter is not None:
         params['pathFilter'] = path_filter
     cmd_dict: T_JSON_DICT = {

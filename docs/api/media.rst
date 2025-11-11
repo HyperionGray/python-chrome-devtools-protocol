@@ -1,7 +1,11 @@
-Profiler
-========
+Media
+=====
 
-.. module:: cdp.profiler
+This domain allows detailed inspection of media elements
+
+*This CDP domain is experimental.*
+
+.. module:: cdp.media
 
 * Types_
 * Commands_
@@ -15,47 +19,32 @@ yourself. Instead, the API creates objects for you as return
 values from commands, and then you can use those objects as
 arguments to other commands.
 
-.. autoclass:: ProfileNode
+.. autoclass:: PlayerId
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
 
-.. autoclass:: Profile
+.. autoclass:: Timestamp
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
 
-.. autoclass:: PositionTickInfo
+.. autoclass:: PlayerMessage
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
 
-.. autoclass:: CoverageRange
+.. autoclass:: PlayerProperty
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
 
-.. autoclass:: FunctionCoverage
+.. autoclass:: PlayerEvent
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
 
-.. autoclass:: ScriptCoverage
-      :members:
-      :undoc-members:
-      :exclude-members: from_json, to_json
-
-.. autoclass:: TypeObject
-      :members:
-      :undoc-members:
-      :exclude-members: from_json, to_json
-
-.. autoclass:: TypeProfileEntry
-      :members:
-      :undoc-members:
-      :exclude-members: from_json, to_json
-
-.. autoclass:: ScriptTypeProfile
+.. autoclass:: PlayerError
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
@@ -76,26 +65,6 @@ to. For more information, see
 
 .. autofunction:: enable
 
-.. autofunction:: get_best_effort_coverage
-
-.. autofunction:: set_sampling_interval
-
-.. autofunction:: start
-
-.. autofunction:: start_precise_coverage
-
-.. autofunction:: start_type_profile
-
-.. autofunction:: stop
-
-.. autofunction:: stop_precise_coverage
-
-.. autofunction:: stop_type_profile
-
-.. autofunction:: take_precise_coverage
-
-.. autofunction:: take_type_profile
-
 Events
 ------
 
@@ -103,17 +72,27 @@ Generally, you do not need to instantiate CDP events
 yourself. Instead, the API creates events for you and then
 you use the event's attributes.
 
-.. autoclass:: ConsoleProfileFinished
+.. autoclass:: PlayerPropertiesChanged
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
 
-.. autoclass:: ConsoleProfileStarted
+.. autoclass:: PlayerEventsAdded
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
 
-.. autoclass:: PreciseCoverageDeltaUpdate
+.. autoclass:: PlayerMessagesLogged
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: PlayerErrorsRaised
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: PlayersCreated
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json

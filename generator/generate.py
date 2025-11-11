@@ -90,7 +90,7 @@ def docstring(description: typing.Optional[str]) -> str:
         return ''
 
     description = escape_backticks(description)
-    return dedent("'''\n{}\n'''").format(description)
+    return dedent("r'''\n{}\n'''").format(description)
 
 
 def is_builtin(name: str) -> bool:
@@ -596,7 +596,8 @@ class CdpCommand:
         if self.parameters:
             code += '\n'
             code += indent(
-                ',\n'.join(p.generate_code() for p in self.parameters), 8)
+                ',\n'.join([p.generate_code() for p in self.parameters if not p.optional] + [p.generate_code() for p in self.parameters if p.optional]),
+                8)
             code += '\n'
             code += indent(ret, 4)
         else:
@@ -951,6 +952,38 @@ def generate_docs(docs_path, domains):
             f.write(domain.generate_sphinx())
 
 
+def patchCDP(domains):
+    '''Patch up CDP errors. It's easier to patch that here than it is to modify the generator code.'''
+
+    # 1. DOM includes an erroneous $ref that refers to itself.
+    # 2. Page includes an event with an extraneous backtick in the description.
+    # 3. Network.requestWillBeSent.redirectHasExtraInfo is not marked as optional but it is not present in all events
+    # 4. Network.responseReceived.hasExtraInfo is not marked as optional but it is not present in all events
+    for domain in domains:
+        if domain.domain == 'DOM':
+            for cmd in domain.commands:
+                if cmd.name == 'resolveNode':
+                    # Patch 1
+                    cmd.parameters[1].ref = 'BackendNodeId'
+        elif domain.domain == 'Page':
+            for event in domain.events:
+                if event.name == 'screencastVisibilityChanged':
+                    # Patch 2
+                    event.description = event.description.replace('`', '')
+        elif domain.domain == 'Network':
+            for event in domain.events:
+                if event.name == 'requestWillBeSent':
+                    for param in event.parameters:
+                        if param.name == 'redirectHasExtraInfo':
+                            # Patch 3
+                            param.optional = True
+                if event.name == 'responseReceived':
+                    for param in event.parameters:
+                        if param.name == 'hasExtraInfo':
+                            # Patch 4
+                            param.optional = True
+
+
 def main():
     ''' Main entry point. '''
     here = Path(__file__).parent.resolve()
@@ -973,21 +1006,7 @@ def main():
         domains.extend(parse(json_path, output_path))
     domains.sort(key=operator.attrgetter('domain'))
 
-    # Patch up CDP errors. It's easier to patch that here than it is to modify
-    # the generator code.
-    # 1. DOM includes an erroneous $ref that refers to itself.
-    # 2. Page includes an event with an extraneous backtick in the description.
-    for domain in domains:
-        if domain.domain == 'DOM':
-            for cmd in domain.commands:
-                if cmd.name == 'resolveNode':
-                    # Patch 1
-                    cmd.parameters[1].ref = 'BackendNodeId'
-        elif domain.domain == 'Page':
-            for event in domain.events:
-                if event.name == 'screencastVisibilityChanged':
-                    # Patch 2
-                    event.description = event.description.replace('`', '')
+    patchCDP(domains)
 
     for domain in domains:
         logger.info('Generating module: %s → %s.py', domain.domain,

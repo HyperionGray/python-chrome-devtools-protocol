@@ -12,11 +12,12 @@ import enum
 import typing
 
 from . import dom
+from . import page
 from . import runtime
 
 
 class AXNodeId(str):
-    '''
+    r'''
     Unique accessibility node identifier.
     '''
     def to_json(self) -> str:
@@ -31,7 +32,7 @@ class AXNodeId(str):
 
 
 class AXValueType(enum.Enum):
-    '''
+    r'''
     Enum of possible property types.
     '''
     BOOLEAN = "boolean"
@@ -61,7 +62,7 @@ class AXValueType(enum.Enum):
 
 
 class AXValueSourceType(enum.Enum):
-    '''
+    r'''
     Enum of possible property sources.
     '''
     ATTRIBUTE = "attribute"
@@ -80,14 +81,16 @@ class AXValueSourceType(enum.Enum):
 
 
 class AXValueNativeSourceType(enum.Enum):
-    '''
+    r'''
     Enum of possible native property sources (as a subtype of a particular AXValueSourceType).
     '''
+    DESCRIPTION = "description"
     FIGCAPTION = "figcaption"
     LABEL = "label"
     LABELFOR = "labelfor"
     LABELWRAPPED = "labelwrapped"
     LEGEND = "legend"
+    RUBYANNOTATION = "rubyannotation"
     TABLECAPTION = "tablecaption"
     TITLE = "title"
     OTHER = "other"
@@ -102,7 +105,7 @@ class AXValueNativeSourceType(enum.Enum):
 
 @dataclass
 class AXValueSource:
-    '''
+    r'''
     A single source for a computed AX property.
     '''
     #: What type of source this is.
@@ -221,7 +224,7 @@ class AXProperty:
 
 @dataclass
 class AXValue:
-    '''
+    r'''
     A single computed AX property.
     '''
     #: The type of this value.
@@ -258,7 +261,7 @@ class AXValue:
 
 
 class AXPropertyName(enum.Enum):
-    '''
+    r'''
     Values of AXProperty name:
     - from 'busy' to 'roledescription': states which apply to every AX node
     - from 'live' to 'root': attributes which apply to nodes in live regions
@@ -316,7 +319,7 @@ class AXPropertyName(enum.Enum):
 
 @dataclass
 class AXNode:
-    '''
+    r'''
     A node in the accessibility tree.
     '''
     #: Unique identifier for this node.
@@ -343,11 +346,17 @@ class AXNode:
     #: All other properties
     properties: typing.Optional[typing.List[AXProperty]] = None
 
+    #: ID for this node's parent.
+    parent_id: typing.Optional[AXNodeId] = None
+
     #: IDs for each of this node's child nodes.
     child_ids: typing.Optional[typing.List[AXNodeId]] = None
 
     #: The backend ID for the associated DOM node, if any.
     backend_dom_node_id: typing.Optional[dom.BackendNodeId] = None
+
+    #: The frame ID for the frame associated with this nodes document.
+    frame_id: typing.Optional[page.FrameId] = None
 
     def to_json(self) -> T_JSON_DICT:
         json: T_JSON_DICT = dict()
@@ -365,10 +374,14 @@ class AXNode:
             json['value'] = self.value.to_json()
         if self.properties is not None:
             json['properties'] = [i.to_json() for i in self.properties]
+        if self.parent_id is not None:
+            json['parentId'] = self.parent_id.to_json()
         if self.child_ids is not None:
             json['childIds'] = [i.to_json() for i in self.child_ids]
         if self.backend_dom_node_id is not None:
             json['backendDOMNodeId'] = self.backend_dom_node_id.to_json()
+        if self.frame_id is not None:
+            json['frameId'] = self.frame_id.to_json()
         return json
 
     @classmethod
@@ -382,13 +395,15 @@ class AXNode:
             description=AXValue.from_json(json['description']) if 'description' in json else None,
             value=AXValue.from_json(json['value']) if 'value' in json else None,
             properties=[AXProperty.from_json(i) for i in json['properties']] if 'properties' in json else None,
+            parent_id=AXNodeId.from_json(json['parentId']) if 'parentId' in json else None,
             child_ids=[AXNodeId.from_json(i) for i in json['childIds']] if 'childIds' in json else None,
             backend_dom_node_id=dom.BackendNodeId.from_json(json['backendDOMNodeId']) if 'backendDOMNodeId' in json else None,
+            frame_id=page.FrameId.from_json(json['frameId']) if 'frameId' in json else None,
         )
 
 
 def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Disables the accessibility domain.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -398,7 +413,7 @@ def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables the accessibility domain which causes ``AXNodeId``'s to remain consistent between method calls.
     This turns on accessibility for the page, which can impact performance until accessibility is disabled.
     '''
@@ -414,7 +429,7 @@ def get_partial_ax_tree(
         object_id: typing.Optional[runtime.RemoteObjectId] = None,
         fetch_relatives: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[AXNode]]:
-    '''
+    r'''
     Fetches the accessibility node and partial accessibility tree for this DOM node, if it exists.
 
     **EXPERIMENTAL**
@@ -442,16 +457,190 @@ def get_partial_ax_tree(
     return [AXNode.from_json(i) for i in json['nodes']]
 
 
-def get_full_ax_tree() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[AXNode]]:
-    '''
-    Fetches the entire accessibility tree
+def get_full_ax_tree(
+        depth: typing.Optional[int] = None,
+        max_depth: typing.Optional[int] = None,
+        frame_id: typing.Optional[page.FrameId] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[AXNode]]:
+    r'''
+    Fetches the entire accessibility tree for the root Document
 
     **EXPERIMENTAL**
 
+    :param depth: *(Optional)* The maximum depth at which descendants of the root node should be retrieved. If omitted, the full tree is returned.
+    :param max_depth: **(DEPRECATED)** *(Optional)* Deprecated. This parameter has been renamed to ```depth```. If depth is not provided, max_depth will be used.
+    :param frame_id: *(Optional)* The frame for whose document the AX tree should be retrieved. If omited, the root frame is used.
     :returns: 
     '''
+    params: T_JSON_DICT = dict()
+    if depth is not None:
+        params['depth'] = depth
+    if max_depth is not None:
+        params['max_depth'] = max_depth
+    if frame_id is not None:
+        params['frameId'] = frame_id.to_json()
     cmd_dict: T_JSON_DICT = {
         'method': 'Accessibility.getFullAXTree',
+        'params': params,
     }
     json = yield cmd_dict
     return [AXNode.from_json(i) for i in json['nodes']]
+
+
+def get_root_ax_node(
+        frame_id: typing.Optional[page.FrameId] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,AXNode]:
+    r'''
+    Fetches the root node.
+    Requires ``enable()`` to have been called previously.
+
+    **EXPERIMENTAL**
+
+    :param frame_id: *(Optional)* The frame in whose document the node resides. If omitted, the root frame is used.
+    :returns: 
+    '''
+    params: T_JSON_DICT = dict()
+    if frame_id is not None:
+        params['frameId'] = frame_id.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Accessibility.getRootAXNode',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return AXNode.from_json(json['node'])
+
+
+def get_ax_node_and_ancestors(
+        node_id: typing.Optional[dom.NodeId] = None,
+        backend_node_id: typing.Optional[dom.BackendNodeId] = None,
+        object_id: typing.Optional[runtime.RemoteObjectId] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[AXNode]]:
+    r'''
+    Fetches a node and all ancestors up to and including the root.
+    Requires ``enable()`` to have been called previously.
+
+    **EXPERIMENTAL**
+
+    :param node_id: *(Optional)* Identifier of the node to get.
+    :param backend_node_id: *(Optional)* Identifier of the backend node to get.
+    :param object_id: *(Optional)* JavaScript object id of the node wrapper to get.
+    :returns: 
+    '''
+    params: T_JSON_DICT = dict()
+    if node_id is not None:
+        params['nodeId'] = node_id.to_json()
+    if backend_node_id is not None:
+        params['backendNodeId'] = backend_node_id.to_json()
+    if object_id is not None:
+        params['objectId'] = object_id.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Accessibility.getAXNodeAndAncestors',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return [AXNode.from_json(i) for i in json['nodes']]
+
+
+def get_child_ax_nodes(
+        id_: AXNodeId,
+        frame_id: typing.Optional[page.FrameId] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[AXNode]]:
+    r'''
+    Fetches a particular accessibility node by AXNodeId.
+    Requires ``enable()`` to have been called previously.
+
+    **EXPERIMENTAL**
+
+    :param id_:
+    :param frame_id: *(Optional)* The frame in whose document the node resides. If omitted, the root frame is used.
+    :returns: 
+    '''
+    params: T_JSON_DICT = dict()
+    params['id'] = id_.to_json()
+    if frame_id is not None:
+        params['frameId'] = frame_id.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Accessibility.getChildAXNodes',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return [AXNode.from_json(i) for i in json['nodes']]
+
+
+def query_ax_tree(
+        node_id: typing.Optional[dom.NodeId] = None,
+        backend_node_id: typing.Optional[dom.BackendNodeId] = None,
+        object_id: typing.Optional[runtime.RemoteObjectId] = None,
+        accessible_name: typing.Optional[str] = None,
+        role: typing.Optional[str] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[AXNode]]:
+    r'''
+    Query a DOM node's accessibility subtree for accessible name and role.
+    This command computes the name and role for all nodes in the subtree, including those that are
+    ignored for accessibility, and returns those that mactch the specified name and role. If no DOM
+    node is specified, or the DOM node does not exist, the command returns an error. If neither
+    ``accessibleName`` or ``role`` is specified, it returns all the accessibility nodes in the subtree.
+
+    **EXPERIMENTAL**
+
+    :param node_id: *(Optional)* Identifier of the node for the root to query.
+    :param backend_node_id: *(Optional)* Identifier of the backend node for the root to query.
+    :param object_id: *(Optional)* JavaScript object id of the node wrapper for the root to query.
+    :param accessible_name: *(Optional)* Find nodes with this computed name.
+    :param role: *(Optional)* Find nodes with this computed role.
+    :returns: A list of ``Accessibility.AXNode`` matching the specified attributes, including nodes that are ignored for accessibility.
+    '''
+    params: T_JSON_DICT = dict()
+    if node_id is not None:
+        params['nodeId'] = node_id.to_json()
+    if backend_node_id is not None:
+        params['backendNodeId'] = backend_node_id.to_json()
+    if object_id is not None:
+        params['objectId'] = object_id.to_json()
+    if accessible_name is not None:
+        params['accessibleName'] = accessible_name
+    if role is not None:
+        params['role'] = role
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Accessibility.queryAXTree',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return [AXNode.from_json(i) for i in json['nodes']]
+
+
+@event_class('Accessibility.loadComplete')
+@dataclass
+class LoadComplete:
+    r'''
+    **EXPERIMENTAL**
+
+    The loadComplete event mirrors the load complete event sent by the browser to assistive
+    technology when the web page has finished loading.
+    '''
+    #: New document root node.
+    root: AXNode
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> LoadComplete:
+        return cls(
+            root=AXNode.from_json(json['root'])
+        )
+
+
+@event_class('Accessibility.nodesUpdated')
+@dataclass
+class NodesUpdated:
+    r'''
+    **EXPERIMENTAL**
+
+    The nodesUpdated event is sent every time a previously requested node has changed the in tree.
+    '''
+    #: Updated node data.
+    nodes: typing.List[AXNode]
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> NodesUpdated:
+        return cls(
+            nodes=[AXNode.from_json(i) for i in json['nodes']]
+        )

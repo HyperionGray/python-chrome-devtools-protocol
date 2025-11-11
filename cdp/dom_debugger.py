@@ -16,7 +16,7 @@ from . import runtime
 
 
 class DOMBreakpointType(enum.Enum):
-    '''
+    r'''
     DOM breakpoint type.
     '''
     SUBTREE_MODIFIED = "subtree-modified"
@@ -31,9 +31,24 @@ class DOMBreakpointType(enum.Enum):
         return cls(json)
 
 
+class CSPViolationType(enum.Enum):
+    r'''
+    CSP Violation type.
+    '''
+    TRUSTEDTYPE_SINK_VIOLATION = "trustedtype-sink-violation"
+    TRUSTEDTYPE_POLICY_VIOLATION = "trustedtype-policy-violation"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> CSPViolationType:
+        return cls(json)
+
+
 @dataclass
 class EventListener:
-    '''
+    r'''
     Object event listener.
     '''
     #: ``EventListener``'s type.
@@ -104,7 +119,7 @@ def get_event_listeners(
         depth: typing.Optional[int] = None,
         pierce: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[EventListener]]:
-    '''
+    r'''
     Returns event listeners of the given object.
 
     :param object_id: Identifier of the object to return listeners for.
@@ -130,7 +145,7 @@ def remove_dom_breakpoint(
         node_id: dom.NodeId,
         type_: DOMBreakpointType
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Removes DOM breakpoint that was set using ``setDOMBreakpoint``.
 
     :param node_id: Identifier of the node to remove breakpoint from.
@@ -150,7 +165,7 @@ def remove_event_listener_breakpoint(
         event_name: str,
         target_name: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Removes breakpoint on particular DOM event.
 
     :param event_name: Event name.
@@ -170,7 +185,7 @@ def remove_event_listener_breakpoint(
 def remove_instrumentation_breakpoint(
         event_name: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Removes breakpoint on particular native event.
 
     **EXPERIMENTAL**
@@ -189,7 +204,7 @@ def remove_instrumentation_breakpoint(
 def remove_xhr_breakpoint(
         url: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Removes breakpoint from XMLHttpRequest.
 
     :param url: Resource URL substring.
@@ -203,11 +218,30 @@ def remove_xhr_breakpoint(
     json = yield cmd_dict
 
 
+def set_break_on_csp_violation(
+        violation_types: typing.List[CSPViolationType]
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    r'''
+    Sets breakpoint on particular CSP violations.
+
+    **EXPERIMENTAL**
+
+    :param violation_types: CSP Violations to stop upon.
+    '''
+    params: T_JSON_DICT = dict()
+    params['violationTypes'] = [i.to_json() for i in violation_types]
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOMDebugger.setBreakOnCSPViolation',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
 def set_dom_breakpoint(
         node_id: dom.NodeId,
         type_: DOMBreakpointType
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Sets breakpoint on particular operation with DOM.
 
     :param node_id: Identifier of the node to set breakpoint on.
@@ -227,7 +261,7 @@ def set_event_listener_breakpoint(
         event_name: str,
         target_name: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Sets breakpoint on particular DOM event.
 
     :param event_name: DOM Event name to stop on (any DOM event will do).
@@ -247,7 +281,7 @@ def set_event_listener_breakpoint(
 def set_instrumentation_breakpoint(
         event_name: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Sets breakpoint on particular native event.
 
     **EXPERIMENTAL**
@@ -266,7 +300,7 @@ def set_instrumentation_breakpoint(
 def set_xhr_breakpoint(
         url: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Sets breakpoint on XMLHttpRequest.
 
     :param url: Resource URL substring. All XHRs having this substring in the URL will get stopped upon.

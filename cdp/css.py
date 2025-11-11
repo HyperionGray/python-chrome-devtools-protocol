@@ -28,7 +28,7 @@ class StyleSheetId(str):
 
 
 class StyleSheetOrigin(enum.Enum):
-    '''
+    r'''
     Stylesheet type: "injected" for stylesheets injected via extension, "user-agent" for user-agent
     stylesheets, "inspector" for stylesheets created by the inspector (i.e. those holding the "via
     inspector" rules), "regular" for regular stylesheets.
@@ -48,7 +48,7 @@ class StyleSheetOrigin(enum.Enum):
 
 @dataclass
 class PseudoElementMatches:
-    '''
+    r'''
     CSS rule collection for a single pseudo style.
     '''
     #: Pseudo element type.
@@ -73,7 +73,7 @@ class PseudoElementMatches:
 
 @dataclass
 class InheritedStyleEntry:
-    '''
+    r'''
     Inherited CSS rule collection from ancestor node.
     '''
     #: Matches of CSS rules matching the ancestor node in the style inheritance chain.
@@ -99,7 +99,7 @@ class InheritedStyleEntry:
 
 @dataclass
 class RuleMatch:
-    '''
+    r'''
     Match data for a CSS rule.
     '''
     #: CSS rule in the match.
@@ -124,7 +124,7 @@ class RuleMatch:
 
 @dataclass
 class Value:
-    '''
+    r'''
     Data for a simple selector (these are delimited by commas in a selector list).
     '''
     #: Value text.
@@ -150,7 +150,7 @@ class Value:
 
 @dataclass
 class SelectorList:
-    '''
+    r'''
     Selector list data.
     '''
     #: Selectors in the list.
@@ -175,7 +175,7 @@ class SelectorList:
 
 @dataclass
 class CSSStyleSheetHeader:
-    '''
+    r'''
     CSS stylesheet metainformation.
     '''
     #: The stylesheet identifier.
@@ -184,7 +184,9 @@ class CSSStyleSheetHeader:
     #: Owner frame identifier.
     frame_id: page.FrameId
 
-    #: Stylesheet resource URL.
+    #: Stylesheet resource URL. Empty if this is a constructed stylesheet created using
+    #: new CSSStyleSheet() (but non-empty if this is a constructed sylesheet imported
+    #: as a CSS module script).
     source_url: str
 
     #: Stylesheet origin.
@@ -200,6 +202,16 @@ class CSSStyleSheetHeader:
     #: document.written STYLE tags.
     is_inline: bool
 
+    #: Whether this stylesheet is mutable. Inline stylesheets become mutable
+    #: after they have been modified via CSSOM API.
+    #: <link> element's stylesheets become mutable only if DevTools modifies them.
+    #: Constructed stylesheets (new CSSStyleSheet()) are mutable immediately after creation.
+    is_mutable: bool
+
+    #: True if this stylesheet is created through new CSSStyleSheet() or imported as a
+    #: CSS module script.
+    is_constructed: bool
+
     #: Line offset of the stylesheet within the resource (zero based).
     start_line: float
 
@@ -208,6 +220,12 @@ class CSSStyleSheetHeader:
 
     #: Size of the content (in characters).
     length: float
+
+    #: Line offset of the end of the stylesheet within the resource (zero based).
+    end_line: float
+
+    #: Column offset of the end of the stylesheet within the resource (zero based).
+    end_column: float
 
     #: URL of source map associated with the stylesheet (if any).
     source_map_url: typing.Optional[str] = None
@@ -227,9 +245,13 @@ class CSSStyleSheetHeader:
         json['title'] = self.title
         json['disabled'] = self.disabled
         json['isInline'] = self.is_inline
+        json['isMutable'] = self.is_mutable
+        json['isConstructed'] = self.is_constructed
         json['startLine'] = self.start_line
         json['startColumn'] = self.start_column
         json['length'] = self.length
+        json['endLine'] = self.end_line
+        json['endColumn'] = self.end_column
         if self.source_map_url is not None:
             json['sourceMapURL'] = self.source_map_url
         if self.owner_node is not None:
@@ -248,9 +270,13 @@ class CSSStyleSheetHeader:
             title=str(json['title']),
             disabled=bool(json['disabled']),
             is_inline=bool(json['isInline']),
+            is_mutable=bool(json['isMutable']),
+            is_constructed=bool(json['isConstructed']),
             start_line=float(json['startLine']),
             start_column=float(json['startColumn']),
             length=float(json['length']),
+            end_line=float(json['endLine']),
+            end_column=float(json['endColumn']),
             source_map_url=str(json['sourceMapURL']) if 'sourceMapURL' in json else None,
             owner_node=dom.BackendNodeId.from_json(json['ownerNode']) if 'ownerNode' in json else None,
             has_source_url=bool(json['hasSourceURL']) if 'hasSourceURL' in json else None,
@@ -259,7 +285,7 @@ class CSSStyleSheetHeader:
 
 @dataclass
 class CSSRule:
-    '''
+    r'''
     CSS rule representation.
     '''
     #: Rule selector data.
@@ -279,6 +305,10 @@ class CSSRule:
     #: starting with the innermost one, going outwards.
     media: typing.Optional[typing.List[CSSMedia]] = None
 
+    #: Container query list array (for rules involving container queries).
+    #: The array enumerates container queries starting with the innermost one, going outwards.
+    container_queries: typing.Optional[typing.List[CSSContainerQuery]] = None
+
     def to_json(self) -> T_JSON_DICT:
         json: T_JSON_DICT = dict()
         json['selectorList'] = self.selector_list.to_json()
@@ -288,6 +318,8 @@ class CSSRule:
             json['styleSheetId'] = self.style_sheet_id.to_json()
         if self.media is not None:
             json['media'] = [i.to_json() for i in self.media]
+        if self.container_queries is not None:
+            json['containerQueries'] = [i.to_json() for i in self.container_queries]
         return json
 
     @classmethod
@@ -298,12 +330,13 @@ class CSSRule:
             style=CSSStyle.from_json(json['style']),
             style_sheet_id=StyleSheetId.from_json(json['styleSheetId']) if 'styleSheetId' in json else None,
             media=[CSSMedia.from_json(i) for i in json['media']] if 'media' in json else None,
+            container_queries=[CSSContainerQuery.from_json(i) for i in json['containerQueries']] if 'containerQueries' in json else None,
         )
 
 
 @dataclass
 class RuleUsage:
-    '''
+    r'''
     CSS coverage information.
     '''
     #: The css style sheet identifier (absent for user agent stylesheet and user-specified
@@ -339,7 +372,7 @@ class RuleUsage:
 
 @dataclass
 class SourceRange:
-    '''
+    r'''
     Text range within a resource. All numbers are zero-based.
     '''
     #: Start line of range.
@@ -424,7 +457,7 @@ class CSSComputedStyleProperty:
 
 @dataclass
 class CSSStyle:
-    '''
+    r'''
     CSS style representation.
     '''
     #: CSS properties in the style.
@@ -468,7 +501,7 @@ class CSSStyle:
 
 @dataclass
 class CSSProperty:
-    '''
+    r'''
     CSS property declaration data.
     '''
     #: The property name.
@@ -529,7 +562,7 @@ class CSSProperty:
 
 @dataclass
 class CSSMedia:
-    '''
+    r'''
     CSS media rule descriptor.
     '''
     #: Media query text.
@@ -582,7 +615,7 @@ class CSSMedia:
 
 @dataclass
 class MediaQuery:
-    '''
+    r'''
     Media query descriptor.
     '''
     #: Array of media query expressions.
@@ -607,7 +640,7 @@ class MediaQuery:
 
 @dataclass
 class MediaQueryExpression:
-    '''
+    r'''
     Media query expression descriptor.
     '''
     #: Media query expression value.
@@ -648,8 +681,47 @@ class MediaQueryExpression:
 
 
 @dataclass
-class PlatformFontUsage:
+class CSSContainerQuery:
+    r'''
+    CSS container query rule descriptor.
     '''
+    #: Container query text.
+    text: str
+
+    #: The associated rule header range in the enclosing stylesheet (if
+    #: available).
+    range_: typing.Optional[SourceRange] = None
+
+    #: Identifier of the stylesheet containing this object (if exists).
+    style_sheet_id: typing.Optional[StyleSheetId] = None
+
+    #: Optional name for the container.
+    name: typing.Optional[str] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['text'] = self.text
+        if self.range_ is not None:
+            json['range'] = self.range_.to_json()
+        if self.style_sheet_id is not None:
+            json['styleSheetId'] = self.style_sheet_id.to_json()
+        if self.name is not None:
+            json['name'] = self.name
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> CSSContainerQuery:
+        return cls(
+            text=str(json['text']),
+            range_=SourceRange.from_json(json['range']) if 'range' in json else None,
+            style_sheet_id=StyleSheetId.from_json(json['styleSheetId']) if 'styleSheetId' in json else None,
+            name=str(json['name']) if 'name' in json else None,
+        )
+
+
+@dataclass
+class PlatformFontUsage:
+    r'''
     Information about amount of glyphs that were rendered with given font.
     '''
     #: Font's family name reported by platform.
@@ -678,9 +750,50 @@ class PlatformFontUsage:
 
 
 @dataclass
-class FontFace:
+class FontVariationAxis:
+    r'''
+    Information about font variation axes for variable fonts
     '''
+    #: The font-variation-setting tag (a.k.a. "axis tag").
+    tag: str
+
+    #: Human-readable variation name in the default language (normally, "en").
+    name: str
+
+    #: The minimum value (inclusive) the font supports for this tag.
+    min_value: float
+
+    #: The maximum value (inclusive) the font supports for this tag.
+    max_value: float
+
+    #: The default value.
+    default_value: float
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['tag'] = self.tag
+        json['name'] = self.name
+        json['minValue'] = self.min_value
+        json['maxValue'] = self.max_value
+        json['defaultValue'] = self.default_value
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> FontVariationAxis:
+        return cls(
+            tag=str(json['tag']),
+            name=str(json['name']),
+            min_value=float(json['minValue']),
+            max_value=float(json['maxValue']),
+            default_value=float(json['defaultValue']),
+        )
+
+
+@dataclass
+class FontFace:
+    r'''
     Properties of a web font: https://www.w3.org/TR/2008/REC-CSS2-20080411/fonts.html#font-descriptions
+    and additional information such as platformFontFamily and fontVariationAxes.
     '''
     #: The font-family.
     font_family: str
@@ -706,6 +819,9 @@ class FontFace:
     #: The resolved platform font family
     platform_font_family: str
 
+    #: Available variation settings (a.k.a. "axes").
+    font_variation_axes: typing.Optional[typing.List[FontVariationAxis]] = None
+
     def to_json(self) -> T_JSON_DICT:
         json: T_JSON_DICT = dict()
         json['fontFamily'] = self.font_family
@@ -716,6 +832,8 @@ class FontFace:
         json['unicodeRange'] = self.unicode_range
         json['src'] = self.src
         json['platformFontFamily'] = self.platform_font_family
+        if self.font_variation_axes is not None:
+            json['fontVariationAxes'] = [i.to_json() for i in self.font_variation_axes]
         return json
 
     @classmethod
@@ -729,12 +847,13 @@ class FontFace:
             unicode_range=str(json['unicodeRange']),
             src=str(json['src']),
             platform_font_family=str(json['platformFontFamily']),
+            font_variation_axes=[FontVariationAxis.from_json(i) for i in json['fontVariationAxes']] if 'fontVariationAxes' in json else None,
         )
 
 
 @dataclass
 class CSSKeyframesRule:
-    '''
+    r'''
     CSS keyframes rule representation.
     '''
     #: Animation name.
@@ -759,7 +878,7 @@ class CSSKeyframesRule:
 
 @dataclass
 class CSSKeyframeRule:
-    '''
+    r'''
     CSS keyframe rule representation.
     '''
     #: Parent stylesheet's origin.
@@ -796,7 +915,7 @@ class CSSKeyframeRule:
 
 @dataclass
 class StyleDeclarationEdit:
-    '''
+    r'''
     A descriptor of operation to mutate style declaration text.
     '''
     #: The css style sheet identifier.
@@ -829,7 +948,7 @@ def add_rule(
         rule_text: str,
         location: SourceRange
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,CSSRule]:
-    '''
+    r'''
     Inserts a new rule with the given ``ruleText`` in a stylesheet with given ``styleSheetId``, at the
     position specified by ``location``.
 
@@ -853,7 +972,7 @@ def add_rule(
 def collect_class_names(
         style_sheet_id: StyleSheetId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[str]]:
-    '''
+    r'''
     Returns all class names from specified stylesheet.
 
     :param style_sheet_id:
@@ -872,7 +991,7 @@ def collect_class_names(
 def create_style_sheet(
         frame_id: page.FrameId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,StyleSheetId]:
-    '''
+    r'''
     Creates a new special "via-inspector" stylesheet in the frame with given ``frameId``.
 
     :param frame_id: Identifier of the frame where "via-inspector" stylesheet should be created.
@@ -889,7 +1008,7 @@ def create_style_sheet(
 
 
 def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Disables the CSS agent for the given page.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -899,7 +1018,7 @@ def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables the CSS agent for the given page. Clients should not assume that the CSS agent has been
     enabled until the result of this command is received.
     '''
@@ -913,7 +1032,7 @@ def force_pseudo_state(
         node_id: dom.NodeId,
         forced_pseudo_classes: typing.List[str]
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Ensures that the given node will have specified pseudo-classes whenever its style is computed by
     the browser.
 
@@ -933,7 +1052,7 @@ def force_pseudo_state(
 def get_background_colors(
         node_id: dom.NodeId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.Optional[typing.List[str]], typing.Optional[str], typing.Optional[str]]]:
-    '''
+    r'''
     :param node_id: Id of the node to get background colors for.
     :returns: A tuple with the following items:
 
@@ -958,7 +1077,7 @@ def get_background_colors(
 def get_computed_style_for_node(
         node_id: dom.NodeId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[CSSComputedStyleProperty]]:
-    '''
+    r'''
     Returns the computed style for a DOM node identified by ``nodeId``.
 
     :param node_id:
@@ -977,7 +1096,7 @@ def get_computed_style_for_node(
 def get_inline_styles_for_node(
         node_id: dom.NodeId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.Optional[CSSStyle], typing.Optional[CSSStyle]]]:
-    '''
+    r'''
     Returns the styles defined inline (explicitly in the "style" attribute and implicitly, using DOM
     attributes) for a DOM node identified by ``nodeId``.
 
@@ -1003,7 +1122,7 @@ def get_inline_styles_for_node(
 def get_matched_styles_for_node(
         node_id: dom.NodeId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.Optional[CSSStyle], typing.Optional[CSSStyle], typing.Optional[typing.List[RuleMatch]], typing.Optional[typing.List[PseudoElementMatches]], typing.Optional[typing.List[InheritedStyleEntry]], typing.Optional[typing.List[CSSKeyframesRule]]]]:
-    '''
+    r'''
     Returns requested styles for a DOM node identified by ``nodeId``.
 
     :param node_id:
@@ -1034,7 +1153,7 @@ def get_matched_styles_for_node(
 
 
 def get_media_queries() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[CSSMedia]]:
-    '''
+    r'''
     Returns all media queries parsed by the rendering engine.
 
     :returns: 
@@ -1049,7 +1168,7 @@ def get_media_queries() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[
 def get_platform_fonts_for_node(
         node_id: dom.NodeId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[PlatformFontUsage]]:
-    '''
+    r'''
     Requests information about platform fonts which we used to render child TextNodes in the given
     node.
 
@@ -1069,7 +1188,7 @@ def get_platform_fonts_for_node(
 def get_style_sheet_text(
         style_sheet_id: StyleSheetId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,str]:
-    '''
+    r'''
     Returns the current textual content for a stylesheet.
 
     :param style_sheet_id:
@@ -1085,12 +1204,51 @@ def get_style_sheet_text(
     return str(json['text'])
 
 
+def track_computed_style_updates(
+        properties_to_track: typing.List[CSSComputedStyleProperty]
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    r'''
+    Starts tracking the given computed styles for updates. The specified array of properties
+    replaces the one previously specified. Pass empty array to disable tracking.
+    Use takeComputedStyleUpdates to retrieve the list of nodes that had properties modified.
+    The changes to computed style properties are only tracked for nodes pushed to the front-end
+    by the DOM agent. If no changes to the tracked properties occur after the node has been pushed
+    to the front-end, no updates will be issued for the node.
+
+    **EXPERIMENTAL**
+
+    :param properties_to_track:
+    '''
+    params: T_JSON_DICT = dict()
+    params['propertiesToTrack'] = [i.to_json() for i in properties_to_track]
+    cmd_dict: T_JSON_DICT = {
+        'method': 'CSS.trackComputedStyleUpdates',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
+def take_computed_style_updates() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[dom.NodeId]]:
+    r'''
+    Polls the next batch of computed style updates.
+
+    **EXPERIMENTAL**
+
+    :returns: The list of node Ids that have their tracked computed styles updated
+    '''
+    cmd_dict: T_JSON_DICT = {
+        'method': 'CSS.takeComputedStyleUpdates',
+    }
+    json = yield cmd_dict
+    return [dom.NodeId.from_json(i) for i in json['nodeIds']]
+
+
 def set_effective_property_value_for_node(
         node_id: dom.NodeId,
         property_name: str,
         value: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Find a rule with the given active property for the given node and set the new value for this
     property
 
@@ -1114,7 +1272,7 @@ def set_keyframe_key(
         range_: SourceRange,
         key_text: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,Value]:
-    '''
+    r'''
     Modifies the keyframe rule key text.
 
     :param style_sheet_id:
@@ -1139,7 +1297,7 @@ def set_media_text(
         range_: SourceRange,
         text: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,CSSMedia]:
-    '''
+    r'''
     Modifies the rule selector.
 
     :param style_sheet_id:
@@ -1159,12 +1317,39 @@ def set_media_text(
     return CSSMedia.from_json(json['media'])
 
 
+def set_container_query_text(
+        style_sheet_id: StyleSheetId,
+        range_: SourceRange,
+        text: str
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,CSSContainerQuery]:
+    r'''
+    Modifies the expression of a container query.
+
+    **EXPERIMENTAL**
+
+    :param style_sheet_id:
+    :param range_:
+    :param text:
+    :returns: The resulting CSS container query rule after modification.
+    '''
+    params: T_JSON_DICT = dict()
+    params['styleSheetId'] = style_sheet_id.to_json()
+    params['range'] = range_.to_json()
+    params['text'] = text
+    cmd_dict: T_JSON_DICT = {
+        'method': 'CSS.setContainerQueryText',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return CSSContainerQuery.from_json(json['containerQuery'])
+
+
 def set_rule_selector(
         style_sheet_id: StyleSheetId,
         range_: SourceRange,
         selector: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,SelectorList]:
-    '''
+    r'''
     Modifies the rule selector.
 
     :param style_sheet_id:
@@ -1188,7 +1373,7 @@ def set_style_sheet_text(
         style_sheet_id: StyleSheetId,
         text: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Optional[str]]:
-    '''
+    r'''
     Sets the new stylesheet text.
 
     :param style_sheet_id:
@@ -1209,7 +1394,7 @@ def set_style_sheet_text(
 def set_style_texts(
         edits: typing.List[StyleDeclarationEdit]
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[CSSStyle]]:
-    '''
+    r'''
     Applies specified style edits one after another in the given order.
 
     :param edits:
@@ -1226,7 +1411,7 @@ def set_style_texts(
 
 
 def start_rule_usage_tracking() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables the selector recording.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -1236,7 +1421,7 @@ def start_rule_usage_tracking() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None
 
 
 def stop_rule_usage_tracking() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[RuleUsage]]:
-    '''
+    r'''
     Stop tracking rule usage and return the list of rules that were used since last call to
     ``takeCoverageDelta`` (or since start of coverage instrumentation)
 
@@ -1249,24 +1434,49 @@ def stop_rule_usage_tracking() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typin
     return [RuleUsage.from_json(i) for i in json['ruleUsage']]
 
 
-def take_coverage_delta() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[RuleUsage]]:
-    '''
+def take_coverage_delta() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.List[RuleUsage], float]]:
+    r'''
     Obtain list of rules that became used since last call to this method (or since start of coverage
     instrumentation)
 
-    :returns: 
+    :returns: A tuple with the following items:
+
+        0. **coverage** - 
+        1. **timestamp** - Monotonically increasing time, in seconds.
     '''
     cmd_dict: T_JSON_DICT = {
         'method': 'CSS.takeCoverageDelta',
     }
     json = yield cmd_dict
-    return [RuleUsage.from_json(i) for i in json['coverage']]
+    return (
+        [RuleUsage.from_json(i) for i in json['coverage']],
+        float(json['timestamp'])
+    )
+
+
+def set_local_fonts_enabled(
+        enabled: bool
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    r'''
+    Enables/disables rendering of local CSS fonts (enabled by default).
+
+    **EXPERIMENTAL**
+
+    :param enabled: Whether rendering of local fonts is enabled.
+    '''
+    params: T_JSON_DICT = dict()
+    params['enabled'] = enabled
+    cmd_dict: T_JSON_DICT = {
+        'method': 'CSS.setLocalFontsEnabled',
+        'params': params,
+    }
+    json = yield cmd_dict
 
 
 @event_class('CSS.fontsUpdated')
 @dataclass
 class FontsUpdated:
-    '''
+    r'''
     Fires whenever a web font is updated.  A non-empty font parameter indicates a successfully loaded
     web font
     '''
@@ -1283,7 +1493,7 @@ class FontsUpdated:
 @event_class('CSS.mediaQueryResultChanged')
 @dataclass
 class MediaQueryResultChanged:
-    '''
+    r'''
     Fires whenever a MediaQuery result changes (for example, after a browser window has been
     resized.) The current implementation considers only viewport-dependent media features.
     '''
@@ -1299,7 +1509,7 @@ class MediaQueryResultChanged:
 @event_class('CSS.styleSheetAdded')
 @dataclass
 class StyleSheetAdded:
-    '''
+    r'''
     Fired whenever an active document stylesheet is added.
     '''
     #: Added stylesheet metainfo.
@@ -1315,7 +1525,7 @@ class StyleSheetAdded:
 @event_class('CSS.styleSheetChanged')
 @dataclass
 class StyleSheetChanged:
-    '''
+    r'''
     Fired whenever a stylesheet is changed as a result of the client operation.
     '''
     style_sheet_id: StyleSheetId
@@ -1330,7 +1540,7 @@ class StyleSheetChanged:
 @event_class('CSS.styleSheetRemoved')
 @dataclass
 class StyleSheetRemoved:
-    '''
+    r'''
     Fired whenever an active document stylesheet is removed.
     '''
     #: Identifier of the removed stylesheet.

@@ -17,7 +17,7 @@ from . import runtime
 
 @dataclass
 class LogEntry:
-    '''
+    r'''
     Log entry.
     '''
     #: Log entry source.
@@ -31,6 +31,8 @@ class LogEntry:
 
     #: Timestamp when this entry was added.
     timestamp: runtime.Timestamp
+
+    category: typing.Optional[str] = None
 
     #: URL of the resource if known.
     url: typing.Optional[str] = None
@@ -56,6 +58,8 @@ class LogEntry:
         json['level'] = self.level
         json['text'] = self.text
         json['timestamp'] = self.timestamp.to_json()
+        if self.category is not None:
+            json['category'] = self.category
         if self.url is not None:
             json['url'] = self.url
         if self.line_number is not None:
@@ -77,6 +81,7 @@ class LogEntry:
             level=str(json['level']),
             text=str(json['text']),
             timestamp=runtime.Timestamp.from_json(json['timestamp']),
+            category=str(json['category']) if 'category' in json else None,
             url=str(json['url']) if 'url' in json else None,
             line_number=int(json['lineNumber']) if 'lineNumber' in json else None,
             stack_trace=runtime.StackTrace.from_json(json['stackTrace']) if 'stackTrace' in json else None,
@@ -88,7 +93,7 @@ class LogEntry:
 
 @dataclass
 class ViolationSetting:
-    '''
+    r'''
     Violation configuration setting.
     '''
     #: Violation type.
@@ -112,7 +117,7 @@ class ViolationSetting:
 
 
 def clear() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Clears the log.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -122,7 +127,7 @@ def clear() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Disables log domain, prevents further log entries from being reported to the client.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -132,7 +137,7 @@ def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
 
 def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Enables log domain, sends the entries collected so far to the client by means of the
     ``entryAdded`` notification.
     '''
@@ -145,7 +150,7 @@ def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 def start_violations_report(
         config: typing.List[ViolationSetting]
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     start violation reporting.
 
     :param config: Configuration for violations.
@@ -160,7 +165,7 @@ def start_violations_report(
 
 
 def stop_violations_report() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    '''
+    r'''
     Stop violation reporting.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -172,7 +177,7 @@ def stop_violations_report() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 @event_class('Log.entryAdded')
 @dataclass
 class EntryAdded:
-    '''
+    r'''
     Issued when new message was logged.
     '''
     #: The entry.
