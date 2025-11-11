@@ -22,7 +22,7 @@ class SourceOrderConfig:
     r'''
     Configuration data for drawing the source order of an elements children.
     '''
-    #: the color to outline the givent element in.
+    #: the color to outline the given element in.
     parent_outline_color: dom.RGBA
 
     #: the color to outline the child elements in.
@@ -472,6 +472,7 @@ class HighlightConfig:
 class ColorFormat(enum.Enum):
     RGB = "rgb"
     HSL = "hsl"
+    HWB = "hwb"
     HEX_ = "hex"
 
     def to_json(self) -> str:
@@ -620,6 +621,36 @@ class HingeConfig:
 
 
 @dataclass
+class WindowControlsOverlayConfig:
+    r'''
+    Configuration for Window Controls Overlay
+    '''
+    #: Whether the title bar CSS should be shown when emulating the Window Controls Overlay.
+    show_css: bool
+
+    #: Selected platforms to show the overlay.
+    selected_platform: str
+
+    #: The theme color defined in app manifest.
+    theme_color: str
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['showCSS'] = self.show_css
+        json['selectedPlatform'] = self.selected_platform
+        json['themeColor'] = self.theme_color
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> WindowControlsOverlayConfig:
+        return cls(
+            show_css=bool(json['showCSS']),
+            selected_platform=str(json['selectedPlatform']),
+            theme_color=str(json['themeColor']),
+        )
+
+
+@dataclass
 class ContainerQueryHighlightConfig:
     #: A descriptor for the highlight appearance of container query containers.
     container_query_container_highlight_config: ContainerQueryContainerHighlightConfig
@@ -721,7 +752,6 @@ class InspectMode(enum.Enum):
     SEARCH_FOR_NODE = "searchForNode"
     SEARCH_FOR_UA_SHADOW_DOM = "searchForUAShadowDOM"
     CAPTURE_AREA_SCREENSHOT = "captureAreaScreenshot"
-    SHOW_DISTANCES = "showDistances"
     NONE = "none"
 
     def to_json(self) -> str:
@@ -843,8 +873,8 @@ def highlight_frame(
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     r'''
     Highlights owner element of the frame with given id.
-    Deprecated: Doesn't work reliablity and cannot be fixed due to process
-    separatation (the owner node might be in a different process). Determine
+    Deprecated: Doesn't work reliably and cannot be fixed due to process
+    separation (the owner node might be in a different process). Determine
     the owner node in the client and use highlightNode.
 
     .. deprecated:: 1.3
@@ -935,6 +965,9 @@ def highlight_rect(
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     r'''
     Highlights given rectangle. Coordinates are absolute with respect to the main frame viewport.
+    Issue: the method does not handle device pixel ratio (DPR) correctly.
+    The coordinates currently have to be adjusted by the client
+    if DPR is not 1 (see crbug.com/437807128).
 
     :param x: X coordinate
     :param y: Y coordinate
@@ -1191,11 +1224,14 @@ def set_show_scroll_bottleneck_rects(
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 def set_show_hit_test_borders(
         show: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     r'''
-    Requests that backend shows hit-test borders on layers
+    Deprecated, no longer has any effect.
+
+    .. deprecated:: 1.3
 
     :param show: True for showing hit-test borders
     '''
@@ -1208,11 +1244,14 @@ def set_show_hit_test_borders(
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 def set_show_web_vitals(
         show: bool
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     r'''
-    Request that backend shows an overlay with web vital metrics.
+    Deprecated, no longer has any effect.
+
+    .. deprecated:: 1.3
 
     :param show:
     '''
@@ -1272,6 +1311,24 @@ def set_show_isolated_elements(
     params['isolatedElementHighlightConfigs'] = [i.to_json() for i in isolated_element_highlight_configs]
     cmd_dict: T_JSON_DICT = {
         'method': 'Overlay.setShowIsolatedElements',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
+def set_show_window_controls_overlay(
+        window_controls_overlay_config: typing.Optional[WindowControlsOverlayConfig] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    r'''
+    Show Window Controls Overlay for PWA
+
+    :param window_controls_overlay_config: *(Optional)* Window Controls Overlay data, null means hide Window Controls Overlay
+    '''
+    params: T_JSON_DICT = dict()
+    if window_controls_overlay_config is not None:
+        params['windowControlsOverlayConfig'] = window_controls_overlay_config.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Overlay.setShowWindowControlsOverlay',
         'params': params,
     }
     json = yield cmd_dict

@@ -1,7 +1,7 @@
 Media
 =====
 
-This domain allows detailed inspection of media elements
+This domain allows detailed inspection of media elements.
 
 *This CDP domain is experimental.*
 
@@ -44,7 +44,17 @@ arguments to other commands.
       :undoc-members:
       :exclude-members: from_json, to_json
 
+.. autoclass:: PlayerErrorSourceLocation
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
 .. autoclass:: PlayerError
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: Player
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
@@ -92,7 +102,7 @@ you use the event's attributes.
       :undoc-members:
       :exclude-members: from_json, to_json
 
-.. autoclass:: PlayersCreated
+.. autoclass:: PlayerCreated
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json

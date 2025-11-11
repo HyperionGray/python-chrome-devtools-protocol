@@ -67,6 +67,11 @@ arguments to other commands.
       :undoc-members:
       :exclude-members: from_json, to_json
 
+.. autoclass:: PrivacySandboxAPI
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
 Commands
 --------
 
@@ -78,6 +83,10 @@ this library, types ``x`` and ``y`` are the same for all
 commands, and ``z`` is the return type you should pay attention
 to. For more information, see
 :ref:`Getting Started: Commands <getting-started-commands>`.
+
+.. autofunction:: add_privacy_sandbox_coordinator_key_config
+
+.. autofunction:: add_privacy_sandbox_enrollment_override
 
 .. autofunction:: cancel_download
 
@@ -104,6 +113,8 @@ to. For more information, see
 .. autofunction:: grant_permissions
 
 .. autofunction:: reset_permissions
+
+.. autofunction:: set_contents_size
 
 .. autofunction:: set_dock_tile
 

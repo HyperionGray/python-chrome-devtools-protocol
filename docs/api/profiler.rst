@@ -45,21 +45,6 @@ arguments to other commands.
       :undoc-members:
       :exclude-members: from_json, to_json
 
-.. autoclass:: TypeObject
-      :members:
-      :undoc-members:
-      :exclude-members: from_json, to_json
-
-.. autoclass:: TypeProfileEntry
-      :members:
-      :undoc-members:
-      :exclude-members: from_json, to_json
-
-.. autoclass:: ScriptTypeProfile
-      :members:
-      :undoc-members:
-      :exclude-members: from_json, to_json
-
 Commands
 --------
 
@@ -84,17 +69,11 @@ to. For more information, see
 
 .. autofunction:: start_precise_coverage
 
-.. autofunction:: start_type_profile
-
 .. autofunction:: stop
 
 .. autofunction:: stop_precise_coverage
 
-.. autofunction:: stop_type_profile
-
 .. autofunction:: take_precise_coverage
-
-.. autofunction:: take_type_profile
 
 Events
 ------

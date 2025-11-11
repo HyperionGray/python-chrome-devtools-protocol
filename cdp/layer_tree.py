@@ -454,7 +454,7 @@ class LayerPainted:
 @event_class('LayerTree.layerTreeDidChange')
 @dataclass
 class LayerTreeDidChange:
-    #: Layer tree, absent if not in the comspositing mode.
+    #: Layer tree, absent if not in the compositing mode.
     layers: typing.Optional[typing.List[Layer]]
 
     @classmethod

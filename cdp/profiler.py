@@ -223,81 +223,6 @@ class ScriptCoverage:
         )
 
 
-@dataclass
-class TypeObject:
-    r'''
-    Describes a type collected during runtime.
-    '''
-    #: Name of a type collected with type profiling.
-    name: str
-
-    def to_json(self) -> T_JSON_DICT:
-        json: T_JSON_DICT = dict()
-        json['name'] = self.name
-        return json
-
-    @classmethod
-    def from_json(cls, json: T_JSON_DICT) -> TypeObject:
-        return cls(
-            name=str(json['name']),
-        )
-
-
-@dataclass
-class TypeProfileEntry:
-    r'''
-    Source offset and types for a parameter or return value.
-    '''
-    #: Source offset of the parameter or end of function for return values.
-    offset: int
-
-    #: The types for this parameter or return value.
-    types: typing.List[TypeObject]
-
-    def to_json(self) -> T_JSON_DICT:
-        json: T_JSON_DICT = dict()
-        json['offset'] = self.offset
-        json['types'] = [i.to_json() for i in self.types]
-        return json
-
-    @classmethod
-    def from_json(cls, json: T_JSON_DICT) -> TypeProfileEntry:
-        return cls(
-            offset=int(json['offset']),
-            types=[TypeObject.from_json(i) for i in json['types']],
-        )
-
-
-@dataclass
-class ScriptTypeProfile:
-    r'''
-    Type profile data collected during runtime for a JavaScript script.
-    '''
-    #: JavaScript script id.
-    script_id: runtime.ScriptId
-
-    #: JavaScript script name or url.
-    url: str
-
-    #: Type profile entries for parameters and return values of the functions in the script.
-    entries: typing.List[TypeProfileEntry]
-
-    def to_json(self) -> T_JSON_DICT:
-        json: T_JSON_DICT = dict()
-        json['scriptId'] = self.script_id.to_json()
-        json['url'] = self.url
-        json['entries'] = [i.to_json() for i in self.entries]
-        return json
-
-    @classmethod
-    def from_json(cls, json: T_JSON_DICT) -> ScriptTypeProfile:
-        return cls(
-            script_id=runtime.ScriptId.from_json(json['scriptId']),
-            url=str(json['url']),
-            entries=[TypeProfileEntry.from_json(i) for i in json['entries']],
-        )
-
-
 def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
     cmd_dict: T_JSON_DICT = {
@@ -383,18 +308,6 @@ def start_precise_coverage(
     return float(json['timestamp'])
 
 
-def start_type_profile() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    r'''
-    Enable type profile.
-
-    **EXPERIMENTAL**
-    '''
-    cmd_dict: T_JSON_DICT = {
-        'method': 'Profiler.startTypeProfile',
-    }
-    json = yield cmd_dict
-
-
 def stop() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,Profile]:
     r'''
 
@@ -419,18 +332,6 @@ def stop_precise_coverage() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     json = yield cmd_dict
 
 
-def stop_type_profile() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    r'''
-    Disable type profile. Disabling releases type profile data collected so far.
-
-    **EXPERIMENTAL**
-    '''
-    cmd_dict: T_JSON_DICT = {
-        'method': 'Profiler.stopTypeProfile',
-    }
-    json = yield cmd_dict
-
-
 def take_precise_coverage() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.List[ScriptCoverage], float]]:
     r'''
     Collect coverage data for the current isolate, and resets execution counters. Precise code
@@ -449,21 +350,6 @@ def take_precise_coverage() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.T
         [ScriptCoverage.from_json(i) for i in json['result']],
         float(json['timestamp'])
     )
-
-
-def take_type_profile() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[ScriptTypeProfile]]:
-    r'''
-    Collect type profile.
-
-    **EXPERIMENTAL**
-
-    :returns: Type profile for all scripts since startTypeProfile() was turned on.
-    '''
-    cmd_dict: T_JSON_DICT = {
-        'method': 'Profiler.takeTypeProfile',
-    }
-    json = yield cmd_dict
-    return [ScriptTypeProfile.from_json(i) for i in json['result']]
 
 
 @event_class('Profiler.consoleProfileFinished')

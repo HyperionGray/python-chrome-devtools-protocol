@@ -575,6 +575,10 @@ class NodeTreeSnapshot:
     #: Type of a pseudo element node.
     pseudo_type: typing.Optional[RareStringData] = None
 
+    #: Pseudo element identifier for this node. Only present if there is a
+    #: valid pseudoType.
+    pseudo_identifier: typing.Optional[RareStringData] = None
+
     #: Whether this DOM node responds to mouse clicks. This includes nodes that have had click
     #: event listeners attached via JavaScript as well as anchor tags that naturally navigate when
     #: clicked.
@@ -614,6 +618,8 @@ class NodeTreeSnapshot:
             json['contentDocumentIndex'] = self.content_document_index.to_json()
         if self.pseudo_type is not None:
             json['pseudoType'] = self.pseudo_type.to_json()
+        if self.pseudo_identifier is not None:
+            json['pseudoIdentifier'] = self.pseudo_identifier.to_json()
         if self.is_clickable is not None:
             json['isClickable'] = self.is_clickable.to_json()
         if self.current_source_url is not None:
@@ -638,6 +644,7 @@ class NodeTreeSnapshot:
             option_selected=RareBooleanData.from_json(json['optionSelected']) if 'optionSelected' in json else None,
             content_document_index=RareIntegerData.from_json(json['contentDocumentIndex']) if 'contentDocumentIndex' in json else None,
             pseudo_type=RareStringData.from_json(json['pseudoType']) if 'pseudoType' in json else None,
+            pseudo_identifier=RareStringData.from_json(json['pseudoIdentifier']) if 'pseudoIdentifier' in json else None,
             is_clickable=RareBooleanData.from_json(json['isClickable']) if 'isClickable' in json else None,
             current_source_url=RareStringData.from_json(json['currentSourceURL']) if 'currentSourceURL' in json else None,
             origin_url=RareStringData.from_json(json['originURL']) if 'originURL' in json else None,

@@ -89,6 +89,11 @@ arguments to other commands.
       :undoc-members:
       :exclude-members: from_json, to_json
 
+.. autoclass:: WindowControlsOverlayConfig
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
 .. autoclass:: ContainerQueryHighlightConfig
       :members:
       :undoc-members:
@@ -181,6 +186,8 @@ to. For more information, see
 .. autofunction:: set_show_viewport_size_on_resize
 
 .. autofunction:: set_show_web_vitals
+
+.. autofunction:: set_show_window_controls_overlay
 
 Events
 ------

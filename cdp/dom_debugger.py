@@ -13,6 +13,7 @@ import typing
 
 from . import dom
 from . import runtime
+from deprecated.sphinx import deprecated # type: ignore
 
 
 class DOMBreakpointType(enum.Enum):
@@ -182,11 +183,14 @@ def remove_event_listener_breakpoint(
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 def remove_instrumentation_breakpoint(
         event_name: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     r'''
     Removes breakpoint on particular native event.
+
+    .. deprecated:: 1.3
 
     **EXPERIMENTAL**
 
@@ -278,11 +282,14 @@ def set_event_listener_breakpoint(
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 def set_instrumentation_breakpoint(
         event_name: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     r'''
     Sets breakpoint on particular native event.
+
+    .. deprecated:: 1.3
 
     **EXPERIMENTAL**
 

@@ -109,6 +109,8 @@ class ServiceWorkerVersion:
 
     target_id: typing.Optional[target.TargetID] = None
 
+    router_rules: typing.Optional[str] = None
+
     def to_json(self) -> T_JSON_DICT:
         json: T_JSON_DICT = dict()
         json['versionId'] = self.version_id
@@ -124,6 +126,8 @@ class ServiceWorkerVersion:
             json['controlledClients'] = [i.to_json() for i in self.controlled_clients]
         if self.target_id is not None:
             json['targetId'] = self.target_id.to_json()
+        if self.router_rules is not None:
+            json['routerRules'] = self.router_rules
         return json
 
     @classmethod
@@ -138,6 +142,7 @@ class ServiceWorkerVersion:
             script_response_time=float(json['scriptResponseTime']) if 'scriptResponseTime' in json else None,
             controlled_clients=[target.TargetID.from_json(i) for i in json['controlledClients']] if 'controlledClients' in json else None,
             target_id=target.TargetID.from_json(json['targetId']) if 'targetId' in json else None,
+            router_rules=str(json['routerRules']) if 'routerRules' in json else None,
         )
 
 
@@ -258,21 +263,6 @@ def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
 
     cmd_dict: T_JSON_DICT = {
         'method': 'ServiceWorker.enable',
-    }
-    json = yield cmd_dict
-
-
-def inspect_worker(
-        version_id: str
-    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    r'''
-    :param version_id:
-    '''
-    params: T_JSON_DICT = dict()
-    params['versionId'] = version_id
-    cmd_dict: T_JSON_DICT = {
-        'method': 'ServiceWorker.inspectWorker',
-        'params': params,
     }
     json = yield cmd_dict
 

@@ -51,3 +51,8 @@ you use the event's attributes.
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
+
+.. autoclass:: WorkerScriptLoaded
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json

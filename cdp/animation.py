@@ -36,6 +36,9 @@ class Animation:
     playback_rate: float
 
     #: ``Animation``'s start time.
+    #: Milliseconds for time based animations and
+    #: percentage [0 - 100] for scroll driven animations
+    #: (i.e. when viewOrScrollTimeline exists).
     start_time: float
 
     #: ``Animation``'s current time.
@@ -51,6 +54,9 @@ class Animation:
     #: animation/transition.
     css_id: typing.Optional[str] = None
 
+    #: View or scroll timeline
+    view_or_scroll_timeline: typing.Optional[ViewOrScrollTimeline] = None
+
     def to_json(self) -> T_JSON_DICT:
         json: T_JSON_DICT = dict()
         json['id'] = self.id_
@@ -65,6 +71,8 @@ class Animation:
             json['source'] = self.source.to_json()
         if self.css_id is not None:
             json['cssId'] = self.css_id
+        if self.view_or_scroll_timeline is not None:
+            json['viewOrScrollTimeline'] = self.view_or_scroll_timeline.to_json()
         return json
 
     @classmethod
@@ -80,6 +88,55 @@ class Animation:
             type_=str(json['type']),
             source=AnimationEffect.from_json(json['source']) if 'source' in json else None,
             css_id=str(json['cssId']) if 'cssId' in json else None,
+            view_or_scroll_timeline=ViewOrScrollTimeline.from_json(json['viewOrScrollTimeline']) if 'viewOrScrollTimeline' in json else None,
+        )
+
+
+@dataclass
+class ViewOrScrollTimeline:
+    r'''
+    Timeline instance
+    '''
+    #: Orientation of the scroll
+    axis: dom.ScrollOrientation
+
+    #: Scroll container node
+    source_node_id: typing.Optional[dom.BackendNodeId] = None
+
+    #: Represents the starting scroll position of the timeline
+    #: as a length offset in pixels from scroll origin.
+    start_offset: typing.Optional[float] = None
+
+    #: Represents the ending scroll position of the timeline
+    #: as a length offset in pixels from scroll origin.
+    end_offset: typing.Optional[float] = None
+
+    #: The element whose principal box's visibility in the
+    #: scrollport defined the progress of the timeline.
+    #: Does not exist for animations with ScrollTimeline
+    subject_node_id: typing.Optional[dom.BackendNodeId] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['axis'] = self.axis.to_json()
+        if self.source_node_id is not None:
+            json['sourceNodeId'] = self.source_node_id.to_json()
+        if self.start_offset is not None:
+            json['startOffset'] = self.start_offset
+        if self.end_offset is not None:
+            json['endOffset'] = self.end_offset
+        if self.subject_node_id is not None:
+            json['subjectNodeId'] = self.subject_node_id.to_json()
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> ViewOrScrollTimeline:
+        return cls(
+            axis=dom.ScrollOrientation.from_json(json['axis']),
+            source_node_id=dom.BackendNodeId.from_json(json['sourceNodeId']) if 'sourceNodeId' in json else None,
+            start_offset=float(json['startOffset']) if 'startOffset' in json else None,
+            end_offset=float(json['endOffset']) if 'endOffset' in json else None,
+            subject_node_id=dom.BackendNodeId.from_json(json['subjectNodeId']) if 'subjectNodeId' in json else None,
         )
 
 
@@ -97,10 +154,10 @@ class AnimationEffect:
     #: ``AnimationEffect``'s iteration start.
     iteration_start: float
 
-    #: ``AnimationEffect``'s iterations.
-    iterations: float
-
     #: ``AnimationEffect``'s iteration duration.
+    #: Milliseconds for time based animations and
+    #: percentage [0 - 100] for scroll driven animations
+    #: (i.e. when viewOrScrollTimeline exists).
     duration: float
 
     #: ``AnimationEffect``'s playback direction.
@@ -111,6 +168,9 @@ class AnimationEffect:
 
     #: ``AnimationEffect``'s timing function.
     easing: str
+
+    #: ``AnimationEffect``'s iterations. Omitted if the value is infinite.
+    iterations: typing.Optional[float] = None
 
     #: ``AnimationEffect``'s target node.
     backend_node_id: typing.Optional[dom.BackendNodeId] = None
@@ -123,11 +183,12 @@ class AnimationEffect:
         json['delay'] = self.delay
         json['endDelay'] = self.end_delay
         json['iterationStart'] = self.iteration_start
-        json['iterations'] = self.iterations
         json['duration'] = self.duration
         json['direction'] = self.direction
         json['fill'] = self.fill
         json['easing'] = self.easing
+        if self.iterations is not None:
+            json['iterations'] = self.iterations
         if self.backend_node_id is not None:
             json['backendNodeId'] = self.backend_node_id.to_json()
         if self.keyframes_rule is not None:
@@ -140,11 +201,11 @@ class AnimationEffect:
             delay=float(json['delay']),
             end_delay=float(json['endDelay']),
             iteration_start=float(json['iterationStart']),
-            iterations=float(json['iterations']),
             duration=float(json['duration']),
             direction=str(json['direction']),
             fill=str(json['fill']),
             easing=str(json['easing']),
+            iterations=float(json['iterations']) if 'iterations' in json else None,
             backend_node_id=dom.BackendNodeId.from_json(json['backendNodeId']) if 'backendNodeId' in json else None,
             keyframes_rule=KeyframesRule.from_json(json['keyframesRule']) if 'keyframesRule' in json else None,
         )
@@ -412,6 +473,22 @@ class AnimationStarted:
 
     @classmethod
     def from_json(cls, json: T_JSON_DICT) -> AnimationStarted:
+        return cls(
+            animation=Animation.from_json(json['animation'])
+        )
+
+
+@event_class('Animation.animationUpdated')
+@dataclass
+class AnimationUpdated:
+    r'''
+    Event for animation that has been updated.
+    '''
+    #: Animation that was updated.
+    animation: Animation
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> AnimationUpdated:
         return cls(
             animation=Animation.from_json(json['animation'])
         )

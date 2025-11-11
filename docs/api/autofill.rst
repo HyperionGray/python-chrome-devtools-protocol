@@ -1,9 +1,11 @@
-Database
+Autofill
 ========
+
+Defines commands and events for Autofill.
 
 *This CDP domain is experimental.*
 
-.. module:: cdp.database
+.. module:: cdp.autofill
 
 * Types_
 * Commands_
@@ -17,17 +19,37 @@ yourself. Instead, the API creates objects for you as return
 values from commands, and then you can use those objects as
 arguments to other commands.
 
-.. autoclass:: DatabaseId
+.. autoclass:: CreditCard
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
 
-.. autoclass:: Database
+.. autoclass:: AddressField
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
 
-.. autoclass:: Error
+.. autoclass:: AddressFields
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: Address
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: AddressUI
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: FillingStrategy
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: FilledField
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
@@ -48,9 +70,9 @@ to. For more information, see
 
 .. autofunction:: enable
 
-.. autofunction:: execute_sql
+.. autofunction:: set_addresses
 
-.. autofunction:: get_database_table_names
+.. autofunction:: trigger
 
 Events
 ------
@@ -59,7 +81,7 @@ Generally, you do not need to instantiate CDP events
 yourself. Instead, the API creates events for you and then
 you use the event's attributes.
 
-.. autoclass:: AddDatabase
+.. autoclass:: AddressFormFilled
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json

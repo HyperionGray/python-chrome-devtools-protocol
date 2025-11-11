@@ -116,9 +116,35 @@ class Module:
         )
 
 
+@dataclass
+class DOMCounter:
+    r'''
+    DOM object counter data.
+    '''
+    #: Object name. Note: object names should be presumed volatile and clients should not expect
+    #: the returned names to be consistent across runs.
+    name: str
+
+    #: Object count.
+    count: int
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['name'] = self.name
+        json['count'] = self.count
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> DOMCounter:
+        return cls(
+            name=str(json['name']),
+            count=int(json['count']),
+        )
+
+
 def get_dom_counters() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[int, int, int]]:
     r'''
-
+    Retruns current DOM object counters.
 
     :returns: A tuple with the following items:
 
@@ -137,8 +163,24 @@ def get_dom_counters() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[
     )
 
 
-def prepare_for_leak_detection() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+def get_dom_counters_for_leak_detection() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[DOMCounter]]:
+    r'''
+    Retruns DOM object counters after preparing renderer for leak detection.
 
+    :returns: DOM object counters.
+    '''
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Memory.getDOMCountersForLeakDetection',
+    }
+    json = yield cmd_dict
+    return [DOMCounter.from_json(i) for i in json['counters']]
+
+
+def prepare_for_leak_detection() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    r'''
+    Prepares for leak detection by terminating workers, stopping spellcheckers,
+    dropping non-essential internal caches, running garbage collections, etc.
+    '''
     cmd_dict: T_JSON_DICT = {
         'method': 'Memory.prepareForLeakDetection',
     }

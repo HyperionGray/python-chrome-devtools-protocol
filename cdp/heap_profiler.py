@@ -212,14 +212,26 @@ def get_sampling_profile() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,SamplingH
 
 
 def start_sampling(
-        sampling_interval: typing.Optional[float] = None
+        sampling_interval: typing.Optional[float] = None,
+        stack_depth: typing.Optional[float] = None,
+        include_objects_collected_by_major_gc: typing.Optional[bool] = None,
+        include_objects_collected_by_minor_gc: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     r'''
     :param sampling_interval: *(Optional)* Average sample interval in bytes. Poisson distribution is used for the intervals. The default value is 32768 bytes.
+    :param stack_depth: *(Optional)* Maximum stack depth. The default value is 128.
+    :param include_objects_collected_by_major_gc: *(Optional)* By default, the sampling heap profiler reports only objects which are still alive when the profile is returned via getSamplingProfile or stopSampling, which is useful for determining what functions contribute the most to steady-state memory usage. This flag instructs the sampling heap profiler to also include information about objects discarded by major GC, which will show which functions cause large temporary memory usage or long GC pauses.
+    :param include_objects_collected_by_minor_gc: *(Optional)* By default, the sampling heap profiler reports only objects which are still alive when the profile is returned via getSamplingProfile or stopSampling, which is useful for determining what functions contribute the most to steady-state memory usage. This flag instructs the sampling heap profiler to also include information about objects discarded by minor GC, which is useful when tuning a latency-sensitive application for minimal GC activity.
     '''
     params: T_JSON_DICT = dict()
     if sampling_interval is not None:
         params['samplingInterval'] = sampling_interval
+    if stack_depth is not None:
+        params['stackDepth'] = stack_depth
+    if include_objects_collected_by_major_gc is not None:
+        params['includeObjectsCollectedByMajorGC'] = include_objects_collected_by_major_gc
+    if include_objects_collected_by_minor_gc is not None:
+        params['includeObjectsCollectedByMinorGC'] = include_objects_collected_by_minor_gc
     cmd_dict: T_JSON_DICT = {
         'method': 'HeapProfiler.startSampling',
         'params': params,
@@ -259,12 +271,14 @@ def stop_sampling() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,SamplingHeapProf
 def stop_tracking_heap_objects(
         report_progress: typing.Optional[bool] = None,
         treat_global_objects_as_roots: typing.Optional[bool] = None,
-        capture_numeric_value: typing.Optional[bool] = None
+        capture_numeric_value: typing.Optional[bool] = None,
+        expose_internals: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     r'''
     :param report_progress: *(Optional)* If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken when the tracking is stopped.
-    :param treat_global_objects_as_roots: *(Optional)*
+    :param treat_global_objects_as_roots: **(DEPRECATED)** *(Optional)* Deprecated in favor of ```exposeInternals```.
     :param capture_numeric_value: *(Optional)* If true, numerical values are included in the snapshot
+    :param expose_internals: **(EXPERIMENTAL)** *(Optional)* If true, exposes internals of the snapshot.
     '''
     params: T_JSON_DICT = dict()
     if report_progress is not None:
@@ -273,6 +287,8 @@ def stop_tracking_heap_objects(
         params['treatGlobalObjectsAsRoots'] = treat_global_objects_as_roots
     if capture_numeric_value is not None:
         params['captureNumericValue'] = capture_numeric_value
+    if expose_internals is not None:
+        params['exposeInternals'] = expose_internals
     cmd_dict: T_JSON_DICT = {
         'method': 'HeapProfiler.stopTrackingHeapObjects',
         'params': params,
@@ -283,12 +299,14 @@ def stop_tracking_heap_objects(
 def take_heap_snapshot(
         report_progress: typing.Optional[bool] = None,
         treat_global_objects_as_roots: typing.Optional[bool] = None,
-        capture_numeric_value: typing.Optional[bool] = None
+        capture_numeric_value: typing.Optional[bool] = None,
+        expose_internals: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     r'''
     :param report_progress: *(Optional)* If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken.
-    :param treat_global_objects_as_roots: *(Optional)* If true, a raw snapshot without artificial roots will be generated
+    :param treat_global_objects_as_roots: **(DEPRECATED)** *(Optional)* If true, a raw snapshot without artificial roots will be generated. Deprecated in favor of ```exposeInternals```.
     :param capture_numeric_value: *(Optional)* If true, numerical values are included in the snapshot
+    :param expose_internals: **(EXPERIMENTAL)** *(Optional)* If true, exposes internals of the snapshot.
     '''
     params: T_JSON_DICT = dict()
     if report_progress is not None:
@@ -297,6 +315,8 @@ def take_heap_snapshot(
         params['treatGlobalObjectsAsRoots'] = treat_global_objects_as_roots
     if capture_numeric_value is not None:
         params['captureNumericValue'] = capture_numeric_value
+    if expose_internals is not None:
+        params['exposeInternals'] = expose_internals
     cmd_dict: T_JSON_DICT = {
         'method': 'HeapProfiler.takeHeapSnapshot',
         'params': params,

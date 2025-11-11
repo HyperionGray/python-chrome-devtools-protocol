@@ -44,3 +44,13 @@ def remove_instrumentation_breakpoint(
         'params': params,
     }
     json = yield cmd_dict
+
+
+def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    r'''
+    Removes all breakpoints
+    '''
+    cmd_dict: T_JSON_DICT = {
+        'method': 'EventBreakpoints.disable',
+    }
+    json = yield cmd_dict

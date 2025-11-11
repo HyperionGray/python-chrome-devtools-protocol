@@ -57,6 +57,8 @@ commands, and ``z`` is the return type you should pay attention
 to. For more information, see
 :ref:`Getting Started: Commands <getting-started-commands>`.
 
+.. autofunction:: cancel_dragging
+
 .. autofunction:: dispatch_drag_event
 
 .. autofunction:: dispatch_key_event

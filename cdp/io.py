@@ -16,8 +16,8 @@ from . import runtime
 
 class StreamHandle(str):
     r'''
-    This is either obtained from another method or specified as ``blob:&lt;uuid&gt;`` where
-    ``&lt;uuid&gt`` is an UUID of a Blob.
+    This is either obtained from another method or specified as ``blob:<uuid>`` where
+    ``<uuid>`` is an UUID of a Blob.
     '''
     def to_json(self) -> str:
         return self
@@ -56,7 +56,7 @@ def read(
     Read a chunk of the stream
 
     :param handle: Handle of the stream to read.
-    :param offset: *(Optional)* Seek to the specified offset before reading (if not specificed, proceed with offset following the last read). Some types of streams may only support sequential reads.
+    :param offset: *(Optional)* Seek to the specified offset before reading (if not specified, proceed with offset following the last read). Some types of streams may only support sequential reads.
     :param size: *(Optional)* Maximum number of bytes to read (left upon the agent discretion if not specified).
     :returns: A tuple with the following items:
 

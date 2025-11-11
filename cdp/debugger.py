@@ -141,6 +141,8 @@ class CallFrame:
     location: Location
 
     #: JavaScript script name or url.
+    #: Deprecated in favor of using the ``location.scriptId`` to resolve the URL via a previously
+    #: sent ``Debugger.scriptParsed`` event.
     url: str
 
     #: Scope chain for this call frame.
@@ -155,6 +157,12 @@ class CallFrame:
     #: The value being returned, if the function is at return point.
     return_value: typing.Optional[runtime.RemoteObject] = None
 
+    #: Valid only while the VM is paused and indicates whether this frame
+    #: can be restarted or not. Note that a ``true`` value here does not
+    #: guarantee that Debugger#restartFrame with this CallFrameId will be
+    #: successful, but it is very likely.
+    can_be_restarted: typing.Optional[bool] = None
+
     def to_json(self) -> T_JSON_DICT:
         json: T_JSON_DICT = dict()
         json['callFrameId'] = self.call_frame_id.to_json()
@@ -167,6 +175,8 @@ class CallFrame:
             json['functionLocation'] = self.function_location.to_json()
         if self.return_value is not None:
             json['returnValue'] = self.return_value.to_json()
+        if self.can_be_restarted is not None:
+            json['canBeRestarted'] = self.can_be_restarted
         return json
 
     @classmethod
@@ -180,6 +190,7 @@ class CallFrame:
             this=runtime.RemoteObject.from_json(json['this']),
             function_location=Location.from_json(json['functionLocation']) if 'functionLocation' in json else None,
             return_value=runtime.RemoteObject.from_json(json['returnValue']) if 'returnValue' in json else None,
+            can_be_restarted=bool(json['canBeRestarted']) if 'canBeRestarted' in json else None,
         )
 
 
@@ -285,6 +296,28 @@ class BreakLocation:
         )
 
 
+@dataclass
+class WasmDisassemblyChunk:
+    #: The next chunk of disassembled lines.
+    lines: typing.List[str]
+
+    #: The bytecode offsets describing the start of each line.
+    bytecode_offsets: typing.List[int]
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['lines'] = [i for i in self.lines]
+        json['bytecodeOffsets'] = [i for i in self.bytecode_offsets]
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> WasmDisassemblyChunk:
+        return cls(
+            lines=[str(i) for i in json['lines']],
+            bytecode_offsets=[int(i) for i in json['bytecodeOffsets']],
+        )
+
+
 class ScriptLanguage(enum.Enum):
     r'''
     Enum of possible script languages.
@@ -323,6 +356,28 @@ class DebugSymbols:
         return cls(
             type_=str(json['type']),
             external_url=str(json['externalURL']) if 'externalURL' in json else None,
+        )
+
+
+@dataclass
+class ResolvedBreakpoint:
+    #: Breakpoint unique identifier.
+    breakpoint_id: BreakpointId
+
+    #: Actual breakpoint location.
+    location: Location
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['breakpointId'] = self.breakpoint_id.to_json()
+        json['location'] = self.location.to_json()
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> ResolvedBreakpoint:
+        return cls(
+            breakpoint_id=BreakpointId.from_json(json['breakpointId']),
+            location=Location.from_json(json['location']),
         )
 
 
@@ -487,6 +542,61 @@ def get_script_source(
     )
 
 
+def disassemble_wasm_module(
+        script_id: runtime.ScriptId
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.Optional[str], int, typing.List[int], WasmDisassemblyChunk]]:
+    r'''
+
+
+    **EXPERIMENTAL**
+
+    :param script_id: Id of the script to disassemble
+    :returns: A tuple with the following items:
+
+        0. **streamId** - *(Optional)* For large modules, return a stream from which additional chunks of disassembly can be read successively.
+        1. **totalNumberOfLines** - The total number of lines in the disassembly text.
+        2. **functionBodyOffsets** - The offsets of all function bodies, in the format [start1, end1, start2, end2, ...] where all ends are exclusive.
+        3. **chunk** - The first chunk of disassembly.
+    '''
+    params: T_JSON_DICT = dict()
+    params['scriptId'] = script_id.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Debugger.disassembleWasmModule',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return (
+        str(json['streamId']) if 'streamId' in json else None,
+        int(json['totalNumberOfLines']),
+        [int(i) for i in json['functionBodyOffsets']],
+        WasmDisassemblyChunk.from_json(json['chunk'])
+    )
+
+
+def next_wasm_disassembly_chunk(
+        stream_id: str
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,WasmDisassemblyChunk]:
+    r'''
+    Disassemble the next chunk of lines for the module corresponding to the
+    stream. If disassembly is complete, this API will invalidate the streamId
+    and return an empty chunk. Any subsequent calls for the now invalid stream
+    will return errors.
+
+    **EXPERIMENTAL**
+
+    :param stream_id:
+    :returns: The next chunk of disassembly.
+    '''
+    params: T_JSON_DICT = dict()
+    params['streamId'] = stream_id
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Debugger.nextWasmDisassemblyChunk',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return WasmDisassemblyChunk.from_json(json['chunk'])
+
+
 @deprecated(version="1.3")
 def get_wasm_bytecode(
         script_id: runtime.ScriptId
@@ -579,16 +689,27 @@ def remove_breakpoint(
     json = yield cmd_dict
 
 
-@deprecated(version="1.3")
 def restart_frame(
-        call_frame_id: CallFrameId
+        call_frame_id: CallFrameId,
+        mode: typing.Optional[str] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.List[CallFrame], typing.Optional[runtime.StackTrace], typing.Optional[runtime.StackTraceId]]]:
     r'''
-    Restarts particular call frame from the beginning.
+    Restarts particular call frame from the beginning. The old, deprecated
+    behavior of ``restartFrame`` is to stay paused and allow further CDP commands
+    after a restart was scheduled. This can cause problems with restarting, so
+    we now continue execution immediatly after it has been scheduled until we
+    reach the beginning of the restarted frame.
 
-    .. deprecated:: 1.3
+    To stay back-wards compatible, ``restartFrame`` now expects a ``mode``
+    parameter to be present. If the ``mode`` parameter is missing, ``restartFrame``
+    errors out.
+
+    The various return values are deprecated and ``callFrames`` is always empty.
+    Use the call frames from the ``Debugger#paused`` events instead, that fires
+    once V8 pauses at the beginning of the restarted function.
 
     :param call_frame_id: Call frame identifier to evaluate on.
+    :param mode: **(EXPERIMENTAL)** *(Optional)* The ```mode```` parameter must be present and set to 'StepInto', otherwise ````restartFrame``` will error out.
     :returns: A tuple with the following items:
 
         0. **callFrames** - New stack trace.
@@ -597,6 +718,8 @@ def restart_frame(
     '''
     params: T_JSON_DICT = dict()
     params['callFrameId'] = call_frame_id.to_json()
+    if mode is not None:
+        params['mode'] = mode
     cmd_dict: T_JSON_DICT = {
         'method': 'Debugger.restartFrame',
         'params': params,
@@ -674,8 +797,30 @@ def set_async_call_stack_depth(
     json = yield cmd_dict
 
 
+def set_blackbox_execution_contexts(
+        unique_ids: typing.List[str]
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    r'''
+    Replace previous blackbox execution contexts with passed ones. Forces backend to skip
+    stepping/pausing in scripts in these execution contexts. VM will try to leave blackboxed script by
+    performing 'step in' several times, finally resorting to 'step out' if unsuccessful.
+
+    **EXPERIMENTAL**
+
+    :param unique_ids: Array of execution context unique ids for the debugger to ignore.
+    '''
+    params: T_JSON_DICT = dict()
+    params['uniqueIds'] = [i for i in unique_ids]
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Debugger.setBlackboxExecutionContexts',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
 def set_blackbox_patterns(
-        patterns: typing.List[str]
+        patterns: typing.List[str],
+        skip_anonymous: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     r'''
     Replace previous blackbox patterns with passed ones. Forces backend to skip stepping/pausing in
@@ -685,9 +830,12 @@ def set_blackbox_patterns(
     **EXPERIMENTAL**
 
     :param patterns: Array of regexps that will be used to check script url for blackbox state.
+    :param skip_anonymous: *(Optional)* If true, also ignore scripts with no source url.
     '''
     params: T_JSON_DICT = dict()
     params['patterns'] = [i for i in patterns]
+    if skip_anonymous is not None:
+        params['skipAnonymous'] = skip_anonymous
     cmd_dict: T_JSON_DICT = {
         'method': 'Debugger.setBlackboxPatterns',
         'params': params,
@@ -864,8 +1012,8 @@ def set_pause_on_exceptions(
         state: str
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     r'''
-    Defines pause on exceptions state. Can be set to stop on all exceptions, uncaught exceptions or
-    no exceptions. Initial pause on exceptions state is ``none``.
+    Defines pause on exceptions state. Can be set to stop on all exceptions, uncaught exceptions,
+    or caught exceptions, no exceptions. Initial pause on exceptions state is ``none``.
 
     :param state: Pause on exceptions mode.
     '''
@@ -900,27 +1048,38 @@ def set_return_value(
 def set_script_source(
         script_id: runtime.ScriptId,
         script_source: str,
-        dry_run: typing.Optional[bool] = None
-    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.Optional[typing.List[CallFrame]], typing.Optional[bool], typing.Optional[runtime.StackTrace], typing.Optional[runtime.StackTraceId], typing.Optional[runtime.ExceptionDetails]]]:
+        dry_run: typing.Optional[bool] = None,
+        allow_top_frame_editing: typing.Optional[bool] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[typing.Optional[typing.List[CallFrame]], typing.Optional[bool], typing.Optional[runtime.StackTrace], typing.Optional[runtime.StackTraceId], str, typing.Optional[runtime.ExceptionDetails]]]:
     r'''
     Edits JavaScript source live.
+
+    In general, functions that are currently on the stack can not be edited with
+    a single exception: If the edited function is the top-most stack frame and
+    that is the only activation of that function on the stack. In this case
+    the live edit will be successful and a ``Debugger.restartFrame`` for the
+    top-most function is automatically triggered.
 
     :param script_id: Id of the script to edit.
     :param script_source: New content of the script.
     :param dry_run: *(Optional)* If true the change will not actually be applied. Dry run may be used to get result description without actually modifying the code.
+    :param allow_top_frame_editing: **(EXPERIMENTAL)** *(Optional)* If true, then ```scriptSource```` is allowed to change the function on top of the stack as long as the top-most stack frame is the only activation of that function.
     :returns: A tuple with the following items:
 
         0. **callFrames** - *(Optional)* New stack trace in case editing has happened while VM was stopped.
         1. **stackChanged** - *(Optional)* Whether current call stack  was modified after applying the changes.
         2. **asyncStackTrace** - *(Optional)* Async stack trace, if any.
         3. **asyncStackTraceId** - *(Optional)* Async stack trace, if any.
-        4. **exceptionDetails** - *(Optional)* Exception details if any.
+        4. **status** - Whether the operation was successful or not. Only `` Ok`` denotes a successful live edit while the other enum variants denote why the live edit failed.
+        5. **exceptionDetails** - *(Optional)* Exception details if any. Only present when `` status`` is `` CompileError`.
     '''
     params: T_JSON_DICT = dict()
     params['scriptId'] = script_id.to_json()
     params['scriptSource'] = script_source
     if dry_run is not None:
         params['dryRun'] = dry_run
+    if allow_top_frame_editing is not None:
+        params['allowTopFrameEditing'] = allow_top_frame_editing
     cmd_dict: T_JSON_DICT = {
         'method': 'Debugger.setScriptSource',
         'params': params,
@@ -931,6 +1090,7 @@ def set_script_source(
         bool(json['stackChanged']) if 'stackChanged' in json else None,
         runtime.StackTrace.from_json(json['asyncStackTrace']) if 'asyncStackTrace' in json else None,
         runtime.StackTraceId.from_json(json['asyncStackTraceId']) if 'asyncStackTraceId' in json else None,
+        str(json['status']),
         runtime.ExceptionDetails.from_json(json['exceptionDetails']) if 'exceptionDetails' in json else None
     )
 
@@ -1029,11 +1189,13 @@ def step_over(
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 @event_class('Debugger.breakpointResolved')
 @dataclass
 class BreakpointResolved:
     r'''
     Fired when breakpoint is resolved to an actual script and location.
+    Deprecated in favor of ``resolvedBreakpoints`` in the ``scriptParsed`` event.
     '''
     #: Breakpoint unique identifier.
     breakpoint_id: BreakpointId
@@ -1117,9 +1279,11 @@ class ScriptFailedToParse:
     end_column: int
     #: Specifies script creation context.
     execution_context_id: runtime.ExecutionContextId
-    #: Content hash of the script.
+    #: Content hash of the script, SHA-256.
     hash_: str
-    #: Embedder-specific auxiliary data.
+    #: For Wasm modules, the content of the ``build_id`` custom section. For JavaScript the ``debugId`` magic comment.
+    build_id: str
+    #: Embedder-specific auxiliary data likely matching {isDefault: boolean, type: 'default'``'isolated'``'worker', frameId: string}
     execution_context_aux_data: typing.Optional[dict]
     #: URL of source map associated with script (if any).
     source_map_url: typing.Optional[str]
@@ -1134,7 +1298,7 @@ class ScriptFailedToParse:
     #: If the scriptLanguage is WebAssembly, the code section offset in the module.
     code_offset: typing.Optional[int]
     #: The language of the script.
-    script_language: typing.Optional[debugger.ScriptLanguage]
+    script_language: typing.Optional[ScriptLanguage]
     #: The name the embedder supplied for this script.
     embedder_name: typing.Optional[str]
 
@@ -1149,6 +1313,7 @@ class ScriptFailedToParse:
             end_column=int(json['endColumn']),
             execution_context_id=runtime.ExecutionContextId.from_json(json['executionContextId']),
             hash_=str(json['hash']),
+            build_id=str(json['buildId']),
             execution_context_aux_data=dict(json['executionContextAuxData']) if 'executionContextAuxData' in json else None,
             source_map_url=str(json['sourceMapURL']) if 'sourceMapURL' in json else None,
             has_source_url=bool(json['hasSourceURL']) if 'hasSourceURL' in json else None,
@@ -1156,7 +1321,7 @@ class ScriptFailedToParse:
             length=int(json['length']) if 'length' in json else None,
             stack_trace=runtime.StackTrace.from_json(json['stackTrace']) if 'stackTrace' in json else None,
             code_offset=int(json['codeOffset']) if 'codeOffset' in json else None,
-            script_language=debugger.ScriptLanguage.from_json(json['scriptLanguage']) if 'scriptLanguage' in json else None,
+            script_language=ScriptLanguage.from_json(json['scriptLanguage']) if 'scriptLanguage' in json else None,
             embedder_name=str(json['embedderName']) if 'embedderName' in json else None
         )
 
@@ -1182,9 +1347,11 @@ class ScriptParsed:
     end_column: int
     #: Specifies script creation context.
     execution_context_id: runtime.ExecutionContextId
-    #: Content hash of the script.
+    #: Content hash of the script, SHA-256.
     hash_: str
-    #: Embedder-specific auxiliary data.
+    #: For Wasm modules, the content of the ``build_id`` custom section. For JavaScript the ``debugId`` magic comment.
+    build_id: str
+    #: Embedder-specific auxiliary data likely matching {isDefault: boolean, type: 'default'``'isolated'``'worker', frameId: string}
     execution_context_aux_data: typing.Optional[dict]
     #: True, if this script is generated as a result of the live edit operation.
     is_live_edit: typing.Optional[bool]
@@ -1201,11 +1368,15 @@ class ScriptParsed:
     #: If the scriptLanguage is WebAssembly, the code section offset in the module.
     code_offset: typing.Optional[int]
     #: The language of the script.
-    script_language: typing.Optional[debugger.ScriptLanguage]
-    #: If the scriptLanguage is WebASsembly, the source of debug symbols for the module.
-    debug_symbols: typing.Optional[debugger.DebugSymbols]
+    script_language: typing.Optional[ScriptLanguage]
+    #: If the scriptLanguage is WebAssembly, the source of debug symbols for the module.
+    debug_symbols: typing.Optional[typing.List[DebugSymbols]]
     #: The name the embedder supplied for this script.
     embedder_name: typing.Optional[str]
+    #: The list of set breakpoints in this script if calls to ``setBreakpointByUrl``
+    #: matches this script's URL or hash. Clients that use this list can ignore the
+    #: ``breakpointResolved`` event. They are equivalent.
+    resolved_breakpoints: typing.Optional[typing.List[ResolvedBreakpoint]]
 
     @classmethod
     def from_json(cls, json: T_JSON_DICT) -> ScriptParsed:
@@ -1218,6 +1389,7 @@ class ScriptParsed:
             end_column=int(json['endColumn']),
             execution_context_id=runtime.ExecutionContextId.from_json(json['executionContextId']),
             hash_=str(json['hash']),
+            build_id=str(json['buildId']),
             execution_context_aux_data=dict(json['executionContextAuxData']) if 'executionContextAuxData' in json else None,
             is_live_edit=bool(json['isLiveEdit']) if 'isLiveEdit' in json else None,
             source_map_url=str(json['sourceMapURL']) if 'sourceMapURL' in json else None,
@@ -1226,7 +1398,8 @@ class ScriptParsed:
             length=int(json['length']) if 'length' in json else None,
             stack_trace=runtime.StackTrace.from_json(json['stackTrace']) if 'stackTrace' in json else None,
             code_offset=int(json['codeOffset']) if 'codeOffset' in json else None,
-            script_language=debugger.ScriptLanguage.from_json(json['scriptLanguage']) if 'scriptLanguage' in json else None,
-            debug_symbols=debugger.DebugSymbols.from_json(json['debugSymbols']) if 'debugSymbols' in json else None,
-            embedder_name=str(json['embedderName']) if 'embedderName' in json else None
+            script_language=ScriptLanguage.from_json(json['scriptLanguage']) if 'scriptLanguage' in json else None,
+            debug_symbols=[DebugSymbols.from_json(i) for i in json['debugSymbols']] if 'debugSymbols' in json else None,
+            embedder_name=str(json['embedderName']) if 'embedderName' in json else None,
+            resolved_breakpoints=[ResolvedBreakpoint.from_json(i) for i in json['resolvedBreakpoints']] if 'resolvedBreakpoints' in json else None
         )

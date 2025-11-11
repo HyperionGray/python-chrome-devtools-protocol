@@ -1,8 +1,6 @@
 Security
 ========
 
-Security
-
 .. module:: cdp.security
 
 * Types_
