@@ -76,3 +76,20 @@ class TargetReloadedAfterCrash:
         return cls(
 
         )
+
+
+@event_class('Inspector.workerScriptLoaded')
+@dataclass
+class WorkerScriptLoaded:
+    r'''
+    **EXPERIMENTAL**
+
+    Fired on worker targets when main worker script and any imported scripts have been evaluated.
+    '''
+
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> WorkerScriptLoaded:
+        return cls(
+
+        )

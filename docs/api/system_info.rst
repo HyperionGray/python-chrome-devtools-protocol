@@ -49,11 +49,6 @@ arguments to other commands.
       :undoc-members:
       :exclude-members: from_json, to_json
 
-.. autoclass:: ImageDecodeAcceleratorCapability
-      :members:
-      :undoc-members:
-      :exclude-members: from_json, to_json
-
 .. autoclass:: GPUInfo
       :members:
       :undoc-members:
@@ -75,6 +70,8 @@ this library, types ``x`` and ``y`` are the same for all
 commands, and ``z`` is the return type you should pay attention
 to. For more information, see
 :ref:`Getting Started: Commands <getting-started-commands>`.
+
+.. autofunction:: get_feature_state
 
 .. autofunction:: get_info
 

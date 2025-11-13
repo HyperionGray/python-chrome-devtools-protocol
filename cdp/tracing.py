@@ -3,7 +3,7 @@
 # This file is generated from the CDP specification. If you need to make
 # changes, edit the generator and regenerate all of the modules.
 #
-# CDP domain: Tracing (experimental)
+# CDP domain: Tracing
 
 from __future__ import annotations
 from cdp.util import event_class, T_JSON_DICT
@@ -31,8 +31,12 @@ class MemoryDumpConfig(dict):
 
 @dataclass
 class TraceConfig:
-    #: Controls how the trace buffer stores data.
+    #: Controls how the trace buffer stores data. The default is ``recordUntilFull``.
     record_mode: typing.Optional[str] = None
+
+    #: Size of the trace buffer in kilobytes. If not specified or zero is passed, a default value
+    #: of 200 MB would be used.
+    trace_buffer_size_in_kb: typing.Optional[float] = None
 
     #: Turns on JavaScript stack sampling.
     enable_sampling: typing.Optional[bool] = None
@@ -59,6 +63,8 @@ class TraceConfig:
         json: T_JSON_DICT = dict()
         if self.record_mode is not None:
             json['recordMode'] = self.record_mode
+        if self.trace_buffer_size_in_kb is not None:
+            json['traceBufferSizeInKb'] = self.trace_buffer_size_in_kb
         if self.enable_sampling is not None:
             json['enableSampling'] = self.enable_sampling
         if self.enable_systrace is not None:
@@ -79,6 +85,7 @@ class TraceConfig:
     def from_json(cls, json: T_JSON_DICT) -> TraceConfig:
         return cls(
             record_mode=str(json['recordMode']) if 'recordMode' in json else None,
+            trace_buffer_size_in_kb=float(json['traceBufferSizeInKb']) if 'traceBufferSizeInKb' in json else None,
             enable_sampling=bool(json['enableSampling']) if 'enableSampling' in json else None,
             enable_systrace=bool(json['enableSystrace']) if 'enableSystrace' in json else None,
             enable_argument_filter=bool(json['enableArgumentFilter']) if 'enableArgumentFilter' in json else None,
@@ -172,6 +179,8 @@ def get_categories() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[str
     r'''
     Gets supported tracing categories.
 
+    **EXPERIMENTAL**
+
     :returns: A list of supported tracing categories.
     '''
     cmd_dict: T_JSON_DICT = {
@@ -186,6 +195,8 @@ def record_clock_sync_marker(
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     r'''
     Record a clock sync marker in the trace.
+
+    **EXPERIMENTAL**
 
     :param sync_id: The ID of this clock sync marker
     '''
@@ -204,6 +215,8 @@ def request_memory_dump(
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Tuple[str, bool]]:
     r'''
     Request a global memory dump.
+
+    **EXPERIMENTAL**
 
     :param deterministic: *(Optional)* Enables more deterministic results by forcing garbage collection
     :param level_of_detail: *(Optional)* Specifies level of details in memory dump. Defaults to "detailed".
@@ -242,15 +255,15 @@ def start(
     r'''
     Start trace events collection.
 
-    :param categories: **(DEPRECATED)** *(Optional)* Category/tag filter
-    :param options: **(DEPRECATED)** *(Optional)* Tracing options
-    :param buffer_usage_reporting_interval: *(Optional)* If set, the agent will issue bufferUsage events at this interval, specified in milliseconds
+    :param categories: **(DEPRECATED)** **(EXPERIMENTAL)** *(Optional)* Category/tag filter
+    :param options: **(DEPRECATED)** **(EXPERIMENTAL)** *(Optional)* Tracing options
+    :param buffer_usage_reporting_interval: **(EXPERIMENTAL)** *(Optional)* If set, the agent will issue bufferUsage events at this interval, specified in milliseconds
     :param transfer_mode: *(Optional)* Whether to report trace events as series of dataCollected events or to save trace to a stream (defaults to ```ReportEvents````).
     :param stream_format: *(Optional)* Trace data format to use. This only applies when using ````ReturnAsStream```` transfer mode (defaults to ````json````).
-    :param stream_compression: *(Optional)* Compression format to use. This only applies when using ````ReturnAsStream```` transfer mode (defaults to ````none````)
+    :param stream_compression: **(EXPERIMENTAL)** *(Optional)* Compression format to use. This only applies when using ````ReturnAsStream```` transfer mode (defaults to ````none````)
     :param trace_config: *(Optional)*
-    :param perfetto_config: *(Optional)* Base64-encoded serialized perfetto.protos.TraceConfig protobuf message When specified, the parameters ````categories````, ````options````, ````traceConfig```` are ignored. (Encoded as a base64 string when passed over JSON)
-    :param tracing_backend: *(Optional)* Backend type (defaults to ````auto```)
+    :param perfetto_config: **(EXPERIMENTAL)** *(Optional)* Base64-encoded serialized perfetto.protos.TraceConfig protobuf message When specified, the parameters ````categories````, ````options````, ````traceConfig```` are ignored. (Encoded as a base64 string when passed over JSON)
+    :param tracing_backend: **(EXPERIMENTAL)** *(Optional)* Backend type (defaults to ````auto```)
     '''
     params: T_JSON_DICT = dict()
     if categories is not None:
@@ -281,6 +294,11 @@ def start(
 @event_class('Tracing.bufferUsage')
 @dataclass
 class BufferUsage:
+    r'''
+    **EXPERIMENTAL**
+
+
+    '''
     #: A number in range [0..1] that indicates the used size of event buffer as a fraction of its
     #: total size.
     percent_full: typing.Optional[float]
@@ -303,8 +321,10 @@ class BufferUsage:
 @dataclass
 class DataCollected:
     r'''
-    Contains an bucket of collected trace events. When tracing is stopped collected events will be
-    send as a sequence of dataCollected events followed by tracingComplete event.
+    **EXPERIMENTAL**
+
+    Contains a bucket of collected trace events. When tracing is stopped collected events will be
+    sent as a sequence of dataCollected events followed by tracingComplete event.
     '''
     value: typing.List[dict]
 

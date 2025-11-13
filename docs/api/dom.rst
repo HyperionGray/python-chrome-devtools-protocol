@@ -6,8 +6,8 @@ that has an `id`. This `id` can be used to get additional information on the Nod
 the JavaScript object wrapper, etc. It is important that client receives DOM events only for the
 nodes that are known to the client. Backend keeps track of the nodes that were sent to the client
 and never sends the same node twice. It is client's responsibility to collect information about
-the nodes that were sent to the client.<p>Note that `iframe` owner elements will return
-corresponding document elements as their child nodes.</p>
+the nodes that were sent to the client. Note that `iframe` owner elements will return
+corresponding document elements as their child nodes.
 
 .. module:: cdp.dom
 
@@ -53,7 +53,27 @@ arguments to other commands.
       :undoc-members:
       :exclude-members: from_json, to_json
 
+.. autoclass:: PhysicalAxes
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: LogicalAxes
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: ScrollOrientation
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
 .. autoclass:: Node
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: DetachedElementInfo
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
@@ -114,6 +134,10 @@ to. For more information, see
 
 .. autofunction:: focus
 
+.. autofunction:: force_show_popover
+
+.. autofunction:: get_anchor_element
+
 .. autofunction:: get_attributes
 
 .. autofunction:: get_box_model
@@ -122,7 +146,11 @@ to. For more information, see
 
 .. autofunction:: get_content_quads
 
+.. autofunction:: get_detached_dom_nodes
+
 .. autofunction:: get_document
+
+.. autofunction:: get_element_by_relation
 
 .. autofunction:: get_file_info
 
@@ -143,6 +171,8 @@ to. For more information, see
 .. autofunction:: get_relayout_boundary
 
 .. autofunction:: get_search_results
+
+.. autofunction:: get_top_layer_elements
 
 .. autofunction:: hide_highlight
 
@@ -249,6 +279,21 @@ you use the event's attributes.
       :exclude-members: from_json, to_json
 
 .. autoclass:: PseudoElementAdded
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: TopLayerElementsUpdated
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: ScrollableFlagUpdated
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: AffectedByStartingStylesFlagUpdated
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json

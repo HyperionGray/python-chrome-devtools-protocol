@@ -78,7 +78,7 @@ def test_cdp_primitive_type():
             def __repr__(self):
                 return 'AXNodeId({})'.format(super().__repr__())""")
 
-    type = CdpType.from_json(json_type)
+    type = CdpType.from_json(json_type, 'TestDomain')
     actual = type.generate_code()
     assert expected == actual
 
@@ -107,7 +107,7 @@ def test_cdp_array_of_primitive_type():
             def __repr__(self):
                 return 'ArrayOfStrings({})'.format(super().__repr__())""")
 
-    type = CdpType.from_json(json_type)
+    type = CdpType.from_json(json_type, 'TestDomain')
     actual = type.generate_code()
     assert expected == actual
 
@@ -145,7 +145,7 @@ def test_cdp_enum_type():
             def from_json(cls, json: str) -> AXValueSourceType:
                 return cls(json)""")
 
-    type = CdpType.from_json(json_type)
+    type = CdpType.from_json(json_type, "TestDomain")
     actual = type.generate_code()
     assert expected == actual
 
@@ -225,7 +225,7 @@ def test_cdp_class_type():
                     sources=[AXValueSource.from_json(i) for i in json['sources']] if 'sources' in json else None,
                 )""")
 
-    type = CdpType.from_json(json_type)
+    type = CdpType.from_json(json_type, "TestDomain")
     actual = type.generate_code()
     assert expected == actual
 

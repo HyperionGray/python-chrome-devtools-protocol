@@ -1,8 +1,6 @@
 Tracing
 =======
 
-*This CDP domain is experimental.*
-
 .. module:: cdp.tracing
 
 * Types_

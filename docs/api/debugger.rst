@@ -63,12 +63,22 @@ arguments to other commands.
       :undoc-members:
       :exclude-members: from_json, to_json
 
+.. autoclass:: WasmDisassemblyChunk
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
 .. autoclass:: ScriptLanguage
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
 
 .. autoclass:: DebugSymbols
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: ResolvedBreakpoint
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
@@ -89,6 +99,8 @@ to. For more information, see
 
 .. autofunction:: disable
 
+.. autofunction:: disassemble_wasm_module
+
 .. autofunction:: enable
 
 .. autofunction:: evaluate_on_call_frame
@@ -100,6 +112,8 @@ to. For more information, see
 .. autofunction:: get_stack_trace
 
 .. autofunction:: get_wasm_bytecode
+
+.. autofunction:: next_wasm_disassembly_chunk
 
 .. autofunction:: pause
 
@@ -114,6 +128,8 @@ to. For more information, see
 .. autofunction:: search_in_content
 
 .. autofunction:: set_async_call_stack_depth
+
+.. autofunction:: set_blackbox_execution_contexts
 
 .. autofunction:: set_blackbox_patterns
 

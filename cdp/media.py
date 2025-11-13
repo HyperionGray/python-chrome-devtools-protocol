@@ -11,6 +11,8 @@ from dataclasses import dataclass
 import enum
 import typing
 
+from . import dom
+
 
 class PlayerId(str):
     r'''
@@ -119,30 +121,88 @@ class PlayerEvent:
 
 
 @dataclass
+class PlayerErrorSourceLocation:
+    r'''
+    Represents logged source line numbers reported in an error.
+    NOTE: file and line are from chromium c++ implementation code, not js.
+    '''
+    file: str
+
+    line: int
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['file'] = self.file
+        json['line'] = self.line
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> PlayerErrorSourceLocation:
+        return cls(
+            file=str(json['file']),
+            line=int(json['line']),
+        )
+
+
+@dataclass
 class PlayerError:
     r'''
     Corresponds to kMediaError
     '''
-    type_: str
+    error_type: str
 
-    #: When this switches to using media::Status instead of PipelineStatus
-    #: we can remove "errorCode" and replace it with the fields from
-    #: a Status instance. This also seems like a duplicate of the error
-    #: level enum - there is a todo bug to have that level removed and
-    #: use this instead. (crbug.com/1068454)
-    error_code: str
+    #: Code is the numeric enum entry for a specific set of error codes, such
+    #: as PipelineStatusCodes in media/base/pipeline_status.h
+    code: int
+
+    #: A trace of where this error was caused / where it passed through.
+    stack: typing.List[PlayerErrorSourceLocation]
+
+    #: Errors potentially have a root cause error, ie, a DecoderError might be
+    #: caused by an WindowsError
+    cause: typing.List[PlayerError]
+
+    #: Extra data attached to an error, such as an HRESULT, Video Codec, etc.
+    data: dict
 
     def to_json(self) -> T_JSON_DICT:
         json: T_JSON_DICT = dict()
-        json['type'] = self.type_
-        json['errorCode'] = self.error_code
+        json['errorType'] = self.error_type
+        json['code'] = self.code
+        json['stack'] = [i.to_json() for i in self.stack]
+        json['cause'] = [i.to_json() for i in self.cause]
+        json['data'] = self.data
         return json
 
     @classmethod
     def from_json(cls, json: T_JSON_DICT) -> PlayerError:
         return cls(
-            type_=str(json['type']),
-            error_code=str(json['errorCode']),
+            error_type=str(json['errorType']),
+            code=int(json['code']),
+            stack=[PlayerErrorSourceLocation.from_json(i) for i in json['stack']],
+            cause=[PlayerError.from_json(i) for i in json['cause']],
+            data=dict(json['data']),
+        )
+
+
+@dataclass
+class Player:
+    player_id: PlayerId
+
+    dom_node_id: typing.Optional[dom.BackendNodeId] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['playerId'] = self.player_id.to_json()
+        if self.dom_node_id is not None:
+            json['domNodeId'] = self.dom_node_id.to_json()
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> Player:
+        return cls(
+            player_id=PlayerId.from_json(json['playerId']),
+            dom_node_id=dom.BackendNodeId.from_json(json['domNodeId']) if 'domNodeId' in json else None,
         )
 
 
@@ -236,18 +296,18 @@ class PlayerErrorsRaised:
         )
 
 
-@event_class('Media.playersCreated')
+@event_class('Media.playerCreated')
 @dataclass
-class PlayersCreated:
+class PlayerCreated:
     r'''
     Called whenever a player is created, or when a new agent joins and receives
-    a list of active players. If an agent is restored, it will receive the full
-    list of player ids and all events again.
+    a list of active players. If an agent is restored, it will receive one
+    event for each active player.
     '''
-    players: typing.List[PlayerId]
+    player: Player
 
     @classmethod
-    def from_json(cls, json: T_JSON_DICT) -> PlayersCreated:
+    def from_json(cls, json: T_JSON_DICT) -> PlayerCreated:
         return cls(
-            players=[PlayerId.from_json(i) for i in json['players']]
+            player=Player.from_json(json['player'])
         )

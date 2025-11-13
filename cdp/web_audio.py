@@ -49,6 +49,7 @@ class ContextState(enum.Enum):
     SUSPENDED = "suspended"
     RUNNING = "running"
     CLOSED = "closed"
+    INTERRUPTED = "interrupted"
 
     def to_json(self) -> str:
         return self.value

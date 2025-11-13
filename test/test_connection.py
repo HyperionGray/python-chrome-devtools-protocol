@@ -114,8 +114,8 @@ async def test_execute_command_success():
             
             # Check the result (navigate returns a tuple)
             assert isinstance(result, tuple)
-            assert len(result) == 3
-            frame_id, loader_id, error_text = result
+            assert len(result) == 4
+            frame_id, loader_id, error_text, is_download = result
             assert isinstance(frame_id, page.FrameId)
             assert frame_id == page.FrameId('test-frame-id')
 

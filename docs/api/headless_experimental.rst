@@ -45,11 +45,4 @@ to. For more information, see
 Events
 ------
 
-Generally, you do not need to instantiate CDP events
-yourself. Instead, the API creates events for you and then
-you use the event's attributes.
-
-.. autoclass:: NeedsBeginFramesChanged
-      :members:
-      :undoc-members:
-      :exclude-members: from_json, to_json
+*There are no events in this module.*

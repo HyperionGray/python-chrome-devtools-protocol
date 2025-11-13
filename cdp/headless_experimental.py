@@ -23,8 +23,11 @@ class ScreenshotParams:
     #: Image compression format (defaults to png).
     format_: typing.Optional[str] = None
 
-    #: Compression quality from range [0..100] (jpeg only).
+    #: Compression quality from range [0..100] (jpeg and webp only).
     quality: typing.Optional[int] = None
+
+    #: Optimize image encoding for speed, not for resulting size (defaults to false)
+    optimize_for_speed: typing.Optional[bool] = None
 
     def to_json(self) -> T_JSON_DICT:
         json: T_JSON_DICT = dict()
@@ -32,6 +35,8 @@ class ScreenshotParams:
             json['format'] = self.format_
         if self.quality is not None:
             json['quality'] = self.quality
+        if self.optimize_for_speed is not None:
+            json['optimizeForSpeed'] = self.optimize_for_speed
         return json
 
     @classmethod
@@ -39,6 +44,7 @@ class ScreenshotParams:
         return cls(
             format_=str(json['format']) if 'format' in json else None,
             quality=int(json['quality']) if 'quality' in json else None,
+            optimize_for_speed=bool(json['optimizeForSpeed']) if 'optimizeForSpeed' in json else None,
         )
 
 
@@ -52,7 +58,7 @@ def begin_frame(
     Sends a BeginFrame to the target and returns when the frame was completed. Optionally captures a
     screenshot from the resulting frame. Requires that the target was created with enabled
     BeginFrameControl. Designed for use with --run-all-compositor-stages-before-draw, see also
-    https://goo.gl/3zHXhB for more background.
+    https://goo.gle/chrome-headless-rendering for more background.
 
     :param frame_time_ticks: *(Optional)* Timestamp of this BeginFrame in Renderer TimeTicks (milliseconds of uptime). If not set, the current time will be used.
     :param interval: *(Optional)* The interval between BeginFrames that is reported to the compositor, in milliseconds. Defaults to a 60 frames/second interval, i.e. about 16.666 milliseconds.
@@ -83,9 +89,12 @@ def begin_frame(
     )
 
 
+@deprecated(version="1.3")
 def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     r'''
     Disables headless events for the target.
+
+    .. deprecated:: 1.3
     '''
     cmd_dict: T_JSON_DICT = {
         'method': 'HeadlessExperimental.disable',
@@ -93,30 +102,14 @@ def disable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     json = yield cmd_dict
 
 
+@deprecated(version="1.3")
 def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     r'''
     Enables headless events for the target.
+
+    .. deprecated:: 1.3
     '''
     cmd_dict: T_JSON_DICT = {
         'method': 'HeadlessExperimental.enable',
     }
     json = yield cmd_dict
-
-
-@deprecated(version="1.3")
-@event_class('HeadlessExperimental.needsBeginFramesChanged')
-@dataclass
-class NeedsBeginFramesChanged:
-    r'''
-    Issued when the target starts or stops needing BeginFrames.
-    Deprecated. Issue beginFrame unconditionally instead and use result from
-    beginFrame to detect whether the frames were suppressed.
-    '''
-    #: True if BeginFrames are needed, false otherwise.
-    needs_begin_frames: bool
-
-    @classmethod
-    def from_json(cls, json: T_JSON_DICT) -> NeedsBeginFramesChanged:
-        return cls(
-            needs_begin_frames=bool(json['needsBeginFrames'])
-        )

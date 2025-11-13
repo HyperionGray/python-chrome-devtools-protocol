@@ -37,6 +37,16 @@ arguments to other commands.
       :undoc-members:
       :exclude-members: from_json, to_json
 
+.. autoclass:: AdScriptId
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: AdScriptAncestry
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
 .. autoclass:: SecureContextType
       :members:
       :undoc-members:
@@ -98,6 +108,11 @@ arguments to other commands.
       :exclude-members: from_json, to_json
 
 .. autoclass:: OriginTrial
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: SecurityOriginDetails
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
@@ -177,6 +192,11 @@ arguments to other commands.
       :undoc-members:
       :exclude-members: from_json, to_json
 
+.. autoclass:: ScriptFontFamilies
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
 .. autoclass:: FontSizes
       :members:
       :undoc-members:
@@ -212,6 +232,61 @@ arguments to other commands.
       :undoc-members:
       :exclude-members: from_json, to_json
 
+.. autoclass:: FileFilter
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: FileHandler
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: ImageResource
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: LaunchHandler
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: ProtocolHandler
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: RelatedApplication
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: ScopeExtension
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: Screenshot
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: ShareTarget
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: Shortcut
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: WebAppManifest
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
 .. autoclass:: NavigationType
       :members:
       :undoc-members:
@@ -223,6 +298,11 @@ arguments to other commands.
       :exclude-members: from_json, to_json
 
 .. autoclass:: BackForwardCacheNotRestoredReasonType
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: BackForwardCacheBlockingDetails
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
@@ -283,11 +363,11 @@ to. For more information, see
 
 .. autofunction:: generate_test_report
 
+.. autofunction:: get_ad_script_ancestry
+
 .. autofunction:: get_app_id
 
 .. autofunction:: get_app_manifest
-
-.. autofunction:: get_cookies
 
 .. autofunction:: get_frame_tree
 
@@ -351,6 +431,10 @@ to. For more information, see
 
 .. autofunction:: set_lifecycle_events_enabled
 
+.. autofunction:: set_prerendering_allowed
+
+.. autofunction:: set_rph_registration_mode
+
 .. autofunction:: set_spc_transaction_mode
 
 .. autofunction:: set_touch_emulation_enabled
@@ -397,6 +481,11 @@ you use the event's attributes.
       :undoc-members:
       :exclude-members: from_json, to_json
 
+.. autoclass:: FrameSubtreeWillBeDetached
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
 .. autoclass:: FrameNavigated
       :members:
       :undoc-members:
@@ -408,6 +497,11 @@ you use the event's attributes.
       :exclude-members: from_json, to_json
 
 .. autoclass:: FrameResized
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: FrameStartedNavigating
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json

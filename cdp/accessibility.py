@@ -123,7 +123,7 @@ class AXValueSource:
     #: Whether this source is superseded by a higher priority source.
     superseded: typing.Optional[bool] = None
 
-    #: The native markup source for this value, e.g. a <label> element.
+    #: The native markup source for this value, e.g. a ``<label>`` element.
     native_source: typing.Optional[AXValueNativeSourceType] = None
 
     #: The value, such as a node or node list, of the native source.
@@ -267,8 +267,10 @@ class AXPropertyName(enum.Enum):
     - from 'live' to 'root': attributes which apply to nodes in live regions
     - from 'autocomplete' to 'valuetext': attributes which apply to widgets
     - from 'checked' to 'selected': states which apply to widgets
-    - from 'activedescendant' to 'owns' - relationships between elements other than parent/child/sibling.
+    - from 'activedescendant' to 'owns': relationships between elements other than parent/child/sibling
+    - from 'activeFullscreenElement' to 'uninteresting': reasons why this noode is hidden
     '''
+    ACTIONS = "actions"
     BUSY = "busy"
     DISABLED = "disabled"
     EDITABLE = "editable"
@@ -308,6 +310,24 @@ class AXPropertyName(enum.Enum):
     FLOWTO = "flowto"
     LABELLEDBY = "labelledby"
     OWNS = "owns"
+    URL = "url"
+    ACTIVE_FULLSCREEN_ELEMENT = "activeFullscreenElement"
+    ACTIVE_MODAL_DIALOG = "activeModalDialog"
+    ACTIVE_ARIA_MODAL_DIALOG = "activeAriaModalDialog"
+    ARIA_HIDDEN_ELEMENT = "ariaHiddenElement"
+    ARIA_HIDDEN_SUBTREE = "ariaHiddenSubtree"
+    EMPTY_ALT = "emptyAlt"
+    EMPTY_TEXT = "emptyText"
+    INERT_ELEMENT = "inertElement"
+    INERT_SUBTREE = "inertSubtree"
+    LABEL_CONTAINER = "labelContainer"
+    LABEL_FOR = "labelFor"
+    NOT_RENDERED = "notRendered"
+    NOT_VISIBLE = "notVisible"
+    PRESENTATIONAL_ROLE = "presentationalRole"
+    PROBABLY_PRESENTATIONAL = "probablyPresentational"
+    INACTIVE_CAROUSEL_TAB_CONTENT = "inactiveCarouselTabContent"
+    UNINTERESTING = "uninteresting"
 
     def to_json(self) -> str:
         return self.value
@@ -333,6 +353,9 @@ class AXNode:
 
     #: This ``Node``'s role, whether explicit or implicit.
     role: typing.Optional[AXValue] = None
+
+    #: This ``Node``'s Chrome raw role.
+    chrome_role: typing.Optional[AXValue] = None
 
     #: The accessible name for this ``Node``.
     name: typing.Optional[AXValue] = None
@@ -366,6 +389,8 @@ class AXNode:
             json['ignoredReasons'] = [i.to_json() for i in self.ignored_reasons]
         if self.role is not None:
             json['role'] = self.role.to_json()
+        if self.chrome_role is not None:
+            json['chromeRole'] = self.chrome_role.to_json()
         if self.name is not None:
             json['name'] = self.name.to_json()
         if self.description is not None:
@@ -391,6 +416,7 @@ class AXNode:
             ignored=bool(json['ignored']),
             ignored_reasons=[AXProperty.from_json(i) for i in json['ignoredReasons']] if 'ignoredReasons' in json else None,
             role=AXValue.from_json(json['role']) if 'role' in json else None,
+            chrome_role=AXValue.from_json(json['chromeRole']) if 'chromeRole' in json else None,
             name=AXValue.from_json(json['name']) if 'name' in json else None,
             description=AXValue.from_json(json['description']) if 'description' in json else None,
             value=AXValue.from_json(json['value']) if 'value' in json else None,
@@ -437,7 +463,7 @@ def get_partial_ax_tree(
     :param node_id: *(Optional)* Identifier of the node to get the partial accessibility tree for.
     :param backend_node_id: *(Optional)* Identifier of the backend node to get the partial accessibility tree for.
     :param object_id: *(Optional)* JavaScript object id of the node wrapper to get the partial accessibility tree for.
-    :param fetch_relatives: *(Optional)* Whether to fetch this nodes ancestors, siblings and children. Defaults to true.
+    :param fetch_relatives: *(Optional)* Whether to fetch this node's ancestors, siblings and children. Defaults to true.
     :returns: The ``Accessibility.AXNode`` for this DOM node, if it exists, plus its ancestors, siblings and children, if requested.
     '''
     params: T_JSON_DICT = dict()
@@ -459,7 +485,6 @@ def get_partial_ax_tree(
 
 def get_full_ax_tree(
         depth: typing.Optional[int] = None,
-        max_depth: typing.Optional[int] = None,
         frame_id: typing.Optional[page.FrameId] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[AXNode]]:
     r'''
@@ -468,15 +493,12 @@ def get_full_ax_tree(
     **EXPERIMENTAL**
 
     :param depth: *(Optional)* The maximum depth at which descendants of the root node should be retrieved. If omitted, the full tree is returned.
-    :param max_depth: **(DEPRECATED)** *(Optional)* Deprecated. This parameter has been renamed to ```depth```. If depth is not provided, max_depth will be used.
-    :param frame_id: *(Optional)* The frame for whose document the AX tree should be retrieved. If omited, the root frame is used.
+    :param frame_id: *(Optional)* The frame for whose document the AX tree should be retrieved. If omitted, the root frame is used.
     :returns: 
     '''
     params: T_JSON_DICT = dict()
     if depth is not None:
         params['depth'] = depth
-    if max_depth is not None:
-        params['max_depth'] = max_depth
     if frame_id is not None:
         params['frameId'] = frame_id.to_json()
     cmd_dict: T_JSON_DICT = {
@@ -577,7 +599,7 @@ def query_ax_tree(
     r'''
     Query a DOM node's accessibility subtree for accessible name and role.
     This command computes the name and role for all nodes in the subtree, including those that are
-    ignored for accessibility, and returns those that mactch the specified name and role. If no DOM
+    ignored for accessibility, and returns those that match the specified name and role. If no DOM
     node is specified, or the DOM node does not exist, the command returns an error. If neither
     ``accessibleName`` or ``role`` is specified, it returns all the accessibility nodes in the subtree.
 

@@ -82,16 +82,24 @@ class PseudoType(enum.Enum):
     '''
     FIRST_LINE = "first-line"
     FIRST_LETTER = "first-letter"
+    CHECKMARK = "checkmark"
     BEFORE = "before"
     AFTER = "after"
+    PICKER_ICON = "picker-icon"
+    INTEREST_HINT = "interest-hint"
     MARKER = "marker"
     BACKDROP = "backdrop"
+    COLUMN = "column"
     SELECTION = "selection"
+    SEARCH_TEXT = "search-text"
     TARGET_TEXT = "target-text"
     SPELLING_ERROR = "spelling-error"
     GRAMMAR_ERROR = "grammar-error"
     HIGHLIGHT = "highlight"
     FIRST_LINE_INHERITED = "first-line-inherited"
+    SCROLL_MARKER = "scroll-marker"
+    SCROLL_MARKER_GROUP = "scroll-marker-group"
+    SCROLL_BUTTON = "scroll-button"
     SCROLLBAR = "scrollbar"
     SCROLLBAR_THUMB = "scrollbar-thumb"
     SCROLLBAR_BUTTON = "scrollbar-button"
@@ -100,10 +108,19 @@ class PseudoType(enum.Enum):
     SCROLLBAR_CORNER = "scrollbar-corner"
     RESIZER = "resizer"
     INPUT_LIST_BUTTON = "input-list-button"
-    TRANSITION = "transition"
-    TRANSITION_CONTAINER = "transition-container"
-    TRANSITION_OLD_CONTENT = "transition-old-content"
-    TRANSITION_NEW_CONTENT = "transition-new-content"
+    VIEW_TRANSITION = "view-transition"
+    VIEW_TRANSITION_GROUP = "view-transition-group"
+    VIEW_TRANSITION_IMAGE_PAIR = "view-transition-image-pair"
+    VIEW_TRANSITION_GROUP_CHILDREN = "view-transition-group-children"
+    VIEW_TRANSITION_OLD = "view-transition-old"
+    VIEW_TRANSITION_NEW = "view-transition-new"
+    PLACEHOLDER = "placeholder"
+    FILE_SELECTOR_BUTTON = "file-selector-button"
+    DETAILS_CONTENT = "details-content"
+    PICKER = "picker"
+    PERMISSION_ICON = "permission-icon"
+    OVERSCROLL_AREA_PARENT = "overscroll-area-parent"
+    OVERSCROLL_CLIENT_AREA = "overscroll-client-area"
 
     def to_json(self) -> str:
         return self.value
@@ -142,6 +159,53 @@ class CompatibilityMode(enum.Enum):
 
     @classmethod
     def from_json(cls, json: str) -> CompatibilityMode:
+        return cls(json)
+
+
+class PhysicalAxes(enum.Enum):
+    r'''
+    ContainerSelector physical axes
+    '''
+    HORIZONTAL = "Horizontal"
+    VERTICAL = "Vertical"
+    BOTH = "Both"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> PhysicalAxes:
+        return cls(json)
+
+
+class LogicalAxes(enum.Enum):
+    r'''
+    ContainerSelector logical axes
+    '''
+    INLINE = "Inline"
+    BLOCK = "Block"
+    BOTH = "Both"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> LogicalAxes:
+        return cls(json)
+
+
+class ScrollOrientation(enum.Enum):
+    r'''
+    Physical scroll orientation
+    '''
+    HORIZONTAL = "horizontal"
+    VERTICAL = "vertical"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> ScrollOrientation:
         return cls(json)
 
 
@@ -210,6 +274,10 @@ class Node:
     #: Pseudo element type for this node.
     pseudo_type: typing.Optional[PseudoType] = None
 
+    #: Pseudo element identifier for this node. Only present if there is a
+    #: valid pseudoType.
+    pseudo_identifier: typing.Optional[str] = None
+
     #: Shadow root type.
     shadow_root_type: typing.Optional[ShadowRootType] = None
 
@@ -240,6 +308,12 @@ class Node:
     is_svg: typing.Optional[bool] = None
 
     compatibility_mode: typing.Optional[CompatibilityMode] = None
+
+    assigned_slot: typing.Optional[BackendNode] = None
+
+    is_scrollable: typing.Optional[bool] = None
+
+    affected_by_starting_styles: typing.Optional[bool] = None
 
     def to_json(self) -> T_JSON_DICT:
         json: T_JSON_DICT = dict()
@@ -275,6 +349,8 @@ class Node:
             json['value'] = self.value
         if self.pseudo_type is not None:
             json['pseudoType'] = self.pseudo_type.to_json()
+        if self.pseudo_identifier is not None:
+            json['pseudoIdentifier'] = self.pseudo_identifier
         if self.shadow_root_type is not None:
             json['shadowRootType'] = self.shadow_root_type.to_json()
         if self.frame_id is not None:
@@ -295,6 +371,12 @@ class Node:
             json['isSVG'] = self.is_svg
         if self.compatibility_mode is not None:
             json['compatibilityMode'] = self.compatibility_mode.to_json()
+        if self.assigned_slot is not None:
+            json['assignedSlot'] = self.assigned_slot.to_json()
+        if self.is_scrollable is not None:
+            json['isScrollable'] = self.is_scrollable
+        if self.affected_by_starting_styles is not None:
+            json['affectedByStartingStyles'] = self.affected_by_starting_styles
         return json
 
     @classmethod
@@ -319,6 +401,7 @@ class Node:
             name=str(json['name']) if 'name' in json else None,
             value=str(json['value']) if 'value' in json else None,
             pseudo_type=PseudoType.from_json(json['pseudoType']) if 'pseudoType' in json else None,
+            pseudo_identifier=str(json['pseudoIdentifier']) if 'pseudoIdentifier' in json else None,
             shadow_root_type=ShadowRootType.from_json(json['shadowRootType']) if 'shadowRootType' in json else None,
             frame_id=page.FrameId.from_json(json['frameId']) if 'frameId' in json else None,
             content_document=Node.from_json(json['contentDocument']) if 'contentDocument' in json else None,
@@ -329,6 +412,32 @@ class Node:
             distributed_nodes=[BackendNode.from_json(i) for i in json['distributedNodes']] if 'distributedNodes' in json else None,
             is_svg=bool(json['isSVG']) if 'isSVG' in json else None,
             compatibility_mode=CompatibilityMode.from_json(json['compatibilityMode']) if 'compatibilityMode' in json else None,
+            assigned_slot=BackendNode.from_json(json['assignedSlot']) if 'assignedSlot' in json else None,
+            is_scrollable=bool(json['isScrollable']) if 'isScrollable' in json else None,
+            affected_by_starting_styles=bool(json['affectedByStartingStyles']) if 'affectedByStartingStyles' in json else None,
+        )
+
+
+@dataclass
+class DetachedElementInfo:
+    r'''
+    A structure to hold the top-level node of a detached tree and an array of its retained descendants.
+    '''
+    tree_node: Node
+
+    retained_node_ids: typing.List[NodeId]
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['treeNode'] = self.tree_node.to_json()
+        json['retainedNodeIds'] = [i.to_json() for i in self.retained_node_ids]
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> DetachedElementInfo:
+        return cls(
+            tree_node=Node.from_json(json['treeNode']),
+            retained_node_ids=[NodeId.from_json(i) for i in json['retainedNodeIds']],
         )
 
 
@@ -619,8 +728,6 @@ def scroll_into_view_if_needed(
     Note: exactly one between nodeId, backendNodeId and objectId should be passed
     to identify the node.
 
-    **EXPERIMENTAL**
-
     :param node_id: *(Optional)* Identifier of the node.
     :param backend_node_id: *(Optional)* Identifier of the backend node.
     :param object_id: *(Optional)* JavaScript object id of the node wrapper.
@@ -672,12 +779,20 @@ def discard_search_results(
     json = yield cmd_dict
 
 
-def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+def enable(
+        include_whitespace: typing.Optional[str] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     r'''
     Enables DOM agent for the given page.
+
+    :param include_whitespace: **(EXPERIMENTAL)** *(Optional)* Whether to include whitespaces in the children array of returned Nodes.
     '''
+    params: T_JSON_DICT = dict()
+    if include_whitespace is not None:
+        params['includeWhitespace'] = include_whitespace
     cmd_dict: T_JSON_DICT = {
         'method': 'DOM.enable',
+        'params': params,
     }
     json = yield cmd_dict
 
@@ -714,7 +829,7 @@ def get_attributes(
     r'''
     Returns attributes for the specified node.
 
-    :param node_id: Id of the node to retrieve attibutes for.
+    :param node_id: Id of the node to retrieve attributes for.
     :returns: An interleaved array of node attribute names and values.
     '''
     params: T_JSON_DICT = dict()
@@ -792,6 +907,7 @@ def get_document(
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,Node]:
     r'''
     Returns the root DOM node (and optionally the subtree) to the caller.
+    Implicitly enables the DOM domain events for the current target.
 
     :param depth: *(Optional)* The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the entire subtree or provide an integer larger than 0.
     :param pierce: *(Optional)* Whether or not iframes and shadow roots should be traversed when returning the subtree (default is false).
@@ -909,7 +1025,8 @@ def get_node_for_location(
 def get_outer_html(
         node_id: typing.Optional[NodeId] = None,
         backend_node_id: typing.Optional[BackendNodeId] = None,
-        object_id: typing.Optional[runtime.RemoteObjectId] = None
+        object_id: typing.Optional[runtime.RemoteObjectId] = None,
+        include_shadow_dom: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,str]:
     r'''
     Returns node's HTML markup.
@@ -917,6 +1034,7 @@ def get_outer_html(
     :param node_id: *(Optional)* Identifier of the node.
     :param backend_node_id: *(Optional)* Identifier of the backend node.
     :param object_id: *(Optional)* JavaScript object id of the node wrapper.
+    :param include_shadow_dom: **(EXPERIMENTAL)** *(Optional)* Include all shadow roots. Equals to false if not specified.
     :returns: Outer HTML markup.
     '''
     params: T_JSON_DICT = dict()
@@ -926,6 +1044,8 @@ def get_outer_html(
         params['backendNodeId'] = backend_node_id.to_json()
     if object_id is not None:
         params['objectId'] = object_id.to_json()
+    if include_shadow_dom is not None:
+        params['includeShadowDOM'] = include_shadow_dom
     cmd_dict: T_JSON_DICT = {
         'method': 'DOM.getOuterHTML',
         'params': params,
@@ -1167,6 +1287,47 @@ def query_selector_all(
     }
     json = yield cmd_dict
     return [NodeId.from_json(i) for i in json['nodeIds']]
+
+
+def get_top_layer_elements() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[NodeId]]:
+    r'''
+    Returns NodeIds of current top layer elements.
+    Top layer is rendered closest to the user within a viewport, therefore its elements always
+    appear on top of all other content.
+
+    **EXPERIMENTAL**
+
+    :returns: NodeIds of top layer elements
+    '''
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.getTopLayerElements',
+    }
+    json = yield cmd_dict
+    return [NodeId.from_json(i) for i in json['nodeIds']]
+
+
+def get_element_by_relation(
+        node_id: NodeId,
+        relation: str
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,NodeId]:
+    r'''
+    Returns the NodeId of the matched element according to certain relations.
+
+    **EXPERIMENTAL**
+
+    :param node_id: Id of the node from which to query the relation.
+    :param relation: Type of relation to get.
+    :returns: NodeId of the element matching the queried relation.
+    '''
+    params: T_JSON_DICT = dict()
+    params['nodeId'] = node_id.to_json()
+    params['relation'] = relation
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.getElementByRelation',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return NodeId.from_json(json['nodeId'])
 
 
 def redo() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
@@ -1437,6 +1598,21 @@ def get_file_info(
     return str(json['path'])
 
 
+def get_detached_dom_nodes() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[DetachedElementInfo]]:
+    r'''
+    Returns list of detached nodes
+
+    **EXPERIMENTAL**
+
+    :returns: The list of detached nodes
+    '''
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.getDetachedDomNodes',
+    }
+    json = yield cmd_dict
+    return [DetachedElementInfo.from_json(i) for i in json['detachedNodes']]
+
+
 def set_inspected_node(
         node_id: NodeId
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
@@ -1560,23 +1736,41 @@ def get_frame_owner(
 
 def get_container_for_node(
         node_id: NodeId,
-        container_name: typing.Optional[str] = None
+        container_name: typing.Optional[str] = None,
+        physical_axes: typing.Optional[PhysicalAxes] = None,
+        logical_axes: typing.Optional[LogicalAxes] = None,
+        queries_scroll_state: typing.Optional[bool] = None,
+        queries_anchored: typing.Optional[bool] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.Optional[NodeId]]:
     r'''
-    Returns the container of the given node based on container query conditions.
-    If containerName is given, it will find the nearest container with a matching name;
-    otherwise it will find the nearest container regardless of its container name.
+    Returns the query container of the given node based on container query
+    conditions: containerName, physical and logical axes, and whether it queries
+    scroll-state or anchored elements. If no axes are provided and
+    queriesScrollState is false, the style container is returned, which is the
+    direct parent or the closest element with a matching container-name.
 
     **EXPERIMENTAL**
 
     :param node_id:
     :param container_name: *(Optional)*
+    :param physical_axes: *(Optional)*
+    :param logical_axes: *(Optional)*
+    :param queries_scroll_state: *(Optional)*
+    :param queries_anchored: *(Optional)*
     :returns: *(Optional)* The container node for the given node, or null if not found.
     '''
     params: T_JSON_DICT = dict()
     params['nodeId'] = node_id.to_json()
     if container_name is not None:
         params['containerName'] = container_name
+    if physical_axes is not None:
+        params['physicalAxes'] = physical_axes.to_json()
+    if logical_axes is not None:
+        params['logicalAxes'] = logical_axes.to_json()
+    if queries_scroll_state is not None:
+        params['queriesScrollState'] = queries_scroll_state
+    if queries_anchored is not None:
+        params['queriesAnchored'] = queries_anchored
     cmd_dict: T_JSON_DICT = {
         'method': 'DOM.getContainerForNode',
         'params': params,
@@ -1601,6 +1795,57 @@ def get_querying_descendants_for_container(
     params['nodeId'] = node_id.to_json()
     cmd_dict: T_JSON_DICT = {
         'method': 'DOM.getQueryingDescendantsForContainer',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return [NodeId.from_json(i) for i in json['nodeIds']]
+
+
+def get_anchor_element(
+        node_id: NodeId,
+        anchor_specifier: typing.Optional[str] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,NodeId]:
+    r'''
+    Returns the target anchor element of the given anchor query according to
+    https://www.w3.org/TR/css-anchor-position-1/#target.
+
+    **EXPERIMENTAL**
+
+    :param node_id: Id of the positioned element from which to find the anchor.
+    :param anchor_specifier: *(Optional)* An optional anchor specifier, as defined in https://www.w3.org/TR/css-anchor-position-1/#anchor-specifier. If not provided, it will return the implicit anchor element for the given positioned element.
+    :returns: The anchor element of the given anchor query.
+    '''
+    params: T_JSON_DICT = dict()
+    params['nodeId'] = node_id.to_json()
+    if anchor_specifier is not None:
+        params['anchorSpecifier'] = anchor_specifier
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.getAnchorElement',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return NodeId.from_json(json['nodeId'])
+
+
+def force_show_popover(
+        node_id: NodeId,
+        enable: bool
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[NodeId]]:
+    r'''
+    When enabling, this API force-opens the popover identified by nodeId
+    and keeps it open until disabled.
+
+    **EXPERIMENTAL**
+
+    :param node_id: Id of the popover HTMLElement
+    :param enable: If true, opens the popover and keeps it open. If false, closes the popover if it was previously force-opened.
+    :returns: List of popovers that were closed in order to respect popover stacking order.
+    '''
+    params: T_JSON_DICT = dict()
+    params['nodeId'] = node_id.to_json()
+    params['enable'] = enable
+    cmd_dict: T_JSON_DICT = {
+        'method': 'DOM.forceShowPopover',
         'params': params,
     }
     json = yield cmd_dict
@@ -1694,7 +1939,7 @@ class ChildNodeInserted:
     '''
     #: Id of the node that has changed.
     parent_node_id: NodeId
-    #: If of the previous siblint.
+    #: Id of the previous sibling.
     previous_node_id: NodeId
     #: Inserted node data.
     node: Node
@@ -1799,6 +2044,65 @@ class PseudoElementAdded:
         return cls(
             parent_id=NodeId.from_json(json['parentId']),
             pseudo_element=Node.from_json(json['pseudoElement'])
+        )
+
+
+@event_class('DOM.topLayerElementsUpdated')
+@dataclass
+class TopLayerElementsUpdated:
+    r'''
+    **EXPERIMENTAL**
+
+    Called when top layer elements are changed.
+    '''
+
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> TopLayerElementsUpdated:
+        return cls(
+
+        )
+
+
+@event_class('DOM.scrollableFlagUpdated')
+@dataclass
+class ScrollableFlagUpdated:
+    r'''
+    **EXPERIMENTAL**
+
+    Fired when a node's scrollability state changes.
+    '''
+    #: The id of the node.
+    node_id: NodeId
+    #: If the node is scrollable.
+    is_scrollable: bool
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> ScrollableFlagUpdated:
+        return cls(
+            node_id=NodeId.from_json(json['nodeId']),
+            is_scrollable=bool(json['isScrollable'])
+        )
+
+
+@event_class('DOM.affectedByStartingStylesFlagUpdated')
+@dataclass
+class AffectedByStartingStylesFlagUpdated:
+    r'''
+    **EXPERIMENTAL**
+
+    Fired when a node's starting styles changes.
+    '''
+    #: The id of the node.
+    node_id: NodeId
+    #: If the node has starting styles.
+    affected_by_starting_styles: bool
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> AffectedByStartingStylesFlagUpdated:
+        return cls(
+            node_id=NodeId.from_json(json['nodeId']),
+            affected_by_starting_styles=bool(json['affectedByStartingStyles'])
         )
 
 

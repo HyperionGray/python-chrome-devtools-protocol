@@ -19,6 +19,8 @@ from . import page
 class RequestId(str):
     r'''
     Unique request identifier.
+    Note that this does not identify individual HTTP requests that are part of
+    a network request.
     '''
     def to_json(self) -> str:
         return self
@@ -278,7 +280,7 @@ def continue_request(
     :param url: *(Optional)* If set, the request url will be modified in a way that's not observable by page.
     :param method: *(Optional)* If set, the request method is overridden.
     :param post_data: *(Optional)* If set, overrides the post data in the request. (Encoded as a base64 string when passed over JSON)
-    :param headers: *(Optional)* If set, overrides the request headers.
+    :param headers: *(Optional)* If set, overrides the request headers. Note that the overrides do not extend to subsequent redirect hops, if a redirect happens. Another override may be applied to a different request produced by a redirect.
     :param intercept_response: **(EXPERIMENTAL)** *(Optional)* If set, overrides response interception behavior for this request.
     '''
     params: T_JSON_DICT = dict()
@@ -367,6 +369,10 @@ def get_response_body(
     takeResponseBodyForInterceptionAsStream. Calling other methods that
     affect the request or disabling fetch domain before body is received
     results in an undefined behavior.
+    Note that the response body is not available for redirects. Requests
+    paused in the _redirect received_ state may be differentiated by
+    ``responseCode`` and presence of ``location`` response header, see
+    comments to ``requestPaused`` for details.
 
     :param request_id: Identifier for the intercepted request to get body for.
     :returns: A tuple with the following items:
@@ -425,6 +431,11 @@ class RequestPaused:
     The stage of the request can be determined by presence of responseErrorReason
     and responseStatusCode -- the request is at the response stage if either
     of these fields is present and in the request stage otherwise.
+    Redirect responses and subsequent requests are reported similarly to regular
+    responses and requests. Redirect responses may be distinguished by the value
+    of ``responseStatusCode`` (which is one of 301, 302, 303, 307, 308) along with
+    presence of the ``location`` header. Requests resulting from a redirect will
+    have ``redirectedRequestId`` field set.
     '''
     #: Each request the page makes will have a unique id.
     request_id: RequestId
@@ -444,7 +455,10 @@ class RequestPaused:
     response_headers: typing.Optional[typing.List[HeaderEntry]]
     #: If the intercepted request had a corresponding Network.requestWillBeSent event fired for it,
     #: then this networkId will be the same as the requestId present in the requestWillBeSent event.
-    network_id: typing.Optional[RequestId]
+    network_id: typing.Optional[network.RequestId]
+    #: If the request is due to a redirect response from the server, the id of the request that
+    #: has caused the redirect.
+    redirected_request_id: typing.Optional[RequestId]
 
     @classmethod
     def from_json(cls, json: T_JSON_DICT) -> RequestPaused:
@@ -457,7 +471,8 @@ class RequestPaused:
             response_status_code=int(json['responseStatusCode']) if 'responseStatusCode' in json else None,
             response_status_text=str(json['responseStatusText']) if 'responseStatusText' in json else None,
             response_headers=[HeaderEntry.from_json(i) for i in json['responseHeaders']] if 'responseHeaders' in json else None,
-            network_id=RequestId.from_json(json['networkId']) if 'networkId' in json else None
+            network_id=network.RequestId.from_json(json['networkId']) if 'networkId' in json else None,
+            redirected_request_id=RequestId.from_json(json['redirectedRequestId']) if 'redirectedRequestId' in json else None
         )
 
 

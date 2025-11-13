@@ -82,6 +82,9 @@ class BackgroundServiceEvent:
     #: A list of event-specific information.
     event_metadata: typing.List[EventMetadata]
 
+    #: Storage key this event belongs to.
+    storage_key: str
+
     def to_json(self) -> T_JSON_DICT:
         json: T_JSON_DICT = dict()
         json['timestamp'] = self.timestamp.to_json()
@@ -91,6 +94,7 @@ class BackgroundServiceEvent:
         json['eventName'] = self.event_name
         json['instanceId'] = self.instance_id
         json['eventMetadata'] = [i.to_json() for i in self.event_metadata]
+        json['storageKey'] = self.storage_key
         return json
 
     @classmethod
@@ -103,6 +107,7 @@ class BackgroundServiceEvent:
             event_name=str(json['eventName']),
             instance_id=str(json['instanceId']),
             event_metadata=[EventMetadata.from_json(i) for i in json['eventMetadata']],
+            storage_key=str(json['storageKey']),
         )
 
 

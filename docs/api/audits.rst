@@ -34,22 +34,32 @@ arguments to other commands.
       :undoc-members:
       :exclude-members: from_json, to_json
 
-.. autoclass:: SameSiteCookieExclusionReason
+.. autoclass:: CookieExclusionReason
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
 
-.. autoclass:: SameSiteCookieWarningReason
+.. autoclass:: CookieWarningReason
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
 
-.. autoclass:: SameSiteCookieOperation
+.. autoclass:: CookieOperation
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
 
-.. autoclass:: SameSiteCookieIssueDetails
+.. autoclass:: InsightType
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: CookieIssueInsight
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: CookieIssueDetails
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
@@ -119,16 +129,6 @@ arguments to other commands.
       :undoc-members:
       :exclude-members: from_json, to_json
 
-.. autoclass:: TwaQualityEnforcementViolationType
-      :members:
-      :undoc-members:
-      :exclude-members: from_json, to_json
-
-.. autoclass:: TrustedWebActivityIssueDetails
-      :members:
-      :undoc-members:
-      :exclude-members: from_json, to_json
-
 .. autoclass:: LowTextContrastIssueDetails
       :members:
       :undoc-members:
@@ -140,6 +140,21 @@ arguments to other commands.
       :exclude-members: from_json, to_json
 
 .. autoclass:: AttributionReportingIssueType
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: SharedDictionaryError
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: SRIMessageSignatureError
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: UnencodedDigestError
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
@@ -159,7 +174,17 @@ arguments to other commands.
       :undoc-members:
       :exclude-members: from_json, to_json
 
-.. autoclass:: WasmCrossOriginModuleSharingIssueDetails
+.. autoclass:: SharedDictionaryIssueDetails
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: SRIMessageSignatureIssueDetails
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: UnencodedDigestIssueDetails
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
@@ -179,12 +204,97 @@ arguments to other commands.
       :undoc-members:
       :exclude-members: from_json, to_json
 
+.. autoclass:: BounceTrackingIssueDetails
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: CookieDeprecationMetadataIssueDetails
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
 .. autoclass:: ClientHintIssueReason
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
 
+.. autoclass:: FederatedAuthRequestIssueDetails
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: FederatedAuthRequestIssueReason
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: FederatedAuthUserInfoRequestIssueDetails
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: FederatedAuthUserInfoRequestIssueReason
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
 .. autoclass:: ClientHintIssueDetails
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: FailedRequestInfo
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: PartitioningBlobURLInfo
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: PartitioningBlobURLIssueDetails
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: ElementAccessibilityIssueReason
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: ElementAccessibilityIssueDetails
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: StyleSheetLoadingIssueReason
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: StylesheetLoadingIssueDetails
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: PropertyRuleIssueReason
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: PropertyRuleIssueDetails
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: UserReidentificationIssueType
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: UserReidentificationIssueDetails
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
@@ -222,6 +332,8 @@ to. For more information, see
 :ref:`Getting Started: Commands <getting-started-commands>`.
 
 .. autofunction:: check_contrast
+
+.. autofunction:: check_forms_issues
 
 .. autofunction:: disable
 

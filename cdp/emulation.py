@@ -18,6 +18,66 @@ from deprecated.sphinx import deprecated # type: ignore
 
 
 @dataclass
+class SafeAreaInsets:
+    #: Overrides safe-area-inset-top.
+    top: typing.Optional[int] = None
+
+    #: Overrides safe-area-max-inset-top.
+    top_max: typing.Optional[int] = None
+
+    #: Overrides safe-area-inset-left.
+    left: typing.Optional[int] = None
+
+    #: Overrides safe-area-max-inset-left.
+    left_max: typing.Optional[int] = None
+
+    #: Overrides safe-area-inset-bottom.
+    bottom: typing.Optional[int] = None
+
+    #: Overrides safe-area-max-inset-bottom.
+    bottom_max: typing.Optional[int] = None
+
+    #: Overrides safe-area-inset-right.
+    right: typing.Optional[int] = None
+
+    #: Overrides safe-area-max-inset-right.
+    right_max: typing.Optional[int] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        if self.top is not None:
+            json['top'] = self.top
+        if self.top_max is not None:
+            json['topMax'] = self.top_max
+        if self.left is not None:
+            json['left'] = self.left
+        if self.left_max is not None:
+            json['leftMax'] = self.left_max
+        if self.bottom is not None:
+            json['bottom'] = self.bottom
+        if self.bottom_max is not None:
+            json['bottomMax'] = self.bottom_max
+        if self.right is not None:
+            json['right'] = self.right
+        if self.right_max is not None:
+            json['rightMax'] = self.right_max
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> SafeAreaInsets:
+        return cls(
+            top=int(json['top']) if 'top' in json else None,
+            top_max=int(json['topMax']) if 'topMax' in json else None,
+            left=int(json['left']) if 'left' in json else None,
+            left_max=int(json['leftMax']) if 'leftMax' in json else None,
+            bottom=int(json['bottom']) if 'bottom' in json else None,
+            bottom_max=int(json['bottomMax']) if 'bottomMax' in json else None,
+            right=int(json['right']) if 'right' in json else None,
+            right_max=int(json['rightMax']) if 'rightMax' in json else None,
+        )
+
+
+@dataclass
 class ScreenOrientation:
     r'''
     Screen orientation.
@@ -73,6 +133,23 @@ class DisplayFeature:
 
 
 @dataclass
+class DevicePosture:
+    #: Current posture of the device
+    type_: str
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['type'] = self.type_
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> DevicePosture:
+        return cls(
+            type_=str(json['type']),
+        )
+
+
+@dataclass
 class MediaFeature:
     name: str
 
@@ -114,7 +191,7 @@ class VirtualTimePolicy(enum.Enum):
 @dataclass
 class UserAgentBrandVersion:
     r'''
-    Used to specify User Agent Cient Hints to emulate. See https://wicg.github.io/ua-client-hints
+    Used to specify User Agent Client Hints to emulate. See https://wicg.github.io/ua-client-hints
     '''
     brand: str
 
@@ -137,7 +214,7 @@ class UserAgentBrandVersion:
 @dataclass
 class UserAgentMetadata:
     r'''
-    Used to specify User Agent Cient Hints to emulate. See https://wicg.github.io/ua-client-hints
+    Used to specify User Agent Client Hints to emulate. See https://wicg.github.io/ua-client-hints
     Missing optional values will be filled in by the target with what it would normally use.
     '''
     platform: str
@@ -150,11 +227,21 @@ class UserAgentMetadata:
 
     mobile: bool
 
+    #: Brands appearing in Sec-CH-UA.
     brands: typing.Optional[typing.List[UserAgentBrandVersion]] = None
 
+    #: Brands appearing in Sec-CH-UA-Full-Version-List.
     full_version_list: typing.Optional[typing.List[UserAgentBrandVersion]] = None
 
     full_version: typing.Optional[str] = None
+
+    bitness: typing.Optional[str] = None
+
+    wow64: typing.Optional[bool] = None
+
+    #: Used to specify User Agent form-factor values.
+    #: See https://wicg.github.io/ua-client-hints/#sec-ch-ua-form-factors
+    form_factors: typing.Optional[typing.List[str]] = None
 
     def to_json(self) -> T_JSON_DICT:
         json: T_JSON_DICT = dict()
@@ -169,6 +256,12 @@ class UserAgentMetadata:
             json['fullVersionList'] = [i.to_json() for i in self.full_version_list]
         if self.full_version is not None:
             json['fullVersion'] = self.full_version
+        if self.bitness is not None:
+            json['bitness'] = self.bitness
+        if self.wow64 is not None:
+            json['wow64'] = self.wow64
+        if self.form_factors is not None:
+            json['formFactors'] = [i for i in self.form_factors]
         return json
 
     @classmethod
@@ -182,6 +275,339 @@ class UserAgentMetadata:
             brands=[UserAgentBrandVersion.from_json(i) for i in json['brands']] if 'brands' in json else None,
             full_version_list=[UserAgentBrandVersion.from_json(i) for i in json['fullVersionList']] if 'fullVersionList' in json else None,
             full_version=str(json['fullVersion']) if 'fullVersion' in json else None,
+            bitness=str(json['bitness']) if 'bitness' in json else None,
+            wow64=bool(json['wow64']) if 'wow64' in json else None,
+            form_factors=[str(i) for i in json['formFactors']] if 'formFactors' in json else None,
+        )
+
+
+class SensorType(enum.Enum):
+    r'''
+    Used to specify sensor types to emulate.
+    See https://w3c.github.io/sensors/#automation for more information.
+    '''
+    ABSOLUTE_ORIENTATION = "absolute-orientation"
+    ACCELEROMETER = "accelerometer"
+    AMBIENT_LIGHT = "ambient-light"
+    GRAVITY = "gravity"
+    GYROSCOPE = "gyroscope"
+    LINEAR_ACCELERATION = "linear-acceleration"
+    MAGNETOMETER = "magnetometer"
+    RELATIVE_ORIENTATION = "relative-orientation"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> SensorType:
+        return cls(json)
+
+
+@dataclass
+class SensorMetadata:
+    available: typing.Optional[bool] = None
+
+    minimum_frequency: typing.Optional[float] = None
+
+    maximum_frequency: typing.Optional[float] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        if self.available is not None:
+            json['available'] = self.available
+        if self.minimum_frequency is not None:
+            json['minimumFrequency'] = self.minimum_frequency
+        if self.maximum_frequency is not None:
+            json['maximumFrequency'] = self.maximum_frequency
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> SensorMetadata:
+        return cls(
+            available=bool(json['available']) if 'available' in json else None,
+            minimum_frequency=float(json['minimumFrequency']) if 'minimumFrequency' in json else None,
+            maximum_frequency=float(json['maximumFrequency']) if 'maximumFrequency' in json else None,
+        )
+
+
+@dataclass
+class SensorReadingSingle:
+    value: float
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['value'] = self.value
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> SensorReadingSingle:
+        return cls(
+            value=float(json['value']),
+        )
+
+
+@dataclass
+class SensorReadingXYZ:
+    x: float
+
+    y: float
+
+    z: float
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['x'] = self.x
+        json['y'] = self.y
+        json['z'] = self.z
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> SensorReadingXYZ:
+        return cls(
+            x=float(json['x']),
+            y=float(json['y']),
+            z=float(json['z']),
+        )
+
+
+@dataclass
+class SensorReadingQuaternion:
+    x: float
+
+    y: float
+
+    z: float
+
+    w: float
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['x'] = self.x
+        json['y'] = self.y
+        json['z'] = self.z
+        json['w'] = self.w
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> SensorReadingQuaternion:
+        return cls(
+            x=float(json['x']),
+            y=float(json['y']),
+            z=float(json['z']),
+            w=float(json['w']),
+        )
+
+
+@dataclass
+class SensorReading:
+    single: typing.Optional[SensorReadingSingle] = None
+
+    xyz: typing.Optional[SensorReadingXYZ] = None
+
+    quaternion: typing.Optional[SensorReadingQuaternion] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        if self.single is not None:
+            json['single'] = self.single.to_json()
+        if self.xyz is not None:
+            json['xyz'] = self.xyz.to_json()
+        if self.quaternion is not None:
+            json['quaternion'] = self.quaternion.to_json()
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> SensorReading:
+        return cls(
+            single=SensorReadingSingle.from_json(json['single']) if 'single' in json else None,
+            xyz=SensorReadingXYZ.from_json(json['xyz']) if 'xyz' in json else None,
+            quaternion=SensorReadingQuaternion.from_json(json['quaternion']) if 'quaternion' in json else None,
+        )
+
+
+class PressureSource(enum.Enum):
+    CPU = "cpu"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> PressureSource:
+        return cls(json)
+
+
+class PressureState(enum.Enum):
+    NOMINAL = "nominal"
+    FAIR = "fair"
+    SERIOUS = "serious"
+    CRITICAL = "critical"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> PressureState:
+        return cls(json)
+
+
+@dataclass
+class PressureMetadata:
+    available: typing.Optional[bool] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        if self.available is not None:
+            json['available'] = self.available
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> PressureMetadata:
+        return cls(
+            available=bool(json['available']) if 'available' in json else None,
+        )
+
+
+@dataclass
+class WorkAreaInsets:
+    #: Work area top inset in pixels. Default is 0;
+    top: typing.Optional[int] = None
+
+    #: Work area left inset in pixels. Default is 0;
+    left: typing.Optional[int] = None
+
+    #: Work area bottom inset in pixels. Default is 0;
+    bottom: typing.Optional[int] = None
+
+    #: Work area right inset in pixels. Default is 0;
+    right: typing.Optional[int] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        if self.top is not None:
+            json['top'] = self.top
+        if self.left is not None:
+            json['left'] = self.left
+        if self.bottom is not None:
+            json['bottom'] = self.bottom
+        if self.right is not None:
+            json['right'] = self.right
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> WorkAreaInsets:
+        return cls(
+            top=int(json['top']) if 'top' in json else None,
+            left=int(json['left']) if 'left' in json else None,
+            bottom=int(json['bottom']) if 'bottom' in json else None,
+            right=int(json['right']) if 'right' in json else None,
+        )
+
+
+class ScreenId(str):
+    def to_json(self) -> str:
+        return self
+
+    @classmethod
+    def from_json(cls, json: str) -> ScreenId:
+        return cls(json)
+
+    def __repr__(self):
+        return 'ScreenId({})'.format(super().__repr__())
+
+
+@dataclass
+class ScreenInfo:
+    r'''
+    Screen information similar to the one returned by window.getScreenDetails() method,
+    see https://w3c.github.io/window-management/#screendetailed.
+    '''
+    #: Offset of the left edge of the screen.
+    left: int
+
+    #: Offset of the top edge of the screen.
+    top: int
+
+    #: Width of the screen.
+    width: int
+
+    #: Height of the screen.
+    height: int
+
+    #: Offset of the left edge of the available screen area.
+    avail_left: int
+
+    #: Offset of the top edge of the available screen area.
+    avail_top: int
+
+    #: Width of the available screen area.
+    avail_width: int
+
+    #: Height of the available screen area.
+    avail_height: int
+
+    #: Specifies the screen's device pixel ratio.
+    device_pixel_ratio: float
+
+    #: Specifies the screen's orientation.
+    orientation: ScreenOrientation
+
+    #: Specifies the screen's color depth in bits.
+    color_depth: int
+
+    #: Indicates whether the device has multiple screens.
+    is_extended: bool
+
+    #: Indicates whether the screen is internal to the device or external, attached to the device.
+    is_internal: bool
+
+    #: Indicates whether the screen is set as the the operating system primary screen.
+    is_primary: bool
+
+    #: Specifies the descriptive label for the screen.
+    label: str
+
+    #: Specifies the unique identifier of the screen.
+    id_: ScreenId
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['left'] = self.left
+        json['top'] = self.top
+        json['width'] = self.width
+        json['height'] = self.height
+        json['availLeft'] = self.avail_left
+        json['availTop'] = self.avail_top
+        json['availWidth'] = self.avail_width
+        json['availHeight'] = self.avail_height
+        json['devicePixelRatio'] = self.device_pixel_ratio
+        json['orientation'] = self.orientation.to_json()
+        json['colorDepth'] = self.color_depth
+        json['isExtended'] = self.is_extended
+        json['isInternal'] = self.is_internal
+        json['isPrimary'] = self.is_primary
+        json['label'] = self.label
+        json['id'] = self.id_.to_json()
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> ScreenInfo:
+        return cls(
+            left=int(json['left']),
+            top=int(json['top']),
+            width=int(json['width']),
+            height=int(json['height']),
+            avail_left=int(json['availLeft']),
+            avail_top=int(json['availTop']),
+            avail_width=int(json['availWidth']),
+            avail_height=int(json['availHeight']),
+            device_pixel_ratio=float(json['devicePixelRatio']),
+            orientation=ScreenOrientation.from_json(json['orientation']),
+            color_depth=int(json['colorDepth']),
+            is_extended=bool(json['isExtended']),
+            is_internal=bool(json['isInternal']),
+            is_primary=bool(json['isPrimary']),
+            label=str(json['label']),
+            id_=ScreenId.from_json(json['id']),
         )
 
 
@@ -190,7 +616,6 @@ class DisabledImageType(enum.Enum):
     Enum of image types that can be disabled.
     '''
     AVIF = "avif"
-    JXL = "jxl"
     WEBP = "webp"
 
     def to_json(self) -> str:
@@ -201,9 +626,12 @@ class DisabledImageType(enum.Enum):
         return cls(json)
 
 
+@deprecated(version="1.3")
 def can_emulate() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,bool]:
     r'''
     Tells whether emulation is supported.
+
+    .. deprecated:: 1.3
 
     :returns: True if emulation is supported.
     '''
@@ -291,8 +719,6 @@ def set_cpu_throttling_rate(
     r'''
     Enables CPU throttling to emulate slow CPUs.
 
-    **EXPERIMENTAL**
-
     :param rate: Throttling rate as a slowdown factor (1 is no throttle, 2 is 2x slowdown, etc).
     '''
     params: T_JSON_DICT = dict()
@@ -323,6 +749,26 @@ def set_default_background_color_override(
     json = yield cmd_dict
 
 
+def set_safe_area_insets_override(
+        insets: SafeAreaInsets
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    r'''
+    Overrides the values for env(safe-area-inset-*) and env(safe-area-max-inset-*). Unset values will cause the
+    respective variables to be undefined, even if previously overridden.
+
+    **EXPERIMENTAL**
+
+    :param insets:
+    '''
+    params: T_JSON_DICT = dict()
+    params['insets'] = insets.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.setSafeAreaInsetsOverride',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
 def set_device_metrics_override(
         width: int,
         height: int,
@@ -336,7 +782,8 @@ def set_device_metrics_override(
         dont_set_visible_size: typing.Optional[bool] = None,
         screen_orientation: typing.Optional[ScreenOrientation] = None,
         viewport: typing.Optional[page.Viewport] = None,
-        display_feature: typing.Optional[DisplayFeature] = None
+        display_feature: typing.Optional[DisplayFeature] = None,
+        device_posture: typing.Optional[DevicePosture] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     r'''
     Overrides the values of device screen dimensions (window.screen.width, window.screen.height,
@@ -355,7 +802,8 @@ def set_device_metrics_override(
     :param dont_set_visible_size: **(EXPERIMENTAL)** *(Optional)* Do not set visible view size, rely upon explicit setVisibleSize call.
     :param screen_orientation: *(Optional)* Screen orientation override.
     :param viewport: **(EXPERIMENTAL)** *(Optional)* If set, the visible area of the page will be overridden to this viewport. This viewport change is not observed by the page, e.g. viewport-relative elements do not change positions.
-    :param display_feature: **(EXPERIMENTAL)** *(Optional)* If set, the display feature of a multi-segment screen. If not set, multi-segment support is turned-off.
+    :param display_feature: **(DEPRECATED)** **(EXPERIMENTAL)** *(Optional)* If set, the display feature of a multi-segment screen. If not set, multi-segment support is turned-off. Deprecated, use Emulation.setDisplayFeaturesOverride.
+    :param device_posture: **(DEPRECATED)** **(EXPERIMENTAL)** *(Optional)* If set, the posture of a foldable device. If not set the posture is set to continuous. Deprecated, use Emulation.setDevicePostureOverride.
     '''
     params: T_JSON_DICT = dict()
     params['width'] = width
@@ -380,9 +828,81 @@ def set_device_metrics_override(
         params['viewport'] = viewport.to_json()
     if display_feature is not None:
         params['displayFeature'] = display_feature.to_json()
+    if device_posture is not None:
+        params['devicePosture'] = device_posture.to_json()
     cmd_dict: T_JSON_DICT = {
         'method': 'Emulation.setDeviceMetricsOverride',
         'params': params,
+    }
+    json = yield cmd_dict
+
+
+def set_device_posture_override(
+        posture: DevicePosture
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    r'''
+    Start reporting the given posture value to the Device Posture API.
+    This override can also be set in setDeviceMetricsOverride().
+
+    **EXPERIMENTAL**
+
+    :param posture:
+    '''
+    params: T_JSON_DICT = dict()
+    params['posture'] = posture.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.setDevicePostureOverride',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
+def clear_device_posture_override() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    r'''
+    Clears a device posture override set with either setDeviceMetricsOverride()
+    or setDevicePostureOverride() and starts using posture information from the
+    platform again.
+    Does nothing if no override is set.
+
+    **EXPERIMENTAL**
+    '''
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.clearDevicePostureOverride',
+    }
+    json = yield cmd_dict
+
+
+def set_display_features_override(
+        features: typing.List[DisplayFeature]
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    r'''
+    Start using the given display features to pupulate the Viewport Segments API.
+    This override can also be set in setDeviceMetricsOverride().
+
+    **EXPERIMENTAL**
+
+    :param features:
+    '''
+    params: T_JSON_DICT = dict()
+    params['features'] = [i.to_json() for i in features]
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.setDisplayFeaturesOverride',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
+def clear_display_features_override() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    r'''
+    Clears the display features override set with either setDeviceMetricsOverride()
+    or setDisplayFeaturesOverride() and starts using display features from the
+    platform again.
+    Does nothing if no override is set.
+
+    **EXPERIMENTAL**
+    '''
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.clearDisplayFeaturesOverride',
     }
     json = yield cmd_dict
 
@@ -476,9 +996,7 @@ def set_emulated_vision_deficiency(
     r'''
     Emulates the given vision deficiency.
 
-    **EXPERIMENTAL**
-
-    :param type_: Vision deficiency to emulate.
+    :param type_: Vision deficiency to emulate. Order: best-effort emulations come first, followed by any physiologically accurate emulations for medically recognized color vision deficiencies.
     '''
     params: T_JSON_DICT = dict()
     params['type'] = type_
@@ -489,18 +1007,44 @@ def set_emulated_vision_deficiency(
     json = yield cmd_dict
 
 
+def set_emulated_os_text_scale(
+        scale: typing.Optional[float] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    r'''
+    Emulates the given OS text scale.
+
+    :param scale: *(Optional)*
+    '''
+    params: T_JSON_DICT = dict()
+    if scale is not None:
+        params['scale'] = scale
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.setEmulatedOSTextScale',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
 def set_geolocation_override(
         latitude: typing.Optional[float] = None,
         longitude: typing.Optional[float] = None,
-        accuracy: typing.Optional[float] = None
+        accuracy: typing.Optional[float] = None,
+        altitude: typing.Optional[float] = None,
+        altitude_accuracy: typing.Optional[float] = None,
+        heading: typing.Optional[float] = None,
+        speed: typing.Optional[float] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     r'''
-    Overrides the Geolocation Position or Error. Omitting any of the parameters emulates position
-    unavailable.
+    Overrides the Geolocation Position or Error. Omitting latitude, longitude or
+    accuracy emulates position unavailable.
 
     :param latitude: *(Optional)* Mock latitude
     :param longitude: *(Optional)* Mock longitude
     :param accuracy: *(Optional)* Mock accuracy
+    :param altitude: *(Optional)* Mock altitude
+    :param altitude_accuracy: *(Optional)* Mock altitudeAccuracy
+    :param heading: *(Optional)* Mock heading
+    :param speed: *(Optional)* Mock speed
     '''
     params: T_JSON_DICT = dict()
     if latitude is not None:
@@ -509,8 +1053,172 @@ def set_geolocation_override(
         params['longitude'] = longitude
     if accuracy is not None:
         params['accuracy'] = accuracy
+    if altitude is not None:
+        params['altitude'] = altitude
+    if altitude_accuracy is not None:
+        params['altitudeAccuracy'] = altitude_accuracy
+    if heading is not None:
+        params['heading'] = heading
+    if speed is not None:
+        params['speed'] = speed
     cmd_dict: T_JSON_DICT = {
         'method': 'Emulation.setGeolocationOverride',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
+def get_overridden_sensor_information(
+        type_: SensorType
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,float]:
+    r'''
+
+
+    **EXPERIMENTAL**
+
+    :param type_:
+    :returns: 
+    '''
+    params: T_JSON_DICT = dict()
+    params['type'] = type_.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.getOverriddenSensorInformation',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return float(json['requestedSamplingFrequency'])
+
+
+def set_sensor_override_enabled(
+        enabled: bool,
+        type_: SensorType,
+        metadata: typing.Optional[SensorMetadata] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    r'''
+    Overrides a platform sensor of a given type. If ``enabled`` is true, calls to
+    Sensor.start() will use a virtual sensor as backend rather than fetching
+    data from a real hardware sensor. Otherwise, existing virtual
+    sensor-backend Sensor objects will fire an error event and new calls to
+    Sensor.start() will attempt to use a real sensor instead.
+
+    **EXPERIMENTAL**
+
+    :param enabled:
+    :param type_:
+    :param metadata: *(Optional)*
+    '''
+    params: T_JSON_DICT = dict()
+    params['enabled'] = enabled
+    params['type'] = type_.to_json()
+    if metadata is not None:
+        params['metadata'] = metadata.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.setSensorOverrideEnabled',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
+def set_sensor_override_readings(
+        type_: SensorType,
+        reading: SensorReading
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    r'''
+    Updates the sensor readings reported by a sensor type previously overridden
+    by setSensorOverrideEnabled.
+
+    **EXPERIMENTAL**
+
+    :param type_:
+    :param reading:
+    '''
+    params: T_JSON_DICT = dict()
+    params['type'] = type_.to_json()
+    params['reading'] = reading.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.setSensorOverrideReadings',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
+def set_pressure_source_override_enabled(
+        enabled: bool,
+        source: PressureSource,
+        metadata: typing.Optional[PressureMetadata] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    r'''
+    Overrides a pressure source of a given type, as used by the Compute
+    Pressure API, so that updates to PressureObserver.observe() are provided
+    via setPressureStateOverride instead of being retrieved from
+    platform-provided telemetry data.
+
+    **EXPERIMENTAL**
+
+    :param enabled:
+    :param source:
+    :param metadata: *(Optional)*
+    '''
+    params: T_JSON_DICT = dict()
+    params['enabled'] = enabled
+    params['source'] = source.to_json()
+    if metadata is not None:
+        params['metadata'] = metadata.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.setPressureSourceOverrideEnabled',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
+def set_pressure_state_override(
+        source: PressureSource,
+        state: PressureState
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    r'''
+    TODO: OBSOLETE: To remove when setPressureDataOverride is merged.
+    Provides a given pressure state that will be processed and eventually be
+    delivered to PressureObserver users. ``source`` must have been previously
+    overridden by setPressureSourceOverrideEnabled.
+
+    **EXPERIMENTAL**
+
+    :param source:
+    :param state:
+    '''
+    params: T_JSON_DICT = dict()
+    params['source'] = source.to_json()
+    params['state'] = state.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.setPressureStateOverride',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
+def set_pressure_data_override(
+        source: PressureSource,
+        state: PressureState,
+        own_contribution_estimate: typing.Optional[float] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    r'''
+    Provides a given pressure data set that will be processed and eventually be
+    delivered to PressureObserver users. ``source`` must have been previously
+    overridden by setPressureSourceOverrideEnabled.
+
+    **EXPERIMENTAL**
+
+    :param source:
+    :param state:
+    :param own_contribution_estimate: *(Optional)*
+    '''
+    params: T_JSON_DICT = dict()
+    params['source'] = source.to_json()
+    params['state'] = state.to_json()
+    if own_contribution_estimate is not None:
+        params['ownContributionEstimate'] = own_contribution_estimate
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.setPressureDataOverride',
         'params': params,
     }
     json = yield cmd_dict
@@ -522,8 +1230,6 @@ def set_idle_override(
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     r'''
     Overrides the Idle state.
-
-    **EXPERIMENTAL**
 
     :param is_user_active: Mock isUserActive
     :param is_screen_unlocked: Mock isScreenUnlocked
@@ -541,8 +1247,6 @@ def set_idle_override(
 def clear_idle_override() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     r'''
     Clears Idle state overrides.
-
-    **EXPERIMENTAL**
     '''
     cmd_dict: T_JSON_DICT = {
         'method': 'Emulation.clearIdleOverride',
@@ -633,7 +1337,6 @@ def set_virtual_time_policy(
         policy: VirtualTimePolicy,
         budget: typing.Optional[float] = None,
         max_virtual_time_task_starvation_count: typing.Optional[int] = None,
-        wait_for_navigation: typing.Optional[bool] = None,
         initial_virtual_time: typing.Optional[network.TimeSinceEpoch] = None
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,float]:
     r'''
@@ -645,7 +1348,6 @@ def set_virtual_time_policy(
     :param policy:
     :param budget: *(Optional)* If set, after this many virtual milliseconds have elapsed virtual time will be paused and a virtualTimeBudgetExpired event is sent.
     :param max_virtual_time_task_starvation_count: *(Optional)* If set this specifies the maximum number of tasks that can be run before virtual is forced forwards to prevent deadlock.
-    :param wait_for_navigation: *(Optional)* If set the virtual time policy change should be deferred until any frame starts navigating. Note any previous deferred policy change is superseded.
     :param initial_virtual_time: *(Optional)* If set, base::Time::Now will be overridden to initially return this value.
     :returns: Absolute timestamp at which virtual time was first enabled (up time in milliseconds).
     '''
@@ -655,8 +1357,6 @@ def set_virtual_time_policy(
         params['budget'] = budget
     if max_virtual_time_task_starvation_count is not None:
         params['maxVirtualTimeTaskStarvationCount'] = max_virtual_time_task_starvation_count
-    if wait_for_navigation is not None:
-        params['waitForNavigation'] = wait_for_navigation
     if initial_virtual_time is not None:
         params['initialVirtualTime'] = initial_virtual_time.to_json()
     cmd_dict: T_JSON_DICT = {
@@ -693,9 +1393,7 @@ def set_timezone_override(
     r'''
     Overrides default host system timezone with the specified one.
 
-    **EXPERIMENTAL**
-
-    :param timezone_id: The timezone identifier. If empty, disables the override and restores default host system timezone.
+    :param timezone_id: The timezone identifier. List of supported timezones: https://source.chromium.org/chromium/chromium/deps/icu.git/+/faee8bc70570192d82d2978a71e2a615788597d1:source/data/misc/metaZones.txt If empty, disables the override and restores default host system timezone.
     '''
     params: T_JSON_DICT = dict()
     params['timezoneId'] = timezone_id
@@ -752,6 +1450,45 @@ def set_disabled_image_types(
     json = yield cmd_dict
 
 
+def set_data_saver_override(
+        data_saver_enabled: typing.Optional[bool] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    r'''
+    Override the value of navigator.connection.saveData
+
+    **EXPERIMENTAL**
+
+    :param data_saver_enabled: *(Optional)* Override value. Omitting the parameter disables the override.
+    '''
+    params: T_JSON_DICT = dict()
+    if data_saver_enabled is not None:
+        params['dataSaverEnabled'] = data_saver_enabled
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.setDataSaverOverride',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
+def set_hardware_concurrency_override(
+        hardware_concurrency: int
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    r'''
+
+
+    **EXPERIMENTAL**
+
+    :param hardware_concurrency: Hardware concurrency to report
+    '''
+    params: T_JSON_DICT = dict()
+    params['hardwareConcurrency'] = hardware_concurrency
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.setHardwareConcurrencyOverride',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
 def set_user_agent_override(
         user_agent: str,
         accept_language: typing.Optional[str] = None,
@@ -760,9 +1497,10 @@ def set_user_agent_override(
     ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     r'''
     Allows overriding user agent with the given string.
+    ``userAgentMetadata`` must be set for Client Hint headers to be sent.
 
     :param user_agent: User agent to use.
-    :param accept_language: *(Optional)* Browser langugage to emulate.
+    :param accept_language: *(Optional)* Browser language to emulate.
     :param platform: *(Optional)* The platform navigator.platform should return.
     :param user_agent_metadata: **(EXPERIMENTAL)** *(Optional)* To be sent in Sec-CH-UA-* headers and returned in navigator.userAgentData
     '''
@@ -776,6 +1514,133 @@ def set_user_agent_override(
         params['userAgentMetadata'] = user_agent_metadata.to_json()
     cmd_dict: T_JSON_DICT = {
         'method': 'Emulation.setUserAgentOverride',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
+def set_automation_override(
+        enabled: bool
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    r'''
+    Allows overriding the automation flag.
+
+    **EXPERIMENTAL**
+
+    :param enabled: Whether the override should be enabled.
+    '''
+    params: T_JSON_DICT = dict()
+    params['enabled'] = enabled
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.setAutomationOverride',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
+def set_small_viewport_height_difference_override(
+        difference: int
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    r'''
+    Allows overriding the difference between the small and large viewport sizes, which determine the
+    value of the ``svh`` and ``lvh`` unit, respectively. Only supported for top-level frames.
+
+    **EXPERIMENTAL**
+
+    :param difference: This will cause an element of size 100svh to be ```difference``` pixels smaller than an element of size 100lvh.
+    '''
+    params: T_JSON_DICT = dict()
+    params['difference'] = difference
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.setSmallViewportHeightDifferenceOverride',
+        'params': params,
+    }
+    json = yield cmd_dict
+
+
+def get_screen_infos() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,typing.List[ScreenInfo]]:
+    r'''
+    Returns device's screen configuration.
+
+    **EXPERIMENTAL**
+
+    :returns: 
+    '''
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.getScreenInfos',
+    }
+    json = yield cmd_dict
+    return [ScreenInfo.from_json(i) for i in json['screenInfos']]
+
+
+def add_screen(
+        left: int,
+        top: int,
+        width: int,
+        height: int,
+        work_area_insets: typing.Optional[WorkAreaInsets] = None,
+        device_pixel_ratio: typing.Optional[float] = None,
+        rotation: typing.Optional[int] = None,
+        color_depth: typing.Optional[int] = None,
+        label: typing.Optional[str] = None,
+        is_internal: typing.Optional[bool] = None
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,ScreenInfo]:
+    r'''
+    Add a new screen to the device. Only supported in headless mode.
+
+    **EXPERIMENTAL**
+
+    :param left: Offset of the left edge of the screen in pixels.
+    :param top: Offset of the top edge of the screen in pixels.
+    :param width: The width of the screen in pixels.
+    :param height: The height of the screen in pixels.
+    :param work_area_insets: *(Optional)* Specifies the screen's work area. Default is entire screen.
+    :param device_pixel_ratio: *(Optional)* Specifies the screen's device pixel ratio. Default is 1.
+    :param rotation: *(Optional)* Specifies the screen's rotation angle. Available values are 0, 90, 180 and 270. Default is 0.
+    :param color_depth: *(Optional)* Specifies the screen's color depth in bits. Default is 24.
+    :param label: *(Optional)* Specifies the descriptive label for the screen. Default is none.
+    :param is_internal: *(Optional)* Indicates whether the screen is internal to the device or external, attached to the device. Default is false.
+    :returns: 
+    '''
+    params: T_JSON_DICT = dict()
+    params['left'] = left
+    params['top'] = top
+    params['width'] = width
+    params['height'] = height
+    if work_area_insets is not None:
+        params['workAreaInsets'] = work_area_insets.to_json()
+    if device_pixel_ratio is not None:
+        params['devicePixelRatio'] = device_pixel_ratio
+    if rotation is not None:
+        params['rotation'] = rotation
+    if color_depth is not None:
+        params['colorDepth'] = color_depth
+    if label is not None:
+        params['label'] = label
+    if is_internal is not None:
+        params['isInternal'] = is_internal
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.addScreen',
+        'params': params,
+    }
+    json = yield cmd_dict
+    return ScreenInfo.from_json(json['screenInfo'])
+
+
+def remove_screen(
+        screen_id: ScreenId
+    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
+    r'''
+    Remove screen from the device. Only supported in headless mode.
+
+    **EXPERIMENTAL**
+
+    :param screen_id:
+    '''
+    params: T_JSON_DICT = dict()
+    params['screenId'] = screen_id.to_json()
+    cmd_dict: T_JSON_DICT = {
+        'method': 'Emulation.removeScreen',
         'params': params,
     }
     json = yield cmd_dict
