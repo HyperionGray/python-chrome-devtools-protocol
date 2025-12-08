@@ -1,0 +1,41 @@
+name: Auto Assign Copilot to Issues
+
+on:
+  issues:
+    types:
+      - opened
+      - labeled
+
+jobs:
+  auto-assign:
+    runs-on: ubuntu-latest
+    if: contains(github.event.issue.labels.*.name, 'copilot')
+    steps:
+      - name: Assign Copilot to new issues
+        uses: actions/github-script@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const copilotUsername = "copilot";
+
+            // Check if issue is already assigned to copilot
+            const currentAssignees = context.payload.issue.assignees.map(u => u.login);
+
+            if (!currentAssignees.includes(copilotUsername)) {
+              console.log(`Issue has 'copilot' label. Assigning @${copilotUsername}...`);
+
+              try {
+                await github.rest.issues.addAssignees({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  assignees: [copilotUsername]
+                });
+                console.log(`✅ Assigned @${copilotUsername} to issue #${context.issue.number}`);
+              } catch (error) {
+                console.log(`⚠️ Failed to assign Copilot: ${error.message}`);
+                console.log("Note: You must have a Copilot seat assigned to your account/org for this to work.");
+              }
+            } else {
+              console.log(`ℹ️ @${copilotUsername} is already assigned to issue #${context.issue.number}`);
+            }
