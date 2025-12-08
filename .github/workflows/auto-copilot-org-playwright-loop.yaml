@@ -1,0 +1,71 @@
+name: "Org-wide: Copilot Playwright Test, Review, Auto-fix, PR, Merge"
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  playwright-review-fix:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout repository code
+      - name: Checkout code
+        uses: actions/checkout@main
+
+      # Set up Python (change/add for other stacks!)
+      - name: Setup Python
+        uses: actions/setup-python@main
+        with:
+          python-version: "3.11"
+
+      # Install dependencies (Python example)
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest playwright pytest-playwright
+
+      # Install Playwright browsers
+      - name: Install Playwright browsers
+        run: |
+          python -m playwright install
+
+      # Run Playwright tests
+      - name: Run Playwright Tests
+        run: |
+          pytest tests/ || exit 1
+        continue-on-error: true
+
+      # Copilot PR Agent auto-review (if available for org)
+      - name: Copilot PR Agent Review
+        uses: github/copilot-agent/pr@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      # Copilot Agent auto-fix (can loop up to N attempts if tests fail)
+      - name: Copilot Auto-fix Failing Playwright Tests
+        uses: github/copilot-agent/fix@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          max_attempts: 3               # Try up to 3 auto-fix loops!
+        continue-on-error: true
+
+      # Create PR with fixes (if any)
+      - name: Create Pull Request for Automated Fixes
+        uses: peter-evans/create-pull-request@main
+        with:
+          branch: "copilot/playwright-fixes"
+          title: "Copilot: Auto-fix Playwright Tests"
+          body: "Automated Playwright test fixes by Copilot Agent."
+          commit-message: "Copilot agent Playwright bugfixes"
+        continue-on-error: true
+
+      # Automerge PR if passing
+      - name: Automerge PR if checks pass
+        uses: pascalgn/automerge-action@main
+        with:
+          merge-method: squash
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
