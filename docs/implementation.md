@@ -1,4 +1,4 @@
-# Implementation Summary: I/O and Multiplexing Support
+# Implementation Design Document: I/O and Multiplexing Support
 
 This document summarizes the implementation of I/O capabilities and JSON-RPC framing with command multiplexing for the Chrome DevTools Protocol library.
 

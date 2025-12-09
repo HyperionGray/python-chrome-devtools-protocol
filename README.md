@@ -79,10 +79,6 @@ See the [examples directory](examples/) for more usage patterns.
 
 For users who prefer to manage their own I/O:
 
-## Sans-I/O Mode (Original)
-
-For users who prefer to manage their own I/O:
-
 ```python
 from cdp import page
 
