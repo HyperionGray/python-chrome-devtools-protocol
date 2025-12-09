@@ -60,7 +60,7 @@ jobs:
               ! -path "*/build/*" \
               ! -path "*/.venv/*" \
               ! -path "*/vendor/*" \
-              -exec sh -c 'count=$(grep -c "$1" "$2" 2>/dev/null || echo 0); if [ "$count" -gt 20 ]; then echo "$count definitions in $2"; fi' _ "$pattern" {} \; \
+              -exec sh -c 'count=$(grep -c "$1" "$2" 2>/dev/null || echo 0); count=${count:-0}; if [ "$count" -gt 20 ]; then echo "$count definitions in $2"; fi' _ "$pattern" {} \; \
               2>/dev/null || true
           done | sort -rn >> /tmp/analysis.md
           

@@ -181,6 +181,11 @@ jobs:
               class_count=$(grep -c "^class " "$file" 2>/dev/null || echo 0)
               docstring_count=$(grep -c '"""' "$file" 2>/dev/null || echo 0)
               
+              # Ensure variables are numeric
+              func_count=${func_count:-0}
+              class_count=${class_count:-0}
+              docstring_count=${docstring_count:-0}
+              
               total=$((func_count + class_count))
               if [ $total -gt 0 ] && [ $docstring_count -eq 0 ]; then
                 echo "⚠️ $file: $total definitions, no docstrings" >> /tmp/doc-analysis.md
@@ -201,6 +206,11 @@ jobs:
               func_count=$(grep -cE "(^function |^export function |^const .* = .*=>)" "$file" 2>/dev/null || echo 0)
               class_count=$(grep -c "^class " "$file" 2>/dev/null || echo 0)
               jsdoc_count=$(grep -c '/\*\*' "$file" 2>/dev/null || echo 0)
+              
+              # Ensure variables are numeric
+              func_count=${func_count:-0}
+              class_count=${class_count:-0}
+              jsdoc_count=${jsdoc_count:-0}
               
               total=$((func_count + class_count))
               if [ $total -gt 5 ] && [ $jsdoc_count -eq 0 ]; then
