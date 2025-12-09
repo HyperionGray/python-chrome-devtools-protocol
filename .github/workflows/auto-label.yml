@@ -18,9 +18,16 @@ jobs:
           script: |
             // Add or tweak your labels here
             const labels = ["triage", "copilot"]; // <-- TUNE ME!
-            await github.rest.issues.addLabels({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              labels
-            });
+            
+            try {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels
+              });
+              console.log(`✅ Added labels [${labels.join(", ")}] to issue #${context.issue.number}`);
+            } catch (error) {
+              console.log(`⚠️ Failed to add labels: ${error.message}`);
+              console.log("Note: This may be due to insufficient permissions or invalid label names.");
+            }
