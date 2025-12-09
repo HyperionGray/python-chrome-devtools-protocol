@@ -66,22 +66,8 @@ jobs:
           
           cat /tmp/analysis.md
 
-      - name: GitHub Copilot Code Review
-        uses: github/copilot-cli-action@main
-        with:
-          query: |
-            Review the codebase for code cleanliness issues:
-            1. Identify files that are too large (>500 lines) and suggest how to split them into smaller, focused modules
-            2. Look for code duplication and suggest refactoring opportunities
-            3. Check for consistent code style and formatting
-            4. Identify complex functions that could be simplified
-            5. Suggest improvements for code organization and structure
-            6. Check for proper separation of concerns
-            
-            Provide actionable recommendations with specific file names and line numbers.
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
+      # Note: GitHub Copilot CLI action is not available as a public action
+      # Code cleanliness analysis is already performed in the previous step
 
       - name: Create Issue for Code Cleanliness Review
         uses: actions/github-script@main
@@ -120,51 +106,36 @@ jobs:
             `;
             
             // Check if similar issue exists (open, created in last 24 hours)
-            try {
-              const issues = await github.rest.issues.listForRepo({
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: ['code-cleanliness', 'automated'],
+              per_page: 10
+            });
+            
+            const recentIssue = issues.data.find(issue => {
+              const createdAt = new Date(issue.created_at);
+              const hoursSinceCreation = (Date.now() - createdAt) / (1000 * 60 * 60);
+              return hoursSinceCreation < 24;
+            });
+            
+            if (recentIssue) {
+              console.log(`Recent issue found: #${recentIssue.number}, skipping creation`);
+              // Update existing issue with new analysis
+              await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                state: 'open',
-                labels: ['code-cleanliness', 'automated'],
-                per_page: 10
+                issue_number: recentIssue.number,
+                body: `## Updated Analysis (${date})\n\n${analysis}`
               });
-              
-              const recentIssue = issues.data.find(issue => {
-                const createdAt = new Date(issue.created_at);
-                const hoursSinceCreation = (Date.now() - createdAt) / (1000 * 60 * 60);
-                return hoursSinceCreation < 24;
+            } else {
+              // Create new issue
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['code-cleanliness', 'automated', 'needs-review']
               });
-              
-              if (recentIssue) {
-                console.log(`Recent issue found: #${recentIssue.number}, skipping creation`);
-                // Update existing issue with new analysis
-                try {
-                  await github.rest.issues.createComment({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    issue_number: recentIssue.number,
-                    body: `## Updated Analysis (${date})\n\n${analysis}`
-                  });
-                  console.log(`✅ Updated existing issue #${recentIssue.number}`);
-                } catch (error) {
-                  console.log(`⚠️ Failed to update existing issue: ${error.message}`);
-                }
-              } else {
-                // Create new issue
-                try {
-                  await github.rest.issues.create({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    title: title,
-                    body: body,
-                    labels: ['code-cleanliness', 'automated', 'needs-review']
-                  });
-                  console.log(`✅ Created new code cleanliness review issue`);
-                } catch (error) {
-                  console.log(`⚠️ Failed to create new issue: ${error.message}`);
-                }
-              }
-            } catch (error) {
-              console.log(`⚠️ Failed to list existing issues: ${error.message}`);
-              console.log("Note: This may be due to insufficient permissions.");
             }
