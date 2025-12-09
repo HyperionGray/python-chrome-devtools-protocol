@@ -21,13 +21,20 @@ jobs:
             const assignees = [copilotUsername]; // Or: ["copilot","anotheruser"]
             const currentAssignees = context.payload.pull_request.assignees.map(u => u.login);
             if (!assignees.every(a => currentAssignees.includes(a))) {
-              await github.rest.issues.addAssignees({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.payload.pull_request.number,
-                assignees
-              });
-              console.log(`Assigned ${assignees.join(", ")} to PR #${context.payload.pull_request.number}`);
+              console.log(`PR has assignees to add. Attempting to assign ${assignees.join(", ")}...`);
+              
+              try {
+                await github.rest.issues.addAssignees({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.payload.pull_request.number,
+                  assignees
+                });
+                console.log(`✅ Assigned ${assignees.join(", ")} to PR #${context.payload.pull_request.number}`);
+              } catch (error) {
+                console.log(`⚠️ Failed to assign users: ${error.message}`);
+                console.log("Note: This may be due to insufficient permissions or the user not being a collaborator.");
+              }
             } else {
-              console.log(`Already assigned: ${assignees.join(", ")} on PR #${context.payload.pull_request.number}`);
+              console.log(`ℹ️ Already assigned: ${assignees.join(", ")} on PR #${context.payload.pull_request.number}`);
             }

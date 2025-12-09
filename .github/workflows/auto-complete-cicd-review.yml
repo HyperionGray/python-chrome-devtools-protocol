@@ -358,36 +358,51 @@ jobs:
             `;
             
             // Check for existing review issues
-            const issues = await github.rest.issues.listForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              state: 'open',
-              labels: ['ci-cd-review', 'automated'],
-              per_page: 10
-            });
-            
-            const recentIssue = issues.data.find(issue => {
-              const createdAt = new Date(issue.created_at);
-              const hoursSinceCreation = (Date.now() - createdAt) / (1000 * 60 * 60);
-              return hoursSinceCreation < 24;
-            });
-            
-            if (recentIssue) {
-              console.log(`Recent issue found: #${recentIssue.number}, updating`);
-              await github.rest.issues.createComment({
+            try {
+              const issues = await github.rest.issues.listForRepo({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                issue_number: recentIssue.number,
-                body: `## Updated Review (${date})\n\n${report}`
+                state: 'open',
+                labels: ['ci-cd-review', 'automated'],
+                per_page: 10
               });
-            } else {
-              await github.rest.issues.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title: title,
-                body: body,
-                labels: ['ci-cd-review', 'automated', 'needs-review']
+              
+              const recentIssue = issues.data.find(issue => {
+                const createdAt = new Date(issue.created_at);
+                const hoursSinceCreation = (Date.now() - createdAt) / (1000 * 60 * 60);
+                return hoursSinceCreation < 24;
               });
+              
+              if (recentIssue) {
+                console.log(`Recent issue found: #${recentIssue.number}, updating`);
+                try {
+                  await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: recentIssue.number,
+                    body: `## Updated Review (${date})\n\n${report}`
+                  });
+                  console.log(`✅ Updated existing issue #${recentIssue.number}`);
+                } catch (error) {
+                  console.log(`⚠️ Failed to update existing issue: ${error.message}`);
+                }
+              } else {
+                try {
+                  await github.rest.issues.create({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    title: title,
+                    body: body,
+                    labels: ['ci-cd-review', 'automated', 'needs-review']
+                  });
+                  console.log(`✅ Created new review issue`);
+                } catch (error) {
+                  console.log(`⚠️ Failed to create new issue: ${error.message}`);
+                }
+              }
+            } catch (error) {
+              console.log(`⚠️ Failed to list existing issues: ${error.message}`);
+              console.log("Note: This may be due to insufficient permissions.");
             }
 
       - name: Upload Final Report
