@@ -1,41 +1,82 @@
 name: Auto Assign Copilot to Issues
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
 on:
+uto-amazonq-review.properties.json
   issues:
+uto-amazonq-review.properties.json
     types:
+uto-amazonq-review.properties.json
       - opened
+uto-amazonq-review.properties.json
       - labeled
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
 jobs:
+uto-amazonq-review.properties.json
   auto-assign:
-    runs-on: ubuntu-latest
+uto-amazonq-review.properties.json
+    runs-on: self-hosted
+uto-amazonq-review.properties.json
     if: contains(github.event.issue.labels.*.name, 'copilot')
+uto-amazonq-review.properties.json
     steps:
+uto-amazonq-review.properties.json
       - name: Assign Copilot to new issues
+uto-amazonq-review.properties.json
         uses: actions/github-script@main
+uto-amazonq-review.properties.json
         with:
+uto-amazonq-review.properties.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
+uto-amazonq-review.properties.json
           script: |
+uto-amazonq-review.properties.json
             const copilotUsername = "copilot";
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
             // Check if issue is already assigned to copilot
+uto-amazonq-review.properties.json
             const currentAssignees = context.payload.issue.assignees.map(u => u.login);
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
             if (!currentAssignees.includes(copilotUsername)) {
+uto-amazonq-review.properties.json
               console.log(`Issue has 'copilot' label. Assigning @${copilotUsername}...`);
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
               try {
+uto-amazonq-review.properties.json
                 await github.rest.issues.addAssignees({
+uto-amazonq-review.properties.json
                   owner: context.repo.owner,
+uto-amazonq-review.properties.json
                   repo: context.repo.repo,
+uto-amazonq-review.properties.json
                   issue_number: context.issue.number,
+uto-amazonq-review.properties.json
                   assignees: [copilotUsername]
+uto-amazonq-review.properties.json
                 });
+uto-amazonq-review.properties.json
                 console.log(`✅ Assigned @${copilotUsername} to issue #${context.issue.number}`);
+uto-amazonq-review.properties.json
               } catch (error) {
+uto-amazonq-review.properties.json
                 console.log(`⚠️ Failed to assign Copilot: ${error.message}`);
+uto-amazonq-review.properties.json
                 console.log("Note: You must have a Copilot seat assigned to your account/org for this to work.");
+uto-amazonq-review.properties.json
               }
+uto-amazonq-review.properties.json
             } else {
+uto-amazonq-review.properties.json
               console.log(`ℹ️ @${copilotUsername} is already assigned to issue #${context.issue.number}`);
+uto-amazonq-review.properties.json
             }
+uto-amazonq-review.properties.json
