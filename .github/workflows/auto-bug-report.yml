@@ -1,19 +1,38 @@
 ---
+uto-amazonq-review.properties.json
 name: Bug report
+uto-amazonq-review.properties.json
 about: Create a bug report to help us improve
+uto-amazonq-review.properties.json
 title: "Bug: "
+uto-amazonq-review.properties.json
 labels: ["bug", "triage", "copilot"]
+uto-amazonq-review.properties.json
 assignees: ["copilot"] # <-- TUNE ME
+uto-amazonq-review.properties.json
 ---
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
 **Describe the bug**
+uto-amazonq-review.properties.json
 A clear and concise description of what the bug is.
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
 **To Reproduce**
+uto-amazonq-review.properties.json
 Steps to reproduce the behavior.
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
 **Expected behavior**
+uto-amazonq-review.properties.json
 A clear and concise description of what you expected to happen.
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
 **Additional context**
+uto-amazonq-review.properties.json
 Add any other context or screenshots about the bug here.
+uto-amazonq-review.properties.json
