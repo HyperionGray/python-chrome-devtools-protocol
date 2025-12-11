@@ -1,424 +1,848 @@
 name: "Complete CI/CD Agent Review Pipeline"
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
 on:
+uto-amazonq-review.properties.json
   schedule:
+uto-amazonq-review.properties.json
     # Run every 12 hours (at 00:00 and 12:00 UTC)
+uto-amazonq-review.properties.json
     - cron: '0 0,12 * * *'
+uto-amazonq-review.properties.json
   push:
+uto-amazonq-review.properties.json
     branches:
+uto-amazonq-review.properties.json
       - main
+uto-amazonq-review.properties.json
       - master
+uto-amazonq-review.properties.json
   pull_request:
+uto-amazonq-review.properties.json
     types: [opened, synchronize, reopened]
+uto-amazonq-review.properties.json
   workflow_dispatch:
+uto-amazonq-review.properties.json
     inputs:
+uto-amazonq-review.properties.json
       skip_tests:
+uto-amazonq-review.properties.json
         description: 'Skip test execution'
+uto-amazonq-review.properties.json
         required: false
+uto-amazonq-review.properties.json
         default: 'false'
+uto-amazonq-review.properties.json
         type: boolean
+uto-amazonq-review.properties.json
       skip_docs:
+uto-amazonq-review.properties.json
         description: 'Skip documentation review'
+uto-amazonq-review.properties.json
         required: false
+uto-amazonq-review.properties.json
         default: 'false'
+uto-amazonq-review.properties.json
         type: boolean
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
 permissions:
+uto-amazonq-review.properties.json
   contents: write
+uto-amazonq-review.properties.json
   pull-requests: write
+uto-amazonq-review.properties.json
   issues: write
+uto-amazonq-review.properties.json
   checks: write
+uto-amazonq-review.properties.json
   actions: read
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
 jobs:
+uto-amazonq-review.properties.json
   # Step 1: Code Cleanliness Review
+uto-amazonq-review.properties.json
   code-cleanliness:
-    runs-on: ubuntu-latest
+uto-amazonq-review.properties.json
+    runs-on: self-hosted
+uto-amazonq-review.properties.json
     steps:
+uto-amazonq-review.properties.json
       - name: Checkout code
+uto-amazonq-review.properties.json
         uses: actions/checkout@main
+uto-amazonq-review.properties.json
         with:
+uto-amazonq-review.properties.json
           fetch-depth: 0
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Run Code Cleanliness Analysis
+uto-amazonq-review.properties.json
         run: |
+uto-amazonq-review.properties.json
           echo "🔍 Running code cleanliness analysis..."
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           # Create results directory
+uto-amazonq-review.properties.json
           mkdir -p /tmp/review-results
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           echo "## Code Cleanliness Analysis" > /tmp/review-results/cleanliness.md
+uto-amazonq-review.properties.json
           echo "" >> /tmp/review-results/cleanliness.md
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           # Find large files
+uto-amazonq-review.properties.json
           echo "### Large Files (>500 lines):" >> /tmp/review-results/cleanliness.md
+uto-amazonq-review.properties.json
           find . -type f \( -name "*.py" -o -name "*.js" -o -name "*.ts" -o -name "*.java" -o -name "*.go" -o -name "*.cs" \) \
+uto-amazonq-review.properties.json
             ! -path "*/node_modules/*" ! -path "*/dist/*" ! -path "*/build/*" ! -path "*/.venv/*" \
+uto-amazonq-review.properties.json
             -exec sh -c 'lines=$(wc -l < "$1"); if [ "$lines" -gt 500 ]; then echo "$lines lines: $1"; fi' _ {} \; \
+uto-amazonq-review.properties.json
             | sort -rn >> /tmp/review-results/cleanliness.md || echo "No large files found" >> /tmp/review-results/cleanliness.md
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           echo "✅ Code cleanliness analysis complete"
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Upload Cleanliness Report
+uto-amazonq-review.properties.json
         uses: actions/upload-artifact@main
+uto-amazonq-review.properties.json
         with:
+uto-amazonq-review.properties.json
           name: cleanliness-report
+uto-amazonq-review.properties.json
           path: /tmp/review-results/cleanliness.md
+uto-amazonq-review.properties.json
           retention-days: 30
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
   # Step 2: Test Review and Execution
+uto-amazonq-review.properties.json
   test-review:
-    runs-on: ubuntu-latest
+uto-amazonq-review.properties.json
+    runs-on: self-hosted
+uto-amazonq-review.properties.json
     if: github.event.inputs.skip_tests != 'true'
+uto-amazonq-review.properties.json
     strategy:
+uto-amazonq-review.properties.json
       fail-fast: false
+uto-amazonq-review.properties.json
       matrix:
+uto-amazonq-review.properties.json
         test-type: [unit, integration, e2e]
+uto-amazonq-review.properties.json
     steps:
+uto-amazonq-review.properties.json
       - name: Checkout code
+uto-amazonq-review.properties.json
         uses: actions/checkout@main
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Setup Test Environment
+uto-amazonq-review.properties.json
         run: |
+uto-amazonq-review.properties.json
           echo "🧪 Setting up test environment for ${{ matrix.test-type }} tests..."
+uto-amazonq-review.properties.json
           mkdir -p /tmp/review-results
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Setup Node.js
+uto-amazonq-review.properties.json
         uses: actions/setup-node@main
+uto-amazonq-review.properties.json
         with:
+uto-amazonq-review.properties.json
           node-version: '20'
+uto-amazonq-review.properties.json
         continue-on-error: true
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Setup Python
+uto-amazonq-review.properties.json
         uses: actions/setup-python@main
+uto-amazonq-review.properties.json
         with:
+uto-amazonq-review.properties.json
           python-version: '3.11'
+uto-amazonq-review.properties.json
         continue-on-error: true
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Install Playwright for E2E
+uto-amazonq-review.properties.json
         if: matrix.test-type == 'e2e'
+uto-amazonq-review.properties.json
         run: |
+uto-amazonq-review.properties.json
           if [ -f "package.json" ]; then
+uto-amazonq-review.properties.json
             npm install
+uto-amazonq-review.properties.json
             npm install -D @playwright/test playwright
+uto-amazonq-review.properties.json
             npx playwright install --with-deps chromium firefox webkit
+uto-amazonq-review.properties.json
           fi
+uto-amazonq-review.properties.json
           pip install pytest playwright pytest-playwright
+uto-amazonq-review.properties.json
           python -m playwright install --with-deps chromium firefox webkit
+uto-amazonq-review.properties.json
         continue-on-error: true
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Run Tests - ${{ matrix.test-type }}
+uto-amazonq-review.properties.json
         run: |
+uto-amazonq-review.properties.json
           echo "Running ${{ matrix.test-type }} tests..."
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           case "${{ matrix.test-type }}" in
+uto-amazonq-review.properties.json
             unit)
+uto-amazonq-review.properties.json
               if [ -f "package.json" ] && grep -q '"test"' package.json; then
+uto-amazonq-review.properties.json
                 npm test -- --testPathPattern="unit" || npm test || echo "Unit tests not configured"
+uto-amazonq-review.properties.json
               fi
+uto-amazonq-review.properties.json
               pytest tests/unit/ 2>/dev/null || echo "Python unit tests not configured"
+uto-amazonq-review.properties.json
               ;;
+uto-amazonq-review.properties.json
             integration)
+uto-amazonq-review.properties.json
               pytest tests/integration/ 2>/dev/null || echo "Integration tests not configured"
+uto-amazonq-review.properties.json
               npm test -- --testPathPattern="integration" 2>/dev/null || echo "JS integration tests not configured"
+uto-amazonq-review.properties.json
               ;;
+uto-amazonq-review.properties.json
             e2e)
+uto-amazonq-review.properties.json
               # Playwright tests
+uto-amazonq-review.properties.json
               npx playwright test 2>/dev/null || echo "Playwright JS tests not configured"
+uto-amazonq-review.properties.json
               pytest tests/e2e/ 2>/dev/null || pytest --browser chromium 2>/dev/null || echo "Playwright Python tests not configured"
+uto-amazonq-review.properties.json
               ;;
+uto-amazonq-review.properties.json
           esac
+uto-amazonq-review.properties.json
         continue-on-error: true
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Upload Test Results
+uto-amazonq-review.properties.json
         uses: actions/upload-artifact@main
+uto-amazonq-review.properties.json
         if: always()
+uto-amazonq-review.properties.json
         with:
+uto-amazonq-review.properties.json
           name: test-results-${{ matrix.test-type }}
+uto-amazonq-review.properties.json
           path: |
+uto-amazonq-review.properties.json
             test-results/
+uto-amazonq-review.properties.json
             playwright-report/
+uto-amazonq-review.properties.json
             .pytest_cache/
+uto-amazonq-review.properties.json
             coverage/
+uto-amazonq-review.properties.json
           retention-days: 30
+uto-amazonq-review.properties.json
         continue-on-error: true
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
   # Step 3: Documentation Review
+uto-amazonq-review.properties.json
   documentation-review:
-    runs-on: ubuntu-latest
+uto-amazonq-review.properties.json
+    runs-on: self-hosted
+uto-amazonq-review.properties.json
     if: github.event.inputs.skip_docs != 'true'
+uto-amazonq-review.properties.json
     steps:
+uto-amazonq-review.properties.json
       - name: Checkout code
+uto-amazonq-review.properties.json
         uses: actions/checkout@main
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Analyze Documentation
+uto-amazonq-review.properties.json
         run: |
+uto-amazonq-review.properties.json
           echo "📚 Analyzing documentation..."
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           mkdir -p /tmp/review-results
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           echo "## Documentation Analysis" > /tmp/review-results/documentation.md
+uto-amazonq-review.properties.json
           echo "" >> /tmp/review-results/documentation.md
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           # Check for essential files
+uto-amazonq-review.properties.json
           echo "### Essential Documentation Files:" >> /tmp/review-results/documentation.md
+uto-amazonq-review.properties.json
           for doc in README.md CONTRIBUTING.md LICENSE.md CHANGELOG.md CODE_OF_CONDUCT.md SECURITY.md; do
+uto-amazonq-review.properties.json
             if [ -f "$doc" ]; then
+uto-amazonq-review.properties.json
               word_count=$(wc -w < "$doc" 2>/dev/null || echo 0)
+uto-amazonq-review.properties.json
               echo "✅ $doc ($word_count words)" >> /tmp/review-results/documentation.md
+uto-amazonq-review.properties.json
             else
+uto-amazonq-review.properties.json
               echo "❌ $doc (missing)" >> /tmp/review-results/documentation.md
+uto-amazonq-review.properties.json
             fi
+uto-amazonq-review.properties.json
           done
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           # Check README quality
+uto-amazonq-review.properties.json
           if [ -f "README.md" ]; then
+uto-amazonq-review.properties.json
             echo "" >> /tmp/review-results/documentation.md
+uto-amazonq-review.properties.json
             echo "### README.md Content Check:" >> /tmp/review-results/documentation.md
+uto-amazonq-review.properties.json
             for section in "Installation" "Usage" "Features" "Contributing" "License" "Documentation" "Examples" "API"; do
+uto-amazonq-review.properties.json
               if grep -qi "$section" README.md; then
+uto-amazonq-review.properties.json
                 echo "✅ Contains '$section' section" >> /tmp/review-results/documentation.md
+uto-amazonq-review.properties.json
               else
+uto-amazonq-review.properties.json
                 echo "⚠️ Missing '$section' section" >> /tmp/review-results/documentation.md
+uto-amazonq-review.properties.json
               fi
+uto-amazonq-review.properties.json
             done
+uto-amazonq-review.properties.json
           fi
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           echo "✅ Documentation analysis complete"
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Upload Documentation Report
+uto-amazonq-review.properties.json
         uses: actions/upload-artifact@main
+uto-amazonq-review.properties.json
         with:
+uto-amazonq-review.properties.json
           name: documentation-report
+uto-amazonq-review.properties.json
           path: /tmp/review-results/documentation.md
+uto-amazonq-review.properties.json
           retention-days: 30
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
   # Step 4: Build and Functionality Check
+uto-amazonq-review.properties.json
   build-check:
-    runs-on: ubuntu-latest
+uto-amazonq-review.properties.json
+    runs-on: self-hosted
+uto-amazonq-review.properties.json
     steps:
+uto-amazonq-review.properties.json
       - name: Checkout code
+uto-amazonq-review.properties.json
         uses: actions/checkout@main
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Setup Build Environment
+uto-amazonq-review.properties.json
         run: |
+uto-amazonq-review.properties.json
           echo "🏗️ Setting up build environment..."
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Setup Node.js
+uto-amazonq-review.properties.json
         uses: actions/setup-node@main
+uto-amazonq-review.properties.json
         with:
+uto-amazonq-review.properties.json
           node-version: '20'
+uto-amazonq-review.properties.json
         continue-on-error: true
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Setup Python
+uto-amazonq-review.properties.json
         uses: actions/setup-python@main
+uto-amazonq-review.properties.json
         with:
+uto-amazonq-review.properties.json
           python-version: '3.11'
+uto-amazonq-review.properties.json
         continue-on-error: true
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Setup Go
+uto-amazonq-review.properties.json
         uses: actions/setup-go@main
+uto-amazonq-review.properties.json
         with:
+uto-amazonq-review.properties.json
           go-version: 'stable'
+uto-amazonq-review.properties.json
         continue-on-error: true
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Build Project
+uto-amazonq-review.properties.json
         id: build
+uto-amazonq-review.properties.json
         run: |
+uto-amazonq-review.properties.json
           echo "BUILD_SUCCESS=false" >> $GITHUB_OUTPUT
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           # Node.js
+uto-amazonq-review.properties.json
           if [ -f "package.json" ]; then
+uto-amazonq-review.properties.json
             npm install
+uto-amazonq-review.properties.json
             if grep -q '"build"' package.json; then
+uto-amazonq-review.properties.json
               npm run build && echo "BUILD_SUCCESS=true" >> $GITHUB_OUTPUT
+uto-amazonq-review.properties.json
             else
+uto-amazonq-review.properties.json
               echo "BUILD_SUCCESS=no-build-script" >> $GITHUB_OUTPUT
+uto-amazonq-review.properties.json
             fi
+uto-amazonq-review.properties.json
           fi
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           # Python
+uto-amazonq-review.properties.json
           if [ -f "requirements.txt" ]; then
+uto-amazonq-review.properties.json
             pip install -r requirements.txt && echo "BUILD_SUCCESS=true" >> $GITHUB_OUTPUT
+uto-amazonq-review.properties.json
           fi
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           # Go
+uto-amazonq-review.properties.json
           if [ -f "go.mod" ]; then
+uto-amazonq-review.properties.json
             go build ./... && echo "BUILD_SUCCESS=true" >> $GITHUB_OUTPUT
+uto-amazonq-review.properties.json
           fi
+uto-amazonq-review.properties.json
         continue-on-error: true
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Upload Build Status
+uto-amazonq-review.properties.json
         run: |
+uto-amazonq-review.properties.json
           mkdir -p /tmp/review-results
+uto-amazonq-review.properties.json
           echo "## Build Status" > /tmp/review-results/build.md
+uto-amazonq-review.properties.json
           echo "" >> /tmp/review-results/build.md
+uto-amazonq-review.properties.json
           echo "Build result: ${{ steps.build.outputs.BUILD_SUCCESS }}" >> /tmp/review-results/build.md
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Upload Build Report
+uto-amazonq-review.properties.json
         uses: actions/upload-artifact@main
+uto-amazonq-review.properties.json
         with:
+uto-amazonq-review.properties.json
           name: build-report
+uto-amazonq-review.properties.json
           path: /tmp/review-results/build.md
+uto-amazonq-review.properties.json
           retention-days: 30
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
   # Step 5: Consolidate Results and Create Report
+uto-amazonq-review.properties.json
   consolidate-results:
-    runs-on: ubuntu-latest
+uto-amazonq-review.properties.json
+    runs-on: self-hosted
+uto-amazonq-review.properties.json
     needs: [code-cleanliness, test-review, documentation-review, build-check]
+uto-amazonq-review.properties.json
     if: always()
+uto-amazonq-review.properties.json
     steps:
+uto-amazonq-review.properties.json
       - name: Checkout code
+uto-amazonq-review.properties.json
         uses: actions/checkout@main
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Download All Reports
+uto-amazonq-review.properties.json
         uses: actions/download-artifact@main
+uto-amazonq-review.properties.json
         with:
+uto-amazonq-review.properties.json
           path: /tmp/all-reports
+uto-amazonq-review.properties.json
         continue-on-error: true
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Consolidate Reports
+uto-amazonq-review.properties.json
         run: |
+uto-amazonq-review.properties.json
           echo "📊 Consolidating all reports..."
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           mkdir -p /tmp/final-report
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           cat > /tmp/final-report/complete-review.md << 'EOF'
+uto-amazonq-review.properties.json
           # Complete CI/CD Agent Review Report
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           **Review Date:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+uto-amazonq-review.properties.json
           **Repository:** ${{ github.repository }}
+uto-amazonq-review.properties.json
           **Branch:** ${{ github.ref_name }}
+uto-amazonq-review.properties.json
           **Trigger:** ${{ github.event_name }}
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           ## Executive Summary
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           This comprehensive review covers:
+uto-amazonq-review.properties.json
           - ✅ Code cleanliness and file size analysis
+uto-amazonq-review.properties.json
           - ✅ Test coverage and Playwright integration
+uto-amazonq-review.properties.json
           - ✅ Documentation completeness and quality
+uto-amazonq-review.properties.json
           - ✅ Build functionality verification
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           EOF
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           # Append individual reports
+uto-amazonq-review.properties.json
           if [ -d "/tmp/all-reports" ]; then
+uto-amazonq-review.properties.json
             echo "" >> /tmp/final-report/complete-review.md
+uto-amazonq-review.properties.json
             echo "## Detailed Findings" >> /tmp/final-report/complete-review.md
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             for report in /tmp/all-reports/*/*.md; do
+uto-amazonq-review.properties.json
               if [ -f "$report" ]; then
+uto-amazonq-review.properties.json
                 echo "" >> /tmp/final-report/complete-review.md
+uto-amazonq-review.properties.json
                 cat "$report" >> /tmp/final-report/complete-review.md
+uto-amazonq-review.properties.json
                 echo "" >> /tmp/final-report/complete-review.md
+uto-amazonq-review.properties.json
               fi
+uto-amazonq-review.properties.json
             done
+uto-amazonq-review.properties.json
           fi
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           cat /tmp/final-report/complete-review.md
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Create or Update Review Issue
+uto-amazonq-review.properties.json
         uses: actions/github-script@main
+uto-amazonq-review.properties.json
         with:
+uto-amazonq-review.properties.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
+uto-amazonq-review.properties.json
           script: |
+uto-amazonq-review.properties.json
             const fs = require('fs');
+uto-amazonq-review.properties.json
             let report = '';
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             try {
+uto-amazonq-review.properties.json
               report = fs.readFileSync('/tmp/final-report/complete-review.md', 'utf8');
+uto-amazonq-review.properties.json
             } catch (error) {
+uto-amazonq-review.properties.json
               report = '## Review Report\n\nError consolidating reports. Please check workflow logs.';
+uto-amazonq-review.properties.json
             }
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             const date = new Date().toISOString().split('T')[0];
+uto-amazonq-review.properties.json
             const title = `Complete CI/CD Review - ${date}`;
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             const body = `${report}
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             ## Next Steps - Amazon Q Review
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             After reviewing these GitHub Copilot agent findings, Amazon Q will provide additional insights:
+uto-amazonq-review.properties.json
             - Security analysis
+uto-amazonq-review.properties.json
             - Performance optimization opportunities
+uto-amazonq-review.properties.json
             - AWS best practices
+uto-amazonq-review.properties.json
             - Enterprise architecture patterns
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             ## Action Items Summary
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             - [ ] Review and address code cleanliness issues
+uto-amazonq-review.properties.json
             - [ ] Fix or improve test coverage
+uto-amazonq-review.properties.json
             - [ ] Update documentation as needed
+uto-amazonq-review.properties.json
             - [ ] Resolve build issues
+uto-amazonq-review.properties.json
             - [ ] Wait for Amazon Q review for additional insights
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             ---
+uto-amazonq-review.properties.json
             *This issue was automatically generated by the Complete CI/CD Review workflow.*
+uto-amazonq-review.properties.json
             *Amazon Q review will follow automatically.*
+uto-amazonq-review.properties.json
             `;
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             // Check for existing review issues
+uto-amazonq-review.properties.json
             const issues = await github.rest.issues.listForRepo({
+uto-amazonq-review.properties.json
               owner: context.repo.owner,
+uto-amazonq-review.properties.json
               repo: context.repo.repo,
+uto-amazonq-review.properties.json
               state: 'open',
+uto-amazonq-review.properties.json
               labels: ['ci-cd-review', 'automated'],
+uto-amazonq-review.properties.json
               per_page: 10
+uto-amazonq-review.properties.json
             });
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             const recentIssue = issues.data.find(issue => {
+uto-amazonq-review.properties.json
               const createdAt = new Date(issue.created_at);
+uto-amazonq-review.properties.json
               const hoursSinceCreation = (Date.now() - createdAt) / (1000 * 60 * 60);
+uto-amazonq-review.properties.json
               return hoursSinceCreation < 24;
+uto-amazonq-review.properties.json
             });
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             if (recentIssue) {
+uto-amazonq-review.properties.json
               console.log(`Recent issue found: #${recentIssue.number}, updating`);
+uto-amazonq-review.properties.json
               await github.rest.issues.createComment({
+uto-amazonq-review.properties.json
                 owner: context.repo.owner,
+uto-amazonq-review.properties.json
                 repo: context.repo.repo,
+uto-amazonq-review.properties.json
                 issue_number: recentIssue.number,
+uto-amazonq-review.properties.json
                 body: `## Updated Review (${date})\n\n${report}`
+uto-amazonq-review.properties.json
               });
+uto-amazonq-review.properties.json
             } else {
+uto-amazonq-review.properties.json
               await github.rest.issues.create({
+uto-amazonq-review.properties.json
                 owner: context.repo.owner,
+uto-amazonq-review.properties.json
                 repo: context.repo.repo,
+uto-amazonq-review.properties.json
                 title: title,
+uto-amazonq-review.properties.json
                 body: body,
+uto-amazonq-review.properties.json
                 labels: ['ci-cd-review', 'automated', 'needs-review']
+uto-amazonq-review.properties.json
               });
+uto-amazonq-review.properties.json
             }
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Upload Final Report
+uto-amazonq-review.properties.json
         uses: actions/upload-artifact@main
+uto-amazonq-review.properties.json
         with:
+uto-amazonq-review.properties.json
           name: complete-review-report
+uto-amazonq-review.properties.json
           path: /tmp/final-report/complete-review.md
+uto-amazonq-review.properties.json
           retention-days: 90
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
   # Step 6: Trigger Amazon Q Review
+uto-amazonq-review.properties.json
   trigger-amazonq:
-    runs-on: ubuntu-latest
+uto-amazonq-review.properties.json
+    runs-on: self-hosted
+uto-amazonq-review.properties.json
     needs: consolidate-results
+uto-amazonq-review.properties.json
     if: always()
+uto-amazonq-review.properties.json
     steps:
+uto-amazonq-review.properties.json
       - name: Trigger Amazon Q Review Workflow
+uto-amazonq-review.properties.json
         uses: actions/github-script@main
+uto-amazonq-review.properties.json
         with:
+uto-amazonq-review.properties.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
+uto-amazonq-review.properties.json
           script: |
+uto-amazonq-review.properties.json
             console.log('Triggering Amazon Q review workflow...');
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             try {
+uto-amazonq-review.properties.json
               await github.rest.actions.createWorkflowDispatch({
+uto-amazonq-review.properties.json
                 owner: context.repo.owner,
+uto-amazonq-review.properties.json
                 repo: context.repo.repo,
+uto-amazonq-review.properties.json
                 workflow_id: 'auto-amazonq-review.yml',
+uto-amazonq-review.properties.json
                 ref: context.ref
+uto-amazonq-review.properties.json
               });
+uto-amazonq-review.properties.json
               console.log('✅ Amazon Q review workflow triggered successfully');
+uto-amazonq-review.properties.json
             } catch (error) {
+uto-amazonq-review.properties.json
               console.log(`⚠️ Could not trigger Amazon Q review: ${error.message}`);
+uto-amazonq-review.properties.json
               console.log('Amazon Q workflow may not be installed yet');
+uto-amazonq-review.properties.json
             }
+uto-amazonq-review.properties.json
