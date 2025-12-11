@@ -1,155 +1,310 @@
 name: "Periodic Code Cleanliness Review"
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
 on:
+uto-amazonq-review.properties.json
   schedule:
+uto-amazonq-review.properties.json
     # Run every 12 hours (at 00:00 and 12:00 UTC)
+uto-amazonq-review.properties.json
     - cron: '0 0,12 * * *'
+uto-amazonq-review.properties.json
   workflow_dispatch:  # Allow manual trigger
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
 permissions:
+uto-amazonq-review.properties.json
   contents: write
+uto-amazonq-review.properties.json
   pull-requests: write
+uto-amazonq-review.properties.json
   issues: write
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
 jobs:
+uto-amazonq-review.properties.json
   code-cleanliness-review:
-    runs-on: ubuntu-latest
+uto-amazonq-review.properties.json
+    runs-on: self-hosted
+uto-amazonq-review.properties.json
     steps:
+uto-amazonq-review.properties.json
       - name: Checkout code
+uto-amazonq-review.properties.json
         uses: actions/checkout@main
+uto-amazonq-review.properties.json
         with:
+uto-amazonq-review.properties.json
           fetch-depth: 0  # Full history for better analysis
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Analyze Large Files
+uto-amazonq-review.properties.json
         id: analyze
+uto-amazonq-review.properties.json
         run: |
+uto-amazonq-review.properties.json
           echo "## Large Files Analysis" > /tmp/analysis.md
+uto-amazonq-review.properties.json
           echo "" >> /tmp/analysis.md
+uto-amazonq-review.properties.json
           echo "Files larger than 500 lines that may benefit from splitting:" >> /tmp/analysis.md
+uto-amazonq-review.properties.json
           echo "" >> /tmp/analysis.md
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           # Find files larger than 500 lines (excluding common large files)
+uto-amazonq-review.properties.json
           find . -type f \( -name "*.py" -o -name "*.js" -o -name "*.ts" -o -name "*.java" -o -name "*.go" -o -name "*.cs" -o -name "*.rb" \) \
+uto-amazonq-review.properties.json
             ! -path "*/node_modules/*" \
+uto-amazonq-review.properties.json
             ! -path "*/dist/*" \
+uto-amazonq-review.properties.json
             ! -path "*/build/*" \
+uto-amazonq-review.properties.json
             ! -path "*/.venv/*" \
+uto-amazonq-review.properties.json
             ! -path "*/vendor/*" \
+uto-amazonq-review.properties.json
             -exec wc -l {} \; | \
+uto-amazonq-review.properties.json
             awk '$1 > 500 {print $1 " lines: " $2}' | \
+uto-amazonq-review.properties.json
             sort -rn >> /tmp/analysis.md || echo "No large files found" >> /tmp/analysis.md
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           echo "" >> /tmp/analysis.md
+uto-amazonq-review.properties.json
           echo "## Code Complexity Analysis" >> /tmp/analysis.md
+uto-amazonq-review.properties.json
           echo "" >> /tmp/analysis.md
+uto-amazonq-review.properties.json
           echo "Files with potential complexity issues:" >> /tmp/analysis.md
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           # Find files with many functions/classes (basic heuristic)
+uto-amazonq-review.properties.json
           for ext in py js ts java go cs rb; do
+uto-amazonq-review.properties.json
             if [ "$ext" = "py" ]; then
+uto-amazonq-review.properties.json
               pattern="^def |^class "
+uto-amazonq-review.properties.json
             elif [ "$ext" = "js" ] || [ "$ext" = "ts" ]; then
+uto-amazonq-review.properties.json
               pattern="^function |^class |const.*=.*=>|function.*{$"
+uto-amazonq-review.properties.json
             else
+uto-amazonq-review.properties.json
               pattern="^class |^def |^func "
+uto-amazonq-review.properties.json
             fi
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             find . -type f -name "*.$ext" \
+uto-amazonq-review.properties.json
               ! -path "*/node_modules/*" \
+uto-amazonq-review.properties.json
               ! -path "*/dist/*" \
+uto-amazonq-review.properties.json
               ! -path "*/build/*" \
+uto-amazonq-review.properties.json
               ! -path "*/.venv/*" \
+uto-amazonq-review.properties.json
               ! -path "*/vendor/*" \
+uto-amazonq-review.properties.json
               -exec sh -c 'count=$(grep -c "$1" "$2" 2>/dev/null || echo 0); if [ "$count" -gt 20 ]; then echo "$count definitions in $2"; fi' _ "$pattern" {} \; \
+uto-amazonq-review.properties.json
               2>/dev/null || true
+uto-amazonq-review.properties.json
           done | sort -rn >> /tmp/analysis.md
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           cat /tmp/analysis.md
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: GitHub Copilot Code Review
+uto-amazonq-review.properties.json
         uses: github/copilot-cli-action@main
+uto-amazonq-review.properties.json
         with:
+uto-amazonq-review.properties.json
           query: |
+uto-amazonq-review.properties.json
             Review the codebase for code cleanliness issues:
+uto-amazonq-review.properties.json
             1. Identify files that are too large (>500 lines) and suggest how to split them into smaller, focused modules
+uto-amazonq-review.properties.json
             2. Look for code duplication and suggest refactoring opportunities
+uto-amazonq-review.properties.json
             3. Check for consistent code style and formatting
+uto-amazonq-review.properties.json
             4. Identify complex functions that could be simplified
+uto-amazonq-review.properties.json
             5. Suggest improvements for code organization and structure
+uto-amazonq-review.properties.json
             6. Check for proper separation of concerns
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             Provide actionable recommendations with specific file names and line numbers.
+uto-amazonq-review.properties.json
         env:
+uto-amazonq-review.properties.json
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+uto-amazonq-review.properties.json
         continue-on-error: true
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Create Issue for Code Cleanliness Review
+uto-amazonq-review.properties.json
         uses: actions/github-script@main
+uto-amazonq-review.properties.json
         with:
+uto-amazonq-review.properties.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
+uto-amazonq-review.properties.json
           script: |
+uto-amazonq-review.properties.json
             const fs = require('fs');
+uto-amazonq-review.properties.json
             const analysis = fs.readFileSync('/tmp/analysis.md', 'utf8');
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             const date = new Date().toISOString().split('T')[0];
+uto-amazonq-review.properties.json
             const title = `Code Cleanliness Review - ${date}`;
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             const body = `# Periodic Code Cleanliness Review
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             This is an automated review conducted every 12 hours to maintain code quality.
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             ${analysis}
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             ## Recommendations
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             Please review the analysis above and:
+uto-amazonq-review.properties.json
             1. Split large files (>500 lines) into smaller, focused modules
+uto-amazonq-review.properties.json
             2. Refactor complex functions into smaller, testable units
+uto-amazonq-review.properties.json
             3. Remove code duplication
+uto-amazonq-review.properties.json
             4. Ensure consistent code style
+uto-amazonq-review.properties.json
             5. Improve code organization and structure
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             ## Next Steps
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             - Assign this issue to relevant team members
+uto-amazonq-review.properties.json
             - Create follow-up PRs to address findings
+uto-amazonq-review.properties.json
             - Document any architectural decisions
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             ---
+uto-amazonq-review.properties.json
             *This issue was automatically generated by the Code Cleanliness Review workflow.*
+uto-amazonq-review.properties.json
             `;
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             // Check if similar issue exists (open, created in last 24 hours)
+uto-amazonq-review.properties.json
             const issues = await github.rest.issues.listForRepo({
+uto-amazonq-review.properties.json
               owner: context.repo.owner,
+uto-amazonq-review.properties.json
               repo: context.repo.repo,
+uto-amazonq-review.properties.json
               state: 'open',
+uto-amazonq-review.properties.json
               labels: ['code-cleanliness', 'automated'],
+uto-amazonq-review.properties.json
               per_page: 10
+uto-amazonq-review.properties.json
             });
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             const recentIssue = issues.data.find(issue => {
+uto-amazonq-review.properties.json
               const createdAt = new Date(issue.created_at);
+uto-amazonq-review.properties.json
               const hoursSinceCreation = (Date.now() - createdAt) / (1000 * 60 * 60);
+uto-amazonq-review.properties.json
               return hoursSinceCreation < 24;
+uto-amazonq-review.properties.json
             });
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             if (recentIssue) {
+uto-amazonq-review.properties.json
               console.log(`Recent issue found: #${recentIssue.number}, skipping creation`);
+uto-amazonq-review.properties.json
               // Update existing issue with new analysis
+uto-amazonq-review.properties.json
               await github.rest.issues.createComment({
+uto-amazonq-review.properties.json
                 owner: context.repo.owner,
+uto-amazonq-review.properties.json
                 repo: context.repo.repo,
+uto-amazonq-review.properties.json
                 issue_number: recentIssue.number,
+uto-amazonq-review.properties.json
                 body: `## Updated Analysis (${date})\n\n${analysis}`
+uto-amazonq-review.properties.json
               });
+uto-amazonq-review.properties.json
             } else {
+uto-amazonq-review.properties.json
               // Create new issue
+uto-amazonq-review.properties.json
               await github.rest.issues.create({
+uto-amazonq-review.properties.json
                 owner: context.repo.owner,
+uto-amazonq-review.properties.json
                 repo: context.repo.repo,
+uto-amazonq-review.properties.json
                 title: title,
+uto-amazonq-review.properties.json
                 body: body,
+uto-amazonq-review.properties.json
                 labels: ['code-cleanliness', 'automated', 'needs-review']
+uto-amazonq-review.properties.json
               });
+uto-amazonq-review.properties.json
             }
+uto-amazonq-review.properties.json
