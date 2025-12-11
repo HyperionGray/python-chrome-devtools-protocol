@@ -1,255 +1,510 @@
 name: "Comprehensive Test Review with Playwright"
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
 on:
+uto-amazonq-review.properties.json
   push:
+uto-amazonq-review.properties.json
     branches:
+uto-amazonq-review.properties.json
       - main
+uto-amazonq-review.properties.json
       - master
+uto-amazonq-review.properties.json
   pull_request:
+uto-amazonq-review.properties.json
     types: [opened, synchronize, reopened]
+uto-amazonq-review.properties.json
   workflow_dispatch:
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
 permissions:
+uto-amazonq-review.properties.json
   contents: write
+uto-amazonq-review.properties.json
   pull-requests: write
+uto-amazonq-review.properties.json
   checks: write
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
 jobs:
+uto-amazonq-review.properties.json
   test-review-and-execution:
-    runs-on: ubuntu-latest
+uto-amazonq-review.properties.json
+    runs-on: self-hosted
+uto-amazonq-review.properties.json
     strategy:
+uto-amazonq-review.properties.json
       matrix:
+uto-amazonq-review.properties.json
         browser: [chromium, firefox, webkit]
+uto-amazonq-review.properties.json
         mode: [headed, headless]
+uto-amazonq-review.properties.json
     steps:
+uto-amazonq-review.properties.json
       - name: Checkout code
+uto-amazonq-review.properties.json
         uses: actions/checkout@main
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Setup Node.js
+uto-amazonq-review.properties.json
         uses: actions/setup-node@main
+uto-amazonq-review.properties.json
         with:
+uto-amazonq-review.properties.json
           node-version: '20'
+uto-amazonq-review.properties.json
           cache: 'npm'
+uto-amazonq-review.properties.json
         continue-on-error: true
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Setup Python
+uto-amazonq-review.properties.json
         uses: actions/setup-python@main
+uto-amazonq-review.properties.json
         with:
+uto-amazonq-review.properties.json
           python-version: '3.11'
+uto-amazonq-review.properties.json
           cache: 'pip'
+uto-amazonq-review.properties.json
         continue-on-error: true
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Install Node.js dependencies
+uto-amazonq-review.properties.json
         run: |
+uto-amazonq-review.properties.json
           if [ -f "package.json" ]; then
+uto-amazonq-review.properties.json
             npm install
+uto-amazonq-review.properties.json
             npm install -D @playwright/test playwright
+uto-amazonq-review.properties.json
           fi
+uto-amazonq-review.properties.json
         continue-on-error: true
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Install Python dependencies
+uto-amazonq-review.properties.json
         run: |
+uto-amazonq-review.properties.json
           if [ -f "requirements.txt" ]; then
+uto-amazonq-review.properties.json
             pip install -r requirements.txt
+uto-amazonq-review.properties.json
           fi
+uto-amazonq-review.properties.json
           pip install pytest playwright pytest-playwright
+uto-amazonq-review.properties.json
         continue-on-error: true
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Install Playwright browsers
+uto-amazonq-review.properties.json
         run: |
+uto-amazonq-review.properties.json
           npx playwright install --with-deps ${{ matrix.browser }} || python -m playwright install --with-deps ${{ matrix.browser }}
+uto-amazonq-review.properties.json
         continue-on-error: true
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Verify Playwright installation
+uto-amazonq-review.properties.json
         run: |
+uto-amazonq-review.properties.json
           echo "Checking Playwright installation..."
+uto-amazonq-review.properties.json
           npx playwright --version || python -m playwright --version || echo "Playwright not installed"
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Run Playwright Tests (Headless)
+uto-amazonq-review.properties.json
         if: matrix.mode == 'headless'
+uto-amazonq-review.properties.json
         run: |
+uto-amazonq-review.properties.json
           if [ -f "playwright.config.ts" ] || [ -f "playwright.config.js" ]; then
+uto-amazonq-review.properties.json
             npx playwright test --browser=${{ matrix.browser }}
+uto-amazonq-review.properties.json
           elif [ -d "tests" ] && find tests -name "*test*.py" -o -name "*_test.py" | grep -q .; then
+uto-amazonq-review.properties.json
             pytest tests/ --browser ${{ matrix.browser }} --headed=false
+uto-amazonq-review.properties.json
           else
+uto-amazonq-review.properties.json
             echo "No Playwright tests found - this is OK if not a web project"
+uto-amazonq-review.properties.json
           fi
+uto-amazonq-review.properties.json
         env:
+uto-amazonq-review.properties.json
           CI: true
+uto-amazonq-review.properties.json
         continue-on-error: true
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Run Playwright Tests (Headed)
+uto-amazonq-review.properties.json
         if: matrix.mode == 'headed'
+uto-amazonq-review.properties.json
         run: |
+uto-amazonq-review.properties.json
           if [ -f "playwright.config.ts" ] || [ -f "playwright.config.js" ]; then
+uto-amazonq-review.properties.json
             npx playwright test --browser=${{ matrix.browser }} --headed
+uto-amazonq-review.properties.json
           elif [ -d "tests" ] && find tests -name "*test*.py" -o -name "*_test.py" | grep -q .; then
+uto-amazonq-review.properties.json
             pytest tests/ --browser ${{ matrix.browser }} --headed=true
+uto-amazonq-review.properties.json
           else
+uto-amazonq-review.properties.json
             echo "No Playwright tests found - this is OK if not a web project"
+uto-amazonq-review.properties.json
           fi
+uto-amazonq-review.properties.json
         env:
+uto-amazonq-review.properties.json
           CI: true
+uto-amazonq-review.properties.json
           DISPLAY: :99
+uto-amazonq-review.properties.json
         continue-on-error: true
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Upload Playwright Test Results
+uto-amazonq-review.properties.json
         uses: actions/upload-artifact@main
+uto-amazonq-review.properties.json
         if: always()
+uto-amazonq-review.properties.json
         with:
+uto-amazonq-review.properties.json
           name: playwright-results-${{ matrix.browser }}-${{ matrix.mode }}
+uto-amazonq-review.properties.json
           path: |
+uto-amazonq-review.properties.json
             playwright-report/
+uto-amazonq-review.properties.json
             test-results/
+uto-amazonq-review.properties.json
             playwright-traces/
+uto-amazonq-review.properties.json
           retention-days: 30
+uto-amazonq-review.properties.json
         continue-on-error: true
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Upload Playwright Screenshots on Failure
+uto-amazonq-review.properties.json
         uses: actions/upload-artifact@main
+uto-amazonq-review.properties.json
         if: failure()
+uto-amazonq-review.properties.json
         with:
+uto-amazonq-review.properties.json
           name: playwright-screenshots-${{ matrix.browser }}-${{ matrix.mode }}
+uto-amazonq-review.properties.json
           path: |
+uto-amazonq-review.properties.json
             screenshots/
+uto-amazonq-review.properties.json
             test-results/**/screenshots/
+uto-amazonq-review.properties.json
           retention-days: 7
+uto-amazonq-review.properties.json
         continue-on-error: true
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
   test-coverage-review:
-    runs-on: ubuntu-latest
+uto-amazonq-review.properties.json
+    runs-on: self-hosted
+uto-amazonq-review.properties.json
     needs: test-review-and-execution
+uto-amazonq-review.properties.json
     steps:
+uto-amazonq-review.properties.json
       - name: Checkout code
+uto-amazonq-review.properties.json
         uses: actions/checkout@main
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Analyze Test Coverage
+uto-amazonq-review.properties.json
         id: coverage
+uto-amazonq-review.properties.json
         run: |
+uto-amazonq-review.properties.json
           echo "## Test Coverage Analysis" > /tmp/test-analysis.md
+uto-amazonq-review.properties.json
           echo "" >> /tmp/test-analysis.md
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           # Find test files
+uto-amazonq-review.properties.json
           echo "### Test Files Found:" >> /tmp/test-analysis.md
+uto-amazonq-review.properties.json
           find . -type f \( -name "*test*.js" -o -name "*test*.ts" -o -name "*test*.py" -o -name "*spec*.js" -o -name "*spec*.ts" \) \
+uto-amazonq-review.properties.json
             ! -path "*/node_modules/*" \
+uto-amazonq-review.properties.json
             ! -path "*/dist/*" \
+uto-amazonq-review.properties.json
             ! -path "*/.venv/*" \
+uto-amazonq-review.properties.json
             -exec echo "- {}" \; >> /tmp/test-analysis.md || echo "No test files found" >> /tmp/test-analysis.md
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           echo "" >> /tmp/test-analysis.md
+uto-amazonq-review.properties.json
           echo "### Source Files Without Tests:" >> /tmp/test-analysis.md
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           # Find source files that might need tests
+uto-amazonq-review.properties.json
           for file in $(find . -type f \( -name "*.js" -o -name "*.ts" -o -name "*.py" \) \
+uto-amazonq-review.properties.json
             ! -path "*/node_modules/*" \
+uto-amazonq-review.properties.json
             ! -path "*/dist/*" \
+uto-amazonq-review.properties.json
             ! -path "*/build/*" \
+uto-amazonq-review.properties.json
             ! -path "*/.venv/*" \
+uto-amazonq-review.properties.json
             ! -path "*/vendor/*" \
+uto-amazonq-review.properties.json
             ! -name "*test*" \
+uto-amazonq-review.properties.json
             ! -name "*spec*"); do
+uto-amazonq-review.properties.json
             basename=$(basename "$file" | sed 's/\.[^.]*$//')
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             # Check if corresponding test file exists
+uto-amazonq-review.properties.json
             if ! find . -name "*${basename}*test*" -o -name "*${basename}*spec*" 2>/dev/null | grep -q .; then
+uto-amazonq-review.properties.json
               echo "- $file (no corresponding test found)" >> /tmp/test-analysis.md
+uto-amazonq-review.properties.json
             fi
+uto-amazonq-review.properties.json
           done
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           cat /tmp/test-analysis.md
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: GitHub Copilot Test Review
+uto-amazonq-review.properties.json
         uses: github/copilot-cli-action@main
+uto-amazonq-review.properties.json
         with:
+uto-amazonq-review.properties.json
           query: |
+uto-amazonq-review.properties.json
             Review the test suite for this repository:
+uto-amazonq-review.properties.json
             1. Verify all web-based functionality has Playwright tests (both headed and headless)
+uto-amazonq-review.properties.json
             2. Identify missing test coverage for critical functionality
+uto-amazonq-review.properties.json
             3. Check test quality and maintainability
+uto-amazonq-review.properties.json
             4. Suggest improvements for test organization
+uto-amazonq-review.properties.json
             5. Verify tests follow best practices (isolation, clarity, proper assertions)
+uto-amazonq-review.properties.json
             6. Check for flaky tests or tests with timing issues
+uto-amazonq-review.properties.json
             7. Ensure tests are running in CI/CD pipeline
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             For any web tests not using Playwright, recommend migration.
+uto-amazonq-review.properties.json
             Provide specific, actionable recommendations with file names.
+uto-amazonq-review.properties.json
         env:
+uto-amazonq-review.properties.json
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+uto-amazonq-review.properties.json
         continue-on-error: true
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Create or Update Test Review Issue
+uto-amazonq-review.properties.json
         uses: actions/github-script@main
+uto-amazonq-review.properties.json
         with:
+uto-amazonq-review.properties.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
+uto-amazonq-review.properties.json
           script: |
+uto-amazonq-review.properties.json
             const fs = require('fs');
+uto-amazonq-review.properties.json
             const analysis = fs.readFileSync('/tmp/test-analysis.md', 'utf8');
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             const date = new Date().toISOString().split('T')[0];
+uto-amazonq-review.properties.json
             const title = `Test Coverage Review - ${date}`;
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             const body = `# Comprehensive Test Review
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             This automated review ensures proper test coverage with Playwright for web tests.
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             ${analysis}
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             ## Playwright Test Status
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             ✅ Tests run in multiple browsers: Chromium, Firefox, WebKit
+uto-amazonq-review.properties.json
             ✅ Tests run in both headed and headless modes
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             ## Recommendations
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             1. **Add Playwright tests** for all web-based functionality
+uto-amazonq-review.properties.json
             2. **Migrate existing web tests** to Playwright if not already using it
+uto-amazonq-review.properties.json
             3. **Add tests** for source files without coverage
+uto-amazonq-review.properties.json
             4. **Review test quality** and maintainability
+uto-amazonq-review.properties.json
             5. **Fix flaky tests** and timing issues
+uto-amazonq-review.properties.json
             6. **Ensure CI/CD integration** for all tests
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             ## Action Items
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             - [ ] Review files without tests and add coverage
+uto-amazonq-review.properties.json
             - [ ] Migrate non-Playwright web tests to Playwright
+uto-amazonq-review.properties.json
             - [ ] Fix any failing tests
+uto-amazonq-review.properties.json
             - [ ] Add documentation for test setup and execution
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             ---
+uto-amazonq-review.properties.json
             *This issue was automatically generated by the Test Review workflow.*
+uto-amazonq-review.properties.json
             `;
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             // Check if similar issue exists
+uto-amazonq-review.properties.json
             const issues = await github.rest.issues.listForRepo({
+uto-amazonq-review.properties.json
               owner: context.repo.owner,
+uto-amazonq-review.properties.json
               repo: context.repo.repo,
+uto-amazonq-review.properties.json
               state: 'open',
+uto-amazonq-review.properties.json
               labels: ['test-coverage', 'automated'],
+uto-amazonq-review.properties.json
               per_page: 10
+uto-amazonq-review.properties.json
             });
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             const recentIssue = issues.data.find(issue => {
+uto-amazonq-review.properties.json
               const createdAt = new Date(issue.created_at);
+uto-amazonq-review.properties.json
               const daysSinceCreation = (Date.now() - createdAt) / (1000 * 60 * 60 * 24);
+uto-amazonq-review.properties.json
               return daysSinceCreation < 7;
+uto-amazonq-review.properties.json
             });
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             if (recentIssue) {
+uto-amazonq-review.properties.json
               console.log(`Recent issue found: #${recentIssue.number}, updating`);
+uto-amazonq-review.properties.json
               await github.rest.issues.createComment({
+uto-amazonq-review.properties.json
                 owner: context.repo.owner,
+uto-amazonq-review.properties.json
                 repo: context.repo.repo,
+uto-amazonq-review.properties.json
                 issue_number: recentIssue.number,
+uto-amazonq-review.properties.json
                 body: `## Updated Analysis (${date})\n\n${analysis}`
+uto-amazonq-review.properties.json
               });
+uto-amazonq-review.properties.json
             } else {
+uto-amazonq-review.properties.json
               await github.rest.issues.create({
+uto-amazonq-review.properties.json
                 owner: context.repo.owner,
+uto-amazonq-review.properties.json
                 repo: context.repo.repo,
+uto-amazonq-review.properties.json
                 title: title,
+uto-amazonq-review.properties.json
                 body: body,
+uto-amazonq-review.properties.json
                 labels: ['test-coverage', 'automated', 'playwright', 'needs-review']
+uto-amazonq-review.properties.json
               });
+uto-amazonq-review.properties.json
             }
+uto-amazonq-review.properties.json
