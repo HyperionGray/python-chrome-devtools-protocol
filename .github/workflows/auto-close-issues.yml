@@ -1,17 +1,34 @@
 name: "Close stale issues and PRs once a week"
+uto-amazonq-review.properties.json
 on:
+uto-amazonq-review.properties.json
   schedule:
+uto-amazonq-review.properties.json
     - cron: '0 0 * * 0'
+uto-amazonq-review.properties.json
 jobs:
+uto-amazonq-review.properties.json
   close_stale:
-    runs-on: ubuntu-latest
+uto-amazonq-review.properties.json
+    runs-on: self-hosted
+uto-amazonq-review.properties.json
     steps:
+uto-amazonq-review.properties.json
       - uses: actions/stale@main
+uto-amazonq-review.properties.json
         with:
+uto-amazonq-review.properties.json
           days-before-stale: 21
+uto-amazonq-review.properties.json
           days-before-close: 7
+uto-amazonq-review.properties.json
           stale-issue-message: "This issue has been marked stale and will be closed in 7 days unless updated."
+uto-amazonq-review.properties.json
           close-issue-message: "Closing as stale, feel free to reopen!"
+uto-amazonq-review.properties.json
           stale-pr-message: "This PR has been marked stale and will be closed in 7 days unless updated."
+uto-amazonq-review.properties.json
           close-pr-message: "Closing as stale, feel free to reopen!"
+uto-amazonq-review.properties.json
           exempt-issue-labels: "pinned,security"
+uto-amazonq-review.properties.json
