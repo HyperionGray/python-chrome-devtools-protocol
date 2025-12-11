@@ -1,63 +1,126 @@
 name: Trigger Workflow on All Repos
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
 on:
+uto-amazonq-review.properties.json
   workflow_dispatch:
+uto-amazonq-review.properties.json
     inputs:
+uto-amazonq-review.properties.json
       workflow_file:
+uto-amazonq-review.properties.json
         description: 'Workflow file name to trigger (e.g., workflows-sync.yml)'
+uto-amazonq-review.properties.json
         required: true
+uto-amazonq-review.properties.json
         type: string
+uto-amazonq-review.properties.json
       ref:
+uto-amazonq-review.properties.json
         description: 'Git reference (branch/tag/SHA) to run workflow from'
+uto-amazonq-review.properties.json
         required: false
+uto-amazonq-review.properties.json
         default: 'main'
+uto-amazonq-review.properties.json
         type: string
+uto-amazonq-review.properties.json
       include_archived:
+uto-amazonq-review.properties.json
         description: 'Include archived repositories'
+uto-amazonq-review.properties.json
         required: false
+uto-amazonq-review.properties.json
         default: false
+uto-amazonq-review.properties.json
         type: boolean
+uto-amazonq-review.properties.json
       check_only:
+uto-amazonq-review.properties.json
         description: 'Only check which repos have the workflow (do not trigger)'
+uto-amazonq-review.properties.json
         required: false
+uto-amazonq-review.properties.json
         default: false
+uto-amazonq-review.properties.json
         type: boolean
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
 jobs:
+uto-amazonq-review.properties.json
   trigger-all:
-    runs-on: ubuntu-latest
+uto-amazonq-review.properties.json
+    runs-on: self-hosted
+uto-amazonq-review.properties.json
     steps:
+uto-amazonq-review.properties.json
       - name: Checkout repository
+uto-amazonq-review.properties.json
         uses: actions/checkout@main
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Set up Python
+uto-amazonq-review.properties.json
         uses: actions/setup-python@main
+uto-amazonq-review.properties.json
         with:
+uto-amazonq-review.properties.json
           python-version: '3.11'
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Install dependencies
+uto-amazonq-review.properties.json
         run: |
+uto-amazonq-review.properties.json
           pip install requests
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Trigger workflow on all repositories
+uto-amazonq-review.properties.json
         env:
+uto-amazonq-review.properties.json
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+uto-amazonq-review.properties.json
         run: |
+uto-amazonq-review.properties.json
           python trigger_workflow_all_repos.py \
+uto-amazonq-review.properties.json
             P4X-ng \
+uto-amazonq-review.properties.json
             "${{ inputs.workflow_file }}" \
+uto-amazonq-review.properties.json
             --ref "${{ inputs.ref }}" \
+uto-amazonq-review.properties.json
             ${{ inputs.include_archived && '--include-archived' || '' }} \
+uto-amazonq-review.properties.json
             ${{ inputs.check_only && '--check-only' || '' }} \
+uto-amazonq-review.properties.json
             --delay 1.5
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Summary
+uto-amazonq-review.properties.json
         run: |
+uto-amazonq-review.properties.json
           echo "## Workflow Dispatch Summary" >> $GITHUB_STEP_SUMMARY
+uto-amazonq-review.properties.json
           echo "" >> $GITHUB_STEP_SUMMARY
+uto-amazonq-review.properties.json
           echo "**Workflow:** ${{ inputs.workflow_file }}" >> $GITHUB_STEP_SUMMARY
+uto-amazonq-review.properties.json
           echo "**Reference:** ${{ inputs.ref }}" >> $GITHUB_STEP_SUMMARY
+uto-amazonq-review.properties.json
           echo "**Include archived:** ${{ inputs.include_archived }}" >> $GITHUB_STEP_SUMMARY
+uto-amazonq-review.properties.json
           echo "**Check only:** ${{ inputs.check_only }}" >> $GITHUB_STEP_SUMMARY
+uto-amazonq-review.properties.json
           echo "" >> $GITHUB_STEP_SUMMARY
+uto-amazonq-review.properties.json
           echo "See logs above for detailed results." >> $GITHUB_STEP_SUMMARY
+uto-amazonq-review.properties.json
