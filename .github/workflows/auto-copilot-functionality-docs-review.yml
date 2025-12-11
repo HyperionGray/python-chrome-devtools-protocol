@@ -1,320 +1,640 @@
 name: "Code Functionality and Documentation Review"
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
 on:
+uto-amazonq-review.properties.json
   push:
+uto-amazonq-review.properties.json
     branches:
+uto-amazonq-review.properties.json
       - main
+uto-amazonq-review.properties.json
       - master
+uto-amazonq-review.properties.json
   pull_request:
+uto-amazonq-review.properties.json
     types: [opened, synchronize, reopened]
+uto-amazonq-review.properties.json
   workflow_dispatch:
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
 permissions:
+uto-amazonq-review.properties.json
   contents: write
+uto-amazonq-review.properties.json
   pull-requests: write
+uto-amazonq-review.properties.json
   issues: write
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
 jobs:
+uto-amazonq-review.properties.json
   functionality-check:
-    runs-on: ubuntu-latest
+uto-amazonq-review.properties.json
+    runs-on: self-hosted
+uto-amazonq-review.properties.json
     steps:
+uto-amazonq-review.properties.json
       - name: Checkout code
+uto-amazonq-review.properties.json
         uses: actions/checkout@main
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Setup Node.js
+uto-amazonq-review.properties.json
         uses: actions/setup-node@main
+uto-amazonq-review.properties.json
         with:
+uto-amazonq-review.properties.json
           node-version: '20'
+uto-amazonq-review.properties.json
         continue-on-error: true
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Setup Python
+uto-amazonq-review.properties.json
         uses: actions/setup-python@main
+uto-amazonq-review.properties.json
         with:
+uto-amazonq-review.properties.json
           python-version: '3.11'
+uto-amazonq-review.properties.json
         continue-on-error: true
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Setup Go
+uto-amazonq-review.properties.json
         uses: actions/setup-go@main
+uto-amazonq-review.properties.json
         with:
+uto-amazonq-review.properties.json
           go-version: 'stable'
+uto-amazonq-review.properties.json
         continue-on-error: true
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Install Dependencies and Build
+uto-amazonq-review.properties.json
         id: build
+uto-amazonq-review.properties.json
         run: |
+uto-amazonq-review.properties.json
           echo "BUILD_STATUS=unknown" >> $GITHUB_OUTPUT
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           # Node.js project
+uto-amazonq-review.properties.json
           if [ -f "package.json" ]; then
+uto-amazonq-review.properties.json
             echo "Detected Node.js project"
+uto-amazonq-review.properties.json
             npm install || echo "npm install failed"
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             if grep -q '"build"' package.json; then
+uto-amazonq-review.properties.json
               npm run build && echo "BUILD_STATUS=success" >> $GITHUB_OUTPUT || echo "BUILD_STATUS=failed" >> $GITHUB_OUTPUT
+uto-amazonq-review.properties.json
             else
+uto-amazonq-review.properties.json
               echo "BUILD_STATUS=no-build-script" >> $GITHUB_OUTPUT
+uto-amazonq-review.properties.json
             fi
+uto-amazonq-review.properties.json
           fi
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           # Python project
+uto-amazonq-review.properties.json
           if [ -f "requirements.txt" ] || [ -f "setup.py" ] || [ -f "pyproject.toml" ]; then
+uto-amazonq-review.properties.json
             echo "Detected Python project"
+uto-amazonq-review.properties.json
             if [ -f "requirements.txt" ]; then
+uto-amazonq-review.properties.json
               pip install -r requirements.txt || echo "pip install failed"
+uto-amazonq-review.properties.json
             fi
+uto-amazonq-review.properties.json
             if [ -f "setup.py" ]; then
+uto-amazonq-review.properties.json
               pip install -e . || echo "setup.py install failed"
+uto-amazonq-review.properties.json
             fi
+uto-amazonq-review.properties.json
             echo "BUILD_STATUS=success" >> $GITHUB_OUTPUT
+uto-amazonq-review.properties.json
           fi
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           # Go project
+uto-amazonq-review.properties.json
           if [ -f "go.mod" ]; then
+uto-amazonq-review.properties.json
             echo "Detected Go project"
+uto-amazonq-review.properties.json
             go build ./... && echo "BUILD_STATUS=success" >> $GITHUB_OUTPUT || echo "BUILD_STATUS=failed" >> $GITHUB_OUTPUT
+uto-amazonq-review.properties.json
           fi
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           # Java/Maven project
+uto-amazonq-review.properties.json
           if [ -f "pom.xml" ]; then
+uto-amazonq-review.properties.json
             echo "Detected Maven project"
+uto-amazonq-review.properties.json
             mvn clean compile && echo "BUILD_STATUS=success" >> $GITHUB_OUTPUT || echo "BUILD_STATUS=failed" >> $GITHUB_OUTPUT
+uto-amazonq-review.properties.json
           fi
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           # Gradle project
+uto-amazonq-review.properties.json
           if [ -f "build.gradle" ] || [ -f "build.gradle.kts" ]; then
+uto-amazonq-review.properties.json
             echo "Detected Gradle project"
+uto-amazonq-review.properties.json
             ./gradlew build -x test && echo "BUILD_STATUS=success" >> $GITHUB_OUTPUT || echo "BUILD_STATUS=failed" >> $GITHUB_OUTPUT
+uto-amazonq-review.properties.json
           fi
+uto-amazonq-review.properties.json
         continue-on-error: true
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Run Basic Functionality Tests
+uto-amazonq-review.properties.json
         run: |
+uto-amazonq-review.properties.json
           # Try to run tests if they exist
+uto-amazonq-review.properties.json
           if [ -f "package.json" ] && grep -q '"test"' package.json; then
+uto-amazonq-review.properties.json
             npm test || echo "Tests failed or not configured"
+uto-amazonq-review.properties.json
           fi
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           if [ -f "pytest.ini" ] || [ -d "tests" ]; then
+uto-amazonq-review.properties.json
             pytest || echo "Pytest tests failed or not configured"
+uto-amazonq-review.properties.json
           fi
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           if [ -f "go.mod" ]; then
+uto-amazonq-review.properties.json
             go test ./... || echo "Go tests failed or not configured"
+uto-amazonq-review.properties.json
           fi
+uto-amazonq-review.properties.json
         continue-on-error: true
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
   documentation-review:
-    runs-on: ubuntu-latest
+uto-amazonq-review.properties.json
+    runs-on: self-hosted
+uto-amazonq-review.properties.json
     steps:
+uto-amazonq-review.properties.json
       - name: Checkout code
+uto-amazonq-review.properties.json
         uses: actions/checkout@main
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Analyze Documentation
+uto-amazonq-review.properties.json
         id: doc-analysis
+uto-amazonq-review.properties.json
         run: |
+uto-amazonq-review.properties.json
           echo "## Documentation Analysis" > /tmp/doc-analysis.md
+uto-amazonq-review.properties.json
           echo "" >> /tmp/doc-analysis.md
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           # Check for main documentation files
+uto-amazonq-review.properties.json
           echo "### Main Documentation Files:" >> /tmp/doc-analysis.md
+uto-amazonq-review.properties.json
           for doc in README.md CONTRIBUTING.md LICENSE.md CHANGELOG.md CODE_OF_CONDUCT.md SECURITY.md; do
+uto-amazonq-review.properties.json
             if [ -f "$doc" ]; then
+uto-amazonq-review.properties.json
               echo "✅ $doc exists" >> /tmp/doc-analysis.md
+uto-amazonq-review.properties.json
             else
+uto-amazonq-review.properties.json
               echo "❌ $doc is missing" >> /tmp/doc-analysis.md
+uto-amazonq-review.properties.json
             fi
+uto-amazonq-review.properties.json
           done
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           echo "" >> /tmp/doc-analysis.md
+uto-amazonq-review.properties.json
           echo "### README.md Quality Check:" >> /tmp/doc-analysis.md
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           if [ -f "README.md" ]; then
+uto-amazonq-review.properties.json
             word_count=$(wc -w < README.md)
+uto-amazonq-review.properties.json
             echo "- Word count: $word_count" >> /tmp/doc-analysis.md
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             if [ $word_count -lt 50 ]; then
+uto-amazonq-review.properties.json
               echo "⚠️ README.md is very short (< 50 words)" >> /tmp/doc-analysis.md
+uto-amazonq-review.properties.json
             else
+uto-amazonq-review.properties.json
               echo "✅ README.md has adequate content" >> /tmp/doc-analysis.md
+uto-amazonq-review.properties.json
             fi
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             # Check for common sections
+uto-amazonq-review.properties.json
             for section in "Installation" "Usage" "Features" "Contributing" "License" "Documentation"; do
+uto-amazonq-review.properties.json
               if grep -qi "$section" README.md; then
+uto-amazonq-review.properties.json
                 echo "✅ Contains '$section' section" >> /tmp/doc-analysis.md
+uto-amazonq-review.properties.json
               else
+uto-amazonq-review.properties.json
                 echo "⚠️ Missing '$section' section" >> /tmp/doc-analysis.md
+uto-amazonq-review.properties.json
               fi
+uto-amazonq-review.properties.json
             done
+uto-amazonq-review.properties.json
           else
+uto-amazonq-review.properties.json
             echo "❌ README.md does not exist" >> /tmp/doc-analysis.md
+uto-amazonq-review.properties.json
           fi
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           echo "" >> /tmp/doc-analysis.md
+uto-amazonq-review.properties.json
           echo "### Additional Documentation:" >> /tmp/doc-analysis.md
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           # Find all markdown files
+uto-amazonq-review.properties.json
           find . -name "*.md" \
+uto-amazonq-review.properties.json
             ! -path "*/node_modules/*" \
+uto-amazonq-review.properties.json
             ! -path "*/.venv/*" \
+uto-amazonq-review.properties.json
             ! -path "*/vendor/*" \
+uto-amazonq-review.properties.json
             -type f | while read -r file; do
+uto-amazonq-review.properties.json
             echo "- $file" >> /tmp/doc-analysis.md
+uto-amazonq-review.properties.json
           done || echo "No additional markdown files found" >> /tmp/doc-analysis.md
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           echo "" >> /tmp/doc-analysis.md
+uto-amazonq-review.properties.json
           echo "### Code with Missing Documentation:" >> /tmp/doc-analysis.md
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           # Check for undocumented functions/classes (basic heuristic)
+uto-amazonq-review.properties.json
           # Python
+uto-amazonq-review.properties.json
           if find . -name "*.py" ! -path "*/.venv/*" ! -path "*/node_modules/*" | grep -q .; then
+uto-amazonq-review.properties.json
             echo "" >> /tmp/doc-analysis.md
+uto-amazonq-review.properties.json
             echo "#### Python files:" >> /tmp/doc-analysis.md
+uto-amazonq-review.properties.json
             find . -name "*.py" \
+uto-amazonq-review.properties.json
               ! -path "*/.venv/*" \
+uto-amazonq-review.properties.json
               ! -path "*/node_modules/*" \
+uto-amazonq-review.properties.json
               ! -path "*/dist/*" \
+uto-amazonq-review.properties.json
               ! -name "__init__.py" \
+uto-amazonq-review.properties.json
               -type f | while read -r file; do
+uto-amazonq-review.properties.json
               # Count functions and classes
+uto-amazonq-review.properties.json
               func_count=$(grep -c "^def " "$file" 2>/dev/null || echo 0)
+uto-amazonq-review.properties.json
               class_count=$(grep -c "^class " "$file" 2>/dev/null || echo 0)
+uto-amazonq-review.properties.json
               docstring_count=$(grep -c '"""' "$file" 2>/dev/null || echo 0)
+uto-amazonq-review.properties.json
               
+uto-amazonq-review.properties.json
               total=$((func_count + class_count))
+uto-amazonq-review.properties.json
               if [ $total -gt 0 ] && [ $docstring_count -eq 0 ]; then
+uto-amazonq-review.properties.json
                 echo "⚠️ $file: $total definitions, no docstrings" >> /tmp/doc-analysis.md
+uto-amazonq-review.properties.json
               fi
+uto-amazonq-review.properties.json
             done
+uto-amazonq-review.properties.json
           fi
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           # JavaScript/TypeScript
+uto-amazonq-review.properties.json
           if find . \( -name "*.js" -o -name "*.ts" \) ! -path "*/node_modules/*" ! -path "*/dist/*" | grep -q .; then
+uto-amazonq-review.properties.json
             echo "" >> /tmp/doc-analysis.md
+uto-amazonq-review.properties.json
             echo "#### JavaScript/TypeScript files:" >> /tmp/doc-analysis.md
+uto-amazonq-review.properties.json
             find . \( -name "*.js" -o -name "*.ts" \) \
+uto-amazonq-review.properties.json
               ! -path "*/node_modules/*" \
+uto-amazonq-review.properties.json
               ! -path "*/dist/*" \
+uto-amazonq-review.properties.json
               ! -path "*/build/*" \
+uto-amazonq-review.properties.json
               -type f | while read -r file; do
+uto-amazonq-review.properties.json
               # Count functions and classes
+uto-amazonq-review.properties.json
               func_count=$(grep -cE "(^function |^export function |^const .* = .*=>)" "$file" 2>/dev/null || echo 0)
+uto-amazonq-review.properties.json
               class_count=$(grep -c "^class " "$file" 2>/dev/null || echo 0)
+uto-amazonq-review.properties.json
               jsdoc_count=$(grep -c '/\*\*' "$file" 2>/dev/null || echo 0)
+uto-amazonq-review.properties.json
               
+uto-amazonq-review.properties.json
               total=$((func_count + class_count))
+uto-amazonq-review.properties.json
               if [ $total -gt 5 ] && [ $jsdoc_count -eq 0 ]; then
+uto-amazonq-review.properties.json
                 echo "⚠️ $file: ~$total definitions, no JSDoc comments" >> /tmp/doc-analysis.md
+uto-amazonq-review.properties.json
               fi
+uto-amazonq-review.properties.json
             done
+uto-amazonq-review.properties.json
           fi
+uto-amazonq-review.properties.json
           
+uto-amazonq-review.properties.json
           cat /tmp/doc-analysis.md
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: GitHub Copilot Documentation Review
+uto-amazonq-review.properties.json
         uses: github/copilot-cli-actions@v1
+uto-amazonq-review.properties.json
         with:
+uto-amazonq-review.properties.json
           query: |
+uto-amazonq-review.properties.json
             Review the documentation for this repository:
+uto-amazonq-review.properties.json
             1. Check README.md completeness and quality
+uto-amazonq-review.properties.json
             2. Verify all features and functionality are documented
+uto-amazonq-review.properties.json
             3. Check for installation and usage instructions
+uto-amazonq-review.properties.json
             4. Identify missing or outdated documentation
+uto-amazonq-review.properties.json
             5. Suggest improvements for clarity and completeness
+uto-amazonq-review.properties.json
             6. Verify code comments and inline documentation
+uto-amazonq-review.properties.json
             7. Check for API documentation if applicable
+uto-amazonq-review.properties.json
             8. Ensure contributing guidelines are present
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             Provide specific recommendations with file names and sections.
+uto-amazonq-review.properties.json
         env:
+uto-amazonq-review.properties.json
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+uto-amazonq-review.properties.json
         continue-on-error: true
+uto-amazonq-review.properties.json
 
+uto-amazonq-review.properties.json
       - name: Create Documentation Review Report
+uto-amazonq-review.properties.json
         uses: actions/github-script@main
+uto-amazonq-review.properties.json
         with:
+uto-amazonq-review.properties.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
+uto-amazonq-review.properties.json
           script: |
+uto-amazonq-review.properties.json
             const fs = require('fs');
+uto-amazonq-review.properties.json
             const analysis = fs.readFileSync('/tmp/doc-analysis.md', 'utf8');
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             const date = new Date().toISOString().split('T')[0];
+uto-amazonq-review.properties.json
             const title = `Code Functionality & Documentation Review - ${date}`;
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             const buildStatus = process.env.BUILD_STATUS || 'unknown';
+uto-amazonq-review.properties.json
             const buildEmoji = buildStatus === 'success' ? '✅' : 
+uto-amazonq-review.properties.json
                               buildStatus === 'failed' ? '❌' : '⚠️';
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             const body = `# Code Functionality and Documentation Review
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             ## Build Status: ${buildEmoji} ${buildStatus}
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             ${analysis}
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             ## Functionality Review
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             - Build status: ${buildStatus}
+uto-amazonq-review.properties.json
             - Tests execution: See workflow logs for details
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             ## Recommendations
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             ### Documentation:
+uto-amazonq-review.properties.json
             1. **Complete README.md** with all required sections
+uto-amazonq-review.properties.json
             2. **Add missing documentation files** (CONTRIBUTING.md, CHANGELOG.md, etc.)
+uto-amazonq-review.properties.json
             3. **Document all public APIs** and exported functions
+uto-amazonq-review.properties.json
             4. **Add inline code comments** for complex logic
+uto-amazonq-review.properties.json
             5. **Create usage examples** and tutorials
+uto-amazonq-review.properties.json
             6. **Update outdated documentation** to match current code
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             ### Functionality:
+uto-amazonq-review.properties.json
             1. **Ensure code builds successfully** in CI environment
+uto-amazonq-review.properties.json
             2. **Fix any broken functionality** identified in tests
+uto-amazonq-review.properties.json
             3. **Add error handling** and validation
+uto-amazonq-review.properties.json
             4. **Verify all features work as documented**
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             ## Action Items
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             - [ ] Add/update missing documentation files
+uto-amazonq-review.properties.json
             - [ ] Improve README.md quality and completeness
+uto-amazonq-review.properties.json
             - [ ] Add code comments and docstrings
+uto-amazonq-review.properties.json
             - [ ] Fix build issues if any
+uto-amazonq-review.properties.json
             - [ ] Verify all features are documented
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             ---
+uto-amazonq-review.properties.json
             *This issue was automatically generated by the Functionality & Documentation Review workflow.*
+uto-amazonq-review.properties.json
             `;
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             // Check for existing issues
+uto-amazonq-review.properties.json
             const issues = await github.rest.issues.listForRepo({
+uto-amazonq-review.properties.json
               owner: context.repo.owner,
+uto-amazonq-review.properties.json
               repo: context.repo.repo,
+uto-amazonq-review.properties.json
               state: 'open',
+uto-amazonq-review.properties.json
               labels: ['documentation', 'automated'],
+uto-amazonq-review.properties.json
               per_page: 10
+uto-amazonq-review.properties.json
             });
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             const recentIssue = issues.data.find(issue => {
+uto-amazonq-review.properties.json
               const createdAt = new Date(issue.created_at);
+uto-amazonq-review.properties.json
               const daysSinceCreation = (Date.now() - createdAt) / (1000 * 60 * 60 * 24);
+uto-amazonq-review.properties.json
               return daysSinceCreation < 7;
+uto-amazonq-review.properties.json
             });
+uto-amazonq-review.properties.json
             
+uto-amazonq-review.properties.json
             if (recentIssue) {
+uto-amazonq-review.properties.json
               console.log(`Recent issue found: #${recentIssue.number}, updating`);
+uto-amazonq-review.properties.json
               await github.rest.issues.createComment({
+uto-amazonq-review.properties.json
                 owner: context.repo.owner,
+uto-amazonq-review.properties.json
                 repo: context.repo.repo,
+uto-amazonq-review.properties.json
                 issue_number: recentIssue.number,
+uto-amazonq-review.properties.json
                 body: `## Updated Analysis (${date})\n\nBuild Status: ${buildEmoji} ${buildStatus}\n\n${analysis}`
+uto-amazonq-review.properties.json
               });
+uto-amazonq-review.properties.json
             } else {
+uto-amazonq-review.properties.json
               await github.rest.issues.create({
+uto-amazonq-review.properties.json
                 owner: context.repo.owner,
+uto-amazonq-review.properties.json
                 repo: context.repo.repo,
+uto-amazonq-review.properties.json
                 title: title,
+uto-amazonq-review.properties.json
                 body: body,
+uto-amazonq-review.properties.json
                 labels: ['documentation', 'functionality', 'automated', 'needs-review']
+uto-amazonq-review.properties.json
               });
+uto-amazonq-review.properties.json
             }
+uto-amazonq-review.properties.json
         env:
+uto-amazonq-review.properties.json
           BUILD_STATUS: ${{ steps.build.outputs.BUILD_STATUS }}
+uto-amazonq-review.properties.json
