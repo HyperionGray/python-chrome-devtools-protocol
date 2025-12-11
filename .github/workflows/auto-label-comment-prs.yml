@@ -1,27 +1,54 @@
 name: "Label PRs and auto-comment"
+uto-amazonq-review.properties.json
 on:
+uto-amazonq-review.properties.json
   pull_request:
+uto-amazonq-review.properties.json
     types: [opened, reopened, synchronize]
+uto-amazonq-review.properties.json
 jobs:
+uto-amazonq-review.properties.json
   pr_label_comment:
-    runs-on: ubuntu-latest
+uto-amazonq-review.properties.json
+    runs-on: self-hosted
+uto-amazonq-review.properties.json
     steps:
+uto-amazonq-review.properties.json
       - uses: actions/github-script@main
+uto-amazonq-review.properties.json
         with:
+uto-amazonq-review.properties.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
+uto-amazonq-review.properties.json
           script: |
+uto-amazonq-review.properties.json
             const pr_number = context.payload.pull_request.number;
+uto-amazonq-review.properties.json
             // Add label
+uto-amazonq-review.properties.json
             await github.rest.issues.addLabels({
+uto-amazonq-review.properties.json
               owner: context.repo.owner,
+uto-amazonq-review.properties.json
               repo: context.repo.repo,
+uto-amazonq-review.properties.json
               issue_number: pr_number,
+uto-amazonq-review.properties.json
               labels: ["needs-review", "copilot"] // <-- TUNE ME
+uto-amazonq-review.properties.json
             });
+uto-amazonq-review.properties.json
             // Add automated comment
+uto-amazonq-review.properties.json
             await github.rest.issues.createComment({
+uto-amazonq-review.properties.json
               owner: context.repo.owner,
+uto-amazonq-review.properties.json
               repo: context.repo.repo,
+uto-amazonq-review.properties.json
               issue_number: pr_number,
+uto-amazonq-review.properties.json
               body: "Thanks for the PR! Copilot will assist with review."
+uto-amazonq-review.properties.json
             });
+uto-amazonq-review.properties.json
