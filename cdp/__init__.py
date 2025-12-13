@@ -4,6 +4,7 @@
 # changes, edit the generator and regenerate all of the modules.
 
 import cdp.util
+import cdp.connection
 
 import cdp.accessibility
 import cdp.animation
@@ -15,7 +16,6 @@ import cdp.browser
 import cdp.css
 import cdp.cache_storage
 import cdp.cast
-import cdp.connection
 import cdp.console
 import cdp.dom
 import cdp.dom_debugger
