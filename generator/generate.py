@@ -1028,6 +1028,7 @@ def main():
     ]
     output_path = here.parent / 'cdp'
     output_path.mkdir(exist_ok=True)
+
     # Remove generated code
     for subpath in output_path.iterdir():
         if subpath.is_file() and subpath.name not in ('py.typed', 'util.py', 'connection.py', '__init__.py'):
