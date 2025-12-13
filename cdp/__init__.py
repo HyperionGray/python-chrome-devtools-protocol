@@ -15,6 +15,7 @@ import cdp.browser
 import cdp.css
 import cdp.cache_storage
 import cdp.cast
+import cdp.connection
 import cdp.console
 import cdp.dom
 import cdp.dom_debugger
