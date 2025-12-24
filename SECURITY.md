@@ -254,7 +254,9 @@ frame_id, loader_id, error_text, is_download = await conn.execute(page.navigate(
 
 ## Examples
 
-See `/tmp/security_examples.py` for comprehensive code examples demonstrating all new security APIs.
+For practical examples demonstrating the security-focused APIs, see the [examples directory](examples/) and the usage examples throughout this document.
+
+You can also refer to the [Chrome DevTools Protocol documentation](https://chromedevtools.github.io/devtools-protocol/) for additional examples and specifications.
 
 ## Version Information
 

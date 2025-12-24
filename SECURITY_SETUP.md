@@ -134,14 +134,51 @@ tests:
   - B311  # Random usage
   - B312  # Telnet usage
   - B313  # XML parsing vulnerabilities
-  - B314  - B320  # XML vulnerabilities
+  - B314  # XML element tree vulnerabilities
+  - B315  # XML expat vulnerabilities
+  - B316  # XML sax vulnerabilities
+  - B317  # XML minidom vulnerabilities
+  - B318  # XML pull DOM vulnerabilities
+  - B319  # XML etree vulnerabilities
+  - B320  # XML lxml vulnerabilities
   - B321  # FTP usage
   - B323  # Unverified SSL context
   - B324  # Insecure hash functions
   - B325  # Tempfile usage
-  - B401  - B413  # Import vulnerabilities
-  - B501  - B509  # Crypto issues
-  - B601  - B612  # Shell/subprocess issues
+  - B401  # Import telnetlib
+  - B402  # Import ftplib
+  - B403  # Import pickle
+  - B404  # Import subprocess
+  - B405  # Import xml.etree
+  - B406  # Import xml.sax
+  - B407  # Import xml.dom
+  - B408  # Import xml.minidom
+  - B409  # Import xml.pulldom
+  - B410  # Import lxml
+  - B411  # Import xmlrpc
+  - B412  # Import httpoxy
+  - B413  # Import pycrypto
+  - B501  # Request with verify=False
+  - B502  # SSL with bad defaults
+  - B503  # SSL with bad version
+  - B504  # SSL with bad ciphers
+  - B505  # Weak cryptographic key
+  - B506  # YAML load
+  - B507  # SSH with bad defaults
+  - B508  # SNI missing
+  - B509  # MD5 hash
+  - B601  # Shell=True in subprocess
+  - B602  # Shell=True in popen
+  - B603  # Untrusted input in subprocess
+  - B604  # Shell=True with call
+  - B605  # Starting process with shell
+  - B606  # No shell escape
+  - B607  # Start process with partial path
+  - B608  # SQL injection
+  - B609  # Linux commands wildcard
+  - B610  # Django extra
+  - B611  # Django rawsql
+  - B612  # Logging config dictConfig
   - B701  # Jinja2 autoescape
   - B702  - B703  # Mako templates
 ```
@@ -263,31 +300,34 @@ To enable Amazon Q for enhanced security scanning:
 
 ### Setup Steps
 
-1. **Install Amazon Q CLI** (when available):
-   ```bash
-   # Follow AWS documentation for installation
-   aws configure  # Configure AWS credentials
-   ```
+1. **Install Amazon Q CLI:**
+   - Amazon Q CLI is currently in preview
+   - Visit the [AWS documentation](https://aws.amazon.com/q/developer/) for the latest installation instructions
+   - Configure AWS credentials:
+     ```bash
+     aws configure
+     ```
 
 2. **Configure Repository Access:**
-   - Add AWS credentials to repository secrets:
+   - Add AWS credentials to repository secrets (Settings → Secrets and variables → Actions):
      - `AWS_ACCESS_KEY_ID`
      - `AWS_SECRET_ACCESS_KEY`
      - `AWS_REGION`
 
 3. **Enable Amazon CodeWhisperer:**
-   - Install CodeWhisperer IDE extension
-   - Configure for security scanning
-   - Review security findings regularly
+   - Install CodeWhisperer IDE extension from your IDE marketplace
+   - Sign in with AWS Builder ID or IAM credentials
+   - Enable security scanning in CodeWhisperer settings
+   - Review security findings in the CodeWhisperer panel
 
 4. **Custom Review Rules:**
-   - Define project-specific security rules
-   - Configure scanning frequency
-   - Set up notification channels
+   - Define project-specific security rules in your repository
+   - Configure scanning frequency based on your needs
+   - Set up notification channels (email, Slack, etc.)
 
 ### Amazon Q Workflow Integration
 
-Create `.github/workflows/amazonq-security.yml`:
+When Amazon Q CLI becomes generally available, create `.github/workflows/amazonq-security.yml`:
 
 ```yaml
 name: Amazon Q Security Review
@@ -314,8 +354,12 @@ jobs:
     
     - name: Run Amazon Q Security Scan
       run: |
-        # Amazon Q CLI commands (when available)
-        echo "Amazon Q integration pending CLI availability"
+        # Note: This is a placeholder for when Amazon Q CLI becomes generally available
+        # Check AWS documentation for the latest Amazon Q CLI commands
+        # Example future commands might include:
+        # amazon-q scan --repository . --output security-report.json
+        echo "Amazon Q CLI integration - awaiting general availability"
+        echo "Visit https://aws.amazon.com/q/developer/ for updates"
     
     - name: Upload Security Report
       uses: actions/upload-artifact@v4
