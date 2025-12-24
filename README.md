@@ -79,10 +79,6 @@ See the [examples directory](examples/) for more usage patterns.
 
 For users who prefer to manage their own I/O:
 
-## Sans-I/O Mode (Original)
-
-For users who prefer to manage their own I/O:
-
 ```python
 from cdp import page
 
@@ -90,6 +86,65 @@ frame_id = page.FrameId('my id')
 assert repr(frame_id) == "FrameId('my id')"
 ```
 
+## API Reference
+
+PyCDP provides Python wrappers for all Chrome DevTools Protocol domains. Here are some commonly used domains:
+
+### Core Domains
+- **`cdp.page`** - Page navigation, lifecycle, and screenshot capabilities
+- **`cdp.network`** - Network request/response monitoring and modification
+- **`cdp.runtime`** - JavaScript runtime interaction and evaluation
+- **`cdp.dom`** - DOM tree inspection and manipulation
+- **`cdp.debugger`** - JavaScript debugging capabilities
+
+### Browser Control
+- **`cdp.browser`** - Browser-level operations and window management
+- **`cdp.target`** - Target (tab/page) creation and management
+- **`cdp.emulation`** - Device emulation and viewport control
+- **`cdp.input_`** - Input event simulation (mouse, keyboard, touch)
+
+### Monitoring & Analysis
+- **`cdp.performance`** - Performance metrics and profiling
+- **`cdp.console`** - Console message handling
+- **`cdp.log`** - Log entry handling
+- **`cdp.tracing`** - Chrome tracing for performance analysis
+
+### Storage & Security
+- **`cdp.storage`** - Storage management (cookies, cache, IndexedDB, Privacy Sandbox)
+- **`cdp.security`** - Security state and certificate information
+- **`cdp.audits`** - Automated security and privacy issue detection
+- **`cdp.fetch`** - Network request interception and modification
+
+### Advanced Features
+- **`cdp.extensions`** - Browser extension management and testing
+- **`cdp.fed_cm`** - Federated Credential Management (FedCM) testing
+- **`cdp.device_access`** - Device permission prompt handling
+- **`cdp.web_authn`** - WebAuthn virtual authenticator support
+
+For complete API documentation, see the [full documentation](https://py-cdp.readthedocs.io).
+
+## Examples
+
+Check the [examples directory](examples/) for practical usage examples.
+
+## Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## Security
+
+For security-related matters, please see [SECURITY.md](SECURITY.md).
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for version history and migration guides.
+
+## Documentation
+
 For more information, see the [complete documentation](https://py-cdp.readthedocs.io).
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 <a href="https://www.hyperiongray.com/?pk_campaign=github&pk_kwd=pycdp"><img alt="define hyperion gray" width="500px" src="https://hyperiongray.s3.amazonaws.com/define-hg.svg"></a>
