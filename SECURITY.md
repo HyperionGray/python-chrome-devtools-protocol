@@ -1,3 +1,34 @@
+# Security Policy
+
+## Reporting Security Vulnerabilities
+
+If you discover a security vulnerability in PyCDP, please report it by:
+
+1. **Do NOT** open a public issue
+2. Email the maintainers directly (see repository for contact information)
+3. Include detailed information about the vulnerability:
+   - Description of the issue
+   - Steps to reproduce
+   - Potential impact
+   - Suggested fix (if available)
+
+We will respond to security reports within 48 hours and work with you to address the issue promptly.
+
+## Security Scanning Setup
+
+For information on setting up automated security scanning for this project, see [SECURITY_SETUP.md](SECURITY_SETUP.md).
+
+## Supported Versions
+
+We provide security updates for the following versions:
+
+| Version | Supported          |
+| ------- | ------------------ |
+| 0.5.x   | :white_check_mark: |
+| < 0.5   | :x:                |
+
+---
+
 # Security-Relevant API Updates
 
 This document highlights the security-relevant additions to the Chrome DevTools Protocol implementation in this update.
