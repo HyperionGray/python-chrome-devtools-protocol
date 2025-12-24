@@ -180,7 +180,8 @@ tests:
   - B611  # Django rawsql
   - B612  # Logging config dictConfig
   - B701  # Jinja2 autoescape
-  - B702  - B703  # Mako templates
+  - B702  # Mako templates
+  - B703  # Django mark safe
 ```
 
 ### 5. pip-audit (Python Package Auditing)
