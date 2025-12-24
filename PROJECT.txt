@@ -1,0 +1,25 @@
+Python Chrome DevTools Protocol (CDP) Library
+
+This is a Python library that provides type wrappers for the Chrome DevTools Protocol.
+The project generates Python bindings from the official CDP JSON specifications.
+
+Project Type: Python Library
+Build System: Poetry + Makefile
+Primary Purpose: Provide typed Python interfaces for Chrome DevTools Protocol
+
+Key Components:
+- cdp/ - Generated Python modules for each CDP domain
+- generator/ - Code generation scripts that create the CDP bindings
+- docs/ - Sphinx documentation
+- test/ - Test suites for both generated code and generator
+
+Build Workflow:
+1. Generate CDP bindings from JSON specs (make generate)
+2. Run type checking (make mypy-cdp, make mypy-generate)  
+3. Run tests (make test-cdp, make test-generate)
+4. Test imports (make test-import)
+5. Build documentation (make docs)
+
+This project follows standard Python library patterns and uses Poetry for dependency
+management. The pf files in this repository provide simple wrappers around the
+existing Makefile targets for organizational consistency.
