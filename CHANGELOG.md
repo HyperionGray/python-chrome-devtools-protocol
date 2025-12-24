@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CODE_OF_CONDUCT.md for community standards
 - SECURITY.md with security policy and vulnerability reporting
 
-## [0.5.0] - 2024
+## [0.5.0]
 
 ### Added
 - I/O Mode with built-in WebSocket connection support via `cdp.connection` module
@@ -27,14 +27,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced README with I/O mode documentation
 - Improved examples demonstrating both Sans-I/O and I/O modes
 
-## [0.4.0] - 2023
+## [0.4.0]
 
 ### Changed
 - Updated to latest Chrome DevTools Protocol specification
 - Improved type hints and mypy compliance
 - Enhanced documentation
 
-## [0.3.0] - 2022
+## [0.3.0]
 
 ### Added
 - Initial Sans-I/O implementation
@@ -46,7 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved project structure
 - Enhanced type safety
 
-## [0.2.0] - 2021
+## [0.2.0]
 
 ### Added
 - Enhanced type definitions
@@ -56,7 +56,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Various type annotation improvements
 - Bug fixes in code generation
 
-## [0.1.0] - 2018
+## [0.1.0]
 
 ### Added
 - Initial release
