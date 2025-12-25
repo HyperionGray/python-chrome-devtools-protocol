@@ -964,7 +964,8 @@ def generate_init(init_path, domains):
     '''
     with init_path.open('w') as init_file:
         init_file.write(INIT_HEADER)
-        init_file.write('import cdp.util\n\n')
+        init_file.write('import cdp.util\n')
+        init_file.write('import cdp.connection\n\n')
         for domain in domains:
             init_file.write('import cdp.{}\n'.format(domain.module))
 
