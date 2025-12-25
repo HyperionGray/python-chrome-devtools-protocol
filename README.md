@@ -79,10 +79,6 @@ See the [examples directory](examples/) for more usage patterns.
 
 For users who prefer to manage their own I/O:
 
-## Sans-I/O Mode (Original)
-
-For users who prefer to manage their own I/O:
-
 ```python
 from cdp import page
 
@@ -91,5 +87,42 @@ assert repr(frame_id) == "FrameId('my id')"
 ```
 
 For more information, see the [complete documentation](https://py-cdp.readthedocs.io).
+
+## API Reference
+
+The library provides Python wrappers for all Chrome DevTools Protocol domains:
+
+- **Page**: Page control (navigation, screenshots, etc.)
+- **DOM**: DOM inspection and manipulation
+- **Network**: Network monitoring and interception
+- **Runtime**: JavaScript execution and evaluation
+- **Debugger**: JavaScript debugging
+- **Performance**: Performance metrics and profiling
+- **Security**: Security-related information
+- And many more...
+
+For complete API documentation, visit [py-cdp.readthedocs.io](https://py-cdp.readthedocs.io).
+
+### Type System
+
+All CDP types, commands, and events are fully typed with Python type hints, providing:
+- IDE autocomplete support
+- Static type checking with mypy
+- Clear API contracts
+- Inline documentation
+
+## Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details on:
+- How to report bugs and request features
+- Development setup and workflow
+- Coding standards and testing requirements
+- Pull request process
+
+For questions or discussions, feel free to open an issue on GitHub.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 <a href="https://www.hyperiongray.com/?pk_campaign=github&pk_kwd=pycdp"><img alt="define hyperion gray" width="500px" src="https://hyperiongray.s3.amazonaws.com/define-hg.svg"></a>
