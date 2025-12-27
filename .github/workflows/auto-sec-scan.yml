@@ -32,7 +32,6 @@ jobs:
 
       - name: Run Bandit Security Scan
         run: poetry run bandit -r cdp/ generator/ -ll -f txt
-        continue-on-error: true
 
       - name: Run CodeQL Scan
         uses: github/codeql-action/init@main
