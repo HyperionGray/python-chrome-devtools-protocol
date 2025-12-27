@@ -476,15 +476,15 @@ jobs:
 
           
 
-          # Python with Poetry
+          # Python with Poetry (preferred for this project)
 
-          if [ -f "pyproject.toml" ] && grep -q "poetry" pyproject.toml; then
+          if [ -f "pyproject.toml" ] && grep -q "\[tool.poetry\]" pyproject.toml; then
 
             pip install poetry
 
             poetry install && echo "BUILD_SUCCESS=true" >> $GITHUB_OUTPUT
 
-          # Python with requirements.txt
+          # Python with requirements.txt (fallback)
 
           elif [ -f "requirements.txt" ]; then
 
