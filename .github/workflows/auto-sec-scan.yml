@@ -31,7 +31,7 @@ jobs:
         run: poetry install --with dev
 
       - name: Run Bandit Security Scan
-        run: poetry run bandit -r cdp/ generator/ -ll -f txt
+        run: poetry run bandit -r cdp/ generator/ -f txt
 
       - name: Run CodeQL Scan
         uses: github/codeql-action/init@main

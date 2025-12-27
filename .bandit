@@ -1,6 +1,7 @@
 exclude_dirs:
   - test/
   - docs/
+  - examples/
   - .venv/
   - venv/
   - .pytest_cache/

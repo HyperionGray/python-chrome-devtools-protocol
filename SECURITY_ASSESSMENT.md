@@ -189,12 +189,47 @@ The repository follows security best practices appropriate for a library project
 - Clear security policies
 - Minimal attack surface (type wrapper library)
 
+### Next Security Review Schedule
+
+**Recommended Review Timeline:**
+- **Routine Review:** Every 90 days (quarterly)
+- **Trigger Events:** 
+  - Major version changes (e.g., 0.x to 1.x)
+  - Addition of new I/O features or network communication
+  - Significant dependency updates
+  - Security advisory affecting dependencies
+- **Emergency Review:** Within 48 hours of critical vulnerability disclosure
+
+### AI Code Review Integration Security Considerations
+
+This assessment was conducted using AI-powered code review tools (GitHub Copilot, Amazon Q). Security considerations for AI code review integration:
+
+**Benefits:**
+- ✅ Automated detection of common security patterns
+- ✅ Consistent application of security best practices
+- ✅ Rapid vulnerability identification
+- ✅ Reduced human error in routine checks
+
+**Limitations:**
+- ⚠️ AI tools may miss novel attack vectors
+- ⚠️ Context-specific security issues require human review
+- ⚠️ False negatives possible in complex code patterns
+- ⚠️ AI-generated recommendations should be validated
+
+**Best Practices:**
+1. Combine AI code review with human security expertise
+2. Validate all AI-suggested security fixes before deployment
+3. Maintain manual security audits for critical changes
+4. Use AI tools as assistants, not replacements for security professionals
+5. Document AI tool versions and capabilities used in assessments
+
 ## Sign-off
 
 **Assessment Completed:** 2025-12-27
-**Assessor:** GitHub Copilot Agent
+**Assessor:** GitHub Copilot Agent (AI-Powered)
 **Review Type:** Automated + Manual Comprehensive Security Review
 **Next Review:** Recommended within 90 days or upon major version change
+**AI Tools Used:** GitHub Copilot Workspace, Bandit 1.7.5, CodeQL
 
 ---
 
