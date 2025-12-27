@@ -494,6 +494,10 @@ uto-amazonq-review.properties.json
 uto-amazonq-review.properties.json
           
 uto-amazonq-review.properties.json
+          # Python - Try in order of precedence: Poetry > requirements.txt > setup.py
+uto-amazonq-review.properties.json
+          # This ensures modern Python projects using Poetry are built correctly
+uto-amazonq-review.properties.json
           # Python - Poetry
 uto-amazonq-review.properties.json
           if [ -f "pyproject.toml" ] && grep -q 'tool.poetry' pyproject.toml; then
