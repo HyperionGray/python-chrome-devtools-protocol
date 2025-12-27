@@ -1,0 +1,9 @@
+exclude_dirs:
+  - /test/
+  - /docs/
+  - /.venv/
+  - /venv/
+  - /.pytest_cache/
+  - /.mypy_cache/
+  - /build/
+  - /dist/
