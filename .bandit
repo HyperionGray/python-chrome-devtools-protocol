@@ -1,0 +1,10 @@
+exclude_dirs:
+  - test/
+  - docs/
+  - examples/
+  - .venv/
+  - venv/
+  - .pytest_cache/
+  - .mypy_cache/
+  - build/
+  - dist/
