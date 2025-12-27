@@ -328,7 +328,25 @@ uto-amazonq-review.properties.json
 uto-amazonq-review.properties.json
           for doc in README.md CONTRIBUTING.md LICENSE.md CHANGELOG.md CODE_OF_CONDUCT.md SECURITY.md; do
 uto-amazonq-review.properties.json
-            if [ -f "$doc" ]; then
+            # Check for both LICENSE and LICENSE.md
+uto-amazonq-review.properties.json
+            if [ "$doc" = "LICENSE.md" ]; then
+uto-amazonq-review.properties.json
+              if [ -f "LICENSE.md" ] || [ -f "LICENSE" ]; then
+uto-amazonq-review.properties.json
+                license_file=$([ -f "LICENSE.md" ] && echo "LICENSE.md" || echo "LICENSE")
+uto-amazonq-review.properties.json
+                word_count=$(wc -w < "$license_file" 2>/dev/null || echo 0)
+uto-amazonq-review.properties.json
+                echo "✅ LICENSE ($word_count words)" >> /tmp/review-results/documentation.md
+uto-amazonq-review.properties.json
+              else
+uto-amazonq-review.properties.json
+                echo "❌ LICENSE (missing)" >> /tmp/review-results/documentation.md
+uto-amazonq-review.properties.json
+              fi
+uto-amazonq-review.properties.json
+            elif [ -f "$doc" ]; then
 uto-amazonq-review.properties.json
               word_count=$(wc -w < "$doc" 2>/dev/null || echo 0)
 uto-amazonq-review.properties.json
@@ -476,11 +494,35 @@ uto-amazonq-review.properties.json
 uto-amazonq-review.properties.json
           
 uto-amazonq-review.properties.json
-          # Python
+          # Python - Try in order of precedence: Poetry > requirements.txt > setup.py
 uto-amazonq-review.properties.json
-          if [ -f "requirements.txt" ]; then
+          # This ensures modern Python projects using Poetry are built correctly
+uto-amazonq-review.properties.json
+          # Python - Poetry
+uto-amazonq-review.properties.json
+          if [ -f "pyproject.toml" ] && grep -q 'tool.poetry' pyproject.toml; then
+uto-amazonq-review.properties.json
+            if pip install poetry; then
+uto-amazonq-review.properties.json
+              poetry install && echo "BUILD_SUCCESS=true" >> $GITHUB_OUTPUT
+uto-amazonq-review.properties.json
+            else
+uto-amazonq-review.properties.json
+              echo "⚠️ Poetry installation failed, skipping Poetry build"
+uto-amazonq-review.properties.json
+            fi
+uto-amazonq-review.properties.json
+          # Python - requirements.txt
+uto-amazonq-review.properties.json
+          elif [ -f "requirements.txt" ]; then
 uto-amazonq-review.properties.json
             pip install -r requirements.txt && echo "BUILD_SUCCESS=true" >> $GITHUB_OUTPUT
+uto-amazonq-review.properties.json
+          # Python - setup.py
+uto-amazonq-review.properties.json
+          elif [ -f "setup.py" ]; then
+uto-amazonq-review.properties.json
+            pip install -e . && echo "BUILD_SUCCESS=true" >> $GITHUB_OUTPUT
 uto-amazonq-review.properties.json
           fi
 uto-amazonq-review.properties.json
