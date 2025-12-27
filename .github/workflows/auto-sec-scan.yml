@@ -1,32 +1,44 @@
 name: "Security Scan on PR"
 
 on:
-
   pull_request:
-
     types: [opened, synchronize, reopened]
+  schedule:
+    - cron: '0 0 * * 1'  # Weekly on Monday
+  workflow_dispatch:
 
 jobs:
-
   security_scan:
-
     runs-on: self-hosted
 
     steps:
-
       - name: Checkout code
-
         uses: actions/checkout@main
 
-      - name: Run CodeQL Scan
-
-        uses: github/codeql-action/init@main
-
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
+          python-version: '3.11'
 
-          languages: 'python,javascript'
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: latest
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Install dependencies
+        run: poetry install --with dev
+
+      - name: Run Bandit Security Scan
+        run: poetry run bandit -r cdp/ generator/ -ll -f txt
+        continue-on-error: true
+
+      - name: Run CodeQL Scan
+        uses: github/codeql-action/init@main
+        with:
+          languages: 'python'
 
       - name: Perform CodeQL Analysis
-
         uses: github/codeql-action/analyze@main
 
