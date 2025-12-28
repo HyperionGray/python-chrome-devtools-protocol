@@ -1,66 +1,33 @@
 # Auto Assign Copilot (or any username) to every new pull request.
-uto-amazonq-review.properties.json
 # Tweak the username(s) below as needed!
-uto-amazonq-review.properties.json
 
-uto-amazonq-review.properties.json
 name: Auto Assign Copilot to PRs
-uto-amazonq-review.properties.json
 
-uto-amazonq-review.properties.json
 on:
-uto-amazonq-review.properties.json
   pull_request:
-uto-amazonq-review.properties.json
     types: [opened]
-uto-amazonq-review.properties.json
 
-uto-amazonq-review.properties.json
 jobs:
-uto-amazonq-review.properties.json
   auto-assign:
-uto-amazonq-review.properties.json
-    runs-on: self-hosted
-uto-amazonq-review.properties.json
+    runs-on: ubuntu-latest
     steps:
-uto-amazonq-review.properties.json
       - name: Assign Copilot (or others) to new PRs
-uto-amazonq-review.properties.json
         uses: actions/github-script@main
-uto-amazonq-review.properties.json
         with:
-uto-amazonq-review.properties.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
-uto-amazonq-review.properties.json
           script: |
-uto-amazonq-review.properties.json
             // Assign PRs to Copilot or other users
-uto-amazonq-review.properties.json
             const copilotUsername = "copilot"; // <-- TUNE ME!
-uto-amazonq-review.properties.json
             const assignees = [copilotUsername]; // Or: ["copilot","anotheruser"]
-uto-amazonq-review.properties.json
             const currentAssignees = context.payload.pull_request.assignees.map(u => u.login);
-uto-amazonq-review.properties.json
             if (!assignees.every(a => currentAssignees.includes(a))) {
-uto-amazonq-review.properties.json
               await github.rest.issues.addAssignees({
-uto-amazonq-review.properties.json
                 owner: context.repo.owner,
-uto-amazonq-review.properties.json
                 repo: context.repo.repo,
-uto-amazonq-review.properties.json
                 issue_number: context.payload.pull_request.number,
-uto-amazonq-review.properties.json
                 assignees
-uto-amazonq-review.properties.json
               });
-uto-amazonq-review.properties.json
               console.log(`Assigned ${assignees.join(", ")} to PR #${context.payload.pull_request.number}`);
-uto-amazonq-review.properties.json
             } else {
-uto-amazonq-review.properties.json
               console.log(`Already assigned: ${assignees.join(", ")} on PR #${context.payload.pull_request.number}`);
-uto-amazonq-review.properties.json
             }
-uto-amazonq-review.properties.json
