@@ -1,124 +1,62 @@
 name: "Copilot: Generate and Run Playwright Tests Until Passing"
-uto-amazonq-review.properties.json
 
-uto-amazonq-review.properties.json
 on:
-uto-amazonq-review.properties.json
   push:
-uto-amazonq-review.properties.json
     branches:
-uto-amazonq-review.properties.json
       - main
-uto-amazonq-review.properties.json
       - master
-uto-amazonq-review.properties.json
 
-uto-amazonq-review.properties.json
 jobs:
-uto-amazonq-review.properties.json
   generate-and-test:
-uto-amazonq-review.properties.json
-    runs-on: self-hosted
-uto-amazonq-review.properties.json
+    runs-on: ubuntu-latest
     steps:
-uto-amazonq-review.properties.json
       - name: Checkout code
-uto-amazonq-review.properties.json
         uses: actions/checkout@main
-uto-amazonq-review.properties.json
 
-uto-amazonq-review.properties.json
       - name: Setup Python
-uto-amazonq-review.properties.json
         uses: actions/setup-python@main
-uto-amazonq-review.properties.json
         with:
-uto-amazonq-review.properties.json
           python-version: "3.11"
-uto-amazonq-review.properties.json
 
-uto-amazonq-review.properties.json
       - name: Install dependencies
-uto-amazonq-review.properties.json
         run: |
-uto-amazonq-review.properties.json
           pip install -r requirements.txt
-uto-amazonq-review.properties.json
           pip install pytest playwright pytest-playwright
-uto-amazonq-review.properties.json
 
-uto-amazonq-review.properties.json
       - name: Install Playwright browsers
-uto-amazonq-review.properties.json
         run: |
-uto-amazonq-review.properties.json
           python -m playwright install
-uto-amazonq-review.properties.json
 
-uto-amazonq-review.properties.json
       - name: Copilot Generate Playwright Scripts
-uto-amazonq-review.properties.json
         uses: github/copilot-agent/playwright-generate@main # Example, customize for Python; or use Chat to generate script
-uto-amazonq-review.properties.json
         with:
-uto-amazonq-review.properties.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
-uto-amazonq-review.properties.json
           prompt: "Generate Playwright test scripts covering every user action on this web app."
-uto-amazonq-review.properties.json
         continue-on-error: true # If your agent doesn't support, replace with python script generation using Copilot Chat
-uto-amazonq-review.properties.json
 
-uto-amazonq-review.properties.json
       - name: Run Playwright Tests
-uto-amazonq-review.properties.json
         run: |
-uto-amazonq-review.properties.json
           pytest tests/ # Or the path to your Playwright scripts
-uto-amazonq-review.properties.json
 
-uto-amazonq-review.properties.json
       - name: If Tests Fail, Copilot Attempts Fix & Repeats
-uto-amazonq-review.properties.json
         uses: github/copilot-agent/playwright-fix-and-loop@main # Example, requires agent loop feature
-uto-amazonq-review.properties.json
         with:
-uto-amazonq-review.properties.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
-uto-amazonq-review.properties.json
           max_attempts: 5
-uto-amazonq-review.properties.json
         continue-on-error: true
-uto-amazonq-review.properties.json
 
-uto-amazonq-review.properties.json
       - name: Create PR with passing tests or attempted fixes
-uto-amazonq-review.properties.json
         uses: peter-evans/create-pull-request@main
-uto-amazonq-review.properties.json
         with:
-uto-amazonq-review.properties.json
           branch: "copilot/playwright-auto-tests"
-uto-amazonq-review.properties.json
           title: "Copilot generated Playwright tests (auto-fixed)"
-uto-amazonq-review.properties.json
           body: "Automated Playwright test generation/fix by Copilot agent."
-uto-amazonq-review.properties.json
           commit-message: "Copilot agent Playwright tests and fixes"
-uto-amazonq-review.properties.json
         continue-on-error: true
-uto-amazonq-review.properties.json
 
-uto-amazonq-review.properties.json
       - name: Auto-merge if passing
-uto-amazonq-review.properties.json
         uses: pascalgn/automerge-action@main
-uto-amazonq-review.properties.json
         with:
-uto-amazonq-review.properties.json
           merge-method: squash
-uto-amazonq-review.properties.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
-uto-amazonq-review.properties.json
         continue-on-error: true
-uto-amazonq-review.properties.json
