@@ -1,10 +1,8 @@
 name: "Advanced Code Analysis Action"
 
-# REQUIREMENTS:
-# - A GitHub Personal Access Token with Copilot access must be created and stored as a repository secret named COPILOT_TOKEN
-# - The default GITHUB_TOKEN does not have Copilot access and cannot be used
-# - To create the token: GitHub Settings -> Developer settings -> Personal access tokens -> Generate new token
-# - The token needs the 'copilot' scope enabled
+# OPTIONAL TOKENS:
+# - COPILOT_TOKEN: Enables Copilot CLI-based LLM review steps (if present)
+# - SEMGREP_APP_TOKEN: Enables Semgrep findings upload to Semgrep App (if present)
 
 on:
   push:
@@ -67,7 +65,6 @@ jobs:
           cat /tmp/gpt5-analysis.md
         continue-on-error: true
 
-<<<<<<< HEAD
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
@@ -76,57 +73,38 @@ jobs:
 
       - name: Autobuild
         uses: github/codeql-action/autobuild@v3
-=======
-      - name: GPT-5 Advanced Code Analysis
-        uses: austenstone/copilot-cli-action@v2
-        with:
-          copilot-token: ${{ secrets.COPILOT_TOKEN }}
-          prompt: |
-            Perform a comprehensive code analysis of this repository using GPT-5's advanced capabilities:
-            
-            1. **Code Quality & Architecture**
-               - Analyze overall code structure and organization
-               - Identify architectural patterns and anti-patterns
-               - Suggest improvements for maintainability and scalability
-            
-            2. **Security Analysis**
-               - Detect potential security vulnerabilities
-               - Identify unsafe coding patterns
-               - Recommend security best practices
-            
-            3. **Performance Optimization**
-               - Identify performance bottlenecks
-               - Suggest optimization opportunities
-               - Recommend efficient algorithms and data structures
-            
-            4. **Best Practices**
-               - Verify adherence to language-specific best practices
-               - Check for proper error handling
-               - Ensure code follows SOLID principles
-            
-            5. **Documentation & Maintainability**
-               - Assess code documentation quality
-               - Identify areas needing better comments
-               - Suggest improvements for code readability
-            
-            Provide specific, actionable recommendations with file names and line numbers where applicable.
         continue-on-error: true
 
-      - name: GPT-5 Test Coverage Analysis
+      - name: Copilot LLM Code Review (optional)
+        if: ${{ secrets.COPILOT_TOKEN != '' }}
         uses: austenstone/copilot-cli-action@v2
         with:
           copilot-token: ${{ secrets.COPILOT_TOKEN }}
           prompt: |
-            Analyze the test coverage and testing strategy:
-            
-            1. Identify files that lack adequate test coverage
-            2. Suggest missing test cases for critical functionality
+            Perform a comprehensive code analysis of this repository:
+
+            1. Code quality and architecture
+            2. Security risks and unsafe patterns
+            3. Performance bottlenecks and optimizations
+            4. Best practices and error handling
+            5. Documentation and maintainability
+
+            Provide actionable recommendations with file names and line numbers where applicable.
+        continue-on-error: true
+
+      - name: Copilot LLM Test Coverage Review (optional)
+        if: ${{ secrets.COPILOT_TOKEN != '' }}
+        uses: austenstone/copilot-cli-action@v2
+        with:
+          copilot-token: ${{ secrets.COPILOT_TOKEN }}
+          prompt: |
+            Analyze the repository's testing strategy:
+
+            1. Identify critical paths without tests
+            2. Suggest missing unit/integration/E2E cases
             3. Recommend improvements to existing tests
-            4. Identify edge cases that should be tested
-            5. Suggest integration and end-to-end test scenarios
-            
-            Focus on critical paths and business logic.
->>>>>>> main
+
+            Focus on business logic and risk areas.
         continue-on-error: true
 
       - name: Advanced Code Analysis with CodeQL
