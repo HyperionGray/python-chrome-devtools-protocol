@@ -1,4 +1,4 @@
-name: Trigger Workflow on All Repos
+name: "Trigger Workflow on All Repos"
 
 on:
   workflow_dispatch:
