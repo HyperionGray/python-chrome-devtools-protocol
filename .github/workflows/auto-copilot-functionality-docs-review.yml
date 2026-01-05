@@ -211,7 +211,6 @@ jobs:
           
           cat /tmp/doc-analysis.md
 
-<<<<<<< HEAD
       - name: Documentation Quality Analysis
         run: |
           echo "" >> /tmp/doc-analysis.md
@@ -317,8 +316,10 @@ jobs:
           echo "- Include changelog or release notes" >> /tmp/doc-analysis.md
           
           cat /tmp/doc-analysis.md
-=======
-      - name: GitHub Copilot Documentation Review
+        continue-on-error: true
+
+      - name: GitHub Copilot Documentation Review (optional)
+        if: ${{ secrets.COPILOT_TOKEN != '' }}
         uses: austenstone/copilot-cli-action@v2
         with:
           copilot-token: ${{ secrets.COPILOT_TOKEN }}
@@ -332,9 +333,8 @@ jobs:
             6. Verify code comments and inline documentation
             7. Check for API documentation if applicable
             8. Ensure contributing guidelines are present
-            
+
             Provide specific recommendations with file names and sections.
->>>>>>> main
         continue-on-error: true
 
       - name: Create Documentation Review Report
