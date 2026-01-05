@@ -1,62 +1,13 @@
-name: "Copilot: Generate and Run Playwright Tests Until Passing"
+name: "DEPRECATED: Copilot Playwright Auto Tests (legacy)"
 
 on:
-  push:
-    branches:
-      - main
-      - master
+  workflow_dispatch:
 
 jobs:
-  generate-and-test:
+  deprecated:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@main
-
-      - name: Setup Python
-        uses: actions/setup-python@main
-        with:
-          python-version: "3.11"
-
-      - name: Install dependencies
+      - name: Notice
         run: |
-          pip install -r requirements.txt
-          pip install pytest playwright pytest-playwright
-
-      - name: Install Playwright browsers
-        run: |
-          python -m playwright install
-
-      - name: Copilot Generate Playwright Scripts
-        uses: github/copilot-agent/playwright-generate@main # Example, customize for Python; or use Chat to generate script
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          prompt: "Generate Playwright test scripts covering every user action on this web app."
-        continue-on-error: true # If your agent doesn't support, replace with python script generation using Copilot Chat
-
-      - name: Run Playwright Tests
-        run: |
-          pytest tests/ # Or the path to your Playwright scripts
-
-      - name: If Tests Fail, Copilot Attempts Fix & Repeats
-        uses: github/copilot-agent/playwright-fix-and-loop@main # Example, requires agent loop feature
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          max_attempts: 5
-        continue-on-error: true
-
-      - name: Create PR with passing tests or attempted fixes
-        uses: peter-evans/create-pull-request@main
-        with:
-          branch: "copilot/playwright-auto-tests"
-          title: "Copilot generated Playwright tests (auto-fixed)"
-          body: "Automated Playwright test generation/fix by Copilot agent."
-          commit-message: "Copilot agent Playwright tests and fixes"
-        continue-on-error: true
-
-      - name: Auto-merge if passing
-        uses: pascalgn/automerge-action@main
-        with:
-          merge-method: squash
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
+          echo "This legacy workflow referenced non-existent Copilot agent actions."
+          echo "Use auto-copilot-org-playwright-loopv2.yml instead."
