@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   ensure-labels:
-    runs-on: [self-hosted, linux, x64, big]
+    runs-on: ubuntu-latest
     if: github.event.action == 'opened' || (github.event.action == 'labeled' && github.event.label.name == 'copilot')
     steps:
       - name: Ensure required labels exist
@@ -73,7 +73,7 @@ jobs:
             }
 
   auto-assign:
-    runs-on: [self-hosted, linux, x64, big]
+    runs-on: ubuntu-latest
     needs: ensure-labels
     if: contains(github.event.issue.labels.*.name, 'copilot')
     steps:
