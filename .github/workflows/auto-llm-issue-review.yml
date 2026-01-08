@@ -163,7 +163,7 @@ jobs:
               }
 
               // Loose paths (very heuristic)
-              for (const m of body.matchAll(/(^|\\s)([\\w./-]+\\.[\\w]+)(\\s|$)/g)) {
+              for (const m of body.matchAll(/(^|\s)([\w./-]+\.[\w]+)(\s|$)/g)) {
                 const p = (m[2] || "").trim();
                 if (p.includes("/") && !p.startsWith("http")) found.add(p);
               }
@@ -225,10 +225,10 @@ jobs:
 
             async function callOpenAI({ apiKey, baseUrl, model, messages }) {
               if (!apiKey) throw new Error("OPENAI_API_KEY is not set.");
-              const url = `${baseUrl.replace(/\\/$/, "")}/chat/completions`;
+              const url = `${baseUrl.replace(/\/$/, "")}/chat/completions`;
               const payload = { model, messages };
 
-              const isGpt5ish = /gpt-?5/i.test(model) || /^o\\d/i.test(model) || /^o1/i.test(model);
+              const isGpt5ish = /gpt-?5/i.test(model) || /^o\d/i.test(model) || /^o1/i.test(model);
               if (isGpt5ish) {
                 payload.max_completion_tokens = 2048;
               } else {
