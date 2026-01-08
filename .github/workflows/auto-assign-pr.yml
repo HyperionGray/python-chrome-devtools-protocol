@@ -9,7 +9,7 @@ on:
 
 jobs:
   auto-assign:
-    runs-on: [self-hosted, linux, x64, big]
+    runs-on: ubuntu-latest
     steps:
       - name: Assign Copilot (or others) to new PRs
         uses: actions/github-script@main
