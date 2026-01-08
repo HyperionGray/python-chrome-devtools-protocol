@@ -7,7 +7,7 @@ on:
 
 jobs:
   sync:
-    runs-on: [self-hosted, linux, x64, big]
+    runs-on: ubuntu-latest
     steps:
       - name: Workflows Sync
         uses: wow-actions/workflows-sync@v2
