@@ -39,7 +39,7 @@ concurrency:
 
 jobs:
   review:
-    runs-on: [self-hosted, linux, x64, big]
+    runs-on: ubuntu-latest
     if: >-
       ${{
         github.event_name == 'workflow_dispatch' ||
