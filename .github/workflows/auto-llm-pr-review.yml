@@ -127,7 +127,7 @@ jobs:
               if (m) return { provider: m[1].toLowerCase(), model: m[2].trim(), raw };
 
               // Short formats based on common model prefixes
-              if (/^gpt-/i.test(raw) || /^o\\d/i.test(raw) || /^o1/i.test(raw)) {
+              if (/^gpt-/i.test(raw) || /^o\d/i.test(raw) || /^o1/i.test(raw)) {
                 return { provider: "openai", model: raw, raw };
               }
               if (/^gemini/i.test(raw)) {
@@ -235,10 +235,10 @@ jobs:
 
             async function callOpenAI({ apiKey, baseUrl, model, messages }) {
               if (!apiKey) throw new Error("OPENAI_API_KEY is not set.");
-              const url = `${baseUrl.replace(/\\/$/, "")}/chat/completions`;
+              const url = `${baseUrl.replace(/\/$/, "")}/chat/completions`;
               const payload = { model, messages };
 
-              const isGpt5ish = /gpt-?5/i.test(model) || /^o\\d/i.test(model) || /^o1/i.test(model);
+              const isGpt5ish = /gpt-?5/i.test(model) || /^o\d/i.test(model) || /^o1/i.test(model);
               if (isGpt5ish) {
                 payload.max_completion_tokens = 2048;
               } else {
