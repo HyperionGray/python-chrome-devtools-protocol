@@ -38,7 +38,7 @@ permissions:
 
 jobs:
   wait-for-copilot-agents:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, big]
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     steps:
       - name: Checkout code
@@ -79,7 +79,7 @@ jobs:
             }
 
   amazonq-code-review:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, big]
     needs: wait-for-copilot-agents
     steps:
       - name: Checkout code
