@@ -4,7 +4,7 @@ on:
     types: [opened, reopened, synchronize]
 jobs:
   pr_label_comment:
-    runs-on: [self-hosted, linux, x64, big]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/github-script@main
         with:
