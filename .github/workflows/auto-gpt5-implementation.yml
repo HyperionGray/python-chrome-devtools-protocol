@@ -20,7 +20,7 @@ permissions:
 
 jobs:
   advanced-code-analysis:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, big]
     strategy:
       fail-fast: false
       matrix:
