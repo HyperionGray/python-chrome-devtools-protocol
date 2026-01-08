@@ -33,7 +33,7 @@ permissions:
 jobs:
   # Step 1: Code Cleanliness Review
   code-cleanliness:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, big]
     steps:
       - name: Checkout code
         uses: actions/checkout@main
@@ -68,7 +68,7 @@ jobs:
 
   # Step 2: Test Review and Execution
   test-review:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, big]
     if: github.event.inputs.skip_tests != 'true'
     strategy:
       fail-fast: false
@@ -145,7 +145,7 @@ jobs:
 
   # Step 3: Documentation Review
   documentation-review:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, big]
     if: github.event.inputs.skip_docs != 'true'
     steps:
       - name: Checkout code
@@ -195,7 +195,7 @@ jobs:
 
   # Step 4: Build and Functionality Check
   build-check:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, big]
     steps:
       - name: Checkout code
         uses: actions/checkout@main
@@ -264,7 +264,7 @@ jobs:
 
   # Step 5: Consolidate Results and Create Report
   consolidate-results:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, big]
     needs: [code-cleanliness, test-review, documentation-review, build-check]
     if: always()
     steps:
@@ -399,7 +399,7 @@ jobs:
 
   # Step 6: Trigger Amazon Q Review
   trigger-amazonq:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, big]
     needs: consolidate-results
     if: always()
     steps:
