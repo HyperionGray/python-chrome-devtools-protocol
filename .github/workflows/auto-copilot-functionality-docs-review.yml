@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   functionality-check:
-    runs-on: [self-hosted, linux, x64, big]
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@main
@@ -104,7 +104,7 @@ jobs:
         continue-on-error: true
 
   documentation-review:
-    runs-on: [self-hosted, linux, x64, big]
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@main
