@@ -144,10 +144,11 @@ jobs:
 
             async function callOpenAI({ apiKey, baseUrl, model, messages }) {
               if (!apiKey) throw new Error("OPENAI_API_KEY is not set.");
-              const url = `${baseUrl.replace(/\\/$/, "")}/chat/completions`;
+              const url = `${baseUrl.replace(new RegExp('/$'), "")}/chat/completions`;
               const payload = { model, messages };
 
-              const isGpt5ish = /gpt-?5/i.test(model) || /^o\\d/i.test(model) || /^o1/i.test(model);
+              const gpt5Pattern = new RegExp('(gpt-?5|^o\\d|^o1)', 'i');
+              const isGpt5ish = gpt5Pattern.test(model);
               if (isGpt5ish) {
                 payload.max_completion_tokens = 2048;
               } else {
