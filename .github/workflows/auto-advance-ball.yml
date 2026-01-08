@@ -31,7 +31,7 @@ concurrency:
 
 jobs:
   advance:
-    runs-on: [self-hosted, linux, x64, big]
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - name: Checkout
