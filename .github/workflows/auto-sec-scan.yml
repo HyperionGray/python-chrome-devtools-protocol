@@ -1,32 +1,16 @@
 name: "Security Scan on PR"
-uto-amazonq-review.properties.json
 on:
-uto-amazonq-review.properties.json
   pull_request:
-uto-amazonq-review.properties.json
     types: [opened, synchronize, reopened]
-uto-amazonq-review.properties.json
 jobs:
-uto-amazonq-review.properties.json
   security_scan:
-uto-amazonq-review.properties.json
-    runs-on: self-hosted
-uto-amazonq-review.properties.json
+    runs-on: ubuntu-latest
     steps:
-uto-amazonq-review.properties.json
       - name: Checkout code
-uto-amazonq-review.properties.json
         uses: actions/checkout@main
-uto-amazonq-review.properties.json
       - name: Run CodeQL Scan
-uto-amazonq-review.properties.json
         uses: github/codeql-action/init@main
-uto-amazonq-review.properties.json
         with:
-uto-amazonq-review.properties.json
           languages: 'python,javascript'
-uto-amazonq-review.properties.json
       - name: Perform CodeQL Analysis
-uto-amazonq-review.properties.json
         uses: github/codeql-action/analyze@main
-uto-amazonq-review.properties.json
