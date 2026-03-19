@@ -11,20 +11,31 @@ import asyncio
 import json
 import logging
 import typing
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 try:
     import websockets
-    from websockets.client import WebSocketClientProtocol
     WEBSOCKETS_AVAILABLE = True
 except ImportError:
     WEBSOCKETS_AVAILABLE = False
-    WebSocketClientProtocol = typing.Any  # type: ignore
 
 from cdp.util import parse_json_event, T_JSON_DICT
 
 
 logger = logging.getLogger(__name__)
+
+
+class WebSocketConnection(typing.Protocol):
+    """Minimal websocket surface used by CDPConnection."""
+
+    async def send(self, message: str) -> None:
+        ...
+
+    async def recv(self) -> str:
+        ...
+
+    async def close(self) -> None:
+        ...
 
 
 class CDPError(Exception):
@@ -92,7 +103,7 @@ class CDPConnection:
         
         self.url = url
         self.timeout = timeout
-        self._ws: typing.Optional[WebSocketClientProtocol] = None
+        self._ws: typing.Optional[WebSocketConnection] = None
         self._next_command_id = 1
         self._pending_commands: typing.Dict[int, PendingCommand] = {}
         self._event_queue: asyncio.Queue = asyncio.Queue()
