@@ -6,7 +6,8 @@ This example shows how to:
 1. Connect to a Chrome DevTools Protocol endpoint
 2. Execute commands
 3. Handle events
-4. Multiplex multiple commands concurrently
+4. Wait for a specific event
+5. Multiplex multiple commands concurrently
 """
 
 import asyncio
@@ -76,6 +77,25 @@ async def event_handling_example():
         print("Navigation complete!")
 
 
+async def wait_for_event_example():
+    """Example showing wait_for_event helper usage."""
+    print("\n=== wait_for_event Example ===")
+
+    url = "ws://localhost:9222/devtools/page/YOUR_PAGE_ID"
+
+    async with CDPConnection(url) as conn:
+        await conn.execute(page.enable())
+        await conn.execute(page.navigate(url="https://example.com"))
+
+        # Wait for a matching load event instead of manually iterating.
+        load_event = await conn.wait_for_event(
+            page.LoadEventFired,
+            predicate=lambda evt: evt.timestamp > 0,
+            timeout=10.0,
+        )
+        print(f"Page loaded at timestamp: {load_event.timestamp}")
+
+
 async def multiplexing_example():
     """Example showing concurrent command execution (multiplexing)."""
     print("\n=== Multiplexing Example ===")
@@ -138,6 +158,7 @@ async def main():
     # Uncomment the examples you want to run:
     # await basic_example()
     # await event_handling_example()
+    # await wait_for_event_example()
     # await multiplexing_example()
     # await error_handling_example()
     

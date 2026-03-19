@@ -21,15 +21,20 @@ async def main():
     # Connect using async context manager
     async with CDPConnection("ws://localhost:9222/devtools/page/YOUR_PAGE_ID") as conn:
         # Execute a command
-        frame_id, loader_id, error = await conn.execute(
+        frame_id, loader_id, error_text, is_download = await conn.execute(
             page.navigate(url="https://example.com")
         )
+        print(f"Navigated: frame_id={frame_id} is_download={is_download}")
         
         # Evaluate JavaScript
         result, exception = await conn.execute(
             runtime.evaluate(expression="document.title")
         )
         print(f"Page title: {result.value}")
+
+        # Wait for a specific event
+        event = await conn.wait_for_event(page.LoadEventFired, timeout=10.0)
+        print(f"Page loaded at {event.timestamp}")
 
 asyncio.run(main())
 ```
@@ -120,6 +125,20 @@ if event:
     print(f"Got event: {event}")
 ```
 
+Wait for a single matching event without manually iterating:
+
+```python
+# Wait for the next LoadEventFired
+event = await conn.wait_for_event(page.LoadEventFired, timeout=10.0)
+
+# Wait using a custom predicate
+event = await conn.wait_for_event(
+    page.LoadEventFired,
+    predicate=lambda evt: evt.timestamp > 0,
+    timeout=10.0,
+)
+```
+
 ### Error Handling
 
 The connection module provides typed exceptions:
@@ -162,6 +181,12 @@ class CDPConnection:
     async def execute(self, cmd, timeout: Optional[float] = None) -> Any
     async def listen(self) -> AsyncIterator[Any]
     def get_event_nowait(self) -> Optional[Any]
+    async def wait_for_event(
+        self,
+        event_type: Optional[Union[type, Tuple[type, ...]]] = None,
+        predicate: Optional[Callable[[Any], bool]] = None,
+        timeout: Optional[float] = None,
+    ) -> Any
     
     @property
     def is_connected(self) -> bool

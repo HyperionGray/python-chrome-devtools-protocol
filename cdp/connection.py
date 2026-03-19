@@ -11,7 +11,7 @@ import asyncio
 import json
 import logging
 import typing
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 try:
     import websockets
@@ -55,6 +55,22 @@ class PendingCommand:
     params: T_JSON_DICT
 
 
+@dataclass
+class EventWaiter:
+    """Represents a consumer waiting for a matching event."""
+    future: asyncio.Future
+    event_type: typing.Optional[typing.Union[type, typing.Tuple[type, ...]]] = None
+    predicate: typing.Optional[typing.Callable[[typing.Any], bool]] = None
+
+    def matches(self, event: typing.Any) -> bool:
+        """Return True if this waiter should receive the event."""
+        if self.event_type is not None and not isinstance(event, self.event_type):
+            return False
+        if self.predicate is not None and not self.predicate(event):
+            return False
+        return True
+
+
 class CDPConnection:
     """
     Manages a WebSocket connection to Chrome DevTools Protocol.
@@ -96,6 +112,7 @@ class CDPConnection:
         self._next_command_id = 1
         self._pending_commands: typing.Dict[int, PendingCommand] = {}
         self._event_queue: asyncio.Queue = asyncio.Queue()
+        self._event_waiters: typing.List[EventWaiter] = []
         self._recv_task: typing.Optional[asyncio.Task] = None
         self._closed = False
     
@@ -131,6 +148,12 @@ class CDPConnection:
             if not pending.future.done():
                 pending.future.cancel()
         self._pending_commands.clear()
+
+        # Cancel all event waiters
+        for waiter in self._event_waiters:
+            if not waiter.future.done():
+                waiter.future.set_exception(CDPConnectionError("Connection closed"))
+        self._event_waiters.clear()
         
         # Close the WebSocket
         if self._ws:
@@ -213,9 +236,28 @@ class CDPConnection:
         """Handle an event notification."""
         try:
             event = parse_json_event(data)
+            self._notify_event_waiters(event)
             await self._event_queue.put(event)
         except Exception as e:
             logger.error(f"Failed to parse event: {e}")
+
+    def _notify_event_waiters(self, event: typing.Any) -> None:
+        """Resolve any pending waiters that match the event."""
+        if not self._event_waiters:
+            return
+
+        remaining_waiters: typing.List[EventWaiter] = []
+        for waiter in self._event_waiters:
+            if waiter.future.done():
+                continue
+            try:
+                if waiter.matches(event):
+                    waiter.future.set_result(event)
+                else:
+                    remaining_waiters.append(waiter)
+            except Exception as e:
+                waiter.future.set_exception(e)
+        self._event_waiters = remaining_waiters
     
     async def execute(
         self,
@@ -330,6 +372,48 @@ class CDPConnection:
             return self._event_queue.get_nowait()
         except asyncio.QueueEmpty:
             return None
+
+    async def wait_for_event(
+        self,
+        event_type: typing.Optional[typing.Union[type, typing.Tuple[type, ...]]] = None,
+        predicate: typing.Optional[typing.Callable[[typing.Any], bool]] = None,
+        timeout: typing.Optional[float] = None,
+    ) -> typing.Any:
+        """
+        Wait for the next event matching the provided filters.
+
+        Args:
+            event_type: Optional event class (or tuple of classes) to match.
+            predicate: Optional callable that must return True for a match.
+            timeout: Optional timeout override in seconds.
+
+        Returns:
+            The matching CDP event object.
+
+        Raises:
+            CDPConnectionError: If the connection is closed.
+            asyncio.TimeoutError: If no matching event arrives in time.
+        """
+        if self._closed:
+            raise CDPConnectionError("Connection closed")
+        if self._ws is None:
+            raise CDPConnectionError("Not connected")
+
+        future: asyncio.Future = asyncio.Future()
+        waiter = EventWaiter(future=future, event_type=event_type, predicate=predicate)
+        self._event_waiters.append(waiter)
+
+        timeout_val = timeout if timeout is not None else self.timeout
+        try:
+            return await asyncio.wait_for(future, timeout=timeout_val)
+        except asyncio.TimeoutError:
+            if waiter in self._event_waiters:
+                self._event_waiters.remove(waiter)
+            raise asyncio.TimeoutError("Timed out waiting for matching CDP event")
+        except Exception:
+            if waiter in self._event_waiters:
+                self._event_waiters.remove(waiter)
+            raise
     
     @property
     def is_connected(self) -> bool:

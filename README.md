@@ -57,10 +57,14 @@ async def main():
     # Connect to a Chrome DevTools Protocol endpoint
     async with CDPConnection("ws://localhost:9222/devtools/page/YOUR_PAGE_ID") as conn:
         # Navigate to a URL
-        frame_id, loader_id, error = await conn.execute(
+        frame_id, loader_id, error_text, is_download = await conn.execute(
             page.navigate(url="https://example.com")
         )
-        print(f"Navigated to example.com, frame_id: {frame_id}")
+        print(f"Navigated to example.com, frame_id: {frame_id}, is_download={is_download}")
+
+        # Wait for a specific event (new helper API)
+        load_event = await conn.wait_for_event(page.LoadEventFired, timeout=10.0)
+        print(f"Load event timestamp: {load_event.timestamp}")
 
 asyncio.run(main())
 ```
@@ -71,6 +75,7 @@ asyncio.run(main())
 - **JSON-RPC Framing**: Automatic message ID assignment and request/response matching
 - **Command Multiplexing**: Execute multiple commands concurrently with proper tracking
 - **Event Handling**: Async iterator for receiving browser events
+- **Event Waiting**: Wait for a specific event type (optionally with predicates)
 - **Error Handling**: Comprehensive error handling with typed exceptions
 
 See the [examples directory](examples/) for more usage patterns.
@@ -94,6 +99,23 @@ For detailed API documentation, see:
 - **[Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/)** - Official CDP specification
 - **[Examples](examples/)** - Code examples demonstrating usage patterns
 
+### Event waiting helper
+
+`CDPConnection.wait_for_event()` can simplify flows where you need to wait for one
+specific event:
+
+```python
+await conn.execute(page.enable())
+await conn.execute(page.navigate(url="https://example.com"))
+
+load_event = await conn.wait_for_event(
+    page.LoadEventFired,
+    predicate=lambda evt: evt.timestamp > 0,
+    timeout=10.0,
+)
+print(load_event.timestamp)
+```
+
 ### Key Modules
 
 - `cdp.connection` - WebSocket I/O and connection management (I/O mode)
@@ -114,43 +136,6 @@ Please also read our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing.
 ## Security
 
 For information about reporting security vulnerabilities, please see our [Security Policy](SECURITY.md).
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## API Reference
-
-The library provides Python wrappers for all Chrome DevTools Protocol domains:
-
-- **Page**: Page control (navigation, screenshots, etc.)
-- **DOM**: DOM inspection and manipulation
-- **Network**: Network monitoring and interception
-- **Runtime**: JavaScript execution and evaluation
-- **Debugger**: JavaScript debugging
-- **Performance**: Performance metrics and profiling
-- **Security**: Security-related information
-- And many more...
-
-For complete API documentation, visit [py-cdp.readthedocs.io](https://py-cdp.readthedocs.io).
-
-### Type System
-
-All CDP types, commands, and events are fully typed with Python type hints, providing:
-- IDE autocomplete support
-- Static type checking with mypy
-- Clear API contracts
-- Inline documentation
-
-## Contributing
-
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details on:
-- How to report bugs and request features
-- Development setup and workflow
-- Coding standards and testing requirements
-- Pull request process
-
-For questions or discussions, feel free to open an issue on GitHub.
 
 ## License
 
