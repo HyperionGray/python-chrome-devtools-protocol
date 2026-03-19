@@ -9,64 +9,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - CONTRIBUTING.md with contribution guidelines
-- CHANGELOG.md for tracking version history
-- CODE_OF_CONDUCT.md for community standards
-- SECURITY.md with security policy and vulnerability reporting
+- CODE_OF_CONDUCT.md following Contributor Covenant
+- SECURITY.md with security policy
+- This CHANGELOG.md file
 
-## [0.5.0]
+## [0.5.0] - 2023
 
 ### Added
-- I/O Mode with built-in WebSocket connection support via `cdp.connection` module
+- I/O Mode: New `cdp.connection` module with WebSocket I/O support
 - WebSocket management with async context managers
-- JSON-RPC message framing and multiplexing
-- Event handling via async iterators
+- JSON-RPC message framing
+- Command multiplexing
+- Event handling with async iterators
 - Comprehensive error handling with typed exceptions
-- Optional websockets dependency via `[io]` extra
 
 ### Changed
-- Enhanced README with I/O mode documentation
-- Improved examples demonstrating both Sans-I/O and I/O modes
+- Enhanced documentation with I/O mode examples
+- Updated README with usage for both Sans-I/O and I/O modes
 
-## [0.4.0]
+## [0.4.x and earlier]
 
-### Changed
-- Updated to latest Chrome DevTools Protocol specification
-- Improved type hints and mypy compliance
-- Enhanced documentation
+### Features
+- Sans-I/O mode with type wrappers for Chrome DevTools Protocol
+- Auto-generated Python bindings from CDP specification
+- Type hints for all CDP commands, events, and types
+- Support for all CDP domains
+- Documentation on ReadTheDocs
+- Example scripts demonstrating CDP usage
 
-## [0.3.0]
+---
 
-### Added
-- Initial Sans-I/O implementation
-- Automatic code generation from CDP specification
-- Type wrappers for all CDP types, commands, and events
-- Comprehensive test suite
-
-### Changed
-- Improved project structure
-- Enhanced type safety
-
-## [0.2.0]
-
-### Added
-- Enhanced type definitions
-- Additional protocol domains
-
-### Fixed
-- Various type annotation improvements
-- Bug fixes in code generation
-
-## [0.1.0]
-
-### Added
-- Initial release
-- Basic type wrappers for Chrome DevTools Protocol
-- Code generator from CDP specification
-- MIT License
+For a complete list of changes, see the [commit history](https://github.com/HyperionGray/python-chrome-devtools-protocol/commits/master).
 
 [Unreleased]: https://github.com/HyperionGray/python-chrome-devtools-protocol/compare/v0.5.0...HEAD
-[0.5.0]: https://github.com/HyperionGray/python-chrome-devtools-protocol/compare/v0.4.0...v0.5.0
-[0.4.0]: https://github.com/HyperionGray/python-chrome-devtools-protocol/compare/v0.3.0...v0.4.0
-[0.3.0]: https://github.com/HyperionGray/python-chrome-devtools-protocol/compare/v0.2.0...v0.3.0
-[0.2.0]: https://github.com/HyperionGray/python-chrome-devtools-protocol/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/HyperionGray/python-chrome-devtools-protocol/releases/tag/v0.1.0
+[0.5.0]: https://github.com/HyperionGray/python-chrome-devtools-protocol/releases/tag/v0.5.0

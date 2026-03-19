@@ -1,138 +1,108 @@
 # Contributing to PyCDP
 
-Thank you for your interest in contributing to Python Chrome DevTools Protocol (PyCDP)! We welcome contributions from the community.
+Thank you for your interest in contributing to Python Chrome DevTools Protocol (PyCDP)! This document provides guidelines for contributing to the project.
 
-## Getting Started
+## Code of Conduct
+
+By participating in this project, you agree to abide by our Code of Conduct (see [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)).
+
+## How to Contribute
+
+### Reporting Bugs
+
+If you find a bug, please open an issue on GitHub with:
+- A clear description of the problem
+- Steps to reproduce the issue
+- Expected vs. actual behavior
+- Your environment (OS, Python version, etc.)
+
+### Suggesting Enhancements
+
+Enhancement suggestions are welcome! Please open an issue describing:
+- The enhancement you'd like to see
+- Why it would be useful
+- Any implementation ideas you have
+
+### Pull Requests
+
+1. **Fork the repository** and create your branch from `master`
+2. **Install development dependencies**:
+   ```bash
+   pip install poetry
+   poetry install
+   ```
+3. **Make your changes** following the project's coding standards
+4. **Run tests** to ensure nothing is broken:
+   ```bash
+   poetry run make
+   ```
+5. **Update documentation** if needed
+6. **Commit your changes** with clear, descriptive commit messages
+7. **Push to your fork** and submit a pull request
+
+## Development Setup
 
 ### Prerequisites
 
 - Python 3.7 or higher
 - Poetry for dependency management
-- Git for version control
 
-### Setting Up Development Environment
+### Installation
 
-1. Fork and clone the repository:
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/python-chrome-devtools-protocol.git
-   cd python-chrome-devtools-protocol
-   ```
+```bash
+# Clone the repository
+git clone https://github.com/HyperionGray/python-chrome-devtools-protocol.git
+cd python-chrome-devtools-protocol
 
-2. Install dependencies:
-   ```bash
-   pip install poetry
-   poetry install
-   ```
+# Install dependencies
+poetry install
+```
 
-## Development Workflow
+### Running Tests
+
+```bash
+# Run all tests
+poetry run make
+
+# Run specific test suites
+poetry run pytest test/
+poetry run pytest generator/
+
+# Run type checking
+poetry run mypy cdp/
+poetry run mypy generator/
+```
 
 ### Code Generation
 
-This project automatically generates Python wrappers from the Chrome DevTools Protocol specification:
+This project generates Python code from the Chrome DevTools Protocol specification:
 
 ```bash
 poetry run python generator/generate.py
 ```
 
-### Running Tests
+The generated code is checked into version control. If you modify the generator, run it and include the updated generated files in your PR.
 
-Run the test suite:
-```bash
-poetry run pytest test/
-poetry run pytest generator/
-```
+## Coding Standards
 
-### Type Checking
+- Follow [PEP 8](https://www.python.org/dev/peps/pep-0008/) style guidelines
+- Use type hints for all functions and methods
+- Write docstrings for public APIs
+- Ensure code passes `mypy` type checking
+- Keep code coverage high
 
-We use mypy for static type checking:
-```bash
-poetry run mypy cdp/
-poetry run mypy generator/
-```
+## Project Structure
 
-### Complete Build
-
-Run all checks (type checking, tests, and generation):
-```bash
-poetry run make default
-```
-
-## Submitting Changes
-
-### Pull Request Process
-
-1. Create a new branch for your feature or bugfix:
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-
-2. Make your changes and ensure:
-   - All tests pass
-   - Code passes type checking
-   - Code follows the existing style
-   - Documentation is updated if needed
-
-3. Commit your changes with clear, descriptive messages:
-   ```bash
-   git commit -m "Add feature: brief description"
-   ```
-
-4. Push to your fork and submit a pull request:
-   ```bash
-   git push origin feature/your-feature-name
-   ```
-
-5. In your pull request description:
-   - Describe what changes you made and why
-   - Reference any related issues
-   - Include any relevant context
-
-### Code Review
-
-- Maintainers will review your pull request
-- Address any feedback or requested changes
-- Once approved, a maintainer will merge your PR
-
-## Reporting Issues
-
-### Bug Reports
-
-When reporting bugs, please include:
-- A clear, descriptive title
-- Steps to reproduce the issue
-- Expected behavior vs. actual behavior
-- Python version and environment details
-- Any relevant error messages or logs
-
-### Feature Requests
-
-For feature requests, please:
-- Clearly describe the feature and its use case
-- Explain why it would be valuable
-- Provide examples if possible
-
-## Code Style
-
-- Follow PEP 8 style guidelines
-- Use type hints for function parameters and return values
-- Write clear, descriptive variable and function names
-- Add docstrings for public APIs
-- Keep functions focused and modular
-
-## Documentation
-
-- Update README.md if you add new features
-- Update docstrings for any modified functions or classes
-- Add examples for new functionality when appropriate
-
-## License
-
-By contributing, you agree that your contributions will be licensed under the MIT License.
+- `cdp/` - Generated CDP protocol bindings
+- `generator/` - Code generator for CDP bindings
+- `test/` - Test suite
+- `docs/` - Documentation source files
+- `examples/` - Example usage scripts
 
 ## Questions?
 
-If you have questions, feel free to:
-- Open an issue for discussion
-- Reach out to the maintainers
+If you have questions about contributing, feel free to open an issue or reach out to the maintainers.
 
-Thank you for contributing to PyCDP!
+## License
+
+By contributing to PyCDP, you agree that your contributions will be licensed under the MIT License.

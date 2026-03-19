@@ -2,138 +2,76 @@
 
 ## Supported Versions
 
-We take security seriously and provide security updates for the following versions:
+We release patches for security vulnerabilities for the following versions:
 
 | Version | Supported          |
 | ------- | ------------------ |
 | 0.5.x   | :white_check_mark: |
-| 0.4.x   | :white_check_mark: |
-| < 0.4   | :x:                |
+| < 0.5   | :x:                |
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability in PyCDP, please help us by responsibly disclosing it to us.
+The PyCDP team takes security bugs seriously. We appreciate your efforts to responsibly disclose your findings.
 
 ### How to Report
 
-**Please do not report security vulnerabilities through public GitHub issues.**
+To report a security vulnerability, please **do not** open a public GitHub issue. Instead:
 
-Instead, please report security vulnerabilities by:
+1. **Email**: Send details to the project maintainers via GitHub by opening a private security advisory at:
+   https://github.com/HyperionGray/python-chrome-devtools-protocol/security/advisories/new
 
-1. **Creating a private security advisory** on GitHub:
-   - Go to the [Security tab](https://github.com/HyperionGray/python-chrome-devtools-protocol/security)
-   - Click "Report a vulnerability"
-   - Provide detailed information about the vulnerability
-
-2. **Or by emailing** the maintainers directly:
-   - Include "SECURITY" in the subject line
-   - Provide a detailed description of the vulnerability
-   - Include steps to reproduce the issue
-   - Suggest a fix if possible
-
-### What to Include
-
-When reporting a vulnerability, please include:
-
-- Type of vulnerability (e.g., injection, XSS, authentication bypass)
-- Full paths of source file(s) related to the vulnerability
-- Location of the affected source code (tag/branch/commit or direct URL)
-- Step-by-step instructions to reproduce the issue
-- Proof-of-concept or exploit code (if possible)
-- Impact of the vulnerability and potential attack scenarios
+2. **Include the following information**:
+   - Description of the vulnerability
+   - Steps to reproduce the issue
+   - Potential impact
+   - Suggested fix (if you have one)
+   - Your contact information
 
 ### What to Expect
 
-- **Initial Response**: We aim to acknowledge receipt within 48 hours
-- **Status Updates**: We'll keep you informed about our progress
-- **Disclosure Timeline**: We'll work with you to understand the issue and develop a fix
-- **Credit**: We'll acknowledge your contribution in release notes (unless you prefer to remain anonymous)
+- **Acknowledgment**: We will acknowledge receipt of your vulnerability report within 48 hours
+- **Communication**: We will keep you informed about the progress of fixing the vulnerability
+- **Timeline**: We aim to release a fix within 30 days of receiving the report
+- **Credit**: We will credit you for the discovery in the release notes (unless you prefer to remain anonymous)
 
-## Security Best Practices
+## Security Best Practices for Users
 
-When using PyCDP:
+When using PyCDP in your projects:
 
-### WebSocket Connections
-
-- **Always use TLS/SSL** for WebSocket connections in production (`wss://` not `ws://`)
-- **Validate endpoint URLs** before connecting
-- **Authenticate connections** properly to Chrome DevTools endpoints
-- **Limit exposure** of CDP endpoints (use `--remote-debugging-port` carefully)
-
-### Input Validation
-
-- **Sanitize inputs** when sending commands to Chrome DevTools
-- **Validate responses** from the browser
-- **Handle errors gracefully** to prevent information disclosure
-
-### Dependency Management
-
-- **Keep dependencies up to date** using `poetry update`
-- **Review security advisories** for dependencies
-- **Use the optional `[io]` extra** only when needed to minimize dependency surface
-
-### Access Control
-
-- **Restrict access** to CDP endpoints to trusted clients only
-- **Use proper authentication** when exposing CDP over a network
-- **Monitor connections** for suspicious activity
-
-## Security Considerations
-
-### Chrome DevTools Protocol
-
-The Chrome DevTools Protocol provides powerful control over browser instances:
-
-- **Full DOM access**: Can read and modify page content
-- **JavaScript execution**: Can execute arbitrary JavaScript in pages
-- **Network interception**: Can intercept and modify network requests
-- **Cookie access**: Can read and modify cookies
-- **Storage access**: Can read and modify localStorage, sessionStorage, etc.
-
-### Important Warnings
-
-⚠️ **Never expose CDP endpoints to untrusted networks without authentication**
-
-⚠️ **Be cautious when connecting to untrusted CDP endpoints**
-
-⚠️ **Validate all data received from CDP to prevent injection attacks**
-
-⚠️ **Do not store sensitive credentials in CDP commands or scripts**
+1. **Keep Updated**: Always use the latest version to benefit from security patches
+2. **Validate Input**: Sanitize and validate any data sent to the Chrome DevTools Protocol
+3. **Network Security**: When connecting to Chrome instances, use secure connections where possible
+4. **Least Privilege**: Run Chrome with minimal privileges necessary
+5. **Review Dependencies**: Keep all dependencies up to date
 
 ## Known Security Considerations
 
-### WebSocket Security
+### WebSocket Connections
 
-- WebSocket connections do not follow same-origin policy
-- Ensure proper origin validation for CDP endpoints
-- Use secure WebSocket connections (WSS) in production
+PyCDP's I/O mode uses WebSocket connections to communicate with Chrome instances. Be aware:
+
+- **Authentication**: Chrome DevTools Protocol endpoints typically don't have authentication. Ensure your Chrome instance is not exposed to untrusted networks.
+- **Data Exposure**: CDP can execute arbitrary JavaScript and access all page data. Only connect to trusted Chrome instances.
+- **Network Security**: Use `ws://localhost` for local development. In production, consider additional network security measures.
 
 ### Code Execution
 
-- CDP allows arbitrary JavaScript execution
-- Validate and sanitize any user input before executing
-- Be aware of potential for remote code execution vulnerabilities
+The Chrome DevTools Protocol allows arbitrary JavaScript execution in the browser. When using PyCDP:
 
-## Updates and Patches
+- Never execute untrusted code through CDP commands
+- Validate and sanitize any dynamic content before execution
+- Be cautious when using CDP in multi-tenant environments
 
-Security updates will be released as:
+## Disclosure Policy
 
-- **Patch versions** for critical security fixes
-- **GitHub Security Advisories** for documented vulnerabilities
-- **CHANGELOG.md** entries for all security-related changes
+When we receive a security bug report, we will:
 
-Subscribe to repository notifications to stay informed about security updates.
+1. Confirm the problem and determine affected versions
+2. Audit code to find similar problems
+3. Prepare fixes for all supported versions
+4. Release patches as soon as possible
+5. Credit the reporter in the release notes
 
-## Additional Resources
+## Comments on This Policy
 
-- [Chrome DevTools Protocol Documentation](https://chromedevtools.github.io/devtools-protocol/)
-- [OWASP WebSocket Security](https://owasp.org/www-community/vulnerabilities/WebSocket_Security)
-- [Python Security Best Practices](https://python.readthedocs.io/en/stable/library/security_warnings.html)
-
-## Contact
-
-For non-security issues, please use GitHub issues.
-
-For security concerns, please use the private reporting methods described above.
-
-Thank you for helping keep PyCDP and its users safe!
+If you have suggestions on how this process could be improved, please open an issue or pull request.
