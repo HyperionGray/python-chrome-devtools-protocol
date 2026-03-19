@@ -1,24 +1,26 @@
 # Contributing to PyCDP
 
-Thank you for your interest in contributing to Python Chrome DevTools Protocol (PyCDP)! This document provides guidelines for contributing to the project.
+Thank you for your interest in contributing to Python Chrome DevTools Protocol (PyCDP)! We welcome contributions from the community.
 
 ## Getting Started
 
 ### Prerequisites
 
 - Python 3.7 or higher
-- [Poetry](https://python-poetry.org/) for dependency management
+- Poetry for dependency management
+- Git for version control
 
-### Setting Up Your Development Environment
+### Setting Up Development Environment
 
-1. Fork the repository on GitHub
-2. Clone your fork locally:
+1. Fork and clone the repository:
    ```bash
    git clone https://github.com/YOUR_USERNAME/python-chrome-devtools-protocol.git
    cd python-chrome-devtools-protocol
    ```
-3. Install dependencies:
+
+2. Install dependencies:
    ```bash
+   pip install poetry
    poetry install
    ```
 
@@ -26,118 +28,111 @@ Thank you for your interest in contributing to Python Chrome DevTools Protocol (
 
 ### Code Generation
 
-This project automatically generates Python wrappers from the Chrome DevTools Protocol specification. Most code in the `cdp/` directory (except `connection.py` and `util.py`) is auto-generated.
+This project automatically generates Python wrappers from the Chrome DevTools Protocol specification:
 
-To regenerate the protocol wrappers:
 ```bash
-poetry run make generate
+poetry run python generator/generate.py
 ```
 
 ### Running Tests
 
 Run the test suite:
 ```bash
-poetry run make test-cdp
-poetry run make test-generate
-```
-
-Or run all checks:
-```bash
-poetry run make
+poetry run pytest test/
+poetry run pytest generator/
 ```
 
 ### Type Checking
 
 We use mypy for static type checking:
 ```bash
-poetry run make mypy-cdp
-poetry run make mypy-generate
+poetry run mypy cdp/
+poetry run mypy generator/
 ```
 
-### Building Documentation
+### Complete Build
 
-To build the documentation:
+Run all checks (type checking, tests, and generation):
 ```bash
-poetry run make docs
+poetry run make default
 ```
 
-## Making Changes
+## Submitting Changes
 
-### Code Style
+### Pull Request Process
 
-- Follow PEP 8 style guidelines
-- Use type hints for all function signatures
-- Keep code clear and well-documented
-
-### Commit Messages
-
-- Use clear and descriptive commit messages
-- Reference issue numbers when applicable
-- Keep commits focused on a single change
-
-### Pull Requests
-
-1. Create a new branch for your changes:
+1. Create a new branch for your feature or bugfix:
    ```bash
    git checkout -b feature/your-feature-name
    ```
-2. Make your changes and commit them
-3. Push to your fork and submit a pull request
-4. Ensure all tests pass and type checking succeeds
-5. Provide a clear description of your changes
 
-## What to Contribute
+2. Make your changes and ensure:
+   - All tests pass
+   - Code passes type checking
+   - Code follows the existing style
+   - Documentation is updated if needed
 
-### Areas for Contribution
+3. Commit your changes with clear, descriptive messages:
+   ```bash
+   git commit -m "Add feature: brief description"
+   ```
 
-- **Bug fixes**: Fix issues in the connection module or utility functions
-- **Documentation**: Improve examples, tutorials, or API documentation
-- **Tests**: Add test coverage for existing functionality
-- **Examples**: Add new usage examples in the `examples/` directory
+4. Push to your fork and submit a pull request:
+   ```bash
+   git push origin feature/your-feature-name
+   ```
 
-### Code Generation Changes
+5. In your pull request description:
+   - Describe what changes you made and why
+   - Reference any related issues
+   - Include any relevant context
 
-If you need to modify code generation:
-- Edit files in the `generator/` directory
-- Run the generator and verify the output
-- Ensure all tests still pass
-- Add tests for your generator changes
+### Code Review
 
-### Protocol Updates
-
-The protocol definitions are automatically fetched from the Chrome DevTools Protocol repository. If you need to update to a newer protocol version, please open an issue first to discuss the change.
+- Maintainers will review your pull request
+- Address any feedback or requested changes
+- Once approved, a maintainer will merge your PR
 
 ## Reporting Issues
 
 ### Bug Reports
 
 When reporting bugs, please include:
-- Python version
-- PyCDP version
-- Steps to reproduce
-- Expected vs. actual behavior
-- Error messages or stack traces
+- A clear, descriptive title
+- Steps to reproduce the issue
+- Expected behavior vs. actual behavior
+- Python version and environment details
+- Any relevant error messages or logs
 
 ### Feature Requests
 
-For feature requests:
-- Clearly describe the feature
-- Explain the use case
-- Consider if it fits the project's scope
+For feature requests, please:
+- Clearly describe the feature and its use case
+- Explain why it would be valuable
+- Provide examples if possible
 
-## Code of Conduct
+## Code Style
 
-Please be respectful and constructive in all interactions. We are committed to providing a welcoming and inclusive environment for all contributors.
+- Follow PEP 8 style guidelines
+- Use type hints for function parameters and return values
+- Write clear, descriptive variable and function names
+- Add docstrings for public APIs
+- Keep functions focused and modular
 
-## Questions?
+## Documentation
 
-If you have questions about contributing, please:
-- Check existing issues and pull requests
-- Open a new issue with your question
-- Tag it appropriately for visibility
+- Update README.md if you add new features
+- Update docstrings for any modified functions or classes
+- Add examples for new functionality when appropriate
 
 ## License
 
-By contributing to PyCDP, you agree that your contributions will be licensed under the MIT License.
+By contributing, you agree that your contributions will be licensed under the MIT License.
+
+## Questions?
+
+If you have questions, feel free to:
+- Open an issue for discussion
+- Reach out to the maintainers
 
 Thank you for contributing to PyCDP!
