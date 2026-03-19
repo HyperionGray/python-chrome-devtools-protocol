@@ -4,44 +4,44 @@
 
 # Default task - runs the complete build pipeline
 default:
-    poetry run make default
+    ./bin/run-make.sh default
 
 # Code generation tasks
 generate:
-    poetry run make generate
+    ./bin/run-make.sh generate
 
 # Type checking tasks  
 typecheck:
-    poetry run make mypy-cdp mypy-generate
+    ./bin/run-make.sh mypy-cdp mypy-generate
 
 # Testing tasks
 test:
-    poetry run make test-cdp test-generate test-import
+    ./bin/run-make.sh test-cdp test-generate test-import
 
 # Individual test components
 test-cdp:
-    poetry run make test-cdp
+    ./bin/run-make.sh test-cdp
 
 test-generate:
-    poetry run make test-generate
+    ./bin/run-make.sh test-generate
 
 test-import:
-    poetry run make test-import
+    ./bin/run-make.sh test-import
 
 # Documentation
 docs:
-    poetry run make docs
+    ./bin/run-make.sh docs
 
 # Development workflow - complete validation
 validate:
-    poetry run make default
+    ./bin/run-make.sh default
 
 # Clean and rebuild everything
 rebuild:
-    poetry run make generate
-    poetry run make mypy-cdp mypy-generate  
-    poetry run make test-cdp test-generate test-import
+    ./bin/run-make.sh generate
+    ./bin/run-make.sh mypy-cdp mypy-generate
+    ./bin/run-make.sh test-cdp test-generate test-import
 
 # Quick check - just run tests on existing code
 check:
-    poetry run make test-cdp test-import
+    ./bin/run-make.sh test-cdp test-import

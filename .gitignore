@@ -27,3 +27,4 @@ htmlcov/
 *.log
 .DS_Store
 *~
+pf_test_results_detailed.json
