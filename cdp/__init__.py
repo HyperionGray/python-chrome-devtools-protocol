@@ -4,6 +4,7 @@
 # changes, edit the generator and regenerate all of the modules.
 
 import cdp.util
+import cdp.connection
 
 import cdp.accessibility
 import cdp.animation

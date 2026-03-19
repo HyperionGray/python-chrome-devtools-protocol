@@ -115,4 +115,8 @@ Please also read our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing.
 
 For information about reporting security vulnerabilities, please see our [Security Policy](SECURITY.md).
 
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
 <a href="https://www.hyperiongray.com/?pk_campaign=github&pk_kwd=pycdp"><img alt="define hyperion gray" width="500px" src="https://hyperiongray.s3.amazonaws.com/define-hg.svg"></a>
