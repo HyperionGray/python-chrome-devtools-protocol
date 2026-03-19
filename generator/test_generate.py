@@ -12,7 +12,7 @@ codegen tests is almost always easier with the values displayed on stdout.
 
 from textwrap import dedent
 
-from generate import CdpCommand, CdpDomain, CdpEvent, CdpType, docstring
+from generate import CdpCommand, CdpDomain, CdpEvent, CdpType, docstring, patchCDP
 
 
 def test_docstring():
@@ -491,6 +491,51 @@ def test_cdp_command_ref_parameter():
     assert expected == actual
 
 
+def test_cdp_command_same_domain_ref_parameter():
+    json_cmd = {
+        "name": "resolveNode",
+        "description": "Resolves the JavaScript node object for a given BackendNodeId.",
+        "parameters": [
+            {
+                "name": "backendNodeId",
+                "description": "Backend identifier of the node to resolve.",
+                "optional": True,
+                "$ref": "DOM.BackendNodeId"
+            }
+        ],
+        "returns": [
+            {
+                "name": "object",
+                "description": "JavaScript object wrapper for given node.",
+                "$ref": "Runtime.RemoteObject"
+            }
+        ]
+    }
+    expected = dedent("""\
+        def resolve_node(
+                backend_node_id: typing.Optional[BackendNodeId] = None
+            ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,runtime.RemoteObject]:
+            r'''
+            Resolves the JavaScript node object for a given BackendNodeId.
+
+            :param backend_node_id: *(Optional)* Backend identifier of the node to resolve.
+            :returns: JavaScript object wrapper for given node.
+            '''
+            params: T_JSON_DICT = dict()
+            if backend_node_id is not None:
+                params['backendNodeId'] = backend_node_id.to_json()
+            cmd_dict: T_JSON_DICT = {
+                'method': 'DOM.resolveNode',
+                'params': params,
+            }
+            json = yield cmd_dict
+            return runtime.RemoteObject.from_json(json['object'])""")
+
+    cmd = CdpCommand.from_json(json_cmd, 'DOM')
+    actual = cmd.generate_code()
+    assert expected == actual
+
+
 def test_cdp_command_multiple_return():
     json_cmd = {
         "name": "getEncodedResponse",
@@ -856,6 +901,46 @@ def test_domain_shadows_builtin():
     }
     domain = CdpDomain.from_json(input_domain)
     assert domain.module == 'input_'
+
+
+def test_patch_cdp_marks_network_extra_info_flags_optional():
+    json_domain = {
+        "domain": "Network",
+        "types": [],
+        "commands": [],
+        "events": [
+            {
+                "name": "requestWillBeSent",
+                "parameters": [
+                    {"name": "requestId", "type": "string"},
+                    {"name": "redirectHasExtraInfo", "type": "boolean"},
+                ],
+            },
+            {
+                "name": "responseReceived",
+                "parameters": [
+                    {"name": "requestId", "type": "string"},
+                    {"name": "hasExtraInfo", "type": "boolean"},
+                ],
+            },
+        ],
+    }
+
+    domain = CdpDomain.from_json(json_domain)
+    request_will_be_sent = next(
+        event for event in domain.events if event.name == 'requestWillBeSent'
+    )
+    response_received = next(
+        event for event in domain.events if event.name == 'responseReceived'
+    )
+
+    assert request_will_be_sent.parameters[1].optional is False
+    assert response_received.parameters[1].optional is False
+
+    patchCDP([domain])
+
+    assert request_will_be_sent.parameters[1].optional is True
+    assert response_received.parameters[1].optional is True
 
 
 def test_cdp_domain_sphinx():

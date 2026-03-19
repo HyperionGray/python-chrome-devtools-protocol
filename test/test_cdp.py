@@ -1,7 +1,7 @@
 '''
 Some basic tests for the generated CDP modules.
 '''
-from cdp import dom, io, page, tracing, util
+from cdp import dom, io, network, page, tracing, util
 
 
 def test_primitive_type():
@@ -71,3 +71,52 @@ def test_event_dispatch():
     assert event.window_name == 'Window 1'
     assert event.window_features == ['feature1', 'feature2']
     assert not event.user_gesture
+
+
+def test_request_will_be_sent_missing_redirect_has_extra_info():
+    event = network.RequestWillBeSent.from_json({
+        'requestId': 'request-1',
+        'loaderId': 'loader-1',
+        'documentURL': 'https://example.com',
+        'request': {
+            'url': 'https://example.com',
+            'method': 'GET',
+            'headers': {},
+            'initialPriority': 'Medium',
+            'referrerPolicy': 'strict-origin-when-cross-origin',
+        },
+        'timestamp': 1.25,
+        'wallTime': 2.5,
+        'initiator': {
+            'type': 'parser',
+        },
+    })
+
+    assert event.request_id == network.RequestId('request-1')
+    assert event.redirect_has_extra_info is None
+    assert event.request.initial_priority == network.ResourcePriority.MEDIUM
+
+
+def test_response_received_missing_has_extra_info():
+    event = network.ResponseReceived.from_json({
+        'requestId': 'request-1',
+        'loaderId': 'loader-1',
+        'timestamp': 1.25,
+        'type': 'Document',
+        'response': {
+            'url': 'https://example.com',
+            'status': 200,
+            'statusText': 'OK',
+            'headers': {},
+            'mimeType': 'text/html',
+            'charset': 'utf-8',
+            'connectionReused': False,
+            'connectionId': 1,
+            'encodedDataLength': 128,
+            'securityState': 'secure',
+        },
+    })
+
+    assert event.request_id == network.RequestId('request-1')
+    assert event.has_extra_info is None
+    assert event.response.status == 200

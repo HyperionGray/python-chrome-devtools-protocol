@@ -990,32 +990,26 @@ def generate_docs(docs_path, domains):
 def patchCDP(domains):
     '''Patch up CDP errors. It's easier to patch that here than it is to modify the generator code.'''
 
-    # 1. DOM includes an erroneous $ref that refers to itself.
-    # 2. Page includes an event with an extraneous backtick in the description.
-    # 3. Network.requestWillBeSent.redirectHasExtraInfo is not marked as optional but it is not present in all events
-    # 4. Network.responseReceived.hasExtraInfo is not marked as optional but it is not present in all events
+    # 1. Page includes an event with an extraneous backtick in the description.
+    # 2. Network.requestWillBeSent.redirectHasExtraInfo is not marked as optional but it is not present in all events
+    # 3. Network.responseReceived.hasExtraInfo is not marked as optional but it is not present in all events
     for domain in domains:
-        if domain.domain == 'DOM':
-            for cmd in domain.commands:
-                if cmd.name == 'resolveNode':
-                    # Patch 1
-                    cmd.parameters[1].ref = 'BackendNodeId'
-        elif domain.domain == 'Page':
+        if domain.domain == 'Page':
             for event in domain.events:
                 if event.name == 'screencastVisibilityChanged':
-                    # Patch 2
+                    # Patch 1
                     event.description = event.description.replace('`', '')
         elif domain.domain == 'Network':
             for event in domain.events:
                 if event.name == 'requestWillBeSent':
                     for param in event.parameters:
                         if param.name == 'redirectHasExtraInfo':
-                            # Patch 3
+                            # Patch 2
                             param.optional = True
                 if event.name == 'responseReceived':
                     for param in event.parameters:
                         if param.name == 'hasExtraInfo':
-                            # Patch 4
+                            # Patch 3
                             param.optional = True
 
 
