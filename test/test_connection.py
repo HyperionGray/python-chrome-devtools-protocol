@@ -212,6 +212,75 @@ async def test_execute_multiple_commands_multiplexing():
 
 
 @pytest.mark.asyncio
+async def test_execute_many_success():
+    """Test execute_many returns ordered command results."""
+    mock_ws = MockWebSocket()
+
+    # Queue responses in reverse order to verify request multiplexing.
+    mock_ws.queue_message({"id": 2, "result": {"result": {"type": "number", "value": 2}}})
+    mock_ws.queue_message({"id": 1, "result": {"result": {"type": "number", "value": 1}}})
+
+    with patch('cdp.connection.websockets.connect', new_callable=AsyncMock) as mock_connect:
+        mock_connect.return_value = mock_ws
+
+        async with CDPConnection("ws://localhost:9222/test") as conn:
+            results = await conn.execute_many([
+                runtime.evaluate(expression="1"),
+                runtime.evaluate(expression="2"),
+            ])
+
+            assert len(results) == 2
+            assert isinstance(results[0][0], runtime.RemoteObject)
+            assert isinstance(results[1][0], runtime.RemoteObject)
+            assert results[0][0].value == 1
+            assert results[1][0].value == 2
+            assert len(mock_ws.sent_messages) == 2
+
+
+@pytest.mark.asyncio
+async def test_execute_many_return_exceptions():
+    """Test execute_many can collect exceptions instead of raising."""
+    mock_ws = MockWebSocket()
+
+    # First command succeeds, second command fails.
+    mock_ws.queue_message({"id": 1, "result": {"result": {"type": "number", "value": 1}}})
+    mock_ws.queue_message({"id": 2, "error": {"code": -32602, "message": "Invalid params"}})
+
+    with patch('cdp.connection.websockets.connect', new_callable=AsyncMock) as mock_connect:
+        mock_connect.return_value = mock_ws
+
+        async with CDPConnection("ws://localhost:9222/test") as conn:
+            results = await conn.execute_many(
+                [
+                    runtime.evaluate(expression="1"),
+                    page.navigate(url="https://example.com"),
+                ],
+                return_exceptions=True,
+            )
+
+            assert len(results) == 2
+            assert isinstance(results[0][0], runtime.RemoteObject)
+            assert results[0][0].value == 1
+            assert isinstance(results[1], CDPCommandError)
+            assert results[1].code == -32602
+
+
+@pytest.mark.asyncio
+async def test_execute_many_raises_first_exception_by_default():
+    """Test execute_many raises command errors by default."""
+    mock_ws = MockWebSocket()
+    mock_ws.queue_message({"id": 1, "error": {"code": -32000, "message": "Command failed"}})
+
+    with patch('cdp.connection.websockets.connect', new_callable=AsyncMock) as mock_connect:
+        mock_connect.return_value = mock_ws
+
+        async with CDPConnection("ws://localhost:9222/test") as conn:
+            with pytest.raises(CDPCommandError) as exc_info:
+                await conn.execute_many([page.navigate(url="https://example.com")])
+            assert exc_info.value.code == -32000
+
+
+@pytest.mark.asyncio
 async def test_command_timeout():
     """Test command timeout."""
     mock_ws = MockWebSocket()

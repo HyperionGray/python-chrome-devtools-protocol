@@ -294,6 +294,42 @@ class CDPConnection:
             # Clean up the pending command on error
             self._pending_commands.pop(cmd_id, None)
             raise
+
+    async def execute_many(
+        self,
+        commands: typing.Iterable[typing.Generator[T_JSON_DICT, T_JSON_DICT, typing.Any]],
+        timeout: typing.Optional[float] = None,
+        return_exceptions: bool = False,
+    ) -> typing.List[typing.Any]:
+        """
+        Execute multiple CDP commands concurrently.
+
+        Args:
+            commands: Iterable of CDP command generators.
+            timeout: Optional timeout override applied to each command.
+            return_exceptions: If True, exceptions are returned in the output
+                list in command order. If False, the first command exception is
+                raised after all commands complete.
+
+        Returns:
+            A list of command results in the same order as ``commands``.
+        """
+        tasks = [
+            asyncio.create_task(self.execute(command, timeout=timeout))
+            for command in commands
+        ]
+
+        if not tasks:
+            return []
+
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        if return_exceptions:
+            return results
+
+        for result in results:
+            if isinstance(result, BaseException):
+                raise result
+        return results
     
     async def listen(self) -> typing.AsyncIterator[typing.Any]:
         """

@@ -57,7 +57,7 @@ async def main():
     # Connect to a Chrome DevTools Protocol endpoint
     async with CDPConnection("ws://localhost:9222/devtools/page/YOUR_PAGE_ID") as conn:
         # Navigate to a URL
-        frame_id, loader_id, error = await conn.execute(
+        frame_id, loader_id, error_text, is_download = await conn.execute(
             page.navigate(url="https://example.com")
         )
         print(f"Navigated to example.com, frame_id: {frame_id}")
@@ -72,6 +72,17 @@ asyncio.run(main())
 - **Command Multiplexing**: Execute multiple commands concurrently with proper tracking
 - **Event Handling**: Async iterator for receiving browser events
 - **Error Handling**: Comprehensive error handling with typed exceptions
+
+Batch execution helper:
+
+```python
+results = await conn.execute_many([
+    page.navigate(url="https://example.com"),
+    page.navigate(url="https://example.org"),
+])
+```
+
+Use `return_exceptions=True` to collect command failures in the returned list.
 
 See the [examples directory](examples/) for more usage patterns.
 
@@ -141,19 +152,5 @@ All CDP types, commands, and events are fully typed with Python type hints, prov
 - Static type checking with mypy
 - Clear API contracts
 - Inline documentation
-
-## Contributing
-
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details on:
-- How to report bugs and request features
-- Development setup and workflow
-- Coding standards and testing requirements
-- Pull request process
-
-For questions or discussions, feel free to open an issue on GitHub.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 <a href="https://www.hyperiongray.com/?pk_campaign=github&pk_kwd=pycdp"><img alt="define hyperion gray" width="500px" src="https://hyperiongray.s3.amazonaws.com/define-hg.svg"></a>

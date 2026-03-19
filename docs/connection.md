@@ -21,7 +21,7 @@ async def main():
     # Connect using async context manager
     async with CDPConnection("ws://localhost:9222/devtools/page/YOUR_PAGE_ID") as conn:
         # Execute a command
-        frame_id, loader_id, error = await conn.execute(
+        frame_id, loader_id, error_text, is_download = await conn.execute(
             page.navigate(url="https://example.com")
         )
         
@@ -95,6 +95,28 @@ async with CDPConnection(url) as conn:
     print(results[2][0].value)  # 6
 ```
 
+For convenience, you can also pass a batch of commands to `execute_many()`:
+
+```python
+async with CDPConnection(url) as conn:
+    results = await conn.execute_many([
+        runtime.evaluate(expression="1 + 1"),
+        runtime.evaluate(expression="2 + 2"),
+        runtime.evaluate(expression="3 + 3"),
+    ])
+    print([result[0].value for result in results])  # [2, 4, 6]
+```
+
+By default, command exceptions are raised. To collect exceptions in-place, set
+`return_exceptions=True`:
+
+```python
+results = await conn.execute_many(commands, return_exceptions=True)
+for item in results:
+    if isinstance(item, Exception):
+        print(f"Command failed: {item}")
+```
+
 ### Event Handling
 
 Listen for browser events using an async iterator:
@@ -160,6 +182,12 @@ class CDPConnection:
     async def connect(self) -> None
     async def close(self) -> None
     async def execute(self, cmd, timeout: Optional[float] = None) -> Any
+    async def execute_many(
+        self,
+        commands,
+        timeout: Optional[float] = None,
+        return_exceptions: bool = False,
+    ) -> List[Any]
     async def listen(self) -> AsyncIterator[Any]
     def get_event_nowait(self) -> Optional[Any]
     
