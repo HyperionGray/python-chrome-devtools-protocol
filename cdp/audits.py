@@ -94,8 +94,6 @@ class CookieExclusionReason(enum.Enum):
     EXCLUDE_SAME_SITE_NONE_INSECURE = "ExcludeSameSiteNoneInsecure"
     EXCLUDE_SAME_SITE_LAX = "ExcludeSameSiteLax"
     EXCLUDE_SAME_SITE_STRICT = "ExcludeSameSiteStrict"
-    EXCLUDE_INVALID_SAME_PARTY = "ExcludeInvalidSameParty"
-    EXCLUDE_SAME_PARTY_CROSS_PARTY_CONTEXT = "ExcludeSamePartyCrossPartyContext"
     EXCLUDE_DOMAIN_NON_ASCII = "ExcludeDomainNonASCII"
     EXCLUDE_THIRD_PARTY_COOKIE_BLOCKED_IN_FIRST_PARTY_SET = "ExcludeThirdPartyCookieBlockedInFirstPartySet"
     EXCLUDE_THIRD_PARTY_PHASEOUT = "ExcludeThirdPartyPhaseout"
@@ -250,6 +248,41 @@ class CookieIssueDetails:
             cookie_url=str(json['cookieUrl']) if 'cookieUrl' in json else None,
             request=AffectedRequest.from_json(json['request']) if 'request' in json else None,
             insight=CookieIssueInsight.from_json(json['insight']) if 'insight' in json else None,
+        )
+
+
+class PerformanceIssueType(enum.Enum):
+    DOCUMENT_COOKIE = "DocumentCookie"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> PerformanceIssueType:
+        return cls(json)
+
+
+@dataclass
+class PerformanceIssueDetails:
+    r'''
+    Details for a performance issue.
+    '''
+    performance_issue_type: PerformanceIssueType
+
+    source_code_location: typing.Optional[SourceCodeLocation] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['performanceIssueType'] = self.performance_issue_type.to_json()
+        if self.source_code_location is not None:
+            json['sourceCodeLocation'] = self.source_code_location.to_json()
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> PerformanceIssueDetails:
+        return cls(
+            performance_issue_type=PerformanceIssueType.from_json(json['performanceIssueType']),
+            source_code_location=SourceCodeLocation.from_json(json['sourceCodeLocation']) if 'sourceCodeLocation' in json else None,
         )
 
 
@@ -596,46 +629,6 @@ class SharedArrayBufferIssueDetails:
 
 
 @dataclass
-class LowTextContrastIssueDetails:
-    violating_node_id: dom.BackendNodeId
-
-    violating_node_selector: str
-
-    contrast_ratio: float
-
-    threshold_aa: float
-
-    threshold_aaa: float
-
-    font_size: str
-
-    font_weight: str
-
-    def to_json(self) -> T_JSON_DICT:
-        json: T_JSON_DICT = dict()
-        json['violatingNodeId'] = self.violating_node_id.to_json()
-        json['violatingNodeSelector'] = self.violating_node_selector
-        json['contrastRatio'] = self.contrast_ratio
-        json['thresholdAA'] = self.threshold_aa
-        json['thresholdAAA'] = self.threshold_aaa
-        json['fontSize'] = self.font_size
-        json['fontWeight'] = self.font_weight
-        return json
-
-    @classmethod
-    def from_json(cls, json: T_JSON_DICT) -> LowTextContrastIssueDetails:
-        return cls(
-            violating_node_id=dom.BackendNodeId.from_json(json['violatingNodeId']),
-            violating_node_selector=str(json['violatingNodeSelector']),
-            contrast_ratio=float(json['contrastRatio']),
-            threshold_aa=float(json['thresholdAA']),
-            threshold_aaa=float(json['thresholdAAA']),
-            font_size=str(json['fontSize']),
-            font_weight=str(json['fontWeight']),
-        )
-
-
-@dataclass
 class CorsIssueDetails:
     r'''
     Details for a CORS related issue, e.g. a warning or error related to
@@ -791,6 +784,22 @@ class UnencodedDigestError(enum.Enum):
 
     @classmethod
     def from_json(cls, json: str) -> UnencodedDigestError:
+        return cls(json)
+
+
+class ConnectionAllowlistError(enum.Enum):
+    INVALID_HEADER = "InvalidHeader"
+    MORE_THAN_ONE_LIST = "MoreThanOneList"
+    ITEM_NOT_INNER_LIST = "ItemNotInnerList"
+    INVALID_ALLOWLIST_ITEM_TYPE = "InvalidAllowlistItemType"
+    REPORTING_ENDPOINT_NOT_TOKEN = "ReportingEndpointNotToken"
+    INVALID_URL_PATTERN = "InvalidUrlPattern"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> ConnectionAllowlistError:
         return cls(json)
 
 
@@ -956,18 +965,43 @@ class UnencodedDigestIssueDetails:
         )
 
 
+@dataclass
+class ConnectionAllowlistIssueDetails:
+    error: ConnectionAllowlistError
+
+    request: AffectedRequest
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['error'] = self.error.to_json()
+        json['request'] = self.request.to_json()
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> ConnectionAllowlistIssueDetails:
+        return cls(
+            error=ConnectionAllowlistError.from_json(json['error']),
+            request=AffectedRequest.from_json(json['request']),
+        )
+
+
 class GenericIssueErrorType(enum.Enum):
     FORM_LABEL_FOR_NAME_ERROR = "FormLabelForNameError"
     FORM_DUPLICATE_ID_FOR_INPUT_ERROR = "FormDuplicateIdForInputError"
     FORM_INPUT_WITH_NO_LABEL_ERROR = "FormInputWithNoLabelError"
     FORM_AUTOCOMPLETE_ATTRIBUTE_EMPTY_ERROR = "FormAutocompleteAttributeEmptyError"
     FORM_EMPTY_ID_AND_NAME_ATTRIBUTES_FOR_INPUT_ERROR = "FormEmptyIdAndNameAttributesForInputError"
-    FORM_ARIA_LABELLED_BY_TO_NON_EXISTING_ID = "FormAriaLabelledByToNonExistingId"
+    FORM_ARIA_LABELLED_BY_TO_NON_EXISTING_ID_ERROR = "FormAriaLabelledByToNonExistingIdError"
     FORM_INPUT_ASSIGNED_AUTOCOMPLETE_VALUE_TO_ID_OR_NAME_ATTRIBUTE_ERROR = "FormInputAssignedAutocompleteValueToIdOrNameAttributeError"
-    FORM_LABEL_HAS_NEITHER_FOR_NOR_NESTED_INPUT = "FormLabelHasNeitherForNorNestedInput"
+    FORM_LABEL_HAS_NEITHER_FOR_NOR_NESTED_INPUT_ERROR = "FormLabelHasNeitherForNorNestedInputError"
     FORM_LABEL_FOR_MATCHES_NON_EXISTING_ID_ERROR = "FormLabelForMatchesNonExistingIdError"
     FORM_INPUT_HAS_WRONG_BUT_WELL_INTENDED_AUTOCOMPLETE_VALUE_ERROR = "FormInputHasWrongButWellIntendedAutocompleteValueError"
     RESPONSE_WAS_BLOCKED_BY_ORB = "ResponseWasBlockedByORB"
+    NAVIGATION_ENTRY_MARKED_SKIPPABLE = "NavigationEntryMarkedSkippable"
+    AUTOFILL_AND_MANUAL_TEXT_POLICY_CONTROLLED_FEATURES_INFO = "AutofillAndManualTextPolicyControlledFeaturesInfo"
+    AUTOFILL_POLICY_CONTROLLED_FEATURE_INFO = "AutofillPolicyControlledFeatureInfo"
+    MANUAL_TEXT_POLICY_CONTROLLED_FEATURE_INFO = "ManualTextPolicyControlledFeatureInfo"
+    FORM_MODEL_CONTEXT_PARAMETER_MISSING_TITLE_AND_DESCRIPTION = "FormModelContextParameterMissingTitleAndDescription"
 
     def to_json(self) -> str:
         return self.value
@@ -1153,10 +1187,6 @@ class FederatedAuthRequestIssueReason(enum.Enum):
     CONFIG_NO_RESPONSE = "ConfigNoResponse"
     CONFIG_INVALID_RESPONSE = "ConfigInvalidResponse"
     CONFIG_INVALID_CONTENT_TYPE = "ConfigInvalidContentType"
-    CLIENT_METADATA_HTTP_NOT_FOUND = "ClientMetadataHttpNotFound"
-    CLIENT_METADATA_NO_RESPONSE = "ClientMetadataNoResponse"
-    CLIENT_METADATA_INVALID_RESPONSE = "ClientMetadataInvalidResponse"
-    CLIENT_METADATA_INVALID_CONTENT_TYPE = "ClientMetadataInvalidContentType"
     IDP_NOT_POTENTIALLY_TRUSTWORTHY = "IdpNotPotentiallyTrustworthy"
     DISABLED_IN_SETTINGS = "DisabledInSettings"
     DISABLED_IN_FLAGS = "DisabledInFlags"
@@ -1178,11 +1208,9 @@ class FederatedAuthRequestIssueReason(enum.Enum):
     CANCELED = "Canceled"
     RP_PAGE_NOT_VISIBLE = "RpPageNotVisible"
     SILENT_MEDIATION_FAILURE = "SilentMediationFailure"
-    THIRD_PARTY_COOKIES_BLOCKED = "ThirdPartyCookiesBlocked"
     NOT_SIGNED_IN_WITH_IDP = "NotSignedInWithIdp"
     MISSING_TRANSIENT_USER_ACTIVATION = "MissingTransientUserActivation"
     REPLACED_BY_ACTIVE_MODE = "ReplacedByActiveMode"
-    INVALID_FIELDS_SPECIFIED = "InvalidFieldsSpecified"
     RELYING_PARTY_ORIGIN_IS_OPAQUE = "RelyingPartyOriginIsOpaque"
     TYPE_NOT_MATCHING = "TypeNotMatching"
     UI_DISMISSED_NO_EMBARGO = "UiDismissedNoEmbargo"
@@ -1499,6 +1527,131 @@ class UserReidentificationIssueDetails:
         )
 
 
+class PermissionElementIssueType(enum.Enum):
+    INVALID_TYPE = "InvalidType"
+    FENCED_FRAME_DISALLOWED = "FencedFrameDisallowed"
+    CSP_FRAME_ANCESTORS_MISSING = "CspFrameAncestorsMissing"
+    PERMISSIONS_POLICY_BLOCKED = "PermissionsPolicyBlocked"
+    PADDING_RIGHT_UNSUPPORTED = "PaddingRightUnsupported"
+    PADDING_BOTTOM_UNSUPPORTED = "PaddingBottomUnsupported"
+    INSET_BOX_SHADOW_UNSUPPORTED = "InsetBoxShadowUnsupported"
+    REQUEST_IN_PROGRESS = "RequestInProgress"
+    UNTRUSTED_EVENT = "UntrustedEvent"
+    REGISTRATION_FAILED = "RegistrationFailed"
+    TYPE_NOT_SUPPORTED = "TypeNotSupported"
+    INVALID_TYPE_ACTIVATION = "InvalidTypeActivation"
+    SECURITY_CHECKS_FAILED = "SecurityChecksFailed"
+    ACTIVATION_DISABLED = "ActivationDisabled"
+    GEOLOCATION_DEPRECATED = "GeolocationDeprecated"
+    INVALID_DISPLAY_STYLE = "InvalidDisplayStyle"
+    NON_OPAQUE_COLOR = "NonOpaqueColor"
+    LOW_CONTRAST = "LowContrast"
+    FONT_SIZE_TOO_SMALL = "FontSizeTooSmall"
+    FONT_SIZE_TOO_LARGE = "FontSizeTooLarge"
+    INVALID_SIZE_VALUE = "InvalidSizeValue"
+
+    def to_json(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_json(cls, json: str) -> PermissionElementIssueType:
+        return cls(json)
+
+
+@dataclass
+class PermissionElementIssueDetails:
+    r'''
+    This issue warns about improper usage of the <permission> element.
+    '''
+    issue_type: PermissionElementIssueType
+
+    #: The value of the type attribute.
+    type_: typing.Optional[str] = None
+
+    #: The node ID of the <permission> element.
+    node_id: typing.Optional[dom.BackendNodeId] = None
+
+    #: True if the issue is a warning, false if it is an error.
+    is_warning: typing.Optional[bool] = None
+
+    #: Fields for message construction:
+    #: Used for messages that reference a specific permission name
+    permission_name: typing.Optional[str] = None
+
+    #: Used for messages about occlusion
+    occluder_node_info: typing.Optional[str] = None
+
+    #: Used for messages about occluder's parent
+    occluder_parent_node_info: typing.Optional[str] = None
+
+    #: Used for messages about activation disabled reason
+    disable_reason: typing.Optional[str] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['issueType'] = self.issue_type.to_json()
+        if self.type_ is not None:
+            json['type'] = self.type_
+        if self.node_id is not None:
+            json['nodeId'] = self.node_id.to_json()
+        if self.is_warning is not None:
+            json['isWarning'] = self.is_warning
+        if self.permission_name is not None:
+            json['permissionName'] = self.permission_name
+        if self.occluder_node_info is not None:
+            json['occluderNodeInfo'] = self.occluder_node_info
+        if self.occluder_parent_node_info is not None:
+            json['occluderParentNodeInfo'] = self.occluder_parent_node_info
+        if self.disable_reason is not None:
+            json['disableReason'] = self.disable_reason
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> PermissionElementIssueDetails:
+        return cls(
+            issue_type=PermissionElementIssueType.from_json(json['issueType']),
+            type_=str(json['type']) if 'type' in json else None,
+            node_id=dom.BackendNodeId.from_json(json['nodeId']) if 'nodeId' in json else None,
+            is_warning=bool(json['isWarning']) if 'isWarning' in json else None,
+            permission_name=str(json['permissionName']) if 'permissionName' in json else None,
+            occluder_node_info=str(json['occluderNodeInfo']) if 'occluderNodeInfo' in json else None,
+            occluder_parent_node_info=str(json['occluderParentNodeInfo']) if 'occluderParentNodeInfo' in json else None,
+            disable_reason=str(json['disableReason']) if 'disableReason' in json else None,
+        )
+
+
+@dataclass
+class SelectivePermissionsInterventionIssueDetails:
+    r'''
+    The issue warns about blocked calls to privacy sensitive APIs via the
+    Selective Permissions Intervention.
+    '''
+    #: Which API was intervened on.
+    api_name: str
+
+    #: Why the ad script using the API is considered an ad.
+    ad_ancestry: network.AdAncestry
+
+    #: The stack trace at the time of the intervention.
+    stack_trace: typing.Optional[runtime.StackTrace] = None
+
+    def to_json(self) -> T_JSON_DICT:
+        json: T_JSON_DICT = dict()
+        json['apiName'] = self.api_name
+        json['adAncestry'] = self.ad_ancestry.to_json()
+        if self.stack_trace is not None:
+            json['stackTrace'] = self.stack_trace.to_json()
+        return json
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> SelectivePermissionsInterventionIssueDetails:
+        return cls(
+            api_name=str(json['apiName']),
+            ad_ancestry=network.AdAncestry.from_json(json['adAncestry']),
+            stack_trace=runtime.StackTrace.from_json(json['stackTrace']) if 'stackTrace' in json else None,
+        )
+
+
 class InspectorIssueCode(enum.Enum):
     r'''
     A unique identifier for the type of issue. Each type may use one of the
@@ -1511,7 +1664,6 @@ class InspectorIssueCode(enum.Enum):
     HEAVY_AD_ISSUE = "HeavyAdIssue"
     CONTENT_SECURITY_POLICY_ISSUE = "ContentSecurityPolicyIssue"
     SHARED_ARRAY_BUFFER_ISSUE = "SharedArrayBufferIssue"
-    LOW_TEXT_CONTRAST_ISSUE = "LowTextContrastIssue"
     CORS_ISSUE = "CorsIssue"
     ATTRIBUTION_REPORTING_ISSUE = "AttributionReportingIssue"
     QUIRKS_MODE_ISSUE = "QuirksModeIssue"
@@ -1530,7 +1682,11 @@ class InspectorIssueCode(enum.Enum):
     ELEMENT_ACCESSIBILITY_ISSUE = "ElementAccessibilityIssue"
     SRI_MESSAGE_SIGNATURE_ISSUE = "SRIMessageSignatureIssue"
     UNENCODED_DIGEST_ISSUE = "UnencodedDigestIssue"
+    CONNECTION_ALLOWLIST_ISSUE = "ConnectionAllowlistIssue"
     USER_REIDENTIFICATION_ISSUE = "UserReidentificationIssue"
+    PERMISSION_ELEMENT_ISSUE = "PermissionElementIssue"
+    PERFORMANCE_ISSUE = "PerformanceIssue"
+    SELECTIVE_PERMISSIONS_INTERVENTION_ISSUE = "SelectivePermissionsInterventionIssue"
 
     def to_json(self) -> str:
         return self.value
@@ -1558,8 +1714,6 @@ class InspectorIssueDetails:
     content_security_policy_issue_details: typing.Optional[ContentSecurityPolicyIssueDetails] = None
 
     shared_array_buffer_issue_details: typing.Optional[SharedArrayBufferIssueDetails] = None
-
-    low_text_contrast_issue_details: typing.Optional[LowTextContrastIssueDetails] = None
 
     cors_issue_details: typing.Optional[CorsIssueDetails] = None
 
@@ -1597,7 +1751,15 @@ class InspectorIssueDetails:
 
     unencoded_digest_issue_details: typing.Optional[UnencodedDigestIssueDetails] = None
 
+    connection_allowlist_issue_details: typing.Optional[ConnectionAllowlistIssueDetails] = None
+
     user_reidentification_issue_details: typing.Optional[UserReidentificationIssueDetails] = None
+
+    permission_element_issue_details: typing.Optional[PermissionElementIssueDetails] = None
+
+    performance_issue_details: typing.Optional[PerformanceIssueDetails] = None
+
+    selective_permissions_intervention_issue_details: typing.Optional[SelectivePermissionsInterventionIssueDetails] = None
 
     def to_json(self) -> T_JSON_DICT:
         json: T_JSON_DICT = dict()
@@ -1613,8 +1775,6 @@ class InspectorIssueDetails:
             json['contentSecurityPolicyIssueDetails'] = self.content_security_policy_issue_details.to_json()
         if self.shared_array_buffer_issue_details is not None:
             json['sharedArrayBufferIssueDetails'] = self.shared_array_buffer_issue_details.to_json()
-        if self.low_text_contrast_issue_details is not None:
-            json['lowTextContrastIssueDetails'] = self.low_text_contrast_issue_details.to_json()
         if self.cors_issue_details is not None:
             json['corsIssueDetails'] = self.cors_issue_details.to_json()
         if self.attribution_reporting_issue_details is not None:
@@ -1651,8 +1811,16 @@ class InspectorIssueDetails:
             json['sriMessageSignatureIssueDetails'] = self.sri_message_signature_issue_details.to_json()
         if self.unencoded_digest_issue_details is not None:
             json['unencodedDigestIssueDetails'] = self.unencoded_digest_issue_details.to_json()
+        if self.connection_allowlist_issue_details is not None:
+            json['connectionAllowlistIssueDetails'] = self.connection_allowlist_issue_details.to_json()
         if self.user_reidentification_issue_details is not None:
             json['userReidentificationIssueDetails'] = self.user_reidentification_issue_details.to_json()
+        if self.permission_element_issue_details is not None:
+            json['permissionElementIssueDetails'] = self.permission_element_issue_details.to_json()
+        if self.performance_issue_details is not None:
+            json['performanceIssueDetails'] = self.performance_issue_details.to_json()
+        if self.selective_permissions_intervention_issue_details is not None:
+            json['selectivePermissionsInterventionIssueDetails'] = self.selective_permissions_intervention_issue_details.to_json()
         return json
 
     @classmethod
@@ -1664,7 +1832,6 @@ class InspectorIssueDetails:
             heavy_ad_issue_details=HeavyAdIssueDetails.from_json(json['heavyAdIssueDetails']) if 'heavyAdIssueDetails' in json else None,
             content_security_policy_issue_details=ContentSecurityPolicyIssueDetails.from_json(json['contentSecurityPolicyIssueDetails']) if 'contentSecurityPolicyIssueDetails' in json else None,
             shared_array_buffer_issue_details=SharedArrayBufferIssueDetails.from_json(json['sharedArrayBufferIssueDetails']) if 'sharedArrayBufferIssueDetails' in json else None,
-            low_text_contrast_issue_details=LowTextContrastIssueDetails.from_json(json['lowTextContrastIssueDetails']) if 'lowTextContrastIssueDetails' in json else None,
             cors_issue_details=CorsIssueDetails.from_json(json['corsIssueDetails']) if 'corsIssueDetails' in json else None,
             attribution_reporting_issue_details=AttributionReportingIssueDetails.from_json(json['attributionReportingIssueDetails']) if 'attributionReportingIssueDetails' in json else None,
             quirks_mode_issue_details=QuirksModeIssueDetails.from_json(json['quirksModeIssueDetails']) if 'quirksModeIssueDetails' in json else None,
@@ -1683,7 +1850,11 @@ class InspectorIssueDetails:
             element_accessibility_issue_details=ElementAccessibilityIssueDetails.from_json(json['elementAccessibilityIssueDetails']) if 'elementAccessibilityIssueDetails' in json else None,
             sri_message_signature_issue_details=SRIMessageSignatureIssueDetails.from_json(json['sriMessageSignatureIssueDetails']) if 'sriMessageSignatureIssueDetails' in json else None,
             unencoded_digest_issue_details=UnencodedDigestIssueDetails.from_json(json['unencodedDigestIssueDetails']) if 'unencodedDigestIssueDetails' in json else None,
+            connection_allowlist_issue_details=ConnectionAllowlistIssueDetails.from_json(json['connectionAllowlistIssueDetails']) if 'connectionAllowlistIssueDetails' in json else None,
             user_reidentification_issue_details=UserReidentificationIssueDetails.from_json(json['userReidentificationIssueDetails']) if 'userReidentificationIssueDetails' in json else None,
+            permission_element_issue_details=PermissionElementIssueDetails.from_json(json['permissionElementIssueDetails']) if 'permissionElementIssueDetails' in json else None,
+            performance_issue_details=PerformanceIssueDetails.from_json(json['performanceIssueDetails']) if 'performanceIssueDetails' in json else None,
+            selective_permissions_intervention_issue_details=SelectivePermissionsInterventionIssueDetails.from_json(json['selectivePermissionsInterventionIssueDetails']) if 'selectivePermissionsInterventionIssueDetails' in json else None,
         )
 
 
@@ -1789,25 +1960,6 @@ def enable() -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
     '''
     cmd_dict: T_JSON_DICT = {
         'method': 'Audits.enable',
-    }
-    json = yield cmd_dict
-
-
-def check_contrast(
-        report_aaa: typing.Optional[bool] = None
-    ) -> typing.Generator[T_JSON_DICT,T_JSON_DICT,None]:
-    r'''
-    Runs the contrast check for the target page. Found issues are reported
-    using Audits.issueAdded event.
-
-    :param report_aaa: *(Optional)* Whether to report WCAG AAA level issues. Default is false.
-    '''
-    params: T_JSON_DICT = dict()
-    if report_aaa is not None:
-        params['reportAAA'] = report_aaa
-    cmd_dict: T_JSON_DICT = {
-        'method': 'Audits.checkContrast',
-        'params': params,
     }
     json = yield cmd_dict
 
