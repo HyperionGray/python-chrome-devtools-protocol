@@ -954,6 +954,25 @@ def parse(json_path, output_path):
     return domains
 
 
+def cleanup_generated_files(directory: Path,
+                            preserved_names: typing.Iterable[str] = (),
+                            generated_suffix: typing.Optional[str] = None) -> None:
+    '''
+    Remove generated files from a directory while preserving dotfiles and any
+    explicitly listed support files.
+    '''
+    for subpath in directory.iterdir():
+        if not subpath.is_file():
+            continue
+        if subpath.name.startswith('.'):
+            continue
+        if subpath.name in preserved_names:
+            continue
+        if generated_suffix is not None and subpath.suffix != generated_suffix:
+            continue
+        subpath.unlink()
+
+
 def generate_init(init_path, domains):
     '''
     Generate an ``__init__.py`` that exports the specified modules.
@@ -977,8 +996,7 @@ def generate_docs(docs_path, domains):
     logger.info('Generating Sphinx documents')
 
     # Remove generated documents
-    for subpath in docs_path.iterdir():
-        subpath.unlink()
+    cleanup_generated_files(docs_path, generated_suffix='.rst')
 
     # Generate document for each domain
     for domain in domains:
@@ -1030,9 +1048,12 @@ def main():
     output_path.mkdir(exist_ok=True)
 
     # Remove generated code
-    for subpath in output_path.iterdir():
-        if subpath.is_file() and subpath.name not in ('py.typed', 'util.py', 'connection.py', '__init__.py') and not subpath.name.startswith('.'):
-            subpath.unlink()
+    cleanup_generated_files(output_path, preserved_names=(
+        'py.typed',
+        'util.py',
+        'connection.py',
+        '__init__.py',
+    ))
 
     # Parse domains
     domains = list()

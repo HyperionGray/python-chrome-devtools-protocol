@@ -10,9 +10,17 @@ Pytest doesn't display stdout by default unless a test fails, and debugging
 codegen tests is almost always easier with the values displayed on stdout.
 '''
 
+from pathlib import Path
 from textwrap import dedent
 
-from generate import CdpCommand, CdpDomain, CdpEvent, CdpType, docstring
+from generate import (
+    CdpCommand,
+    CdpDomain,
+    CdpEvent,
+    CdpType,
+    cleanup_generated_files,
+    docstring,
+)
 
 
 def test_docstring():
@@ -977,3 +985,55 @@ def test_cdp_domain_sphinx():
     domain = CdpDomain.from_json(json_domain)
     actual = domain.generate_sphinx()
     assert expected == actual
+
+
+def test_cleanup_generated_files_preserves_hidden_and_support_files(tmp_path: Path):
+    generated = tmp_path / 'generated.py'
+    util = tmp_path / 'util.py'
+    connection = tmp_path / 'connection.py'
+    init_file = tmp_path / '__init__.py'
+    py_typed = tmp_path / 'py.typed'
+    hidden = tmp_path / '.bish-index'
+    subdir = tmp_path / 'nested'
+
+    generated.write_text('# generated\n')
+    util.write_text('# keep\n')
+    connection.write_text('# keep\n')
+    init_file.write_text('# keep\n')
+    py_typed.write_text('')
+    hidden.write_text('keep hidden metadata\n')
+    subdir.mkdir()
+
+    cleanup_generated_files(tmp_path, preserved_names=(
+        'py.typed',
+        'util.py',
+        'connection.py',
+        '__init__.py',
+    ))
+
+    assert not generated.exists()
+    assert util.exists()
+    assert connection.exists()
+    assert init_file.exists()
+    assert py_typed.exists()
+    assert hidden.exists()
+    assert subdir.exists()
+
+
+def test_cleanup_generated_files_only_removes_generated_docs(tmp_path: Path):
+    generated_doc = tmp_path / 'page.rst'
+    hidden = tmp_path / '.bish-index'
+    support_file = tmp_path / 'README.txt'
+    subdir = tmp_path / 'images'
+
+    generated_doc.write_text('generated docs\n')
+    hidden.write_text('keep hidden metadata\n')
+    support_file.write_text('keep support file\n')
+    subdir.mkdir()
+
+    cleanup_generated_files(tmp_path, generated_suffix='.rst')
+
+    assert not generated_doc.exists()
+    assert hidden.exists()
+    assert support_file.exists()
+    assert subdir.exists()
