@@ -86,7 +86,38 @@ frame_id = page.FrameId('my id')
 assert repr(frame_id) == "FrameId('my id')"
 ```
 
-For more information, see the [complete documentation](https://py-cdp.readthedocs.io).
+## API Documentation
+
+For detailed API documentation, see:
+
+- **[Complete Documentation](https://py-cdp.readthedocs.io)** - Full API reference on Read the Docs
+- **[Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/)** - Official CDP specification
+- **[Examples](examples/)** - Code examples demonstrating usage patterns
+
+### Key Modules
+
+- `cdp.connection` - WebSocket I/O and connection management (I/O mode)
+- `cdp.<domain>` - Type wrappers for each CDP domain (e.g., `cdp.page`, `cdp.network`, `cdp.runtime`)
+- Each domain module provides types, commands, and events for that CDP domain
+
+## Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details on:
+
+- Setting up your development environment
+- Running tests and type checking
+- Submitting pull requests
+- Reporting issues
+
+Please also read our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing.
+
+## Security
+
+For information about reporting security vulnerabilities, please see our [Security Policy](SECURITY.md).
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## API Reference
 
