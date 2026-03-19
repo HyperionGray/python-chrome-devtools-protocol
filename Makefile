@@ -6,22 +6,22 @@
 default: mypy-generate test-generate generate test-import mypy-cdp test-cdp
 
 docs:
-	$(MAKE) -C docs html
+	$(MAKE) -C docs html SPHINXBUILD="python3 -m sphinx"
 
 generate:
-	python generator/generate.py
+	python3 generator/generate.py
 
 mypy-cdp:
-	mypy cdp/
+	python3 -m mypy cdp/
 
 mypy-generate:
-	mypy generator/
+	python3 -m mypy generator/
 
 test-cdp:
-	pytest test/
+	python3 -m pytest test/
 
 test-generate:
-	pytest generator/
+	python3 -m pytest generator/
 
 test-import:
-	python -c 'import cdp; print(cdp.accessibility)'
+	python3 -c 'import cdp; print(cdp.accessibility)'
