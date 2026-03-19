@@ -2,142 +2,107 @@
 
 Thank you for your interest in contributing to Python Chrome DevTools Protocol (PyCDP)! This document provides guidelines for contributing to the project.
 
-## Getting Started
+## Code of Conduct
+
+By participating in this project, you agree to abide by our Code of Conduct (see [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)).
+
+## How to Contribute
+
+### Reporting Bugs
+
+If you find a bug, please open an issue on GitHub with:
+- A clear description of the problem
+- Steps to reproduce the issue
+- Expected vs. actual behavior
+- Your environment (OS, Python version, etc.)
+
+### Suggesting Enhancements
+
+Enhancement suggestions are welcome! Please open an issue describing:
+- The enhancement you'd like to see
+- Why it would be useful
+- Any implementation ideas you have
+
+### Pull Requests
+
+1. **Fork the repository** and create your branch from `master`
+2. **Install development dependencies**:
+   ```bash
+   pip install poetry
+   poetry install
+   ```
+3. **Make your changes** following the project's coding standards
+4. **Run tests** to ensure nothing is broken:
+   ```bash
+   poetry run make
+   ```
+5. **Update documentation** if needed
+6. **Commit your changes** with clear, descriptive commit messages
+7. **Push to your fork** and submit a pull request
+
+## Development Setup
 
 ### Prerequisites
 
 - Python 3.7 or higher
-- [Poetry](https://python-poetry.org/) for dependency management
+- Poetry for dependency management
 
-### Setting Up Your Development Environment
+### Installation
 
-1. Fork the repository on GitHub
-2. Clone your fork locally:
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/python-chrome-devtools-protocol.git
-   cd python-chrome-devtools-protocol
-   ```
-3. Install dependencies:
-   ```bash
-   poetry install
-   ```
-
-## Development Workflow
-
-### Code Generation
-
-This project automatically generates Python wrappers from the Chrome DevTools Protocol specification. Most code in the `cdp/` directory (except `connection.py` and `util.py`) is auto-generated.
-
-To regenerate the protocol wrappers:
 ```bash
-poetry run make generate
+# Clone the repository
+git clone https://github.com/HyperionGray/python-chrome-devtools-protocol.git
+cd python-chrome-devtools-protocol
+
+# Install dependencies
+poetry install
 ```
 
 ### Running Tests
 
-Run the test suite:
 ```bash
-poetry run make test-cdp
-poetry run make test-generate
-```
-
-Or run all checks:
-```bash
+# Run all tests
 poetry run make
+
+# Run specific test suites
+poetry run pytest test/
+poetry run pytest generator/
+
+# Run type checking
+poetry run mypy cdp/
+poetry run mypy generator/
 ```
 
-### Type Checking
+### Code Generation
 
-We use mypy for static type checking:
+This project generates Python code from the Chrome DevTools Protocol specification:
+
 ```bash
-poetry run make mypy-cdp
-poetry run make mypy-generate
+poetry run python generator/generate.py
 ```
 
-### Building Documentation
+The generated code is checked into version control. If you modify the generator, run it and include the updated generated files in your PR.
 
-To build the documentation:
-```bash
-poetry run make docs
-```
+## Coding Standards
 
-## Making Changes
+- Follow [PEP 8](https://www.python.org/dev/peps/pep-0008/) style guidelines
+- Use type hints for all functions and methods
+- Write docstrings for public APIs
+- Ensure code passes `mypy` type checking
+- Keep code coverage high
 
-### Code Style
+## Project Structure
 
-- Follow PEP 8 style guidelines
-- Use type hints for all function signatures
-- Keep code clear and well-documented
-
-### Commit Messages
-
-- Use clear and descriptive commit messages
-- Reference issue numbers when applicable
-- Keep commits focused on a single change
-
-### Pull Requests
-
-1. Create a new branch for your changes:
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-2. Make your changes and commit them
-3. Push to your fork and submit a pull request
-4. Ensure all tests pass and type checking succeeds
-5. Provide a clear description of your changes
-
-## What to Contribute
-
-### Areas for Contribution
-
-- **Bug fixes**: Fix issues in the connection module or utility functions
-- **Documentation**: Improve examples, tutorials, or API documentation
-- **Tests**: Add test coverage for existing functionality
-- **Examples**: Add new usage examples in the `examples/` directory
-
-### Code Generation Changes
-
-If you need to modify code generation:
-- Edit files in the `generator/` directory
-- Run the generator and verify the output
-- Ensure all tests still pass
-- Add tests for your generator changes
-
-### Protocol Updates
-
-The protocol definitions are automatically fetched from the Chrome DevTools Protocol repository. If you need to update to a newer protocol version, please open an issue first to discuss the change.
-
-## Reporting Issues
-
-### Bug Reports
-
-When reporting bugs, please include:
-- Python version
-- PyCDP version
-- Steps to reproduce
-- Expected vs. actual behavior
-- Error messages or stack traces
-
-### Feature Requests
-
-For feature requests:
-- Clearly describe the feature
-- Explain the use case
-- Consider if it fits the project's scope
-
-## Code of Conduct
-
-Please be respectful and constructive in all interactions. We are committed to providing a welcoming and inclusive environment for all contributors.
+- `cdp/` - Generated CDP protocol bindings
+- `generator/` - Code generator for CDP bindings
+- `test/` - Test suite
+- `docs/` - Documentation source files
+- `examples/` - Example usage scripts
 
 ## Questions?
 
-If you have questions about contributing, please:
-- Check existing issues and pull requests
-- Open a new issue with your question
-- Tag it appropriately for visibility
+If you have questions about contributing, feel free to open an issue or reach out to the maintainers.
 
 ## License
 
 By contributing to PyCDP, you agree that your contributions will be licensed under the MIT License.
-
-Thank you for contributing to PyCDP!
