@@ -21,7 +21,7 @@ async def main():
     # Connect using async context manager
     async with CDPConnection("ws://localhost:9222/devtools/page/YOUR_PAGE_ID") as conn:
         # Execute a command
-        frame_id, loader_id, error = await conn.execute(
+        frame_id, loader_id, error_text, is_download = await conn.execute(
             page.navigate(url="https://example.com")
         )
         
@@ -120,6 +120,19 @@ if event:
     print(f"Got event: {event}")
 ```
 
+Wait for a specific event type (with optional filtering):
+
+```python
+load_event = await conn.wait_for_event(page.LoadEventFired, timeout=5.0)
+print(f"Loaded at timestamp: {load_event.timestamp}")
+
+# Wait for a matching event
+late_event = await conn.wait_for_event(
+    page.LoadEventFired,
+    predicate=lambda evt: evt.timestamp > load_event.timestamp
+)
+```
+
 ### Error Handling
 
 The connection module provides typed exceptions:
@@ -160,6 +173,7 @@ class CDPConnection:
     async def connect(self) -> None
     async def close(self) -> None
     async def execute(self, cmd, timeout: Optional[float] = None) -> Any
+    async def wait_for_event(self, event_type, predicate=None, timeout=None) -> Any
     async def listen(self) -> AsyncIterator[Any]
     def get_event_nowait(self) -> Optional[Any]
     

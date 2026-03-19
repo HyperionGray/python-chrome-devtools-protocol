@@ -57,9 +57,12 @@ async def main():
     # Connect to a Chrome DevTools Protocol endpoint
     async with CDPConnection("ws://localhost:9222/devtools/page/YOUR_PAGE_ID") as conn:
         # Navigate to a URL
-        frame_id, loader_id, error = await conn.execute(
+        frame_id, loader_id, error_text, is_download = await conn.execute(
             page.navigate(url="https://example.com")
         )
+
+        # Wait for a specific event type
+        await conn.wait_for_event(page.LoadEventFired, timeout=5.0)
         print(f"Navigated to example.com, frame_id: {frame_id}")
 
 asyncio.run(main())
@@ -70,7 +73,7 @@ asyncio.run(main())
 - **WebSocket Management**: Automatic connection lifecycle management with async context managers
 - **JSON-RPC Framing**: Automatic message ID assignment and request/response matching
 - **Command Multiplexing**: Execute multiple commands concurrently with proper tracking
-- **Event Handling**: Async iterator for receiving browser events
+- **Event Handling**: Async iterators plus typed waiting via `wait_for_event(...)`
 - **Error Handling**: Comprehensive error handling with typed exceptions
 
 See the [examples directory](examples/) for more usage patterns.
@@ -88,39 +91,6 @@ assert repr(frame_id) == "FrameId('my id')"
 
 ## API Documentation
 
-For detailed API documentation, see:
-
-- **[Complete Documentation](https://py-cdp.readthedocs.io)** - Full API reference on Read the Docs
-- **[Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/)** - Official CDP specification
-- **[Examples](examples/)** - Code examples demonstrating usage patterns
-
-### Key Modules
-
-- `cdp.connection` - WebSocket I/O and connection management (I/O mode)
-- `cdp.<domain>` - Type wrappers for each CDP domain (e.g., `cdp.page`, `cdp.network`, `cdp.runtime`)
-- Each domain module provides types, commands, and events for that CDP domain
-
-## Contributing
-
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details on:
-
-- Setting up your development environment
-- Running tests and type checking
-- Submitting pull requests
-- Reporting issues
-
-Please also read our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing.
-
-## Security
-
-For information about reporting security vulnerabilities, please see our [Security Policy](SECURITY.md).
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## API Reference
-
 The library provides Python wrappers for all Chrome DevTools Protocol domains:
 
 - **Page**: Page control (navigation, screenshots, etc.)
@@ -132,7 +102,18 @@ The library provides Python wrappers for all Chrome DevTools Protocol domains:
 - **Security**: Security-related information
 - And many more...
 
-For complete API documentation, visit [py-cdp.readthedocs.io](https://py-cdp.readthedocs.io).
+For detailed API documentation, see:
+
+- **[Complete Documentation](https://py-cdp.readthedocs.io)** - Full API reference on Read the Docs
+- **[Connection Guide](docs/connection.md)** - I/O mode, multiplexing, and event waiting helpers
+- **[Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/)** - Official CDP specification
+- **[Examples](examples/)** - Usage patterns and runnable snippets
+
+### Key Modules
+
+- `cdp.connection` - WebSocket I/O and connection management (I/O mode)
+- `cdp.<domain>` - Type wrappers for each CDP domain (e.g., `cdp.page`, `cdp.network`, `cdp.runtime`)
+- Each domain module provides types, commands, and events for that CDP domain
 
 ### Type System
 
@@ -144,13 +125,18 @@ All CDP types, commands, and events are fully typed with Python type hints, prov
 
 ## Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details on:
-- How to report bugs and request features
-- Development setup and workflow
-- Coding standards and testing requirements
-- Pull request process
+We welcome contributions. See [CONTRIBUTING.md](CONTRIBUTING.md) for:
 
-For questions or discussions, feel free to open an issue on GitHub.
+- development setup
+- test and type-check commands
+- pull request workflow
+- bug and feature reporting
+
+Please also read our [Code of Conduct](CODE_OF_CONDUCT.md).
+
+## Security
+
+For vulnerability reporting, see [SECURITY.md](SECURITY.md).
 
 ## License
 

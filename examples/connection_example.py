@@ -54,26 +54,17 @@ async def event_handling_example():
     async with CDPConnection(url) as conn:
         # Enable page domain to receive events
         await conn.execute(page.enable())
-        
-        # Start navigation
+
+        # Start navigation and wait for a specific event.
         print("Starting navigation...")
-        nav_task = asyncio.create_task(
-            conn.execute(page.navigate(url="https://example.com"))
-        )
-        
-        # Listen for events while navigation is in progress
-        event_count = 0
-        async for event in conn.listen():
-            print(f"Received event: {type(event).__name__}")
-            event_count += 1
-            
-            # Stop after receiving a few events
-            if event_count >= 3:
-                break
-        
-        # Wait for navigation to complete
-        await nav_task
-        print("Navigation complete!")
+        await conn.execute(page.navigate(url="https://example.com"))
+        load_event = await conn.wait_for_event(page.LoadEventFired, timeout=5.0)
+        print(f"Page loaded at timestamp: {load_event.timestamp}")
+
+        # You can still iterate over queued events.
+        event = conn.get_event_nowait()
+        if event:
+            print(f"Next queued event: {type(event).__name__}")
 
 
 async def multiplexing_example():

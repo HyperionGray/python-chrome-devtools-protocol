@@ -8,6 +8,7 @@ and event dispatching.
 
 from __future__ import annotations
 import asyncio
+from collections import deque
 import json
 import logging
 import typing
@@ -25,6 +26,7 @@ from cdp.util import parse_json_event, T_JSON_DICT
 
 
 logger = logging.getLogger(__name__)
+T_Event = typing.TypeVar('T_Event')
 
 
 class CDPError(Exception):
@@ -96,6 +98,7 @@ class CDPConnection:
         self._next_command_id = 1
         self._pending_commands: typing.Dict[int, PendingCommand] = {}
         self._event_queue: asyncio.Queue = asyncio.Queue()
+        self._event_buffer: typing.Deque[typing.Any] = deque()
         self._recv_task: typing.Optional[asyncio.Task] = None
         self._closed = False
     
@@ -131,6 +134,7 @@ class CDPConnection:
             if not pending.future.done():
                 pending.future.cancel()
         self._pending_commands.clear()
+        self._event_buffer.clear()
         
         # Close the WebSocket
         if self._ws:
@@ -311,6 +315,9 @@ class CDPConnection:
         """
         while not self._closed:
             try:
+                if self._event_buffer:
+                    yield self._event_buffer.popleft()
+                    continue
                 event = await asyncio.wait_for(self._event_queue.get(), timeout=1.0)
                 yield event
             except asyncio.TimeoutError:
@@ -318,6 +325,81 @@ class CDPConnection:
                 if self._closed:
                     break
                 continue
+
+    async def wait_for_event(
+        self,
+        event_type: typing.Union[typing.Type[T_Event], typing.Tuple[typing.Type[T_Event], ...]],
+        predicate: typing.Optional[typing.Callable[[T_Event], bool]] = None,
+        timeout: typing.Optional[float] = None
+    ) -> T_Event:
+        """
+        Wait for the next event that matches the given type and optional predicate.
+
+        Any non-matching events are retained internally and remain available via
+        ``listen()`` or ``get_event_nowait()``.
+
+        Args:
+            event_type: Expected event class (or tuple of classes).
+            predicate: Optional additional filter for matching events.
+            timeout: Optional timeout in seconds.
+
+        Returns:
+            The first matching event.
+
+        Raises:
+            asyncio.TimeoutError: If no matching event is received in time.
+            CDPConnectionError: If the connection is closed while waiting.
+        """
+        if timeout is not None and timeout < 0:
+            raise ValueError('timeout must be >= 0')
+
+        # First inspect buffered events before waiting for new ones.
+        buffered: typing.Deque[typing.Any] = deque()
+        while self._event_buffer:
+            event = self._event_buffer.popleft()
+            if isinstance(event, event_type) and (predicate is None or predicate(event)):
+                self._event_buffer.extendleft(reversed(buffered))
+                return event
+            buffered.append(event)
+        self._event_buffer.extendleft(reversed(buffered))
+
+        loop = asyncio.get_running_loop()
+        deadline = None if timeout is None else (loop.time() + timeout)
+
+        while True:
+            if self._closed:
+                raise CDPConnectionError('Connection closed while waiting for event')
+
+            remaining: typing.Optional[float] = None
+            if deadline is not None:
+                remaining = deadline - loop.time()
+                if remaining <= 0:
+                    break
+
+            try:
+                event = await asyncio.wait_for(self._event_queue.get(), timeout=remaining)
+            except asyncio.TimeoutError as exc:
+                raise asyncio.TimeoutError(
+                    f'No event of type {self._event_type_name(event_type)} before timeout'
+                ) from exc
+
+            if isinstance(event, event_type) and (predicate is None or predicate(event)):
+                return event
+
+            self._event_buffer.append(event)
+
+        raise asyncio.TimeoutError(
+            f'No event of type {self._event_type_name(event_type)} before timeout'
+        )
+
+    @staticmethod
+    def _event_type_name(
+        event_type: typing.Union[typing.Type[typing.Any], typing.Tuple[typing.Type[typing.Any], ...]]
+    ) -> str:
+        """Return a display name for event type annotations."""
+        if isinstance(event_type, tuple):
+            return ', '.join(t.__name__ for t in event_type)
+        return event_type.__name__
     
     def get_event_nowait(self) -> typing.Optional[typing.Any]:
         """
@@ -326,6 +408,8 @@ class CDPConnection:
         Returns:
             A CDP event object, or None if no events are available
         """
+        if self._event_buffer:
+            return self._event_buffer.popleft()
         try:
             return self._event_queue.get_nowait()
         except asyncio.QueueEmpty:
