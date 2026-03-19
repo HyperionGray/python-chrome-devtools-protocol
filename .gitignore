@@ -26,3 +26,4 @@ htmlcov/
 .eggs/
 *.log
 .DS_Store
+*~
