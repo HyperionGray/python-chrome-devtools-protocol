@@ -15,11 +15,14 @@ from dataclasses import dataclass, field
 
 try:
     import websockets
-    from websockets.client import WebSocketClientProtocol
     WEBSOCKETS_AVAILABLE = True
 except ImportError:
     WEBSOCKETS_AVAILABLE = False
-    WebSocketClientProtocol = typing.Any  # type: ignore
+
+if typing.TYPE_CHECKING:
+    from websockets.legacy.client import WebSocketClientProtocol
+else:
+    WebSocketClientProtocol = typing.Any
 
 from cdp.util import parse_json_event, T_JSON_DICT
 
