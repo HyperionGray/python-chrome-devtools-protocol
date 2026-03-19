@@ -288,6 +288,85 @@ async def test_get_event_nowait():
 
 
 @pytest.mark.asyncio
+async def test_wait_for_returns_matching_event_and_preserves_non_matching():
+    """wait_for should return a match and keep skipped events available."""
+    mock_ws = MockWebSocket()
+
+    mock_ws.queue_message({
+        "method": "Page.frameStartedLoading",
+        "params": {"frameId": "frame-1"},
+    })
+    mock_ws.queue_message({
+        "method": "Page.loadEventFired",
+        "params": {"timestamp": 123.0},
+    })
+
+    with patch('cdp.connection.websockets.connect', new_callable=AsyncMock) as mock_connect:
+        mock_connect.return_value = mock_ws
+
+        async with CDPConnection("ws://localhost:9222/test") as conn:
+            matched = await conn.wait_for(page.LoadEventFired, timeout=1.0)
+            assert isinstance(matched, page.LoadEventFired)
+            assert matched.timestamp == 123.0
+
+            skipped = conn.get_event_nowait()
+            assert isinstance(skipped, page.FrameStartedLoading)
+            assert skipped.frame_id == page.FrameId("frame-1")
+
+
+@pytest.mark.asyncio
+async def test_wait_for_supports_predicate_filtering():
+    """wait_for should support filtering matching event instances."""
+    mock_ws = MockWebSocket()
+
+    mock_ws.queue_message({
+        "method": "Page.loadEventFired",
+        "params": {"timestamp": 1.0},
+    })
+    mock_ws.queue_message({
+        "method": "Page.loadEventFired",
+        "params": {"timestamp": 2.0},
+    })
+
+    with patch('cdp.connection.websockets.connect', new_callable=AsyncMock) as mock_connect:
+        mock_connect.return_value = mock_ws
+
+        async with CDPConnection("ws://localhost:9222/test") as conn:
+            matched = await conn.wait_for(
+                page.LoadEventFired,
+                timeout=1.0,
+                predicate=lambda event: event.timestamp > 1.5,
+            )
+            assert matched.timestamp == 2.0
+
+            skipped = conn.get_event_nowait()
+            assert isinstance(skipped, page.LoadEventFired)
+            assert skipped.timestamp == 1.0
+
+
+@pytest.mark.asyncio
+async def test_wait_for_timeout_restores_skipped_events():
+    """wait_for timeout should not drop events that did not match."""
+    mock_ws = MockWebSocket()
+
+    mock_ws.queue_message({
+        "method": "Page.frameStartedLoading",
+        "params": {"frameId": "frame-timeout"},
+    })
+
+    with patch('cdp.connection.websockets.connect', new_callable=AsyncMock) as mock_connect:
+        mock_connect.return_value = mock_ws
+
+        async with CDPConnection("ws://localhost:9222/test") as conn:
+            with pytest.raises(asyncio.TimeoutError):
+                await conn.wait_for(page.LoadEventFired, timeout=0.1)
+
+            skipped = conn.get_event_nowait()
+            assert isinstance(skipped, page.FrameStartedLoading)
+            assert skipped.frame_id == page.FrameId("frame-timeout")
+
+
+@pytest.mark.asyncio
 async def test_pending_command_count():
     """Test tracking pending command count."""
     mock_ws = MockWebSocket()

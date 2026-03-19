@@ -21,7 +21,7 @@ async def main():
     # Connect using async context manager
     async with CDPConnection("ws://localhost:9222/devtools/page/YOUR_PAGE_ID") as conn:
         # Execute a command
-        frame_id, loader_id, error = await conn.execute(
+        frame_id, *_ = await conn.execute(
             page.navigate(url="https://example.com")
         )
         
@@ -112,6 +112,17 @@ async with CDPConnection(url) as conn:
             print(f"Navigated to {event.frame.url}")
 ```
 
+Wait for one specific event with optional filtering:
+
+```python
+async with CDPConnection(url) as conn:
+    await conn.execute(page.enable())
+    await conn.execute(page.navigate(url="https://example.com"))
+
+    load_event = await conn.wait_for(page.LoadEventFired, timeout=5.0)
+    print(load_event.timestamp)
+```
+
 You can also get events without blocking:
 
 ```python
@@ -161,6 +172,7 @@ class CDPConnection:
     async def close(self) -> None
     async def execute(self, cmd, timeout: Optional[float] = None) -> Any
     async def listen(self) -> AsyncIterator[Any]
+    async def wait_for(self, event_type, timeout: Optional[float] = None, predicate=None) -> Any
     def get_event_nowait(self) -> Optional[Any]
     
     @property

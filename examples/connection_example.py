@@ -27,13 +27,14 @@ async def basic_example():
         await conn.execute(page.enable())
         
         # Navigate to a URL
-        frame_id, loader_id, error = await conn.execute(
+        frame_id, *_ = await conn.execute(
             page.navigate(url="https://example.com")
         )
         print(f"Navigated to example.com, frame_id: {frame_id}")
         
-        # Wait a bit for the page to load
-        await asyncio.sleep(2)
+        # Wait for the next page load event
+        load_event = await conn.wait_for(page.LoadEventFired, timeout=5.0)
+        print(f"Load event timestamp: {load_event.timestamp}")
         
         # Evaluate some JavaScript
         result, exception = await conn.execute(
@@ -61,15 +62,9 @@ async def event_handling_example():
             conn.execute(page.navigate(url="https://example.com"))
         )
         
-        # Listen for events while navigation is in progress
-        event_count = 0
-        async for event in conn.listen():
-            print(f"Received event: {type(event).__name__}")
-            event_count += 1
-            
-            # Stop after receiving a few events
-            if event_count >= 3:
-                break
+        # Wait for a specific event while navigation is in progress
+        load_event = await conn.wait_for(page.LoadEventFired, timeout=10.0)
+        print(f"Received {type(load_event).__name__} at {load_event.timestamp}")
         
         # Wait for navigation to complete
         await nav_task

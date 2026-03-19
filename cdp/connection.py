@@ -8,6 +8,7 @@ and event dispatching.
 
 from __future__ import annotations
 import asyncio
+from collections import deque
 import json
 import logging
 import typing
@@ -25,6 +26,7 @@ from cdp.util import parse_json_event, T_JSON_DICT
 
 
 logger = logging.getLogger(__name__)
+EventT = typing.TypeVar('EventT')
 
 
 class CDPError(Exception):
@@ -96,6 +98,7 @@ class CDPConnection:
         self._next_command_id = 1
         self._pending_commands: typing.Dict[int, PendingCommand] = {}
         self._event_queue: asyncio.Queue = asyncio.Queue()
+        self._event_buffer: typing.Deque[typing.Any] = deque()
         self._recv_task: typing.Optional[asyncio.Task] = None
         self._closed = False
     
@@ -216,6 +219,26 @@ class CDPConnection:
             await self._event_queue.put(event)
         except Exception as e:
             logger.error(f"Failed to parse event: {e}")
+
+    def _restore_deferred_events(self, events: typing.List[typing.Any]) -> None:
+        """Put deferred events back at the front of the buffer."""
+        for event in reversed(events):
+            self._event_buffer.appendleft(event)
+
+    async def _next_event(self, timeout: typing.Optional[float] = None) -> typing.Any:
+        """
+        Read the next event from the local buffer or queue.
+
+        Buffered events are always consumed first to preserve ordering for events
+        temporarily skipped by ``wait_for``.
+        """
+        if self._event_buffer:
+            return self._event_buffer.popleft()
+
+        if timeout is None:
+            return await self._event_queue.get()
+
+        return await asyncio.wait_for(self._event_queue.get(), timeout=timeout)
     
     async def execute(
         self,
@@ -311,13 +334,67 @@ class CDPConnection:
         """
         while not self._closed:
             try:
-                event = await asyncio.wait_for(self._event_queue.get(), timeout=1.0)
+                event = await self._next_event(timeout=1.0)
                 yield event
             except asyncio.TimeoutError:
                 # Check if connection is still alive
                 if self._closed:
                     break
                 continue
+
+    async def wait_for(
+        self,
+        event_type: typing.Type[EventT],
+        timeout: typing.Optional[float] = None,
+        predicate: typing.Optional[typing.Callable[[EventT], bool]] = None,
+    ) -> EventT:
+        """
+        Wait for the next event matching a type (and optional predicate).
+
+        Non-matching events are not discarded; they are restored and remain
+        available to ``listen()`` and ``get_event_nowait()``.
+
+        Args:
+            event_type: Event class to match (e.g. ``page.LoadEventFired``).
+            timeout: Maximum seconds to wait for a matching event.
+            predicate: Optional callback for additional filtering.
+
+        Returns:
+            The first matching event instance.
+
+        Raises:
+            asyncio.TimeoutError: If no matching event arrives in time.
+            CDPConnectionError: If the connection is closed while waiting.
+        """
+        deferred: typing.List[typing.Any] = []
+        deadline: typing.Optional[float] = None
+        if timeout is not None:
+            deadline = asyncio.get_running_loop().time() + timeout
+
+        try:
+            while True:
+                if (
+                    self._closed
+                    and not self._event_buffer
+                    and self._event_queue.empty()
+                ):
+                    raise CDPConnectionError("Connection closed while waiting for event")
+
+                remaining: typing.Optional[float] = None
+                if deadline is not None:
+                    remaining = deadline - asyncio.get_running_loop().time()
+                    if remaining <= 0:
+                        raise asyncio.TimeoutError()
+
+                event = await self._next_event(timeout=remaining)
+                if isinstance(event, event_type) and (
+                    predicate is None or predicate(event)
+                ):
+                    return event
+
+                deferred.append(event)
+        finally:
+            self._restore_deferred_events(deferred)
     
     def get_event_nowait(self) -> typing.Optional[typing.Any]:
         """
@@ -327,6 +404,8 @@ class CDPConnection:
             A CDP event object, or None if no events are available
         """
         try:
+            if self._event_buffer:
+                return self._event_buffer.popleft()
             return self._event_queue.get_nowait()
         except asyncio.QueueEmpty:
             return None

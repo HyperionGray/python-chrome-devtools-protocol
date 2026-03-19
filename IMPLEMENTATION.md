@@ -28,6 +28,7 @@ This implementation addresses the issue requesting I/O support and command multi
 ### 4. Event Handling
 - Events dispatched to an asyncio.Queue
 - Async iterator interface for consumption
+- `wait_for()` helper for waiting on one event type with optional predicate filtering
 - Non-blocking get method available
 - Automatic event parsing using existing event registry
 
@@ -101,8 +102,9 @@ class CDPConnection:
 2. **Command execution** - Success, error, timeout
 3. **Multiplexing** - Multiple concurrent commands
 4. **Event handling** - Async iterator, non-blocking get
-5. **Error handling** - Connection errors, command errors
-6. **Resource cleanup** - Pending commands cancelled on close
+5. **Event waiting helper** - Type matching, predicate filtering, timeout behavior
+6. **Error handling** - Connection errors, command errors
+7. **Resource cleanup** - Pending commands cancelled on close
 
 ### Mock Strategy
 

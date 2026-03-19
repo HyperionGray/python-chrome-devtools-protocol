@@ -57,7 +57,7 @@ async def main():
     # Connect to a Chrome DevTools Protocol endpoint
     async with CDPConnection("ws://localhost:9222/devtools/page/YOUR_PAGE_ID") as conn:
         # Navigate to a URL
-        frame_id, loader_id, error = await conn.execute(
+        frame_id, *_ = await conn.execute(
             page.navigate(url="https://example.com")
         )
         print(f"Navigated to example.com, frame_id: {frame_id}")
@@ -71,9 +71,23 @@ asyncio.run(main())
 - **JSON-RPC Framing**: Automatic message ID assignment and request/response matching
 - **Command Multiplexing**: Execute multiple commands concurrently with proper tracking
 - **Event Handling**: Async iterator for receiving browser events
+- **Event Waiting Helpers**: Wait for specific events with optional filtering
 - **Error Handling**: Comprehensive error handling with typed exceptions
 
 See the [examples directory](examples/) for more usage patterns.
+
+### Waiting for a specific event
+
+```python
+from cdp import page
+
+async with CDPConnection("ws://localhost:9222/devtools/page/YOUR_PAGE_ID") as conn:
+    await conn.execute(page.enable())
+    await conn.execute(page.navigate(url="https://example.com"))
+
+    load_event = await conn.wait_for(page.LoadEventFired, timeout=5.0)
+    print(load_event.timestamp)
+```
 
 ## Sans-I/O Mode (Original)
 
@@ -99,25 +113,6 @@ For detailed API documentation, see:
 - `cdp.connection` - WebSocket I/O and connection management (I/O mode)
 - `cdp.<domain>` - Type wrappers for each CDP domain (e.g., `cdp.page`, `cdp.network`, `cdp.runtime`)
 - Each domain module provides types, commands, and events for that CDP domain
-
-## Contributing
-
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details on:
-
-- Setting up your development environment
-- Running tests and type checking
-- Submitting pull requests
-- Reporting issues
-
-Please also read our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing.
-
-## Security
-
-For information about reporting security vulnerabilities, please see our [Security Policy](SECURITY.md).
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## API Reference
 
@@ -145,12 +140,16 @@ All CDP types, commands, and events are fully typed with Python type hints, prov
 ## Contributing
 
 We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details on:
-- How to report bugs and request features
-- Development setup and workflow
-- Coding standards and testing requirements
-- Pull request process
+- Setting up your development environment
+- Running tests and type checking
+- Submitting pull requests
+- Reporting issues
 
-For questions or discussions, feel free to open an issue on GitHub.
+Please also read our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing.
+
+## Security
+
+For information about reporting security vulnerabilities, please see our [Security Policy](SECURITY.md).
 
 ## License
 
