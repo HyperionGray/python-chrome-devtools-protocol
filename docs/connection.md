@@ -112,6 +112,28 @@ async with CDPConnection(url) as conn:
             print(f"Navigated to {event.frame.url}")
 ```
 
+Wait for a single event directly:
+
+```python
+async with CDPConnection(url) as conn:
+    await conn.execute(page.enable())
+    await conn.execute(page.navigate(url="https://example.com"))
+
+    # Wait for the next load event
+    load_event = await conn.wait_for_event(page.LoadEventFired, timeout=5.0)
+    print(f"Loaded at {load_event.timestamp}")
+```
+
+You can also apply additional filtering logic:
+
+```python
+load_event = await conn.wait_for_event(
+    page.LoadEventFired,
+    timeout=5.0,
+    predicate=lambda evt: evt.timestamp > 0,
+)
+```
+
 You can also get events without blocking:
 
 ```python
@@ -161,6 +183,7 @@ class CDPConnection:
     async def close(self) -> None
     async def execute(self, cmd, timeout: Optional[float] = None) -> Any
     async def listen(self) -> AsyncIterator[Any]
+    async def wait_for_event(self, event_type, timeout: Optional[float] = None, predicate=None) -> Any
     def get_event_nowait(self) -> Optional[Any]
     
     @property

@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CODE_OF_CONDUCT.md following Contributor Covenant
 - SECURITY.md with security policy
 - This CHANGELOG.md file
+- `CDPConnection.wait_for_event(...)` helper for awaiting typed events with optional predicates
+
+### Changed
+- Expanded I/O mode documentation with event-waiting examples
+- Removed duplicate sections in README to keep docs concise
 
 ## [0.5.0] - 2023
 

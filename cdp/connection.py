@@ -318,6 +318,77 @@ class CDPConnection:
                 if self._closed:
                     break
                 continue
+
+    @staticmethod
+    def _format_event_type(
+        event_type: typing.Union[type, typing.Tuple[type, ...]]
+    ) -> str:
+        """Format event type(s) for error messages."""
+        if isinstance(event_type, tuple):
+            return ', '.join(evt.__name__ for evt in event_type)
+        return event_type.__name__
+
+    async def wait_for_event(
+        self,
+        event_type: typing.Union[type, typing.Tuple[type, ...]],
+        timeout: typing.Optional[float] = None,
+        predicate: typing.Optional[typing.Callable[[typing.Any], bool]] = None,
+    ) -> typing.Any:
+        """
+        Wait for the first event matching a type and optional predicate.
+
+        Note:
+            This consumes events from the shared event queue. Events that do not
+            match are discarded.
+
+        Args:
+            event_type: Event class (or tuple of event classes) to match.
+            timeout: Optional timeout in seconds.
+            predicate: Optional callable to further filter matching events.
+
+        Returns:
+            The first matching event instance.
+
+        Raises:
+            CDPConnectionError: If the connection is not open.
+            asyncio.TimeoutError: If timeout elapses before a matching event.
+        """
+        if self._ws is None:
+            raise CDPConnectionError("Not connected")
+
+        if self._closed and self._event_queue.empty():
+            raise CDPConnectionError("Connection closed")
+
+        loop = asyncio.get_running_loop()
+        deadline = loop.time() + timeout if timeout is not None else None
+
+        while True:
+            event_type_name = self._format_event_type(event_type)
+
+            try:
+                if deadline is None:
+                    event = await self._event_queue.get()
+                else:
+                    remaining = deadline - loop.time()
+                    if remaining <= 0:
+                        raise asyncio.TimeoutError(
+                            f"Timed out waiting for event {event_type_name}"
+                        )
+                    event = await asyncio.wait_for(self._event_queue.get(), timeout=remaining)
+            except asyncio.TimeoutError:
+                raise asyncio.TimeoutError(
+                    f"Timed out waiting for event {event_type_name}"
+                )
+
+            if isinstance(event, event_type) and (
+                predicate is None or predicate(event)
+            ):
+                return event
+
+            if self._closed and self._event_queue.empty():
+                raise CDPConnectionError(
+                    "Connection closed before matching event was received"
+                )
     
     def get_event_nowait(self) -> typing.Optional[typing.Any]:
         """

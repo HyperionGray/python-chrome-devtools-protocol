@@ -71,9 +71,22 @@ asyncio.run(main())
 - **JSON-RPC Framing**: Automatic message ID assignment and request/response matching
 - **Command Multiplexing**: Execute multiple commands concurrently with proper tracking
 - **Event Handling**: Async iterator for receiving browser events
+- **Event Waiting Helper**: `wait_for_event(...)` to await specific events with optional filtering
 - **Error Handling**: Comprehensive error handling with typed exceptions
 
 See the [examples directory](examples/) for more usage patterns.
+
+### Waiting for a Specific Event
+
+```python
+from cdp import page
+
+async with CDPConnection(url) as conn:
+    await conn.execute(page.enable())
+    await conn.execute(page.navigate(url="https://example.com"))
+    load_event = await conn.wait_for_event(page.LoadEventFired, timeout=5.0)
+    print(load_event.timestamp)
+```
 
 ## Sans-I/O Mode (Original)
 
@@ -141,19 +154,5 @@ All CDP types, commands, and events are fully typed with Python type hints, prov
 - Static type checking with mypy
 - Clear API contracts
 - Inline documentation
-
-## Contributing
-
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details on:
-- How to report bugs and request features
-- Development setup and workflow
-- Coding standards and testing requirements
-- Pull request process
-
-For questions or discussions, feel free to open an issue on GitHub.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 <a href="https://www.hyperiongray.com/?pk_campaign=github&pk_kwd=pycdp"><img alt="define hyperion gray" width="500px" src="https://hyperiongray.s3.amazonaws.com/define-hg.svg"></a>

@@ -288,6 +288,88 @@ async def test_get_event_nowait():
 
 
 @pytest.mark.asyncio
+async def test_wait_for_event():
+    """Test waiting for a specific event type."""
+    mock_ws = MockWebSocket()
+    mock_ws.queue_message({
+        "method": "Page.loadEventFired",
+        "params": {
+            "timestamp": 123456.789
+        }
+    })
+
+    with patch('cdp.connection.websockets.connect', new_callable=AsyncMock) as mock_connect:
+        mock_connect.return_value = mock_ws
+
+        async with CDPConnection("ws://localhost:9222/test") as conn:
+            received_event = await conn.wait_for_event(page.LoadEventFired, timeout=1.0)
+            assert isinstance(received_event, page.LoadEventFired)
+            assert received_event.timestamp == 123456.789
+
+
+@pytest.mark.asyncio
+async def test_wait_for_event_predicate():
+    """Test waiting for an event matching a predicate."""
+    mock_ws = MockWebSocket()
+    mock_ws.queue_message({
+        "method": "Page.loadEventFired",
+        "params": {
+            "timestamp": 1.0
+        }
+    })
+    mock_ws.queue_message({
+        "method": "Page.loadEventFired",
+        "params": {
+            "timestamp": 2.0
+        }
+    })
+
+    with patch('cdp.connection.websockets.connect', new_callable=AsyncMock) as mock_connect:
+        mock_connect.return_value = mock_ws
+
+        async with CDPConnection("ws://localhost:9222/test") as conn:
+            received_event = await conn.wait_for_event(
+                page.LoadEventFired,
+                timeout=1.0,
+                predicate=lambda evt: evt.timestamp > 1.5,
+            )
+            assert isinstance(received_event, page.LoadEventFired)
+            assert received_event.timestamp == 2.0
+
+
+@pytest.mark.asyncio
+async def test_wait_for_event_timeout():
+    """Test waiting for an event times out when none match."""
+    mock_ws = MockWebSocket()
+    # Queue an event that fails the predicate.
+    mock_ws.queue_message({
+        "method": "Page.loadEventFired",
+        "params": {
+            "timestamp": 1.0
+        }
+    })
+
+    with patch('cdp.connection.websockets.connect', new_callable=AsyncMock) as mock_connect:
+        mock_connect.return_value = mock_ws
+
+        async with CDPConnection("ws://localhost:9222/test") as conn:
+            with pytest.raises(asyncio.TimeoutError):
+                await conn.wait_for_event(
+                    page.LoadEventFired,
+                    timeout=0.1,
+                    predicate=lambda evt: evt.timestamp > 2.0,
+                )
+
+
+@pytest.mark.asyncio
+async def test_wait_for_event_not_connected():
+    """Test waiting for an event without a connection."""
+    conn = CDPConnection("ws://localhost:9222/test")
+    with pytest.raises(CDPConnectionError, match="Not connected"):
+        await conn.wait_for_event(page.LoadEventFired)
+
+
+@pytest.mark.asyncio
 async def test_pending_command_count():
     """Test tracking pending command count."""
     mock_ws = MockWebSocket()
