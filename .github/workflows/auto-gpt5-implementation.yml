@@ -75,11 +75,13 @@ jobs:
         uses: github/codeql-action/autobuild@v3
         continue-on-error: true
 
-      - name: Copilot LLM Code Review (optional)
-        if: ${{ secrets.COPILOT_TOKEN != '' }}
-        uses: austenstone/copilot-cli-action@v2
+      - name: Copilot LLM Code Review
+        uses: austenstone/copilot-cli@v3
         with:
-          copilot-token: ${{ secrets.COPILOT_TOKEN }}
+          copilot-token: ${{ secrets.COPILOT_TOKEN || github.token }}
+          repo-token: ${{ github.token }}
+          model: gpt-5.3-codex
+          reasoning-effort: xhigh
           prompt: |
             Perform a comprehensive code analysis of this repository:
 
@@ -92,11 +94,13 @@ jobs:
             Provide actionable recommendations with file names and line numbers where applicable.
         continue-on-error: true
 
-      - name: Copilot LLM Test Coverage Review (optional)
-        if: ${{ secrets.COPILOT_TOKEN != '' }}
-        uses: austenstone/copilot-cli-action@v2
+      - name: Copilot LLM Test Coverage Review
+        uses: austenstone/copilot-cli@v3
         with:
-          copilot-token: ${{ secrets.COPILOT_TOKEN }}
+          copilot-token: ${{ secrets.COPILOT_TOKEN || github.token }}
+          repo-token: ${{ github.token }}
+          model: gpt-5.4
+          reasoning-effort: xhigh
           prompt: |
             Analyze the repository's testing strategy:
 
@@ -347,7 +351,7 @@ jobs:
                   repo: context.repo.repo,
                   title: title,
                   body: body,
-                  labels: ['code-analysis', 'automated', 'security', 'performance']
+                  labels: ['gpt5', 'code-analysis', 'automated', 'security', 'performance']
                 });
               }
             }
