@@ -74,9 +74,9 @@ jobs:
               assignees: ['copilot']
             });
 
-	    await github.rest.issues.createComment({
-	    	  owner: context.repo.owner,
-	    	  repo: context.repo.repo,
-	    	  issue_number: issue.data.number,
-	    	  body: '@copilot : please open a pr for this sir!)'
-	    });	    
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.data.number,
+              body: '@copilot please open a PR for this.'
+            });
