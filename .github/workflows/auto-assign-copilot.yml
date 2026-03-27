@@ -31,7 +31,7 @@ jobs:
             });
 
             // 2) Optional: add a model-selection label (only if you want this behavior)
-            const modelLabel = 'copilot-gpt-5.3';
+            const modelLabel = 'copilot-gpt-5.4';
 
             // Try to create the label (ignore if it already exists)
             try {
@@ -40,7 +40,7 @@ jobs:
                 repo,
                 name: modelLabel,
                 color: '5319E7',
-                description: 'Prefer GPT-5.3 for Copilot (if supported)'
+                description: 'Prefer GPT-5.4 for Copilot (if supported)'
               });
             } catch (e) {
               // 422 = already exists (or validation). We can safely ignore.
