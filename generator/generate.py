@@ -1031,7 +1031,7 @@ def main():
 
     # Remove generated code
     for subpath in output_path.iterdir():
-        if subpath.is_file() and subpath.name not in ('py.typed', 'util.py', 'connection.py', '__init__.py'):
+        if subpath.is_file() and subpath.name not in ('py.typed', 'util.py', 'connection.py', '__init__.py') and not subpath.name.startswith('.'):
             subpath.unlink()
 
     # Parse domains

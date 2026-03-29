@@ -52,6 +52,7 @@ import cdp.runtime
 import cdp.schema
 import cdp.security
 import cdp.service_worker
+import cdp.smart_card_emulation
 import cdp.storage
 import cdp.system_info
 import cdp.target
@@ -59,3 +60,4 @@ import cdp.tethering
 import cdp.tracing
 import cdp.web_audio
 import cdp.web_authn
+import cdp.web_mcp

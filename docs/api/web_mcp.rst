@@ -1,11 +1,9 @@
-Extensions
-==========
-
-Defines commands and events for browser extensions.
+WebMCP
+======
 
 *This CDP domain is experimental.*
 
-.. module:: cdp.extensions
+.. module:: cdp.web_mcp
 
 * Types_
 * Commands_
@@ -19,12 +17,12 @@ yourself. Instead, the API creates objects for you as return
 values from commands, and then you can use those objects as
 arguments to other commands.
 
-.. autoclass:: StorageArea
+.. autoclass:: Annotation
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
 
-.. autoclass:: ExtensionInfo
+.. autoclass:: Tool
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
@@ -41,23 +39,21 @@ commands, and ``z`` is the return type you should pay attention
 to. For more information, see
 :ref:`Getting Started: Commands <getting-started-commands>`.
 
-.. autofunction:: clear_storage_items
-
-.. autofunction:: get_extensions
-
-.. autofunction:: get_storage_items
-
-.. autofunction:: load_unpacked
-
-.. autofunction:: remove_storage_items
-
-.. autofunction:: set_storage_items
-
-.. autofunction:: trigger_action
-
-.. autofunction:: uninstall
+.. autofunction:: enable
 
 Events
 ------
 
-*There are no events in this module.*
+Generally, you do not need to instantiate CDP events
+yourself. Instead, the API creates events for you and then
+you use the event's attributes.
+
+.. autoclass:: ToolsAdded
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: ToolsRemoved
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
