@@ -3,59 +3,82 @@
 # This file is generated from the CDP specification. If you need to make
 # changes, edit the generator and regenerate all of the modules.
 
-import cdp.util
-import cdp.connection
 
-import cdp.accessibility
-import cdp.animation
-import cdp.audits
-import cdp.autofill
-import cdp.background_service
-import cdp.bluetooth_emulation
-import cdp.browser
-import cdp.css
-import cdp.cache_storage
-import cdp.cast
-import cdp.console
-import cdp.dom
-import cdp.dom_debugger
-import cdp.dom_snapshot
-import cdp.dom_storage
-import cdp.debugger
-import cdp.device_access
-import cdp.device_orientation
-import cdp.emulation
-import cdp.event_breakpoints
-import cdp.extensions
-import cdp.fed_cm
-import cdp.fetch
-import cdp.file_system
-import cdp.headless_experimental
-import cdp.heap_profiler
-import cdp.io
-import cdp.indexed_db
-import cdp.input_
-import cdp.inspector
-import cdp.layer_tree
-import cdp.log
-import cdp.media
-import cdp.memory
-import cdp.network
-import cdp.overlay
-import cdp.pwa
-import cdp.page
-import cdp.performance
-import cdp.performance_timeline
-import cdp.preload
-import cdp.profiler
-import cdp.runtime
-import cdp.schema
-import cdp.security
-import cdp.service_worker
-import cdp.storage
-import cdp.system_info
-import cdp.target
-import cdp.tethering
-import cdp.tracing
-import cdp.web_audio
-import cdp.web_authn
+
+# Generated packages with many cross-domain imports are exposed
+# lazily so package-level imports do not depend on module order.
+
+from __future__ import annotations
+
+import importlib
+from typing import Any
+
+
+_SUBMODULES = (
+    'util',
+    'connection',
+    'accessibility',
+    'animation',
+    'audits',
+    'autofill',
+    'background_service',
+    'bluetooth_emulation',
+    'browser',
+    'css',
+    'cache_storage',
+    'cast',
+    'console',
+    'dom',
+    'dom_debugger',
+    'dom_snapshot',
+    'dom_storage',
+    'debugger',
+    'device_access',
+    'device_orientation',
+    'emulation',
+    'event_breakpoints',
+    'extensions',
+    'fed_cm',
+    'fetch',
+    'file_system',
+    'headless_experimental',
+    'heap_profiler',
+    'io',
+    'indexed_db',
+    'input_',
+    'inspector',
+    'layer_tree',
+    'log',
+    'media',
+    'memory',
+    'network',
+    'overlay',
+    'pwa',
+    'page',
+    'performance',
+    'performance_timeline',
+    'preload',
+    'profiler',
+    'runtime',
+    'schema',
+    'security',
+    'service_worker',
+    'storage',
+    'system_info',
+    'target',
+    'tethering',
+    'tracing',
+    'web_audio',
+    'web_authn',
+)
+
+__all__ = list(_SUBMODULES)
+
+
+def __getattr__(name: str) -> Any:
+    if name not in _SUBMODULES:
+        raise AttributeError(f"module 'cdp' has no attribute {name!r}")
+
+    module = importlib.import_module(f"{__name__}.{name}")
+    globals()[name] = module
+    return module
