@@ -37,13 +37,13 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install requests
+          python3 -m pip install requests
 
       - name: Trigger workflow on all repositories
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         run: |
-          python trigger_workflow_all_repos.py \
+          python3 trigger_workflow_all_repos.py \
             P4X-ng \
             "${{ inputs.workflow_file }}" \
             --ref "${{ inputs.ref }}" \
