@@ -15,10 +15,10 @@ permissions:
 
 jobs:
   issue_label_fix:
-    runs-on: ubuntu-24.04
+    runs-on: [self-hosted, linux, x64, big]
     if: github.event_name == 'issues' && github.event.label.name == 'warp'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.3.1
         with:
           fetch-depth: 0
 
@@ -47,7 +47,7 @@ jobs:
             5. Summarize exactly what you changed and how you verified it.
 
   issue_comment_follow_up:
-    runs-on: ubuntu-24.04
+    runs-on: [self-hosted, linux, x64, big]
     if: github.event_name == 'issue_comment' && !github.event.issue.pull_request
     steps:
       - name: Validate trigger comment
@@ -73,7 +73,7 @@ jobs:
           echo "trusted=$trusted" >> "$GITHUB_OUTPUT"
           echo "matched=$matched" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.3.1
         if: steps.trigger.outputs.trusted == 'true' && steps.trigger.outputs.matched == 'true'
         with:
           fetch-depth: 0
@@ -106,7 +106,7 @@ jobs:
             3. Reply with a short summary of what you changed or why you did not change code.
 
   pr_comment_follow_up:
-    runs-on: ubuntu-24.04
+    runs-on: [self-hosted, linux, x64, big]
     if: github.event_name == 'issue_comment' && github.event.issue.pull_request
     steps:
       - name: Validate trigger comment
@@ -132,7 +132,7 @@ jobs:
           echo "trusted=$trusted" >> "$GITHUB_OUTPUT"
           echo "matched=$matched" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.3.1
         if: steps.trigger.outputs.trusted == 'true' && steps.trigger.outputs.matched == 'true'
         with:
           fetch-depth: 0
@@ -162,7 +162,7 @@ jobs:
             3. Use `gh pr comment` or `gh pr review --comment` to explain the change or answer.
 
   pr_review_comment_follow_up:
-    runs-on: ubuntu-24.04
+    runs-on: [self-hosted, linux, x64, big]
     if: github.event_name == 'pull_request_review_comment'
     steps:
       - name: Validate trigger comment
@@ -188,7 +188,7 @@ jobs:
           echo "trusted=$trusted" >> "$GITHUB_OUTPUT"
           echo "matched=$matched" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.3.1
         if: steps.trigger.outputs.trusted == 'true' && steps.trigger.outputs.matched == 'true'
         with:
           fetch-depth: 0
