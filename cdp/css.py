@@ -1929,7 +1929,7 @@ def resolve_values(
     syntax as if null ``propertyName`` was provided. If the value cannot be
     resolved even then, return the provided value without any changes.
     Note: this function currently does not resolve CSS random() function,
-    it returns unmodified random() function parts.`
+    it returns unmodified random() function parts.
 
     **EXPERIMENTAL**
 
