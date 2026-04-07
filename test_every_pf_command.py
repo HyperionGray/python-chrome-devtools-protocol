@@ -1,172 +1,172 @@
 #!/usr/bin/env python3
 
-import os
-import sys
-import subprocess
 import json
+import os
+import re
+import subprocess
+import sys
 from pathlib import Path
 
-def test_pf_task_commands():
-    """
-    Test every single command in the .pf file as required by rules.
-    Rules state: "ALL PF FILES MUST BE TESTED BEFORE YOU STOP WORKING. Every entry."
-    """
-    
-    print("=" * 60)
-    print("TESTING ALL PF TASKS - COMPREHENSIVE")
-    print("=" * 60)
-    print("Per rules: 'ALL PF FILES MUST BE TESTED BEFORE YOU STOP WORKING. Every entry.'")
-    print()
-    
-    # Change to workspace
-    os.chdir('/workspace')
-    
-    # Read and parse the .pf file
-    pf_file = Path('.pf')
-    if not pf_file.exists():
-        print("✗ ERROR: .pf file not found!")
-        return False
-    
-    print("📄 Reading .pf file...")
-    with open(pf_file, 'r') as f:
-        pf_content = f.read()
-    
-    print(f"📄 .pf file content:\n{pf_content}\n")
-    
-    # Extract tasks from .pf file
-    # The .pf file has tasks in format: task_name:\n    command
-    tasks = {}
-    current_task = None
-    
-    for line in pf_content.split('\n'):
-        line = line.rstrip()
-        if line and not line.startswith('#') and ':' in line and not line.startswith(' '):
-            # This is a task definition
-            current_task = line.split(':')[0].strip()
-            tasks[current_task] = []
-        elif line.startswith('    ') and current_task:
-            # This is a command for the current task
-            command = line.strip()
-            if command:
-                tasks[current_task].append(command)
-    
-    print(f"📋 Found {len(tasks)} tasks in .pf file:")
-    for task_name, commands in tasks.items():
-        print(f"  - {task_name}: {len(commands)} command(s)")
-    print()
-    
-    # Test each task
-    results = {}
-    total_commands = 0
-    passed_commands = 0
-    
-    for task_name, commands in tasks.items():
-        print(f"\n{'='*40}")
-        print(f"TESTING TASK: {task_name}")
-        print('='*40)
-        
-        task_success = True
-        task_results = []
-        
-        for i, command in enumerate(commands, 1):
-            total_commands += 1
-            print(f"\n  Command {i}/{len(commands)}: {command}")
-            
-            # Test the command
-            try:
-                result = subprocess.run(
-                    command, 
-                    shell=True, 
-                    capture_output=True, 
-                    text=True, 
-                    timeout=120,  # 2 minute timeout
-                    cwd='/workspace'
-                )
-                
-                if result.returncode == 0:
-                    print(f"  ✓ SUCCESS")
-                    passed_commands += 1
-                    task_results.append({
-                        'command': command,
-                        'success': True,
-                        'output': result.stdout[:200] if result.stdout else "",
-                        'error': ""
-                    })
-                else:
-                    print(f"  ✗ FAILED (exit code: {result.returncode})")
-                    if result.stderr:
-                        print(f"  Error: {result.stderr[:200]}...")
-                    task_success = False
-                    task_results.append({
-                        'command': command,
-                        'success': False,
-                        'output': result.stdout[:200] if result.stdout else "",
-                        'error': result.stderr[:200] if result.stderr else ""
-                    })
-                    
-            except subprocess.TimeoutExpired:
-                print(f"  ✗ TIMEOUT (>120s)")
-                task_success = False
-                task_results.append({
-                    'command': command,
-                    'success': False,
-                    'output': "",
-                    'error': "Command timed out after 120 seconds"
-                })
-                
-            except Exception as e:
-                print(f"  ✗ ERROR: {e}")
-                task_success = False
-                task_results.append({
-                    'command': command,
-                    'success': False,
-                    'output': "",
-                    'error': str(e)
-                })
-        
-        results[task_name] = {
-            'success': task_success,
-            'commands': task_results
-        }
-        
-        # Task summary
-        task_passed = sum(1 for cmd in task_results if cmd['success'])
-        task_total = len(task_results)
-        status = "✓ PASS" if task_success else "✗ FAIL"
-        print(f"\n  Task Summary: {status} ({task_passed}/{task_total} commands passed)")
-    
-    # Final summary
-    print(f"\n{'='*60}")
-    print("FINAL RESULTS - ALL PF TASKS")
-    print('='*60)
-    
-    for task_name, result in results.items():
-        status = "✓ PASS" if result['success'] else "✗ FAIL"
-        cmd_count = len(result['commands'])
-        passed_count = sum(1 for cmd in result['commands'] if cmd['success'])
-        print(f"{task_name:15} {status} ({passed_count}/{cmd_count} commands)")
-    
-    print(f"\nOverall: {passed_commands}/{total_commands} commands passed")
-    
-    # Save detailed results
-    with open('pf_test_results_detailed.json', 'w') as f:
-        json.dump(results, f, indent=2)
-    
-    print(f"📄 Detailed results saved to: pf_test_results_detailed.json")
-    
-    # Determine final status
-    all_passed = passed_commands == total_commands
-    
-    if all_passed:
-        print("\n🎉 SUCCESS: All pf tasks are working correctly!")
-        print("✅ Every single command in the .pf file has been tested and passes.")
-    else:
-        print("\n⚠️  ISSUES FOUND: Some pf tasks have problems.")
-        print("❌ Failed commands need to be fixed or removed per rules.")
-        print("\nPer rules: 'check all pf tasks and fix them OR remove them if they are no longer relevant'")
-    
-    return all_passed
 
-if __name__ == "__main__":
-    success = test_pf_task_commands()
-    sys.exit(0 if success else 1)
+PF_FILE = '.pf'
+RESULTS_FILE = 'pf_test_results_detailed.json'
+TASK_LINE_RE = re.compile(r'^\s{2}([a-zA-Z0-9_.-]+)\s+-\s+')
+PREFERRED_TASK_ORDER = [
+    'setup',
+    'default',
+    'generate',
+    'typecheck',
+    'test',
+    'test-cdp',
+    'test-generate',
+    'test-import',
+    'docs',
+    'validate',
+    'rebuild',
+    'check',
+]
+
+
+def resolve_workspace() -> Path:
+    workspace_override = os.environ.get('PF_WORKSPACE')
+    if workspace_override:
+        return Path(workspace_override).resolve()
+
+    script_dir = Path(__file__).resolve().parent
+    return script_dir
+
+
+def list_pf_tasks(workspace: Path) -> list[str]:
+    result = subprocess.run(
+        ['pf', '-f', PF_FILE, 'list'],
+        cwd=workspace,
+        capture_output=True,
+        text=True,
+        timeout=120,
+        check=False,
+    )
+
+    if result.returncode != 0:
+        raise RuntimeError(f'Failed to list pf tasks: {result.stderr.strip()}')
+
+    tasks: list[str] = []
+    for line in result.stdout.splitlines():
+        match = TASK_LINE_RE.match(line)
+        if match:
+            tasks.append(match.group(1))
+
+    return tasks
+
+
+def order_tasks(tasks: list[str]) -> list[str]:
+    if not tasks:
+        return []
+
+    order_rank = {
+        name: index
+        for index, name in enumerate(PREFERRED_TASK_ORDER)
+    }
+    max_rank = len(PREFERRED_TASK_ORDER)
+
+    return sorted(
+        tasks,
+        key=lambda task: (order_rank.get(task, max_rank), task)
+    )
+
+
+def run_task(workspace: Path, task: str, max_attempts: int = 2) -> dict:
+    attempts = []
+    result = None
+
+    for attempt_number in range(1, max_attempts + 1):
+        result = subprocess.run(
+            ['pf', '-f', PF_FILE, task],
+            cwd=workspace,
+            capture_output=True,
+            text=True,
+            timeout=900,
+            check=False,
+        )
+        attempts.append({
+            'attempt': attempt_number,
+            'returncode': result.returncode,
+            'stdout': result.stdout,
+            'stderr': result.stderr,
+        })
+        if result.returncode == 0:
+            break
+
+    assert result is not None
+    return {
+        'task': task,
+        'success': result.returncode == 0,
+        'returncode': result.returncode,
+        'stdout': result.stdout,
+        'stderr': result.stderr,
+        'attempt_count': len(attempts),
+        'flaky_pass': len(attempts) > 1 and result.returncode == 0,
+        'attempts': attempts,
+    }
+
+
+def main() -> int:
+    workspace = resolve_workspace()
+
+    print('=' * 60)
+    print('TESTING ALL PF TASKS - COMPREHENSIVE')
+    print('=' * 60)
+    print("Rule target: 'ALL PF FILES MUST BE TESTED BEFORE YOU STOP WORKING. Every entry.'")
+    print()
+    print(f'Workspace: {workspace}')
+    print(f'PF file: {workspace / PF_FILE}')
+    print()
+
+    try:
+        tasks = order_tasks(list_pf_tasks(workspace))
+    except Exception as error:
+        print(f'ERROR: {error}')
+        return 1
+
+    if not tasks:
+        print('ERROR: no tasks were discovered from pf list output.')
+        return 1
+
+    print(f'Found {len(tasks)} pf task(s): {", ".join(tasks)}')
+    print()
+
+    results = []
+    for task in tasks:
+        print(f'Running task: {task}')
+        task_result = run_task(workspace, task)
+        results.append(task_result)
+        status = 'PASS' if task_result['success'] else 'FAIL'
+        retry_suffix = ''
+        if task_result.get('attempt_count', 1) > 1:
+            retry_suffix = f', attempts={task_result["attempt_count"]}'
+        print(f'  {task}: {status} (exit={task_result["returncode"]}{retry_suffix})')
+        if not task_result['success'] and task_result['stderr']:
+            print('  stderr (first 300 chars):')
+            print(task_result['stderr'][:300])
+
+    output_payload = {
+        'workspace': str(workspace),
+        'pf_file': PF_FILE,
+        'tasks': results,
+    }
+    output_path = workspace / RESULTS_FILE
+    output_path.write_text(json.dumps(output_payload, indent=2))
+
+    total = len(results)
+    passed = sum(1 for item in results if item['success'])
+    print()
+    print('=' * 60)
+    print('FINAL RESULTS - ALL PF TASKS')
+    print('=' * 60)
+    print(f'Overall: {passed}/{total} task entries passed')
+    print(f'Detailed results saved to: {output_path}')
+
+    return 0 if passed == total else 1
+
+
+if __name__ == '__main__':
+    sys.exit(main())

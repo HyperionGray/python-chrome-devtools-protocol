@@ -12,7 +12,7 @@ codegen tests is almost always easier with the values displayed on stdout.
 
 from textwrap import dedent
 
-from generate import CdpCommand, CdpDomain, CdpEvent, CdpType, docstring
+from generate import CdpCommand, CdpDomain, CdpEvent, CdpType, docstring, generate_init
 
 
 def test_docstring():
@@ -55,6 +55,26 @@ def test_escape_zero_char():
         '''""")
     actual = docstring(description)
     assert expected == actual
+
+
+def test_generate_init_uses_lazy_submodule_loader(tmp_path):
+    class StubDomain:
+        def __init__(self, module):
+            self.module = module
+
+    init_path = tmp_path / '__init__.py'
+    domains = [StubDomain('accessibility'), StubDomain('browser')]
+
+    generate_init(init_path, domains)
+    actual = init_path.read_text()
+
+    assert "import importlib" in actual
+    assert "def __getattr__(name: str) -> Any:" in actual
+    assert "'util'" in actual
+    assert "'connection'" in actual
+    assert "'accessibility'" in actual
+    assert "'browser'" in actual
+    assert 'import cdp.accessibility' not in actual
 
 
 def test_cdp_primitive_type():

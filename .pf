@@ -1,47 +1,71 @@
-# Python CDP Library Tasks
-# Simple wrappers around existing Makefile targets
-# Following pf simplicity rules - just calls to existing scripts
+shell_lang bash
 
-# Default task - runs the complete build pipeline
-default:
-    poetry run make default
+task "setup"
+describe Install local Python dependencies for pycdp in current conda env
+  shell "$CONDA_PREFIX/bin/python" -m pip install -e . --no-build-isolation
+  shell "$CONDA_PREFIX/bin/python" -m pip install inflection mypy pytest pytest-asyncio sphinx sphinx-autodoc-typehints sphinx-rtd-theme websockets deprecated
+end
 
-# Code generation tasks
-generate:
-    poetry run make generate
+task "default"
+describe Run full pycdp validation pipeline via Makefile
+  shell make default
+end
 
-# Type checking tasks  
-typecheck:
-    poetry run make mypy-cdp mypy-generate
+task "generate"
+describe Regenerate CDP bindings
+  shell make generate
+end
 
-# Testing tasks
-test:
-    poetry run make test-cdp test-generate test-import
+task "typecheck"
+describe Run mypy checks for cdp and generator modules
+  shell make mypy-cdp mypy-generate
+end
 
-# Individual test components
-test-cdp:
-    poetry run make test-cdp
+task "test"
+describe Run all pycdp tests
+  shell make test-cdp
+  shell make test-generate
+  shell make test-import
+end
 
-test-generate:
-    poetry run make test-generate
+task "test-cdp"
+describe Run cdp package tests
+  shell make test-cdp
+end
 
-test-import:
-    poetry run make test-import
+task "test-generate"
+describe Run generator tests
+  shell make test-generate
+end
 
-# Documentation
-docs:
-    poetry run make docs
+task "test-import"
+describe Smoke-test importing generated modules
+  shell make test-import
+end
 
-# Development workflow - complete validation
-validate:
-    poetry run make default
+task "docs"
+describe Build documentation
+  shell make docs
+end
 
-# Clean and rebuild everything
-rebuild:
-    poetry run make generate
-    poetry run make mypy-cdp mypy-generate  
-    poetry run make test-cdp test-generate test-import
+task "validate"
+describe Alias for default validation flow
+  shell make default
+end
 
-# Quick check - just run tests on existing code
-check:
-    poetry run make test-cdp test-import
+task "rebuild"
+describe Regenerate and validate all modules
+  shell make generate
+  shell make mypy-cdp
+  shell make mypy-generate
+  shell make test-cdp
+  shell make test-generate
+  shell make test-import
+end
+
+task "check"
+describe Quick local verification path
+  shell make generate
+  shell make test-cdp
+  shell make test-import
+end
