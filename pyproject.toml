@@ -24,7 +24,7 @@ io = ["websockets"]
 [tool.poetry.group.dev.dependencies]
 inflection = "^0.5.0"
 mypy = "^1.0"
-pytest = "^7.0"
+pytest = ">=7,<9"
 pytest-asyncio = "^0.21.0"
 sphinx = "^5.0"
 sphinx-autodoc-typehints = "^1.21"
