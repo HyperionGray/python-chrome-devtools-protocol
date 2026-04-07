@@ -807,7 +807,7 @@ def set_device_metrics_override(
     :param viewport: **(EXPERIMENTAL)** *(Optional)* If set, the visible area of the page will be overridden to this viewport. This viewport change is not observed by the page, e.g. viewport-relative elements do not change positions.
     :param display_feature: **(DEPRECATED)** **(EXPERIMENTAL)** *(Optional)* If set, the display feature of a multi-segment screen. If not set, multi-segment support is turned-off. Deprecated, use Emulation.setDisplayFeaturesOverride.
     :param device_posture: **(DEPRECATED)** **(EXPERIMENTAL)** *(Optional)* If set, the posture of a foldable device. If not set the posture is set to continuous. Deprecated, use Emulation.setDevicePostureOverride.
-    :param scrollbar_type: **(EXPERIMENTAL)** *(Optional)* Scrollbar type. Default: ```default```.
+    :param scrollbar_type: **(EXPERIMENTAL)** *(Optional)* Scrollbar type. Default: ``default``.
     :param screen_orientation_lock_emulation: **(EXPERIMENTAL)** *(Optional)* If set to true, enables screen orientation lock emulation, which intercepts screen.orientation.lock() calls from the page and reports orientation changes via screenOrientationLockChanged events. This is useful for emulating mobile device orientation lock behavior in responsive design mode.
     '''
     params: T_JSON_DICT = dict()
