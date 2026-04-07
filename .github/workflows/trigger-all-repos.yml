@@ -28,10 +28,10 @@ jobs:
     runs-on: [self-hosted, linux, x64, big]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@main
+        uses: actions/checkout@v4.3.1
 
       - name: Set up Python
-        uses: actions/setup-python@main
+        uses: actions/setup-python@v5.6.0
         with:
           python-version: '3.11'
 
