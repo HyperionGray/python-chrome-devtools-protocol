@@ -12,7 +12,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.3.1
 
       - name: Verify required tools
         shell: bash
@@ -70,4 +70,3 @@ jobs:
             echo "- Required tools: bash, git, python3"
             echo "- Optional tools reported in logs: gh, podman, node, npm"
           } >> "$GITHUB_STEP_SUMMARY"
-
