@@ -32,25 +32,26 @@ dev = ["freezegun (>=1.0,<2.0)", "pytest (>=6.0)", "pytest-cov"]
 
 [[package]]
 name = "bandit"
-version = "1.7.5"
+version = "1.7.10"
 description = "Security oriented static analyser for python code."
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 groups = ["dev"]
 files = [
-    {file = "bandit-1.7.5-py3-none-any.whl", hash = "sha256:75665181dc1e0096369112541a056c59d1c5f66f9bb74a8d686c3c362b83f549"},
-    {file = "bandit-1.7.5.tar.gz", hash = "sha256:bdfc739baa03b880c2d15d0431b31c658ffc348e907fe197e54e0389dd59e11e"},
+    {file = "bandit-1.7.10-py3-none-any.whl", hash = "sha256:665721d7bebbb4485a339c55161ac0eedde27d51e638000d91c8c2d68343ad02"},
+    {file = "bandit-1.7.10.tar.gz", hash = "sha256:59ed5caf5d92b6ada4bf65bc6437feea4a9da1093384445fed4d472acc6cff7b"},
 ]
 
 [package.dependencies]
 colorama = {version = ">=0.3.9", markers = "platform_system == \"Windows\""}
-GitPython = ">=1.0.1"
 PyYAML = ">=5.3.1"
 rich = "*"
 stevedore = ">=1.20.0"
 
 [package.extras]
-test = ["beautifulsoup4 (>=4.8.0)", "coverage (>=4.5.4)", "fixtures (>=3.0.0)", "flake8 (>=4.0.0)", "pylint (==1.9.4)", "stestr (>=2.5.0)", "testscenarios (>=0.5.0)", "testtools (>=2.3.0)", "tomli (>=1.1.0) ; python_version < \"3.11\""]
+baseline = ["GitPython (>=3.1.30)"]
+sarif = ["jschema-to-python (>=1.2.3)", "sarif-om (>=1.0.4)"]
+test = ["beautifulsoup4 (>=4.8.0)", "coverage (>=4.5.4)", "fixtures (>=3.0.0)", "flake8 (>=4.0.0)", "pylint (==1.9.4)", "stestr (>=2.5.0)", "testscenarios (>=0.5.0)", "testtools (>=2.3.0)"]
 toml = ["tomli (>=1.1.0) ; python_version < \"3.11\""]
 yaml = ["PyYAML"]
 
@@ -250,41 +251,6 @@ typing-extensions = {version = ">=4.6.0", markers = "python_version < \"3.13\""}
 
 [package.extras]
 test = ["pytest (>=6)"]
-
-[[package]]
-name = "gitdb"
-version = "4.0.12"
-description = "Git Object Database"
-optional = false
-python-versions = ">=3.7"
-groups = ["dev"]
-files = [
-    {file = "gitdb-4.0.12-py3-none-any.whl", hash = "sha256:67073e15955400952c6565cc3e707c554a4eea2e428946f7a4c162fab9bd9bcf"},
-    {file = "gitdb-4.0.12.tar.gz", hash = "sha256:5ef71f855d191a3326fcfbc0d5da835f26b13fbcba60c32c21091c349ffdb571"},
-]
-
-[package.dependencies]
-smmap = ">=3.0.1,<6"
-
-[[package]]
-name = "gitpython"
-version = "3.1.45"
-description = "GitPython is a Python library used to interact with Git repositories"
-optional = false
-python-versions = ">=3.7"
-groups = ["dev"]
-files = [
-    {file = "gitpython-3.1.45-py3-none-any.whl", hash = "sha256:8908cb2e02fb3b93b7eb0f2827125cb699869470432cc885f019b8fd0fccff77"},
-    {file = "gitpython-3.1.45.tar.gz", hash = "sha256:85b0ee964ceddf211c41b9f27a49086010a190fd8132a24e21f362a4b36a791c"},
-]
-
-[package.dependencies]
-gitdb = ">=4.0.1,<5"
-typing-extensions = {version = ">=3.10.0.2", markers = "python_version < \"3.10\""}
-
-[package.extras]
-doc = ["sphinx (>=7.1.2,<7.2)", "sphinx-autodoc-typehints", "sphinx_rtd_theme"]
-test = ["coverage[toml]", "ddt (>=1.1.1,!=1.4.3)", "mock ; python_version < \"3.8\"", "mypy", "pre-commit", "pytest (>=7.3.1)", "pytest-cov", "pytest-instafail", "pytest-mock", "pytest-sugar", "typing-extensions ; python_version < \"3.11\""]
 
 [[package]]
 name = "idna"
@@ -777,18 +743,6 @@ testing = ["build[virtualenv]", "filelock (>=3.4.0)", "flake8-2020", "ini2toml[l
 testing-integration = ["build[virtualenv]", "filelock (>=3.4.0)", "jaraco.envs (>=2.2)", "jaraco.path (>=3.2.0)", "pytest", "pytest-enabler", "pytest-xdist", "tomli", "virtualenv (>=13.0.0)", "wheel"]
 
 [[package]]
-name = "smmap"
-version = "5.0.2"
-description = "A pure Python implementation of a sliding window memory map manager"
-optional = false
-python-versions = ">=3.7"
-groups = ["dev"]
-files = [
-    {file = "smmap-5.0.2-py3-none-any.whl", hash = "sha256:b30115f0def7d7531d22a0fb6502488d879e75b260a9db4d0819cfb25403af5e"},
-    {file = "smmap-5.0.2.tar.gz", hash = "sha256:26ea65a03958fa0c8a1c7e8c7a58fdc77221b8910f6be2131affade476898ad5"},
-]
-
-[[package]]
 name = "snowballstemmer"
 version = "3.0.1"
 description = "This package provides 32 stemmers for 30 languages generated from Snowball algorithms."
@@ -1223,6 +1177,7 @@ description = "Backport of pathlib-compatible object wrapper for zip files"
 optional = false
 python-versions = ">=3.8"
 groups = ["dev"]
+markers = "python_version < \"3.10\""
 files = [
     {file = "zipp-3.19.1-py3-none-any.whl", hash = "sha256:2828e64edb5386ea6a52e7ba7cdb17bb30a73a858f5eb6eb93d8d36f5ea26091"},
     {file = "zipp-3.19.1.tar.gz", hash = "sha256:35427f6d5594f4acf82d25541438348c26736fa9b3afa2754bcd63cdb99d8e8f"},
@@ -1238,4 +1193,4 @@ io = ["websockets"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.7"
-content-hash = "8473db2427f8626bce2c7ff3fd3f5f966a80eec44efc6a88e007c8f254d9e62b"
+content-hash = "ba91f4584e936a159c347c202c6cc4e48459e8554f1415fddcd24ae98f37208c"
