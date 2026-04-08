@@ -32,6 +32,7 @@ from cdp.browser_control import (
     evaluate,
     evaluate_on_node,
     wait_for_selector,
+    wait_for_url,
     wait_for_event,
 )
 
@@ -413,6 +414,63 @@ async def test_wait_for_selector_timeout():
     conn.execute = AsyncMock(side_effect=[doc_node, dom.NodeId(0)] * _ENOUGH_ATTEMPTS)
     with pytest.raises(asyncio.TimeoutError):
         await wait_for_selector(conn, ".ghost", timeout=0.1, poll_interval=0.05)
+
+
+# ---------------------------------------------------------------------------
+# wait_for_url tests
+# ---------------------------------------------------------------------------
+
+def _make_history_entry(url: str, entry_id: int = 1) -> page.NavigationEntry:
+    return page.NavigationEntry(
+        id_=entry_id,
+        url=url,
+        user_typed_url=url,
+        title="Title",
+        transition_type=page.TransitionType.TYPED,
+    )
+
+
+@pytest.mark.asyncio
+async def test_wait_for_url_exact_match():
+    conn = _make_conn((0, [_make_history_entry("https://example.com")]))
+    result = await wait_for_url(conn, "https://example.com")
+    assert result == "https://example.com"
+
+
+@pytest.mark.asyncio
+async def test_wait_for_url_contains_match():
+    conn = _make_conn((0, [_make_history_entry("https://example.com/search?q=cdp")]))
+    result = await wait_for_url(conn, "search?q=cdp", match="contains")
+    assert result == "https://example.com/search?q=cdp"
+
+
+@pytest.mark.asyncio
+async def test_wait_for_url_regex_match():
+    conn = _make_conn((0, [_make_history_entry("https://example.com/items/123")]))
+    result = await wait_for_url(conn, r"/items/\d+$", match="regex")
+    assert result == "https://example.com/items/123"
+
+
+@pytest.mark.asyncio
+async def test_wait_for_url_timeout():
+    conn = MagicMock()
+    conn.execute = AsyncMock(
+        side_effect=[(0, [_make_history_entry("https://start.example")])] * 20
+    )
+    with pytest.raises(asyncio.TimeoutError, match="Timed out waiting for URL"):
+        await wait_for_url(
+            conn,
+            "https://never.example",
+            timeout=0.1,
+            poll_interval=0.05,
+        )
+
+
+@pytest.mark.asyncio
+async def test_wait_for_url_invalid_match_mode():
+    conn = _make_conn((0, [_make_history_entry("https://example.com")]))
+    with pytest.raises(ValueError, match="match must be one of"):
+        await wait_for_url(conn, "https://example.com", match="invalid-mode")
 
 
 # ---------------------------------------------------------------------------

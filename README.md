@@ -72,6 +72,8 @@ asyncio.run(main())
 - **Command Multiplexing**: Execute multiple commands concurrently with proper tracking
 - **Event Handling**: Async iterator for receiving browser events
 - **Error Handling**: Comprehensive error handling with typed exceptions
+- **High-Level Automation Helpers**: `cdp.browser_control` offers Playwright-style helpers for
+  navigation, element interaction, screenshots, and waiting (including `wait_for_url`)
 
 See the [examples directory](examples/) for more usage patterns.
 

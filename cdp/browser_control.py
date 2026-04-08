@@ -38,6 +38,7 @@ from __future__ import annotations
 import asyncio
 import base64
 import json as _json
+import re
 import typing
 
 from cdp import dom, input_, page, runtime
@@ -75,6 +76,7 @@ __all__ = [
     "evaluate_on_node",
     # Waiting
     "wait_for_selector",
+    "wait_for_url",
     "wait_for_event",
 ]
 
@@ -711,6 +713,54 @@ async def wait_for_selector(
 
 
 _T_Event = typing.TypeVar("_T_Event")
+
+
+def _url_matches(current_url: str, expected: str, match: str) -> bool:
+    """Return whether *current_url* matches *expected* under *match* mode."""
+    if match == "exact":
+        return current_url == expected
+    if match == "contains":
+        return expected in current_url
+    if match == "regex":
+        return re.search(expected, current_url) is not None
+    raise ValueError("match must be one of: 'exact', 'contains', 'regex'")
+
+
+async def wait_for_url(
+    conn: CDPConnection,
+    expected: str,
+    timeout: float = 30.0,
+    poll_interval: float = 0.25,
+    match: str = "exact",
+) -> str:
+    """Poll until the current page URL matches *expected*.
+
+    :param conn: An open :class:`~cdp.connection.CDPConnection`.
+    :param expected: Expected URL or URL pattern.
+    :param timeout: Maximum seconds to wait.
+    :param poll_interval: Polling interval in seconds.
+    :param match: Match mode for *expected*:
+        ``"exact"`` (default), ``"contains"``, or ``"regex"``.
+    :returns: The URL that matched.
+    :raises asyncio.TimeoutError: If no matching URL is observed in time.
+    :raises ValueError: If *match* is not one of the supported values.
+    """
+    deadline = asyncio.get_event_loop().time() + timeout
+    while True:
+        index, entries = await conn.execute(page.get_navigation_history())
+        current_url = (
+            entries[index].url
+            if entries and 0 <= index < len(entries)
+            else ""
+        )
+        if _url_matches(current_url, expected, match):
+            return current_url
+        if asyncio.get_event_loop().time() >= deadline:
+            raise asyncio.TimeoutError(
+                f"Timed out waiting for URL {expected!r} using match={match!r} ({timeout}s). "
+                f"Last seen URL: {current_url!r}"
+            )
+        await asyncio.sleep(poll_interval)
 
 
 async def wait_for_event(

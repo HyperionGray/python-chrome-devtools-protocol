@@ -113,6 +113,7 @@ Waiting
 -------
 
 .. autofunction:: cdp.browser_control.wait_for_selector
+.. autofunction:: cdp.browser_control.wait_for_url
 .. autofunction:: cdp.browser_control.wait_for_event
 
 
@@ -126,6 +127,19 @@ Waiting for an element before interacting
 
    node = await bc.wait_for_selector(conn, "#submit-button", timeout=10)
    await bc.click(conn, node)
+
+
+Waiting for navigation to a specific URL
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+   await bc.navigate(conn, "https://example.com/login")
+   await bc.wait_for_url(conn, "https://example.com/login")
+
+   # Partial or regex matching is also supported.
+   await bc.wait_for_url(conn, "/dashboard", match="contains")
+   await bc.wait_for_url(conn, r"https://example\\.com/items/\\d+", match="regex")
 
 
 Checking visibility before clicking
