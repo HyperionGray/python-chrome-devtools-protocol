@@ -75,6 +75,7 @@ __all__ = [
     "evaluate_on_node",
     # Waiting
     "wait_for_selector",
+    "wait_for_function",
     "wait_for_event",
 ]
 
@@ -706,6 +707,47 @@ async def wait_for_selector(
         if asyncio.get_event_loop().time() >= deadline:
             raise asyncio.TimeoutError(
                 f"Timed out waiting for selector {selector!r} ({timeout}s)"
+            )
+        await asyncio.sleep(poll_interval)
+
+
+async def wait_for_function(
+    conn: CDPConnection,
+    expression: str,
+    timeout: float = 30.0,
+    poll_interval: float = 0.25,
+    await_promise: bool = False,
+) -> typing.Any:
+    """Poll a JavaScript expression until it evaluates to a truthy value.
+
+    This helper is useful for waiting on application state transitions that are
+    not tied to a specific DOM selector (for example, a global JS variable or a
+    computed condition).
+
+    :param conn: An open :class:`~cdp.connection.CDPConnection`.
+    :param expression: JavaScript expression evaluated in page context.
+    :param timeout: Maximum seconds to wait.
+    :param poll_interval: Polling interval in seconds.
+    :param await_promise: Whether to await a Promise returned by *expression*.
+    :returns: The truthy value produced by the expression.
+    :raises asyncio.TimeoutError: If the expression does not become truthy.
+    """
+    deadline = asyncio.get_event_loop().time() + timeout
+    while True:
+        try:
+            value = await evaluate(
+                conn,
+                expression,
+                await_promise=await_promise,
+            )
+            if value:
+                return value
+        except RuntimeError:
+            # The page may transiently throw while state is still initializing.
+            pass
+        if asyncio.get_event_loop().time() >= deadline:
+            raise asyncio.TimeoutError(
+                f"Timed out waiting for function {expression!r} ({timeout}s)"
             )
         await asyncio.sleep(poll_interval)
 

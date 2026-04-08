@@ -4,9 +4,8 @@ Tests for cdp.browser_control module.
 These tests mock CDPConnection so no real browser is needed.
 """
 import asyncio
-import json
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch, call
+from unittest.mock import AsyncMock, MagicMock
 
 from cdp import dom, page, runtime
 from cdp.browser_control import (
@@ -32,6 +31,7 @@ from cdp.browser_control import (
     evaluate,
     evaluate_on_node,
     wait_for_selector,
+    wait_for_function,
     wait_for_event,
 )
 
@@ -413,6 +413,58 @@ async def test_wait_for_selector_timeout():
     conn.execute = AsyncMock(side_effect=[doc_node, dom.NodeId(0)] * _ENOUGH_ATTEMPTS)
     with pytest.raises(asyncio.TimeoutError):
         await wait_for_selector(conn, ".ghost", timeout=0.1, poll_interval=0.05)
+
+
+# ---------------------------------------------------------------------------
+# wait_for_function tests
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_wait_for_function_returns_truthy_value():
+    false_remote = runtime.RemoteObject(type_="boolean", value=False)
+    truthy_remote = runtime.RemoteObject(type_="string", value="ready")
+    conn = _make_conn((false_remote, None), (truthy_remote, None))
+    result = await wait_for_function(
+        conn,
+        "window.appReady",
+        timeout=0.2,
+        poll_interval=0.01,
+    )
+    assert result == "ready"
+    assert conn.execute.await_count == 2
+
+
+@pytest.mark.asyncio
+async def test_wait_for_function_ignores_transient_javascript_errors():
+    exc_details = runtime.ExceptionDetails(
+        exception_id=1,
+        text="ReferenceError",
+        line_number=0,
+        column_number=0,
+    )
+    truthy_remote = runtime.RemoteObject(type_="boolean", value=True)
+    conn = _make_conn((None, exc_details), (truthy_remote, None))
+    result = await wait_for_function(
+        conn,
+        "window.mightNotExistYet === true",
+        timeout=0.2,
+        poll_interval=0.01,
+    )
+    assert result is True
+    assert conn.execute.await_count == 2
+
+
+@pytest.mark.asyncio
+async def test_wait_for_function_timeout():
+    false_remote = runtime.RemoteObject(type_="boolean", value=False)
+    conn = _make_conn(*([(false_remote, None)] * 20))
+    with pytest.raises(asyncio.TimeoutError):
+        await wait_for_function(
+            conn,
+            "window.neverReady",
+            timeout=0.05,
+            poll_interval=0.01,
+        )
 
 
 # ---------------------------------------------------------------------------

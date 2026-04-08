@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CODE_OF_CONDUCT.md following Contributor Covenant
 - SECURITY.md with security policy
 - This CHANGELOG.md file
+- `cdp.browser_control.wait_for_function` helper for waiting on arbitrary JavaScript conditions
 
 ## [0.5.0] - 2023
 

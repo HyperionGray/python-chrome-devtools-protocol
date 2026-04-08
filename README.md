@@ -97,50 +97,30 @@ For detailed API documentation, see:
 ### Key Modules
 
 - `cdp.connection` - WebSocket I/O and connection management (I/O mode)
+- `cdp.browser_control` - High-level automation helpers (navigation, waits, interactions)
 - `cdp.<domain>` - Type wrappers for each CDP domain (e.g., `cdp.page`, `cdp.network`, `cdp.runtime`)
 - Each domain module provides types, commands, and events for that CDP domain
 
-## Contributing
+## Browser Control Quick Example
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details on:
+For high-level browser automation, use `cdp.browser_control`:
 
-- Setting up your development environment
-- Running tests and type checking
-- Submitting pull requests
-- Reporting issues
+```python
+import asyncio
+from cdp import browser_control as bc
+from cdp.connection import CDPConnection
+from cdp import page
 
-Please also read our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing.
+async def main():
+    async with CDPConnection("ws://localhost:9222/devtools/page/YOUR_PAGE_ID") as conn:
+        await conn.execute(page.enable())
+        await bc.navigate(conn, "https://example.com")
+        await bc.wait_for_load(conn)
+        await bc.wait_for_function(conn, "document.readyState === 'complete'")
+        print(await bc.get_text(conn, "h1"))
 
-## Security
-
-For information about reporting security vulnerabilities, please see our [Security Policy](SECURITY.md).
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## API Reference
-
-The library provides Python wrappers for all Chrome DevTools Protocol domains:
-
-- **Page**: Page control (navigation, screenshots, etc.)
-- **DOM**: DOM inspection and manipulation
-- **Network**: Network monitoring and interception
-- **Runtime**: JavaScript execution and evaluation
-- **Debugger**: JavaScript debugging
-- **Performance**: Performance metrics and profiling
-- **Security**: Security-related information
-- And many more...
-
-For complete API documentation, visit [py-cdp.readthedocs.io](https://py-cdp.readthedocs.io).
-
-### Type System
-
-All CDP types, commands, and events are fully typed with Python type hints, providing:
-- IDE autocomplete support
-- Static type checking with mypy
-- Clear API contracts
-- Inline documentation
+asyncio.run(main())
+```
 
 ## Contributing
 
