@@ -37,6 +37,7 @@ from __future__ import annotations
 
 import asyncio
 import base64
+import contextlib
 import json as _json
 import typing
 
@@ -50,6 +51,7 @@ __all__ = [
     "go_back",
     "go_forward",
     "wait_for_load",
+    "wait_for_navigation",
     # Element selection
     "query_selector",
     "query_selector_all",
@@ -76,6 +78,7 @@ __all__ = [
     # Waiting
     "wait_for_selector",
     "wait_for_event",
+    "click_and_wait_for_navigation",
 ]
 
 
@@ -171,6 +174,88 @@ async def wait_for_load(
     :raises asyncio.TimeoutError: If the page does not load within *timeout*.
     """
     await wait_for_event(conn, page.LoadEventFired, timeout=timeout)
+
+
+_NavigationEvent = typing.Union[
+    page.LoadEventFired,
+    page.DomContentEventFired,
+    page.FrameNavigated,
+]
+
+
+async def wait_for_navigation(
+    conn: CDPConnection,
+    timeout: float = 30.0,
+    wait_until: str = "load",
+) -> _NavigationEvent:
+    """Wait for page navigation to reach a specific lifecycle point.
+
+    You must have called ``await conn.execute(page.enable())`` before using
+    this helper so that page events are delivered.
+
+    :param conn: An open :class:`~cdp.connection.CDPConnection`.
+    :param timeout: Maximum seconds to wait.
+    :param wait_until: Lifecycle milestone to wait for:
+        ``"commit"``, ``"domcontentloaded"``, or ``"load"``.
+    :returns: The received navigation-related event instance.
+    :raises ValueError: If *wait_until* is not one of the supported values.
+    :raises asyncio.TimeoutError: If the event does not arrive within *timeout*.
+    """
+    wait_until_normalized = wait_until.lower()
+    event_by_wait_until: typing.Dict[str, typing.Type[typing.Any]] = {
+        "commit": page.FrameNavigated,
+        "domcontentloaded": page.DomContentEventFired,
+        "load": page.LoadEventFired,
+    }
+    event_type = event_by_wait_until.get(wait_until_normalized)
+    if event_type is None:
+        allowed = ", ".join(sorted(event_by_wait_until))
+        raise ValueError(
+            f"Unsupported wait_until value {wait_until!r}. "
+            f"Expected one of: {allowed}"
+        )
+    return await wait_for_event(conn, event_type, timeout=timeout)
+
+
+async def click_and_wait_for_navigation(
+    conn: CDPConnection,
+    selector_or_node: typing.Union[str, dom.NodeId],
+    timeout: float = 30.0,
+    wait_until: str = "load",
+    button: str = "left",
+    click_count: int = 1,
+) -> _NavigationEvent:
+    """Click an element and wait for navigation in one helper call.
+
+    This helper starts listening for navigation before issuing the click to
+    avoid missing very fast navigations.
+
+    :param conn: An open :class:`~cdp.connection.CDPConnection`.
+    :param selector_or_node: CSS selector string or a :class:`~cdp.dom.NodeId`.
+    :param timeout: Maximum seconds to wait for navigation.
+    :param wait_until: Navigation milestone to wait for. See
+        :func:`wait_for_navigation`.
+    :param button: Mouse button – ``"left"``, ``"right"``, or ``"middle"``.
+    :param click_count: Number of clicks.
+    :returns: The received navigation-related event instance.
+    """
+    wait_task = asyncio.create_task(
+        wait_for_navigation(conn, timeout=timeout, wait_until=wait_until)
+    )
+    try:
+        await click(
+            conn,
+            selector_or_node=selector_or_node,
+            button=button,
+            click_count=click_count,
+        )
+        return await wait_task
+    except Exception:
+        if not wait_task.done():
+            wait_task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await wait_task
+        raise
 
 
 # ---------------------------------------------------------------------------

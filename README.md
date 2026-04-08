@@ -97,6 +97,7 @@ For detailed API documentation, see:
 ### Key Modules
 
 - `cdp.connection` - WebSocket I/O and connection management (I/O mode)
+- `cdp.browser_control` - High-level automation helpers (navigation waits, selectors, click/type/screenshot)
 - `cdp.<domain>` - Type wrappers for each CDP domain (e.g., `cdp.page`, `cdp.network`, `cdp.runtime`)
 - Each domain module provides types, commands, and events for that CDP domain
 

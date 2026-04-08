@@ -17,6 +17,7 @@ from typing import Any
 _SUBMODULES = (
     'util',
     'connection',
+    'browser_control',
     'accessibility',
     'animation',
     'audits',

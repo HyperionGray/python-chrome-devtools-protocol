@@ -4,9 +4,8 @@ Tests for cdp.browser_control module.
 These tests mock CDPConnection so no real browser is needed.
 """
 import asyncio
-import json
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch, call
+from unittest.mock import AsyncMock, MagicMock
 
 from cdp import dom, page, runtime
 from cdp.browser_control import (
@@ -14,6 +13,8 @@ from cdp.browser_control import (
     reload,
     go_back,
     go_forward,
+    wait_for_navigation,
+    click_and_wait_for_navigation,
     query_selector,
     query_selector_all,
     click,
@@ -113,6 +114,113 @@ async def test_go_forward_at_end_of_history():
     result = await go_forward(conn)
     assert result is False
     conn.execute.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_wait_for_navigation_load_uses_load_event():
+    expected = page.LoadEventFired(timestamp=123.0)
+
+    async def _fake_wait_for_event(conn, event_type, timeout=30.0):
+        assert event_type is page.LoadEventFired
+        assert timeout == 1.5
+        return expected
+
+    conn = MagicMock()
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr("cdp.browser_control.wait_for_event", _fake_wait_for_event)
+        result = await wait_for_navigation(conn, timeout=1.5, wait_until="load")
+    assert result is expected
+
+
+@pytest.mark.asyncio
+async def test_wait_for_navigation_domcontentloaded_uses_dom_event():
+    expected = page.DomContentEventFired(timestamp=42.0)
+
+    async def _fake_wait_for_event(conn, event_type, timeout=30.0):
+        assert event_type is page.DomContentEventFired
+        assert timeout == 2.0
+        return expected
+
+    conn = MagicMock()
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr("cdp.browser_control.wait_for_event", _fake_wait_for_event)
+        result = await wait_for_navigation(
+            conn, timeout=2.0, wait_until="domcontentloaded"
+        )
+    assert result is expected
+
+
+@pytest.mark.asyncio
+async def test_wait_for_navigation_commit_uses_frame_navigated():
+    frame = page.Frame(
+        id_=page.FrameId("f1"),
+        loader_id=None,
+        url="https://example.com",
+        domain_and_registry="example.com",
+        security_origin="https://example.com",
+        security_origin_details=None,
+        mime_type="text/html",
+        unreachable_url=None,
+        ad_frame_status=None,
+        secure_context_type=None,
+        cross_origin_isolated_context_type=None,
+        gated_api_features=[],
+    )
+    expected = page.FrameNavigated(frame=frame, type_=page.NavigationType.NAVIGATION)
+
+    async def _fake_wait_for_event(conn, event_type, timeout=30.0):
+        assert event_type is page.FrameNavigated
+        return expected
+
+    conn = MagicMock()
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr("cdp.browser_control.wait_for_event", _fake_wait_for_event)
+        result = await wait_for_navigation(conn, wait_until="commit")
+    assert result is expected
+
+
+@pytest.mark.asyncio
+async def test_wait_for_navigation_invalid_wait_until_raises():
+    conn = MagicMock()
+    with pytest.raises(ValueError, match="Unsupported wait_until value"):
+        await wait_for_navigation(conn, wait_until="networkidle")
+
+
+@pytest.mark.asyncio
+async def test_click_and_wait_for_navigation_runs_click_then_wait():
+    expected = page.LoadEventFired(timestamp=7.0)
+    conn = MagicMock()
+    events: list[str] = []
+
+    async def _fake_wait_for_navigation(_conn, timeout=30.0, wait_until="load"):
+        events.append("wait-start")
+        await asyncio.sleep(0)
+        events.append(f"wait-finish:{wait_until}:{timeout}")
+        return expected
+
+    async def _fake_click(
+        _conn, selector_or_node, button="left", click_count=1
+    ):
+        events.append(f"click:{selector_or_node}:{button}:{click_count}")
+
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr("cdp.browser_control.wait_for_navigation", _fake_wait_for_navigation)
+        mp.setattr("cdp.browser_control.click", _fake_click)
+        result = await click_and_wait_for_navigation(
+            conn, "a.next", timeout=3.0, wait_until="domcontentloaded"
+        )
+
+    assert result is expected
+    assert events[0] == "click:a.next:left:1" or events[0] == "wait-start"
+    assert "click:a.next:left:1" in events
+    assert "wait-finish:domcontentloaded:3.0" in events
+
+
+def test_cdp_lazy_import_exposes_browser_control():
+    import cdp
+
+    assert hasattr(cdp, "browser_control")
+    assert cdp.browser_control.__name__ == "cdp.browser_control"
 
 
 # ---------------------------------------------------------------------------
@@ -451,3 +559,9 @@ async def test_wait_for_event_timeout():
 
     with pytest.raises(asyncio.TimeoutError):
         await wait_for_event(conn, page.LoadEventFired, timeout=0.1)
+
+
+def test_cdp_package_exposes_browser_control_module():
+    import cdp
+
+    assert hasattr(cdp, "browser_control")

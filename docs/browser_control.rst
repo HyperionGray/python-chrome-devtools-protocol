@@ -64,6 +64,7 @@ Navigation
 .. autofunction:: cdp.browser_control.go_back
 .. autofunction:: cdp.browser_control.go_forward
 .. autofunction:: cdp.browser_control.wait_for_load
+.. autofunction:: cdp.browser_control.wait_for_navigation
 
 
 Element Selection
@@ -114,6 +115,7 @@ Waiting
 
 .. autofunction:: cdp.browser_control.wait_for_selector
 .. autofunction:: cdp.browser_control.wait_for_event
+.. autofunction:: cdp.browser_control.click_and_wait_for_navigation
 
 
 Patterns and Recipes
@@ -126,6 +128,24 @@ Waiting for an element before interacting
 
    node = await bc.wait_for_selector(conn, "#submit-button", timeout=10)
    await bc.click(conn, node)
+
+
+Waiting for navigation lifecycle milestones
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+   # Wait for a navigation commit (frame swap) rather than full load.
+   await bc.navigate(conn, "https://example.com")
+   await bc.wait_for_navigation(conn, wait_until="commit")
+
+   # Click a link and atomically wait for DOMContentLoaded.
+   await bc.click_and_wait_for_navigation(
+       conn,
+       "a.next-page",
+       wait_until="domcontentloaded",
+       timeout=10,
+   )
 
 
 Checking visibility before clicking

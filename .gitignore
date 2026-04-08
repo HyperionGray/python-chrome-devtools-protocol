@@ -26,3 +26,5 @@ htmlcov/
 .eggs/
 *.log
 .DS_Store
+pf_test_results.txt
+pf_test_results_detailed.json
