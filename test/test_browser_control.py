@@ -32,6 +32,7 @@ from cdp.browser_control import (
     evaluate,
     evaluate_on_node,
     wait_for_selector,
+    wait_for_function,
     wait_for_event,
 )
 
@@ -413,6 +414,37 @@ async def test_wait_for_selector_timeout():
     conn.execute = AsyncMock(side_effect=[doc_node, dom.NodeId(0)] * _ENOUGH_ATTEMPTS)
     with pytest.raises(asyncio.TimeoutError):
         await wait_for_selector(conn, ".ghost", timeout=0.1, poll_interval=0.05)
+
+
+# ---------------------------------------------------------------------------
+# wait_for_function tests
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_wait_for_function_returns_first_truthy_value():
+    conn = MagicMock()
+    with patch("cdp.browser_control.evaluate", new=AsyncMock(side_effect=[0, "", "ready"])):
+        result = await wait_for_function(conn, "window.__appReady")
+    assert result == "ready"
+
+
+@pytest.mark.asyncio
+async def test_wait_for_function_ignores_transient_js_exceptions():
+    conn = MagicMock()
+    with patch(
+        "cdp.browser_control.evaluate",
+        new=AsyncMock(side_effect=[RuntimeError("boom"), None, True]),
+    ):
+        result = await wait_for_function(conn, "window.dynamic && window.dynamic.ready")
+    assert result is True
+
+
+@pytest.mark.asyncio
+async def test_wait_for_function_timeout():
+    conn = MagicMock()
+    with patch("cdp.browser_control.evaluate", new=AsyncMock(return_value=False)):
+        with pytest.raises(asyncio.TimeoutError):
+            await wait_for_function(conn, "window.neverTrue", timeout=0.1, poll_interval=0.05)
 
 
 # ---------------------------------------------------------------------------

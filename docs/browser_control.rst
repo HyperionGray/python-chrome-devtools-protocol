@@ -113,6 +113,7 @@ Waiting
 -------
 
 .. autofunction:: cdp.browser_control.wait_for_selector
+.. autofunction:: cdp.browser_control.wait_for_function
 .. autofunction:: cdp.browser_control.wait_for_event
 
 
@@ -126,6 +127,19 @@ Waiting for an element before interacting
 
    node = await bc.wait_for_selector(conn, "#submit-button", timeout=10)
    await bc.click(conn, node)
+
+
+Waiting for dynamic JavaScript state
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+   # Wait until app bootstrap marks itself ready.
+   await bc.wait_for_function(
+       conn,
+       "window.appState && window.appState.ready",
+       timeout=15,
+   )
 
 
 Checking visibility before clicking
