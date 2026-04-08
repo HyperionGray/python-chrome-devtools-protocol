@@ -71,10 +71,22 @@ async def demo_interaction(conn: CDPConnection) -> None:
     await bc.navigate(conn, "https://www.google.com")
     await bc.wait_for_load(conn)
 
-    search_box = await bc.wait_for_selector(conn, "textarea[name='q']", timeout=10)
+    search_box = await bc.wait_for_selector(
+        conn,
+        "textarea[name='q']",
+        timeout=10,
+        state="visible",
+    )
     await bc.click(conn, search_box)
     await bc.type_text(conn, search_box, "Python CDP", delay=0.05)
     await bc.press_key(conn, "Enter")
+    # Wait for Google loading UI to disappear before proceeding.
+    await bc.wait_for_selector(
+        conn,
+        "div[role='progressbar']",
+        state="hidden",
+        timeout=10,
+    )
     print("Submitted search form")
 
 

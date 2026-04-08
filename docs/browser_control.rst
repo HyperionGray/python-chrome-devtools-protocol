@@ -115,6 +115,16 @@ Waiting
 .. autofunction:: cdp.browser_control.wait_for_selector
 .. autofunction:: cdp.browser_control.wait_for_event
 
+``wait_for_selector`` states
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``state`` parameter controls what condition is awaited:
+
+* ``state="attached"`` (default): selector exists in the DOM; returns ``NodeId``.
+* ``state="visible"``: selector exists and is visible; returns ``NodeId``.
+* ``state="hidden"``: selector is hidden or missing; returns ``None``.
+* ``state="detached"``: selector is missing from the DOM; returns ``None``.
+
 
 Patterns and Recipes
 --------------------
@@ -126,6 +136,17 @@ Waiting for an element before interacting
 
    node = await bc.wait_for_selector(conn, "#submit-button", timeout=10)
    await bc.click(conn, node)
+
+Waiting for hidden or detached UI
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+   # Wait for a loading spinner to disappear (hidden or removed).
+   await bc.wait_for_selector(conn, ".spinner", state="hidden", timeout=10)
+
+   # Wait for a modal to be removed from the DOM.
+   await bc.wait_for_selector(conn, "#modal", state="detached", timeout=10)
 
 
 Checking visibility before clicking

@@ -685,27 +685,57 @@ async def wait_for_selector(
     timeout: float = 30.0,
     poll_interval: float = 0.25,
     root: typing.Optional[dom.NodeId] = None,
-) -> dom.NodeId:
-    """Poll until *selector* matches an element in the DOM.
+    state: str = "attached",
+) -> typing.Optional[dom.NodeId]:
+    """Poll until *selector* reaches the requested *state*.
+
+    Supported states:
+    - ``"attached"`` (default): element exists in the DOM.
+    - ``"visible"``: element exists and :func:`is_visible` returns ``True``.
+    - ``"hidden"``: element is absent or not visible.
+    - ``"detached"``: element does not exist in the DOM.
 
     :param conn: An open :class:`~cdp.connection.CDPConnection`.
     :param selector: CSS selector string.
     :param timeout: Maximum seconds to wait.
     :param poll_interval: Polling interval in seconds.
     :param root: Optional root node; defaults to the document root.
-    :returns: The matched :class:`~cdp.dom.NodeId`.
-    :raises asyncio.TimeoutError: If no element appears within *timeout*.
+    :param state: Desired selector state: ``"attached"``, ``"visible"``,
+        ``"hidden"``, or ``"detached"``.
+    :returns: The matched :class:`~cdp.dom.NodeId` for ``"attached"`` /
+        ``"visible"``, or ``None`` for ``"hidden"`` / ``"detached"``.
+    :raises ValueError: If *state* is not one of the supported values.
+    :raises asyncio.TimeoutError: If *state* is not reached within *timeout*.
     """
+    allowed_states = {"attached", "visible", "hidden", "detached"}
+    if state not in allowed_states:
+        raise ValueError(
+            f"Unsupported wait_for_selector state {state!r}; "
+            f"expected one of {sorted(allowed_states)}"
+        )
+
     deadline = asyncio.get_event_loop().time() + timeout
     while True:
         try:
             node_id = await query_selector(conn, selector, root=root)
-            return node_id
+            if state == "attached":
+                return node_id
+            if state == "visible":
+                if await is_visible(conn, node_id):
+                    return node_id
+            elif state == "detached":
+                # Selector is still attached, keep polling.
+                pass
+            elif state == "hidden":
+                if not await is_visible(conn, node_id):
+                    return None
         except ValueError:
-            pass
+            if state in {"hidden", "detached"}:
+                return None
         if asyncio.get_event_loop().time() >= deadline:
             raise asyncio.TimeoutError(
-                f"Timed out waiting for selector {selector!r} ({timeout}s)"
+                f"Timed out waiting for selector {selector!r} "
+                f"to be {state!r} ({timeout}s)"
             )
         await asyncio.sleep(poll_interval)
 

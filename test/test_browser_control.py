@@ -398,6 +398,45 @@ async def test_wait_for_selector_found_immediately():
 
 
 @pytest.mark.asyncio
+async def test_wait_for_selector_visible_returns_node():
+    node = dom.NodeId(55)
+    box = _make_box_model(x=10.0, y=20.0, w=100.0, h=50.0)
+    remote_obj = runtime.RemoteObject(type_="object")
+    remote_obj.object_id = runtime.RemoteObjectId("obj-visible")
+    vis_result = runtime.RemoteObject(type_="boolean", value=True)
+    conn = _make_conn(node, box, remote_obj, (vis_result, None))
+    result = await wait_for_selector(conn, "h2", root=dom.NodeId(1), state="visible")
+    assert result == node
+
+
+@pytest.mark.asyncio
+async def test_wait_for_selector_hidden_when_not_visible():
+    node = dom.NodeId(66)
+    box = _make_box_model(x=10.0, y=20.0, w=100.0, h=50.0)
+    remote_obj = runtime.RemoteObject(type_="object")
+    remote_obj.object_id = runtime.RemoteObjectId("obj-hidden")
+    vis_result = runtime.RemoteObject(type_="boolean", value=False)
+    conn = _make_conn(node, box, remote_obj, (vis_result, None))
+    result = await wait_for_selector(conn, "h2", root=dom.NodeId(1), state="hidden")
+    assert result is None
+
+
+@pytest.mark.asyncio
+async def test_wait_for_selector_detached_when_missing():
+    conn = MagicMock()
+    conn.execute = AsyncMock(side_effect=[dom.NodeId(0)])
+    result = await wait_for_selector(conn, ".gone", root=dom.NodeId(1), state="detached")
+    assert result is None
+
+
+@pytest.mark.asyncio
+async def test_wait_for_selector_invalid_state_raises():
+    conn = MagicMock()
+    with pytest.raises(ValueError, match="Unsupported wait_for_selector state"):
+        await wait_for_selector(conn, "h2", state="invalid")
+
+
+@pytest.mark.asyncio
 async def test_wait_for_selector_timeout():
     doc_node = dom.Node(
         node_id=dom.NodeId(1),

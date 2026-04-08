@@ -26,3 +26,8 @@ htmlcov/
 .eggs/
 *.log
 .DS_Store
+*.bak
+*.tmp
+pf_test_results*.json
+pf_test_results*.txt
+.bish-index

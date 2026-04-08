@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CODE_OF_CONDUCT.md following Contributor Covenant
 - SECURITY.md with security policy
 - This CHANGELOG.md file
+- `cdp.browser_control.wait_for_selector` now supports state-based waits via
+  `state="attached" | "visible" | "hidden" | "detached"`
+- Tests for the new selector wait states in `test/test_browser_control.py`
+- Browser-control documentation and example updates for state-based waits
 
 ## [0.5.0] - 2023
 
