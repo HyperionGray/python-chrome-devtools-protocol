@@ -7,7 +7,7 @@ import asyncio
 import pytest
 from unittest.mock import AsyncMock, MagicMock
 
-from cdp import dom, page, runtime
+from cdp import dom, network, page, runtime
 from cdp.browser_control import (
     navigate,
     reload,
@@ -154,17 +154,17 @@ async def test_wait_for_navigation_domcontentloaded_uses_dom_event():
 async def test_wait_for_navigation_commit_uses_frame_navigated():
     frame = page.Frame(
         id_=page.FrameId("f1"),
-        loader_id=None,
+        loader_id=network.LoaderId("loader-1"),
         url="https://example.com",
         domain_and_registry="example.com",
         security_origin="https://example.com",
-        security_origin_details=None,
         mime_type="text/html",
+        secure_context_type=page.SecureContextType.SECURE,
+        cross_origin_isolated_context_type=page.CrossOriginIsolatedContextType.ISOLATED,
+        gated_api_features=[],
+        security_origin_details=None,
         unreachable_url=None,
         ad_frame_status=None,
-        secure_context_type=None,
-        cross_origin_isolated_context_type=None,
-        gated_api_features=[],
     )
     expected = page.FrameNavigated(frame=frame, type_=page.NavigationType.NAVIGATION)
 
