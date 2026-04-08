@@ -407,9 +407,10 @@ async def test_wait_for_selector_timeout():
         local_name="",
         node_value="",
     )
-    # Always return NodeId(0) = not found
+    # Always return NodeId(0) = not found; repeat enough times for the timeout
+    _ENOUGH_ATTEMPTS = 20  # timeout=0.1s / poll_interval=0.05s → at most ~4 polls
     conn = MagicMock()
-    conn.execute = AsyncMock(side_effect=[doc_node, dom.NodeId(0)] * 20)
+    conn.execute = AsyncMock(side_effect=[doc_node, dom.NodeId(0)] * _ENOUGH_ATTEMPTS)
     with pytest.raises(asyncio.TimeoutError):
         await wait_for_selector(conn, ".ghost", timeout=0.1, poll_interval=0.05)
 

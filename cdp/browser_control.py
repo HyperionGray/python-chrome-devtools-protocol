@@ -37,10 +37,11 @@ from __future__ import annotations
 
 import asyncio
 import base64
+import json as _json
 import typing
 
 from cdp import dom, input_, page, runtime
-from cdp.connection import CDPConnection
+from cdp.connection import CDPConnection, CDPConnectionError
 
 __all__ = [
     # Navigation
@@ -330,10 +331,28 @@ async def clear_and_type(
         else selector_or_node
     )
     await focus(conn, node)
-    # Select all – platform-agnostic via JavaScript.
-    await conn.execute(
-        runtime.evaluate(expression="document.execCommand('selectAll', false, null)")
-    )
+    # Select all existing content using the modern Selection/input API.
+    # For input/textarea: element.select(); for contenteditable: window.getSelection().
+    obj = await conn.execute(dom.resolve_node(node_id=node))
+    if obj and obj.object_id:
+        await conn.execute(
+            runtime.call_function_on(
+                function_declaration=(
+                    "function() {"
+                    "  if (typeof this.select === 'function') {"
+                    "    this.select();"
+                    "  } else {"
+                    "    var range = document.createRange();"
+                    "    range.selectNodeContents(this);"
+                    "    var sel = window.getSelection();"
+                    "    sel.removeAllRanges();"
+                    "    sel.addRange(range);"
+                    "  }"
+                    "}"
+                ),
+                object_id=obj.object_id,
+            )
+        )
     await type_text(conn, node, text, delay=delay)
 
 
@@ -396,8 +415,9 @@ async def select_option(
     obj = await conn.execute(dom.resolve_node(node_id=node))
     if obj is None:
         raise ValueError("Could not resolve node to a remote object")
-    escaped = value.replace("'", "\\'")
-    expr = f"function() {{ this.value = '{escaped}'; this.dispatchEvent(new Event('change', {{bubbles: true}})); }}"
+    # Use json.dumps to safely embed the value as a JS string literal.
+    js_value = _json.dumps(value)
+    expr = f"function() {{ this.value = {js_value}; this.dispatchEvent(new Event('change', {{bubbles: true}})); }}"
     await conn.execute(
         runtime.call_function_on(
             function_declaration=expr,
@@ -711,10 +731,9 @@ async def wait_for_event(
         async for event in conn.listen():
             if isinstance(event, event_type):
                 return event  # type: ignore[return-value]
-        raise CDPConnectionError("Connection closed before event arrived")  # noqa: F821
+        raise CDPConnectionError("Connection closed before event arrived")
 
     try:
-        from cdp.connection import CDPConnectionError  # local import to avoid circular
         return await asyncio.wait_for(_wait(), timeout=timeout)
     except asyncio.TimeoutError:
         raise asyncio.TimeoutError(

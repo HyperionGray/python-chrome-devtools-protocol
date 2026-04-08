@@ -10,7 +10,10 @@ Prerequisites:
 Start Chrome with remote debugging enabled:
     chrome --remote-debugging-port=9222 --headless
 
-Then run:
+Get the WebSocket URL for a tab:
+    curl http://localhost:9222/json
+
+Then update CDP_URL below with the "webSocketDebuggerUrl" value and run:
     python examples/browser_control_example.py
 """
 
@@ -20,8 +23,8 @@ from cdp import browser_control as bc
 from cdp import page
 
 
-# Replace with a real CDP WebSocket URL from chrome://inspect or the
-# JSON endpoint at http://localhost:9222/json
+# Replace with the "webSocketDebuggerUrl" from http://localhost:9222/json
+# Example: "ws://localhost:9222/devtools/page/ABC123"
 CDP_URL = "ws://localhost:9222/devtools/page/YOUR_PAGE_ID"
 
 
