@@ -102,25 +102,6 @@ For detailed API documentation, see:
 - `cdp.<domain>` - Type wrappers for each CDP domain (e.g., `cdp.page`, `cdp.network`, `cdp.runtime`)
 - Each domain module provides types, commands, and events for that CDP domain
 
-## Contributing
-
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details on:
-
-- Setting up your development environment
-- Running tests and type checking
-- Submitting pull requests
-- Reporting issues
-
-Please also read our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing.
-
-## Security
-
-For information about reporting security vulnerabilities, please see our [Security Policy](SECURITY.md).
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 ## API Reference
 
 The library provides Python wrappers for all Chrome DevTools Protocol domains:
@@ -147,12 +128,17 @@ All CDP types, commands, and events are fully typed with Python type hints, prov
 ## Contributing
 
 We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details on:
-- How to report bugs and request features
-- Development setup and workflow
-- Coding standards and testing requirements
-- Pull request process
 
-For questions or discussions, feel free to open an issue on GitHub.
+- Setting up your development environment
+- Running tests and type checking
+- Submitting pull requests
+- Reporting issues
+
+Please also read our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing.
+
+## Security
+
+For information about reporting security vulnerabilities, please see our [Security Policy](SECURITY.md).
 
 ## License
 

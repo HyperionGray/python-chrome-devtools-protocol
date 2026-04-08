@@ -34,7 +34,9 @@ async def demo_navigation(conn: CDPConnection) -> None:
     await conn.execute(page.enable())
     frame_id = await bc.navigate(conn, "https://example.com")
     await bc.wait_for_load(conn)
+    matched_url = await bc.wait_for_url(conn, "https://example.com", match="contains")
     print(f"Navigated, frame_id={frame_id}")
+    print(f"Current URL matched: {matched_url}")
 
 
 async def demo_element_selection(conn: CDPConnection) -> None:
