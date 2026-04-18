@@ -8,6 +8,7 @@ import operator
 import os
 from pathlib import Path
 import re
+import tempfile
 from textwrap import dedent, indent as tw_indent
 import typing
 
@@ -45,6 +46,20 @@ current_version = ''
 def indent(s: str, n: int):
     ''' A shortcut for ``textwrap.indent`` that always uses spaces. '''
     return tw_indent(s, n * ' ')
+
+
+def write_text_atomic(path: Path, contents: str) -> None:
+    '''Write generated text to ``path`` via atomic replacement.'''
+    with tempfile.NamedTemporaryFile(
+        'w',
+        encoding='utf-8',
+        dir=path.parent,
+        delete=False,
+    ) as temp_file:
+        temp_file.write(contents)
+        temp_path = Path(temp_file.name)
+
+    temp_path.replace(path)
 
 
 BACKTICK_RE = re.compile(r'`([^`]+)`(\w+)?')
@@ -962,11 +977,31 @@ def generate_init(init_path, domains):
     :param list[tuple] modules: a list of modules each represented as tuples
         of (name, list_of_exported_symbols)
     '''
-    with init_path.open('w') as init_file:
-        init_file.write(INIT_HEADER)
-        init_file.write('import cdp.util\n\n')
-        for domain in domains:
-            init_file.write('import cdp.{}\n'.format(domain.module))
+    modules = ['util', 'connection', *[domain.module for domain in domains]]
+
+    init_lines = [
+        INIT_HEADER,
+        '\n\n',
+        '# Generated packages with many cross-domain imports are exposed\n',
+        '# lazily so package-level imports do not depend on module order.\n\n',
+        'from __future__ import annotations\n\n',
+        'import importlib\n',
+        'from typing import Any\n\n\n',
+        '_SUBMODULES = (\n',
+    ]
+    for module in modules:
+        init_lines.append(f'    {module!r},\n')
+    init_lines.extend([
+        ')\n\n',
+        '__all__ = list(_SUBMODULES)\n\n\n',
+        'def __getattr__(name: str) -> Any:\n',
+        '    if name not in _SUBMODULES:\n',
+        "        raise AttributeError(f\"module 'cdp' has no attribute {name!r}\")\n\n",
+        '    module = importlib.import_module(f"{__name__}.{name}")\n',
+        '    globals()[name] = module\n',
+        '    return module\n',
+    ])
+    write_text_atomic(init_path, ''.join(init_lines))
 
 
 def generate_docs(docs_path, domains):
@@ -982,8 +1017,7 @@ def generate_docs(docs_path, domains):
     # Generate document for each domain
     for domain in domains:
         doc = docs_path / f'{domain.module}.rst'
-        with doc.open('w') as f:
-            f.write(domain.generate_sphinx())
+        write_text_atomic(doc, domain.generate_sphinx())
 
 
 def patchCDP(domains):
@@ -1030,7 +1064,7 @@ def main():
 
     # Remove generated code
     for subpath in output_path.iterdir():
-        if subpath.is_file() and subpath.name not in ('py.typed', 'util.py', 'connection.py', '__init__.py'):
+        if subpath.is_file() and subpath.name not in ('py.typed', 'util.py', 'connection.py', '__init__.py') and not subpath.name.startswith('.'):
             subpath.unlink()
 
     # Parse domains
@@ -1046,8 +1080,7 @@ def main():
         logger.info('Generating module: %s → %s.py', domain.domain,
             domain.module)
         module_path = output_path / f'{domain.module}.py'
-        with module_path.open('w') as module_file:
-            module_file.write(domain.generate_code())
+        write_text_atomic(module_path, domain.generate_code())
 
     init_path = output_path / '__init__.py'
     generate_init(init_path, domains)

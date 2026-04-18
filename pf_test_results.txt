@@ -1,0 +1,21 @@
+Testing PF Tasks - Results Log
+=====================================
+
+This file documents the testing of all pf tasks defined in .pf file.
+Each task is tested to ensure it works correctly.
+
+Tasks to test:
+1. default - poetry run make default
+2. generate - poetry run make generate  
+3. typecheck - poetry run make mypy-cdp mypy-generate
+4. test - poetry run make test-cdp test-generate test-import
+5. test-cdp - poetry run make test-cdp
+6. test-generate - poetry run make test-generate
+7. test-import - poetry run make test-import
+8. docs - poetry run make docs
+9. validate - poetry run make default
+10. rebuild - multiple commands
+11. check - poetry run make test-cdp test-import
+
+Testing Results:
+================
