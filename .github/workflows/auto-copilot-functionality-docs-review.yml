@@ -17,6 +17,8 @@ permissions:
 jobs:
   functionality-check:
     runs-on: ubuntu-latest
+    outputs:
+      build_status: ${{ steps.build.outputs.BUILD_STATUS }}
     steps:
       - name: Checkout code
         uses: actions/checkout@main
@@ -105,6 +107,8 @@ jobs:
 
   documentation-review:
     runs-on: ubuntu-latest
+    needs: functionality-check
+    if: always()
     steps:
       - name: Checkout code
         uses: actions/checkout@main
@@ -311,4 +315,4 @@ jobs:
               });
             }
         env:
-          BUILD_STATUS: ${{ steps.build.outputs.BUILD_STATUS }}
+          BUILD_STATUS: ${{ needs['functionality-check'].outputs.build_status }}

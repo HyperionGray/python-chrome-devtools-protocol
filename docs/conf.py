@@ -33,8 +33,14 @@ master_doc = 'index'
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx_autodoc_typehints',
+    'myst_parser',
     'sphinx_rtd_theme',
 ]
+
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.md': 'markdown',
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

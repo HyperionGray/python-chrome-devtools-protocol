@@ -283,7 +283,7 @@ jobs:
           
           mkdir -p /tmp/final-report
           
-          cat > /tmp/final-report/complete-review.md << 'EOF'
+          cat > /tmp/final-report/complete-review.md << EOF
           # Complete CI/CD Agent Review Report
           
           **Review Date:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
