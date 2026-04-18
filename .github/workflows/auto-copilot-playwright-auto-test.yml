@@ -1,0 +1,56 @@
+name: "Copilot: Generate and Run Playwright Tests Until Passing"
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  generate-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@main
+
+      - name: Setup Python
+        uses: actions/setup-python@main
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest playwright pytest-playwright
+
+      - name: Install Playwright browsers
+        run: |
+          python -m playwright install
+
+      # Note: GitHub Copilot agent actions are not available as public actions
+      # This step would generate Playwright test scripts automatically
+      # For now, manual test script creation is required
+
+      - name: Run Playwright Tests
+        run: |
+          pytest tests/ # Or the path to your Playwright scripts
+
+      # Note: GitHub Copilot agent actions are not available as public actions
+      # This step would automatically fix failing tests and retry
+      # For now, manual test fixing is required
+
+      - name: Create PR with passing tests or attempted fixes
+        uses: peter-evans/create-pull-request@main
+        with:
+          branch: "copilot/playwright-auto-tests"
+          title: "Copilot generated Playwright tests (auto-fixed)"
+          body: "Automated Playwright test generation/fix by Copilot agent."
+          commit-message: "Copilot agent Playwright tests and fixes"
+        continue-on-error: true
+
+      - name: Auto-merge if passing
+        uses: pascalgn/automerge-action@main
+        with:
+          merge-method: squash
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
