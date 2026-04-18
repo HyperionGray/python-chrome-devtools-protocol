@@ -1,9 +1,5 @@
 name: "Periodic Code Cleanliness Review"
 
-# REQUIREMENTS:
-# - The repository or organization must allow GitHub Copilot CLI in Actions
-# - Optional: COPILOT_TOKEN may be provided to override the default github.token
-
 on:
   schedule:
     # Run every 12 hours (at 00:00 and 12:00 UTC)
@@ -17,10 +13,10 @@ permissions:
 
 jobs:
   code-cleanliness-review:
-    runs-on: [self-hosted, linux, x64, big]
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4.3.1
+        uses: actions/checkout@main
         with:
           fetch-depth: 0  # Full history for better analysis
 
@@ -64,33 +60,17 @@ jobs:
               ! -path "*/build/*" \
               ! -path "*/.venv/*" \
               ! -path "*/vendor/*" \
-              -exec sh -c 'count=$(grep -c "$1" "$2" 2>/dev/null || echo 0); if [ "$count" -gt 20 ]; then echo "$count definitions in $2"; fi' _ "$pattern" {} \; \
+              -exec sh -c 'count=$(grep -c "$1" "$2" 2>/dev/null || echo 0); count=${count:-0}; if [ "$count" -gt 20 ]; then echo "$count definitions in $2"; fi' _ "$pattern" {} \; \
               2>/dev/null || true
           done | sort -rn >> /tmp/analysis.md
           
           cat /tmp/analysis.md
 
-      - name: GitHub Copilot Code Review
-        uses: austenstone/copilot-cli@v3
-        with:
-          copilot-token: ${{ secrets.COPILOT_TOKEN || github.token }}
-          repo-token: ${{ github.token }}
-          model: gpt-5.3-codex
-          reasoning-effort: xhigh
-          prompt: |
-            Review the codebase for code cleanliness issues:
-            1. Identify files that are too large (>500 lines) and suggest how to split them into smaller, focused modules
-            2. Look for code duplication and suggest refactoring opportunities
-            3. Check for consistent code style and formatting
-            4. Identify complex functions that could be simplified
-            5. Suggest improvements for code organization and structure
-            6. Check for proper separation of concerns
-            
-            Provide actionable recommendations with specific file names and line numbers.
-        continue-on-error: true
+      # Note: GitHub Copilot CLI action is not available as a public action
+      # Code cleanliness analysis is already performed in the previous step
 
       - name: Create Issue for Code Cleanliness Review
-        uses: actions/github-script@v7.1.0
+        uses: actions/github-script@main
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
