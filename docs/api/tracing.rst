@@ -61,6 +61,8 @@ to. For more information, see
 
 .. autofunction:: get_categories
 
+.. autofunction:: get_track_event_descriptor
+
 .. autofunction:: record_clock_sync_marker
 
 .. autofunction:: request_memory_dump

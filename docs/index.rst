@@ -11,7 +11,7 @@ Python wrappers for Chrome DevTools Protocol (CDP).
 
    overview
    getting_started
-   browser_control
+   connection
    api
    develop
    changelog

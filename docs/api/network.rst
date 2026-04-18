@@ -88,6 +88,11 @@ arguments to other commands.
       :undoc-members:
       :exclude-members: from_json, to_json
 
+.. autoclass:: RenderBlockingBehavior
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
 .. autoclass:: PostDataEntry
       :members:
       :undoc-members:
@@ -114,11 +119,6 @@ arguments to other commands.
       :exclude-members: from_json, to_json
 
 .. autoclass:: BlockedReason
-      :members:
-      :undoc-members:
-      :exclude-members: from_json, to_json
-
-.. autoclass:: IpProxyStatus
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
@@ -318,7 +318,7 @@ arguments to other commands.
       :undoc-members:
       :exclude-members: from_json, to_json
 
-.. autoclass:: PrivateNetworkRequestPolicy
+.. autoclass:: LocalNetworkAccessRequestPolicy
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
@@ -334,6 +334,16 @@ arguments to other commands.
       :exclude-members: from_json, to_json
 
 .. autoclass:: ClientSecurityState
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: AdScriptIdentifier
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: AdAncestry
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
@@ -393,6 +403,71 @@ arguments to other commands.
       :undoc-members:
       :exclude-members: from_json, to_json
 
+.. autoclass:: DeviceBoundSessionKey
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: DeviceBoundSessionWithUsage
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: DeviceBoundSessionCookieCraving
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: DeviceBoundSessionUrlRule
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: DeviceBoundSessionInclusionRules
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: DeviceBoundSession
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: DeviceBoundSessionEventId
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: DeviceBoundSessionFetchResult
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: DeviceBoundSessionFailedRequest
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: CreationEventDetails
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: RefreshEventDetails
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: TerminationEventDetails
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: ChallengeEventDetails
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
 .. autoclass:: LoadNetworkResourcePageResult
       :members:
       :undoc-members:
@@ -427,6 +502,8 @@ to. For more information, see
 
 .. autofunction:: clear_browser_cookies
 
+.. autofunction:: configure_durable_messages
+
 .. autofunction:: continue_intercepted_request
 
 .. autofunction:: delete_cookies
@@ -439,15 +516,17 @@ to. For more information, see
 
 .. autofunction:: enable
 
+.. autofunction:: enable_device_bound_sessions
+
 .. autofunction:: enable_reporting_api
+
+.. autofunction:: fetch_schemeful_site
 
 .. autofunction:: get_all_cookies
 
 .. autofunction:: get_certificate
 
 .. autofunction:: get_cookies
-
-.. autofunction:: get_ip_protection_proxy_status
 
 .. autofunction:: get_request_post_data
 
@@ -482,8 +561,6 @@ to. For more information, see
 .. autofunction:: set_cookies
 
 .. autofunction:: set_extra_http_headers
-
-.. autofunction:: set_ip_protection_proxy_bypass_enabled
 
 .. autofunction:: set_request_interception
 
@@ -630,6 +707,16 @@ you use the event's attributes.
       :undoc-members:
       :exclude-members: from_json, to_json
 
+.. autoclass:: DirectUDPSocketJoinedMulticastGroup
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: DirectUDPSocketLeftMulticastGroup
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
 .. autoclass:: DirectUDPSocketCreated
       :members:
       :undoc-members:
@@ -696,6 +783,16 @@ you use the event's attributes.
       :exclude-members: from_json, to_json
 
 .. autoclass:: ReportingApiEndpointsChangedForOrigin
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: DeviceBoundSessionsAdded
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
+.. autoclass:: DeviceBoundSessionEventOccurred
       :members:
       :undoc-members:
       :exclude-members: from_json, to_json
