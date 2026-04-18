@@ -47,6 +47,21 @@ class BackendNodeId(int):
         return 'BackendNodeId({})'.format(super().__repr__())
 
 
+class StyleSheetId(str):
+    r'''
+    Unique identifier for a CSS stylesheet.
+    '''
+    def to_json(self) -> str:
+        return self
+
+    @classmethod
+    def from_json(cls, json: str) -> StyleSheetId:
+        return cls(json)
+
+    def __repr__(self):
+        return 'StyleSheetId({})'.format(super().__repr__())
+
+
 @dataclass
 class BackendNode:
     r'''
@@ -120,7 +135,6 @@ class PseudoType(enum.Enum):
     PICKER = "picker"
     PERMISSION_ICON = "permission-icon"
     OVERSCROLL_AREA_PARENT = "overscroll-area-parent"
-    OVERSCROLL_CLIENT_AREA = "overscroll-client-area"
 
     def to_json(self) -> str:
         return self.value
@@ -315,6 +329,10 @@ class Node:
 
     affected_by_starting_styles: typing.Optional[bool] = None
 
+    adopted_style_sheets: typing.Optional[typing.List[StyleSheetId]] = None
+
+    is_ad_related: typing.Optional[bool] = None
+
     def to_json(self) -> T_JSON_DICT:
         json: T_JSON_DICT = dict()
         json['nodeId'] = self.node_id.to_json()
@@ -377,6 +395,10 @@ class Node:
             json['isScrollable'] = self.is_scrollable
         if self.affected_by_starting_styles is not None:
             json['affectedByStartingStyles'] = self.affected_by_starting_styles
+        if self.adopted_style_sheets is not None:
+            json['adoptedStyleSheets'] = [i.to_json() for i in self.adopted_style_sheets]
+        if self.is_ad_related is not None:
+            json['isAdRelated'] = self.is_ad_related
         return json
 
     @classmethod
@@ -415,6 +437,8 @@ class Node:
             assigned_slot=BackendNode.from_json(json['assignedSlot']) if 'assignedSlot' in json else None,
             is_scrollable=bool(json['isScrollable']) if 'isScrollable' in json else None,
             affected_by_starting_styles=bool(json['affectedByStartingStyles']) if 'affectedByStartingStyles' in json else None,
+            adopted_style_sheets=[StyleSheetId.from_json(i) for i in json['adoptedStyleSheets']] if 'adoptedStyleSheets' in json else None,
+            is_ad_related=bool(json['isAdRelated']) if 'isAdRelated' in json else None,
         )
 
 
@@ -1874,6 +1898,27 @@ class AttributeModified:
         )
 
 
+@event_class('DOM.adoptedStyleSheetsModified')
+@dataclass
+class AdoptedStyleSheetsModified:
+    r'''
+    **EXPERIMENTAL**
+
+    Fired when ``Element``'s adoptedStyleSheets are modified.
+    '''
+    #: Id of the node that has changed.
+    node_id: NodeId
+    #: New adoptedStyleSheets array.
+    adopted_style_sheets: typing.List[StyleSheetId]
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> AdoptedStyleSheetsModified:
+        return cls(
+            node_id=NodeId.from_json(json['nodeId']),
+            adopted_style_sheets=[StyleSheetId.from_json(i) for i in json['adoptedStyleSheets']]
+        )
+
+
 @event_class('DOM.attributeRemoved')
 @dataclass
 class AttributeRemoved:
@@ -2082,6 +2127,27 @@ class ScrollableFlagUpdated:
         return cls(
             node_id=NodeId.from_json(json['nodeId']),
             is_scrollable=bool(json['isScrollable'])
+        )
+
+
+@event_class('DOM.adRelatedStateUpdated')
+@dataclass
+class AdRelatedStateUpdated:
+    r'''
+    **EXPERIMENTAL**
+
+    Fired when a node's ad related state changes.
+    '''
+    #: The id of the node.
+    node_id: NodeId
+    #: If the node is ad related.
+    is_ad_related: bool
+
+    @classmethod
+    def from_json(cls, json: T_JSON_DICT) -> AdRelatedStateUpdated:
+        return cls(
+            node_id=NodeId.from_json(json['nodeId']),
+            is_ad_related=bool(json['isAdRelated'])
         )
 
 
