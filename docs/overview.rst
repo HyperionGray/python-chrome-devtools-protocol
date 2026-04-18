@@ -16,12 +16,19 @@ not catch any typos in your JSON objects, and you wouldn't get autocomplete for
 any parts of the JSON data structure. By providing a set of native Python
 wrappers, this project makes it easier and faster to write CDP client code.
 
-**This library does not perform any I/O!** In order to maximize
-flexibility, this library does not actually handle any network I/O, such as
-opening a socket or negotiating a WebSocket protocol. Instead, that
-responsibility is left to higher-level libraries, for example
-`trio-chrome-devtools-protocol
-<https://github.com/hyperiongray/trio-chrome-devtools-protocol>`_.
+**Two usage modes are available:**
+
+* **Sans-I/O mode (original):** The core library provides type wrappers without
+  performing any I/O. This maximises flexibility and allows integration with any
+  async framework such as
+  `trio-chrome-devtools-protocol
+  <https://github.com/hyperiongray/trio-chrome-devtools-protocol>`_.
+
+* **I/O mode:** The ``cdp.connection`` module handles the WebSocket lifecycle,
+  JSON-RPC message framing, and command multiplexing.  The
+  ``cdp.browser_control`` module layers a high-level automation API on top of
+  this, providing Playwright-style helpers for navigation, element interaction,
+  screenshots, and more.  See :doc:`browser_control` for details.
 
 **This package provides Chrome DevTools Protocol r678025.** Download a compatible
 Chrome package:
@@ -31,13 +38,14 @@ Chrome package:
 * `Windows 32-bit <https://storage.googleapis.com/chromium-browser-snapshots/Win/678025/chrome-win.zip>`_
 * `Windows 64-bit <https://storage.googleapis.com/chromium-browser-snapshots/Win_x64/678025/chrome-win.zip>`_
 
-**Install from PyPI (requires Python ≥3.7):**
+**Install from PyPI (requires Python ≥3.8):**
 
 ::
 
-    $ pip install chrome-devtools-protocol
+    $ pip install chrome-devtools-protocol        # Sans-I/O only
+    $ pip install chrome-devtools-protocol[io]    # With WebSocket / browser-control support
 
-**Sample code:**
+**Quick example (Sans-I/O mode):**
 
 .. code-block:: python
 
@@ -45,3 +53,21 @@ Chrome package:
 
     frame_id = page.FrameId('my id')
     assert repr(frame_id) == "FrameId('my id')"
+
+**Quick example (browser control):**
+
+.. code-block:: python
+
+    import asyncio
+    from cdp.connection import CDPConnection
+    from cdp import browser_control as bc
+    from cdp import page
+
+    async def main():
+        async with CDPConnection("ws://localhost:9222/devtools/page/ID") as conn:
+            await conn.execute(page.enable())
+            await bc.navigate(conn, "https://example.com")
+            await bc.wait_for_load(conn)
+            print(await bc.get_text(conn, "h1"))
+
+    asyncio.run(main())
