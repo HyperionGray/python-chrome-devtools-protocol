@@ -15,7 +15,10 @@ from dataclasses import dataclass, field
 
 try:
     import websockets
-    from websockets.client import WebSocketClientProtocol
+    try:
+        from websockets.client import WebSocketClientProtocol  # type: ignore[attr-defined]
+    except Exception:
+        WebSocketClientProtocol = typing.Any  # type: ignore
     WEBSOCKETS_AVAILABLE = True
 except ImportError:
     WEBSOCKETS_AVAILABLE = False

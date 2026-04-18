@@ -24,6 +24,11 @@ arguments to other commands.
       :undoc-members:
       :exclude-members: from_json, to_json
 
+.. autoclass:: ExtensionInfo
+      :members:
+      :undoc-members:
+      :exclude-members: from_json, to_json
+
 Commands
 --------
 
@@ -38,6 +43,8 @@ to. For more information, see
 
 .. autofunction:: clear_storage_items
 
+.. autofunction:: get_extensions
+
 .. autofunction:: get_storage_items
 
 .. autofunction:: load_unpacked
@@ -45,6 +52,8 @@ to. For more information, see
 .. autofunction:: remove_storage_items
 
 .. autofunction:: set_storage_items
+
+.. autofunction:: trigger_action
 
 .. autofunction:: uninstall
 
