@@ -8,7 +8,7 @@ step is required in that scenario.
 
 The repository uses `Poetry <https://python-poetry.org/>`_ to manage dependencies. Once
 you have Poetry installed, use this command to create a new virtual environment and
-install PyCDP and its dependencies (including dev dependencies0 in it.
+install PyCDP and its dependencies (including dev dependencies) in it.
 
 ::
 
