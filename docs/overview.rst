@@ -30,13 +30,9 @@ wrappers, this project makes it easier and faster to write CDP client code.
   this, providing Playwright-style helpers for navigation, element interaction,
   screenshots, and more.  See :doc:`browser_control` for details.
 
-**This package provides Chrome DevTools Protocol r678025.** Download a compatible
-Chrome package:
-
-* `Linux <https://storage.googleapis.com/chromium-browser-snapshots/Linux_x64/678025/chrome-linux.zip>`_
-* `Mac <https://storage.googleapis.com/chromium-browser-snapshots/Mac/678025/chrome-mac.zip>`_
-* `Windows 32-bit <https://storage.googleapis.com/chromium-browser-snapshots/Win/678025/chrome-win.zip>`_
-* `Windows 64-bit <https://storage.googleapis.com/chromium-browser-snapshots/Win_x64/678025/chrome-win.zip>`_
+**This package provides Chrome DevTools Protocol r678025.** For a current,
+maintained way to download Chrome/Chromium builds, use
+`Chrome for Testing <https://googlechromelabs.github.io/chrome-for-testing/>`_.
 
 **Install from PyPI (requires Python ≥3.8):**
 
